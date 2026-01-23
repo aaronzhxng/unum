@@ -1,4 +1,12 @@
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type ItemType = "official" | "bill";
 
@@ -11,7 +19,7 @@ type Item = {
   date: string;
   committee: string;
   update: string;
-  avatarUrl?: string; // optional for bills
+  avatar?: any;
 };
 
 const MOCK_ITEMS: Item[] = [
@@ -24,7 +32,7 @@ const MOCK_ITEMS: Item[] = [
     date: "",
     committee: "",
     update: "",
-    avatarUrl: "https://placehold.co/64x64", // placeholder
+    avatar: require("../../assets/officials_images/zohran.jpg"),
   },
   {
     id: "2",
@@ -35,10 +43,21 @@ const MOCK_ITEMS: Item[] = [
     date: "12/18/2025",
     committee: "Agriculture",
     update: "To President",
-    avatarUrl: "https://placehold.co/64x64", // placeholder
+    avatar: require("../../assets/bills_icons/h_comm_agriculture.png"),
   },
   {
     id: "3",
+    type: "official",
+    name: "Alexandria Ocasio-Cortez",
+    party: "D",
+    role: "Representative, NY 14th District",
+    date: "",
+    committee: "",
+    update: "",
+    avatar: require("../../assets/officials_images/aoc.webp"),
+  },
+  {
+    id: "4",
     type: "official",
     name: "John Kennedy",
     party: "R",
@@ -46,11 +65,12 @@ const MOCK_ITEMS: Item[] = [
     date: "",
     committee: "",
     update: "Up for Reelection",
-    avatarUrl: "https://placehold.co/64x64",
+    avatar: require("../../assets/officials_images/jKennedy.jpg"),
   },
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <Text style={styles.header}>My List</Text>
@@ -65,47 +85,60 @@ export default function HomeScreen() {
 }
 
 function Card({ item }: { item: Item }) {
+  const router = useRouter();
   const isOfficial = item.type === "official";
 
+  const onPress = () => {
+    if (isOfficial) {
+      router.navigate(`/official/${item.id}`);
+    } else {
+      router.navigate(`/bill/${item.id}`);
+    }
+  };
+
   return (
-    <View style={[styles.officialCard]}>
-      <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+    >
+      <View style={[styles.officialCard]}>
+        <Image source={item.avatar} style={styles.avatar} />
 
-      {isOfficial ? (
-      <View>
-        <Text style={styles.name}>{item.name}</Text>
-      
-        <View style={styles.metaRow}>
-          <Text style={styles.subtitle}>{item.party}</Text>
-          <Text style={styles.separator}>·</Text>
-          <Text style={styles.subtitle}>{item.role}</Text>
-          {item.update ? (
-            <>
-              <Text style={styles.separator}>·</Text>
-              <Text style={styles.update}>{item.update}</Text>
-            </>
-          ) : null}
-        </View>
-      </View>      
-      ) : (
-      <View>
-        <Text style={styles.name}>{item.name}</Text>
-      
-        <View style={styles.metaRow}>
-          <Text style={styles.subtitle}>{item.date}</Text>
-          <Text style={styles.separator}>·</Text>
-          <Text style={styles.subtitle}>{item.committee}</Text>
-          {item.update ? (
-            <>
-              <Text style={styles.separator}>·</Text>
-              <Text style={styles.update}>{item.update}</Text>
-            </>
-          ) : null}
-        </View>
-      </View>   
-      )}
+        {isOfficial ? (
+          <View>
+            <Text style={styles.name}>{item.name}</Text>
 
-    </View>
+            <View style={styles.metaRow}>
+              <Text style={styles.subtitle}>{item.party}</Text>
+              <Text style={styles.separator}>·</Text>
+              <Text style={styles.subtitle}>{item.role}</Text>
+              {item.update ? (
+                <>
+                  <Text style={styles.separator}>·</Text>
+                  <Text style={styles.update}>{item.update}</Text>
+                </>
+              ) : null}
+            </View>
+          </View>
+        ) : (
+          <View>
+            <Text style={styles.name}>{item.name}</Text>
+
+            <View style={styles.metaRow}>
+              <Text style={styles.subtitle}>{item.date}</Text>
+              <Text style={styles.separator}>·</Text>
+              <Text style={styles.subtitle}>{item.committee}</Text>
+              {item.update ? (
+                <>
+                  <Text style={styles.separator}>·</Text>
+                  <Text style={styles.update}>{item.update}</Text>
+                </>
+              ) : null}
+            </View>
+          </View>
+        )}
+      </View>
+    </Pressable>
   );
 }
 
@@ -177,5 +210,4 @@ const styles = StyleSheet.create({
     color: "#000000",
     fontWeight: 600,
   },
-  
 });
