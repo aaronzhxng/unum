@@ -43,7 +43,7 @@ const MOCK_ITEMS: Item[] = [
     date: "12/18/2025",
     committee: "Agriculture",
     update: "To President",
-    avatar: require("../../assets/bills_icons/h_comm_agriculture.png"),
+    avatar: require("../../assets/bills_icons/agriculture.png"),
   },
   {
     id: "3",
