@@ -1,14 +1,27 @@
 import { useLocalSearchParams, useRouter, type Router } from "expo-router";
-import { ChevronLeft, MoreVertical, Plus } from "lucide-react-native";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  MoreVertical,
+  Plus,
+  Search,
+} from "lucide-react-native";
 import { useState } from "react";
 import {
   FlatList,
   Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
+import BillCard from "./components/BillCard";
+import FilterDropdown from "./components/FilterDropdown";
+import SortDropdown from "./components/SortDropdown";
+import { styles as componentStyles } from "./styles/components";
 
 export default function OfficialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -16,6 +29,31 @@ export default function OfficialDetail() {
   const [activeTab, setActiveTab] = useState<"profile" | "legislation">(
     "profile"
   );
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [selectedSort, setSelectedSort] = useState("Most Viewed");
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [selectedType, setSelectedType] = useState("Bills");
+
+  const [showTypeModal, setShowTypeModal] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState(["Bills"]);
+
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
+  const [selectedPolicies, setSelectedPolicies] = useState(["Congress"]);
+
+  const toggleType = (type: string) => {
+    setSelectedTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const togglePolicy = (policy: string) => {
+    setSelectedPolicies((prev) =>
+      prev.includes(policy)
+        ? prev.filter((p) => p !== policy)
+        : [...prev, policy]
+    );
+  };
+
   const official = {
     name: "Alexandria Ocasio-Cortez",
     avatar: require("../../assets/officials_images/aoc.webp"),
@@ -43,34 +81,6 @@ export default function OfficialDetail() {
     ],
     map: require("../../assets/maps/aoc.png"),
   };
-  type Bill = {
-    id: string;
-    name: string;
-    date: string;
-    committee: string;
-    update: string;
-    icon: any; // No ?
-  };
-
-  const BillCard = ({ item }: { item: Bill }) => (
-    <View style={styles.billCard}>
-      <Image source={item.icon} style={styles.billIcon} />
-      <View style={styles.billInfo}>
-        <Text style={styles.billNumber}>{item.name}</Text>
-        <View style={styles.billStatusRow}>
-          <Text style={styles.billTitle}>{item.date}</Text>
-          <Text style={styles.separator}>·</Text>
-          <Text style={styles.billTitle}>{item.committee}</Text>
-          {item.update ? (
-            <>
-              <Text style={styles.separator}>·</Text>
-              <Text style={styles.update}>{item.update}</Text>
-            </>
-          ) : null}
-        </View>
-      </View>
-    </View>
-  );
 
   const mockBills = [
     {
@@ -91,6 +101,38 @@ export default function OfficialDetail() {
     },
     {
       id: "3",
+      name: "H.R.6819 : To reduce State adminis..",
+      date: "12/17/2025",
+      committee: "Education & Workforce",
+      update: "Introduced",
+      icon: require("../../assets/bills_icons/education.png"),
+    },
+    {
+      id: "4",
+      name: "H.R.6819 : To reduce State adminis..",
+      date: "12/17/2025",
+      committee: "Education & Workforce",
+      update: "Introduced",
+      icon: require("../../assets/bills_icons/education.png"),
+    },
+    {
+      id: "5",
+      name: "H.R.6819 : To reduce State adminis..",
+      date: "12/17/2025",
+      committee: "Education & Workforce",
+      update: "Introduced",
+      icon: require("../../assets/bills_icons/education.png"),
+    },
+    {
+      id: "6",
+      name: "H.R.6819 : To reduce State adminis..",
+      date: "12/17/2025",
+      committee: "Education & Workforce",
+      update: "Introduced",
+      icon: require("../../assets/bills_icons/education.png"),
+    },
+    {
+      id: "7",
       name: "H.R.6819 : To reduce State adminis..",
       date: "12/17/2025",
       committee: "Education & Workforce",
@@ -182,14 +224,92 @@ export default function OfficialDetail() {
           </>
         ) : (
           <View>
-            <View>
-              <Text>Total Legislation - 3,353</Text>
+            <View style={styles.legislationHeader}>
+              <View style={styles.legislationHeaderLeft}>
+                <Pressable
+                  style={styles.sortButton}
+                  onPress={() => {
+                    setShowTypeModal(true);
+                    setShowPolicyModal(true);
+                  }}
+                >
+                  <Text style={styles.legislationHeaderTotal}>
+                    {/* {selectedType} */}
+                    Total Legislation : 3,353
+                  </Text>
+                  {showTypeDropdown ? (
+                    <ChevronUp
+                      size={24}
+                      color="#535353"
+                      style={{ marginRight: 24 }}
+                    />
+                  ) : (
+                    <ChevronDown
+                      size={24}
+                      color="#535353"
+                      style={{ marginRight: 24 }}
+                    />
+                  )}
+                </Pressable>
+                <Pressable
+                  style={styles.sortButton}
+                  onPress={() => setShowSortDropdown(!showSortDropdown)}
+                >
+                  {/* <Text style={styles.sortText}>Sort by </Text> */}
+                  <Text style={styles.sortText}>{selectedSort}</Text>
+                  <Text>
+                    {showSortDropdown ? (
+                      <ChevronUp
+                        size={24}
+                        color="#535353"
+                        style={{ marginRight: 24 }}
+                      />
+                    ) : (
+                      <ChevronDown
+                        size={24}
+                        color="#535353"
+                        style={{ marginRight: 24 }}
+                      />
+                    )}
+                  </Text>
+                </Pressable>
+              </View>
+              <Search size={24} color="#535353" />
             </View>
             <FlatList
+              style={componentStyles.legislationContainer}
               data={mockBills}
               renderItem={({ item }) => <BillCard item={item} />}
               keyExtractor={(item) => item.id}
+              scrollEnabled={false}
               showsVerticalScrollIndicator={false}
+            />
+            <SortDropdown
+              showSortDropdown={showSortDropdown}
+              setShowSortDropdown={setShowSortDropdown}
+              selectedSort={selectedSort}
+              setSelectedSort={setSelectedSort}
+            />
+            <FilterDropdown
+              showTypeModal={showTypeModal}
+              showPolicyModal={showPolicyModal}
+              selectedTypes={selectedTypes}
+              selectedPolicies={selectedPolicies}
+              toggleType={toggleType}
+              togglePolicy={togglePolicy}
+              setShowTypeModal={setShowTypeModal}
+              setShowPolicyModal={setShowPolicyModal}
+              styles={styles}
+              onCancel={() => {
+                // Reset selections if needed
+                setShowTypeModal(false);
+                setShowPolicyModal(false);
+              }}
+              onApply={() => {
+                // Apply filters, close modals
+                setShowTypeModal(false);
+                setShowPolicyModal(false);
+              }}
             />
           </View>
         )}
@@ -241,9 +361,6 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     borderWidth: 4,
     borderColor: "#008CFF",
-  },
-  headerText: {
-    flex: 1,
   },
   name: {
     fontSize: 16,
@@ -334,57 +451,75 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  billCard: {
+  legislationHeader: {
+    paddingHorizontal: 4,
+    paddingBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 48,
+    alignItems: "center",
+  },
+  legislationHeaderTotal: {
+    fontWeight: 700,
+    fontSize: 16,
+    marginRight: 4,
+    alignItems: "center",
+  },
+  legislationHeaderLeft: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    margin: 2,
-    borderRadius: 24,
-    backgroundColor: "#fafafa",
-    marginBottom: 12,
-    shadowColor: "#000000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
   },
-  billIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 32,
-    backgroundColor: "#eee",
-    marginRight: 12,
-  },
-  billInfo: {
-    flex: 1,
-  },
-  billNumber: {
-    fontSize: 15,
-    color: "#535353",
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  billTitle: {
-    fontSize: 12,
-    color: "#7B7C81",
-  },
-  billStatusRow: {
+  sortButton: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "baseline",
-    marginTop: 2,
+    alignItems: "center",
+    minHeight: 40, // Or height: 40, reserves button space
   },
-  separator: {
-    // ← NEW, exact official match
+  sortText: {
     fontSize: 12,
-    color: "#000000",
-    marginHorizontal: 4,
+    fontWeight: "500",
+    color: "#000",
+    maxWidth: 72,
   },
-  update: {
-    // ← NEW, exact official match
-    fontSize: 12,
+  modalOverlay: {
+    flex: 1,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    zIndex: 1000,
+  },
+  dropdownItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  dropdownItemText: {
+    fontSize: 16,
     color: "#000000",
-    fontWeight: 600,
+  },
+  dropdownItemTextLabel: {
+    fontSize: 16,
+    color: "#7B7C81",
+    marginTop: 16,
+    marginBottom: 6,
+    marginHorizontal: 16,
+  },
+  dropdownMulti: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 8,
+    margin: 16,
+    marginTop: 180,
+  },
+  actionButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 6,
+    marginLeft: 16,
   },
 });

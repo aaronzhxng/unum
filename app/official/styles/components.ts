@@ -1,0 +1,98 @@
+import { StyleSheet } from 'react-native'; // ✅ ADD THIS LINE
+
+export const styles = StyleSheet.create({
+legislationContainer: {
+    paddingBottom: 48,
+    },
+billCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    margin: 2,
+    borderRadius: 24,
+    backgroundColor: "#fafafa",
+    marginBottom: 12,
+    shadowColor: "#000000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  billIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 32,
+    backgroundColor: "#eee",
+    marginRight: 12,
+  },
+  billInfo: {
+    flex: 1,
+  },
+  billNumber: {
+    fontSize: 15,
+    color: "#535353",
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  billTitle: {
+    fontSize: 12,
+    color: "#7B7C81",
+  },
+  billStatusRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "baseline",
+    marginTop: 2,
+  },
+  separator: {
+    fontSize: 12,
+    color: "#000000",
+    marginHorizontal: 4,
+  },
+  update: {
+    fontSize: 12,
+    color: "#000000",
+    fontWeight: 600,
+  },
+
+
+  modalOverlay: {
+    flex: 1,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    zIndex: 1000,
+  },
+  dropdown: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 8,
+    position: "absolute",
+    top: 330,
+    right: 16,
+    left: 16,
+    minWidth: 200,
+  },
+  dropdownItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  dropdownItemPressed: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    color: "#000000",
+  },
+});
