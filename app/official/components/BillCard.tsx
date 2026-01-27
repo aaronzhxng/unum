@@ -18,7 +18,7 @@ interface BillCardProps {
 }
 
 const BillCard = (
-  { item }: BillCardProps // ✅ Use interface
+  { item }: BillCardProps, // ✅ Use interface
 ) => (
   <View style={styles.billCard}>
     <Image source={item.icon} style={styles.billIcon} />

@@ -7,7 +7,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -20,6 +20,7 @@ import {
 
 import BillCard from "./components/BillCard";
 import FilterDropdown from "./components/FilterDropdown";
+import SearchModal from "./components/SearchModal";
 import SortDropdown from "./components/SortDropdown";
 import { styles as componentStyles } from "./styles/components";
 
@@ -27,22 +28,85 @@ export default function OfficialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router: Router = useRouter();
   const [activeTab, setActiveTab] = useState<"profile" | "legislation">(
-    "profile"
+    "profile",
   );
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Most Viewed");
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-  const [selectedType, setSelectedType] = useState("Bills");
+  // const [selectedType, setSelectedType] = useState("Bills");
 
+  const [isFiltered, setIsFiltered] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState(["Bills"]);
 
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [selectedPolicies, setSelectedPolicies] = useState(["Congress"]);
 
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  interface FilterOption {
+    id: string;
+    label: string;
+  }
+
+  const legislationTypes: FilterOption[] = [
+    { id: "all", label: "All" },
+    { id: "house_bill", label: "House Bills" },
+    { id: "senate_bill", label: "Senate Bills" },
+    { id: "house_amdt", label: "House Amendment" },
+    { id: "senate_amdt", label: "Senate Amendment" },
+    { id: "house_joint_resolution", label: "House Joint Resolution" },
+    { id: "senate_joint_resolution", label: "Senate Joint Resolution" },
+    { id: "house_con_res", label: "House Concurrent Resolution" },
+    { id: "senate_con_res", label: "Senate Concurrent Resolution" },
+    { id: "house_res", label: "House Resolution" },
+    { id: "senate_res", label: "Senate Resolution" },
+    { id: "nominations", label: "Nominations" },
+    { id: "treaty_doc", label: "Treaty Document" },
+  ];
+
+  const policyAreas: FilterOption[] = [
+    { id: "all", label: "All " },
+    { id: "congress", label: "Congress" },
+    { id: "health", label: "Health" },
+    { id: "gov_operations", label: "Gov Operations and Politics" },
+    { id: "armed_forces", label: "Armed Forces and National Security" },
+    { id: "intl_affairs", label: "International Affairs" },
+    { id: "taxation", label: "Taxation" },
+    { id: "crime_law_enf", label: "Crime and Law Enforcement" },
+    { id: "public_lands_nat_res", label: "Public Lands and Natural Resources" },
+    { id: "agriculture_food", label: "Agriculture and Food" },
+    { id: "transportation", label: "Transportation and Public Works" },
+    { id: "education", label: "Education" },
+    { id: "finance", label: "Finance and Financial Sector" },
+    { id: "immigration", label: "Immigration" },
+    { id: "science_tech", label: "Science, Technology, Communications" },
+    { id: "env_prot", label: "Environmental Protection" },
+    { id: "commerce", label: "Commerce" },
+    { id: "energy", label: "Energy" },
+    { id: "labor_employment", label: "Labor and Employment" },
+    { id: "foreign_trade", label: "Foreign Trade and International Finance" },
+    { id: "housing", label: "Housing and Community Development" },
+    { id: "native_americans", label: "Native Americans" },
+    { id: "energy_man", label: "Energy Management" },
+    {
+      id: "civil_rights",
+      label: "Civil Rights and Liberties, Minority Issues",
+    },
+    { id: "econ", label: "Economics and Public Finance" },
+    { id: "law", label: "Law" },
+    { id: "social_welfare", label: "Social Welfare" },
+    { id: "sports_rec", label: "Sports and Recreation" },
+    { id: "arts", label: "Arts, Culture, and Religion" },
+    { id: "families", label: "Families" },
+    { id: "water", label: "Water Resources Development" },
+    { id: "animals", label: "Animals" },
+  ];
+
   const toggleType = (type: string) => {
     setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
     );
   };
 
@@ -50,8 +114,22 @@ export default function OfficialDetail() {
     setSelectedPolicies((prev) =>
       prev.includes(policy)
         ? prev.filter((p) => p !== policy)
-        : [...prev, policy]
+        : [...prev, policy],
     );
+  };
+
+  const handleCancel = () => {
+    setSelectedTypes(["Bills"]);
+    setSelectedPolicies(["Congress"]);
+    setShowTypeModal(false);
+    setShowPolicyModal(false);
+  };
+
+  const handleApply = () => {
+    const hasFilters = selectedTypes.length > 1 || selectedPolicies.length > 1;
+    setIsFiltered(hasFilters);
+    setShowTypeModal(false);
+    setShowPolicyModal(false);
   };
 
   const official = {
@@ -141,6 +219,15 @@ export default function OfficialDetail() {
     },
   ];
 
+  const filteredBills = useMemo(() => {
+    if (!searchQuery.trim()) return mockBills;
+    return mockBills.filter(
+      (bill) =>
+        bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bill.committee.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [searchQuery, mockBills]);
+
   return (
     <View style={styles.screen}>
       {/* ← Add screen wrapper */}
@@ -152,7 +239,11 @@ export default function OfficialDetail() {
           <MoreVertical size={24} color="#535353" />
         </View>
       </View>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        keyboardShouldPersistTaps="handled"
+        // keyboardDismissMode="on-drag"
+      >
         {/* Profile Header */}
         <View style={styles.header}>
           {/* Role at top */}
@@ -235,7 +326,7 @@ export default function OfficialDetail() {
                 >
                   <Text style={styles.legislationHeaderTotal}>
                     {/* {selectedType} */}
-                    Total Legislation : 3,353
+                    {isFiltered ? "Filtered" : "Total"} Legislation 3,353
                   </Text>
                   {showTypeDropdown ? (
                     <ChevronUp
@@ -274,15 +365,27 @@ export default function OfficialDetail() {
                   </Text>
                 </Pressable>
               </View>
-              <Search size={24} color="#535353" />
+              <Pressable onPress={() => setShowSearchModal(true)}>
+                <Search size={24} color="#535353" />
+              </Pressable>
             </View>
             <FlatList
               style={componentStyles.legislationContainer}
-              data={mockBills}
+              data={filteredBills}
               renderItem={({ item }) => <BillCard item={item} />}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
+            />
+            <SearchModal
+              isVisible={showSearchModal}
+              onClose={() => {
+                setShowSearchModal(false);
+              }}
+              // onSearch={(query) => {
+              //   setSearchQuery(query);
+              // }}
+              onSearch={setSearchQuery}
             />
             <SortDropdown
               showSortDropdown={showSortDropdown}
@@ -300,16 +403,10 @@ export default function OfficialDetail() {
               setShowTypeModal={setShowTypeModal}
               setShowPolicyModal={setShowPolicyModal}
               styles={styles}
-              onCancel={() => {
-                // Reset selections if needed
-                setShowTypeModal(false);
-                setShowPolicyModal(false);
-              }}
-              onApply={() => {
-                // Apply filters, close modals
-                setShowTypeModal(false);
-                setShowPolicyModal(false);
-              }}
+              onCancel={handleCancel}
+              onApply={handleApply}
+              legislationTypes={legislationTypes}
+              policyAreas={policyAreas}
             />
           </View>
         )}

@@ -1,18 +1,25 @@
 import React from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+
+interface FilterOption {
+  id: string;
+  label: string;
+}
 
 interface FilterDropdownProps {
   showTypeModal: boolean;
   showPolicyModal: boolean;
   selectedTypes: string[];
   selectedPolicies: string[];
-  toggleType: (type: string) => void;
-  togglePolicy: (policy: string) => void;
+  toggleType: (id: string) => void;
+  togglePolicy: (id: string) => void;
   setShowTypeModal: (show: boolean) => void;
   setShowPolicyModal: (show: boolean) => void;
-  styles: any; // Pass your styles object
+  styles: any;
   onCancel: () => void;
   onApply: () => void;
+  legislationTypes: FilterOption[];
+  policyAreas: FilterOption[];
 }
 
 const FilterDropdown: React.FC<FilterDropdownProps> = ({
@@ -27,6 +34,8 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
   styles,
   onCancel,
   onApply,
+  legislationTypes,
+  policyAreas,
 }) => {
   const closeModals = () => {
     setShowTypeModal(false);
@@ -54,249 +63,109 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 <Text style={styles.dropdownItemTextLabel}>
                   Legislation Type
                 </Text>
-
-                <Pressable
-                  style={[
-                    styles.dropdownItem,
-                    {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    },
-                  ]}
-                  onPress={() => toggleType("Bills")}
+                <ScrollView
+                  style={{ maxHeight: 200 }}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator={false}
                 >
-                  <Text style={styles.dropdownItemText}>Bills</Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: "#ccc",
-                      borderRadius: 4,
-                      backgroundColor: selectedTypes.includes("Bills")
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {selectedTypes.includes("Bills") && (
+                  {legislationTypes.map((option) => (
+                    <Pressable
+                      key={option.id}
+                      style={[
+                        styles.dropdownItem,
+                        {
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        },
+                      ]}
+                      onPress={() => toggleType(option.id)}
+                    >
+                      <Text style={styles.dropdownItemText}>
+                        {option.label}
+                      </Text>
                       <View
                         style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
+                          width: 20,
+                          height: 20,
+                          borderWidth: 2,
+                          borderColor: "#ccc",
+                          borderRadius: 4,
+                          backgroundColor: selectedTypes.includes(option.id)
+                            ? "#008CFF"
+                            : "transparent",
+                          justifyContent: "center",
+                          alignItems: "center",
                         }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
-
-                <Pressable
-                  style={[
-                    styles.dropdownItem,
-                    {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    },
-                  ]}
-                  onPress={() => toggleType("Resolutions")}
-                >
-                  <Text style={styles.dropdownItemText}>Resolutions</Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: "#ccc",
-                      borderRadius: 4,
-                      backgroundColor: selectedTypes.includes("Resolutions")
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {selectedTypes.includes("Resolutions") && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
-                        }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
-
-                <Pressable
-                  style={[
-                    styles.dropdownItem,
-                    {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    },
-                  ]}
-                  onPress={() => toggleType("Joint Resolutions")}
-                >
-                  <Text style={styles.dropdownItemText}>Joint Resolutions</Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: "#ccc",
-                      borderRadius: 4,
-                      backgroundColor: selectedTypes.includes(
-                        "Joint Resolutions"
-                      )
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {selectedTypes.includes("Joint Resolutions") && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
-                        }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
+                      >
+                        {selectedTypes.includes(option.id) && (
+                          <View
+                            style={{
+                              width: 12,
+                              height: 12,
+                              backgroundColor: "#008CFF",
+                              borderRadius: 2,
+                            }}
+                          />
+                        )}
+                      </View>
+                    </Pressable>
+                  ))}
+                </ScrollView>
               </View>
 
               {/* Policy Area Section */}
               <View style={[styles.dropdownMulti, { marginTop: 12 }]}>
                 <Text style={styles.dropdownItemTextLabel}>Policy Area</Text>
-
-                <Pressable
-                  style={[
-                    styles.dropdownItem,
-                    {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    },
-                  ]}
-                  onPress={() => togglePolicy("Congress")}
+                <ScrollView
+                  style={{ maxHeight: 200 }}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator={false}
                 >
-                  <Text style={styles.dropdownItemText}>Congress</Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: "#ccc",
-                      borderRadius: 4,
-                      backgroundColor: selectedPolicies.includes("Congress")
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {selectedPolicies.includes("Congress") && (
+                  {policyAreas.map((option) => (
+                    <Pressable
+                      key={option.id}
+                      style={[
+                        styles.dropdownItem,
+                        {
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        },
+                      ]}
+                      onPress={() => togglePolicy(option.id)}
+                    >
+                      <Text style={styles.dropdownItemText}>
+                        {option.label}
+                      </Text>
                       <View
                         style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
+                          width: 20,
+                          height: 20,
+                          borderWidth: 2,
+                          borderColor: "#ccc",
+                          borderRadius: 4,
+                          backgroundColor: selectedPolicies.includes(option.id)
+                            ? "#008CFF"
+                            : "transparent",
+                          justifyContent: "center",
+                          alignItems: "center",
                         }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
-
-                <Pressable
-                  style={[
-                    styles.dropdownItem,
-                    {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    },
-                  ]}
-                  onPress={() => togglePolicy("Health")}
-                >
-                  <Text style={styles.dropdownItemText}>Health</Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: "#ccc",
-                      borderRadius: 4,
-                      backgroundColor: selectedPolicies.includes("Health")
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {selectedPolicies.includes("Health") && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
-                        }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
-
-                <Pressable
-                  style={[
-                    styles.dropdownItem,
-                    {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    },
-                  ]}
-                  onPress={() => togglePolicy("Gov Operations")}
-                >
-                  <Text style={styles.dropdownItemText}>Gov Operations</Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: "#ccc",
-                      borderRadius: 4,
-                      backgroundColor: selectedPolicies.includes(
-                        "Gov Operations"
-                      )
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {selectedPolicies.includes("Gov Operations") && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
-                        }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
+                      >
+                        {selectedPolicies.includes(option.id) && (
+                          <View
+                            style={{
+                              width: 12,
+                              height: 12,
+                              backgroundColor: "#008CFF",
+                              borderRadius: 2,
+                            }}
+                          />
+                        )}
+                      </View>
+                    </Pressable>
+                  ))}
+                </ScrollView>
               </View>
 
               {/* Buttons */}
@@ -307,7 +176,14 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 }}
               >
                 <Pressable
-                  style={[styles.actionButton, { backgroundColor: "#f5f5f5" }]}
+                  style={({ pressed }) => [
+                    styles.actionButton,
+                    { backgroundColor: "#f5f5f5" },
+                    {
+                      transform: [{ scale: pressed ? 0.96 : 1 }],
+                    },
+                  ]}
+                  onPress={onCancel}
                 >
                   <Text
                     style={[
@@ -318,7 +194,14 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                   </Text>
                 </Pressable>
                 <Pressable
-                  style={[styles.actionButton, { backgroundColor: "#00AFFF" }]}
+                  style={({ pressed }) => [
+                    styles.actionButton,
+                    { backgroundColor: "#00AFFF" },
+                    {
+                      transform: [{ scale: pressed ? 0.96 : 1 }],
+                    },
+                  ]}
+                  onPress={onApply}
                 >
                   <Text
                     style={[

@@ -99,7 +99,9 @@ function Card({ item }: { item: Item }) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? 0.96 : 1 }],
+      })}
     >
       <View style={[styles.officialCard]}>
         <Image source={item.avatar} style={styles.avatar} />
