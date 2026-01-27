@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 
+import AddModal from "./components/AddModal";
 import BillCard from "./components/BillCard";
 import FilterDropdown from "./components/FilterDropdown";
 import SearchModal from "./components/SearchModal";
@@ -44,6 +45,9 @@ export default function OfficialDetail() {
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedLists, setSelectedLists] = useState("");
 
   interface FilterOption {
     id: string;
@@ -235,7 +239,13 @@ export default function OfficialDetail() {
       <View style={styles.headerBar}>
         <ChevronLeft size={24} color="#535353" onPress={() => router.back()} />
         <View style={styles.headerRight}>
-          <Plus size={24} color="#535353" />
+          <Pressable
+            onPress={() => {
+              setShowAddModal(true);
+            }}
+          >
+            <Plus size={24} color="#535353" />
+          </Pressable>
           <MoreVertical size={24} color="#535353" />
         </View>
       </View>
@@ -301,6 +311,7 @@ export default function OfficialDetail() {
               ))}
             </View>
 
+            {/* Map */}
             <View style={styles.map}>
               <Image
                 source={official.map}
@@ -315,6 +326,7 @@ export default function OfficialDetail() {
           </>
         ) : (
           <View>
+            {/* Legislation Tab */}
             <View style={styles.legislationHeader}>
               <View style={styles.legislationHeaderLeft}>
                 <Pressable
@@ -324,6 +336,7 @@ export default function OfficialDetail() {
                     setShowPolicyModal(true);
                   }}
                 >
+                  {/* Total Selected Legislation Dropdown */}
                   <Text style={styles.legislationHeaderTotal}>
                     {/* {selectedType} */}
                     {isFiltered ? "Filtered" : "Total"} Legislation 3,353
@@ -342,6 +355,7 @@ export default function OfficialDetail() {
                     />
                   )}
                 </Pressable>
+                {/* Sort by Dropdown */}
                 <Pressable
                   style={styles.sortButton}
                   onPress={() => setShowSortDropdown(!showSortDropdown)}
@@ -365,10 +379,12 @@ export default function OfficialDetail() {
                   </Text>
                 </Pressable>
               </View>
+              {/* Search Button */}
               <Pressable onPress={() => setShowSearchModal(true)}>
                 <Search size={24} color="#535353" />
               </Pressable>
             </View>
+            {/* Bill Cards */}
             <FlatList
               style={componentStyles.legislationContainer}
               data={filteredBills}
@@ -377,6 +393,7 @@ export default function OfficialDetail() {
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
             />
+            {/* Search Modal Popup */}
             <SearchModal
               isVisible={showSearchModal}
               onClose={() => {
@@ -387,12 +404,22 @@ export default function OfficialDetail() {
               // }}
               onSearch={setSearchQuery}
             />
+            {/* Sort by Modal Popup */}
             <SortDropdown
               showSortDropdown={showSortDropdown}
               setShowSortDropdown={setShowSortDropdown}
               selectedSort={selectedSort}
               setSelectedSort={setSelectedSort}
             />
+            {/* Add Modal Popup */}
+            <AddModal
+              showAddModal={showAddModal}
+              setShowAddModal={setShowAddModal}
+              selectedLists={selectedLists}
+              setSelectedLists={setSelectedLists}
+              // styles={styles}
+            />
+            {/* Selected Legislation Dropdown Popup */}
             <FilterDropdown
               showTypeModal={showTypeModal}
               showPolicyModal={showPolicyModal}

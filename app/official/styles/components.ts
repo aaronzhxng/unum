@@ -1,10 +1,10 @@
-import { StyleSheet } from 'react-native'; // ✅ ADD THIS LINE
+import { StyleSheet } from "react-native"; // ✅ ADD THIS LINE
 
 export const styles = StyleSheet.create({
-legislationContainer: {
+  legislationContainer: {
     paddingBottom: 48,
-    },
-billCard: {
+  },
+  billCard: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 16,
@@ -55,7 +55,6 @@ billCard: {
     color: "#000000",
     fontWeight: 600,
   },
-
 
   modalOverlay: {
     flex: 1,
