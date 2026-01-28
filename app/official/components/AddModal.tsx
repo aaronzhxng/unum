@@ -5,15 +5,15 @@ import { styles } from "../styles/components"; // Adjust path as needed
 interface Props {
   showAddModal: boolean;
   setShowAddModal: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedLists: string;
-  setSelectedLists: React.Dispatch<React.SetStateAction<string>>;
+  selectedLists: string[];
+  setSelectedLists: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const listOptions = [
-  { id: "most-viewed", label: "Most Viewed" },
-  { id: "most-recent-action", label: "Most Recent Action" },
-  { id: "newest-first", label: "Newest First" },
-  { id: "oldest-first", label: "Oldest First" },
+  { id: "my-list", label: "My List" },
+  { id: "tri-state-area", label: "Tri State Area" },
+  { id: "swing-states", label: "Swing States" },
+  { id: "new-list", label: "New List" },
 ];
 
 export default function AddModal({
@@ -25,7 +25,9 @@ export default function AddModal({
   const closeModal = () => setShowAddModal(false);
 
   const toggleList = (id: string) => {
-    setSelectedLists(id); // Single select logic preserved
+    setSelectedLists((prev: string[]) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
   };
 
   const handleApply = () => {
@@ -43,17 +45,12 @@ export default function AddModal({
     >
       <Pressable style={styles.modalOverlay} onPress={closeModal}>
         <View style={{ padding: 0, minHeight: 400 }}>
-          {/* Section Header */}
-          <View style={styles.dropdown}>
-            <Text style={styles.dropdownItemText}>Sort Lists</Text>
-          </View>
-
-          {/* Scrollable Checkboxes */}
           <ScrollView
-            style={{ maxHeight: 200 }}
+            style={styles.dropdownAdd}
             nestedScrollEnabled
             showsVerticalScrollIndicator={false}
           >
+            <Text style={styles.dropdownItemTextLabel}>Add to List</Text>
             {listOptions.map((option) => (
               <Pressable
                 key={option.id}
@@ -67,7 +64,15 @@ export default function AddModal({
                 ]}
                 onPress={() => toggleList(option.id)}
               >
-                <Text style={styles.dropdownItemText}>{option.label}</Text>
+                <Text
+                  style={[
+                    styles.dropdownItemText,
+                    option.id === "new-list" && { color: "#999" }, // Gray for new-list
+                  ]}
+                >
+                  {option.label}
+                </Text>
+
                 <View
                   style={{
                     width: 20,
@@ -75,13 +80,14 @@ export default function AddModal({
                     borderWidth: 2,
                     borderColor: "#ccc",
                     borderRadius: 4,
-                    backgroundColor:
-                      selectedLists === option.id ? "#008CFF" : "transparent",
+                    backgroundColor: selectedLists.includes(option.id)
+                      ? "#008CFF"
+                      : "transparent",
                     justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
-                  {selectedLists === option.id && (
+                  {selectedLists.includes(option.id) && (
                     <View
                       style={{
                         width: 12,
@@ -95,12 +101,11 @@ export default function AddModal({
               </Pressable>
             ))}
           </ScrollView>
-
           {/* Buttons */}
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Pressable
               style={({ pressed }) => [
-                // styles.actionButton,
+                styles.actionButton,
                 { backgroundColor: "#f5f5f5" },
                 pressed && { transform: [{ scale: 0.96 }] },
               ]}
@@ -114,7 +119,7 @@ export default function AddModal({
             </Pressable>
             <Pressable
               style={({ pressed }) => [
-                // styles.actionButton,
+                styles.actionButton,
                 { backgroundColor: "#00AFFF" },
                 pressed && { transform: [{ scale: 0.96 }] },
               ]}
@@ -123,7 +128,7 @@ export default function AddModal({
               <Text
                 style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
               >
-                Results
+                Add
               </Text>
             </Pressable>
           </View>

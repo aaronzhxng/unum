@@ -47,7 +47,7 @@ export default function OfficialDetail() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedLists, setSelectedLists] = useState("");
+  const [selectedLists, setSelectedLists] = useState<string[]>([]);
 
   interface FilterOption {
     id: string;
@@ -411,14 +411,6 @@ export default function OfficialDetail() {
               selectedSort={selectedSort}
               setSelectedSort={setSelectedSort}
             />
-            {/* Add Modal Popup */}
-            <AddModal
-              showAddModal={showAddModal}
-              setShowAddModal={setShowAddModal}
-              selectedLists={selectedLists}
-              setSelectedLists={setSelectedLists}
-              // styles={styles}
-            />
             {/* Selected Legislation Dropdown Popup */}
             <FilterDropdown
               showTypeModal={showTypeModal}
@@ -437,6 +429,13 @@ export default function OfficialDetail() {
             />
           </View>
         )}
+        {/* Add Modal Popup */}
+        <AddModal
+          showAddModal={showAddModal}
+          setShowAddModal={setShowAddModal}
+          selectedLists={selectedLists}
+          setSelectedLists={setSelectedLists}
+        />
       </ScrollView>
     </View>
   );

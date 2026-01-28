@@ -66,7 +66,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 <ScrollView
                   style={{ maxHeight: 200 }}
                   nestedScrollEnabled
-                  showsVerticalScrollIndicator={false}
+                  showsVerticalScrollIndicator={true}
                 >
                   {legislationTypes.map((option) => (
                     <Pressable
@@ -120,7 +120,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 <ScrollView
                   style={{ maxHeight: 200 }}
                   nestedScrollEnabled
-                  showsVerticalScrollIndicator={false}
+                  showsVerticalScrollIndicator={true}
                 >
                   {policyAreas.map((option) => (
                     <Pressable
