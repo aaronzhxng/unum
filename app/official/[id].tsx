@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     borderColor: "#008CFF",
   },
   name: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#000000",
     fontWeight: "800",
     flexShrink: 1,
