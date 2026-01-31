@@ -93,10 +93,15 @@ export const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 16,
   },
+  detailTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   detailTitle: {
     fontSize: 14,
     fontWeight: "500",
-    marginBottom: 4,
+    // marginBottom: 4,
     color: "#000",
   },
   detailInfo: {
@@ -211,10 +216,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    position: "absolute",
-    right: -8,
   },
-
   legislationHeader: {
     paddingHorizontal: 4,
     paddingBottom: 16,
@@ -248,6 +250,17 @@ export const styles = StyleSheet.create({
     left: 16,
     minWidth: 200,
   },
+  dropdownMulti: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 8,
+    margin: 16,
+    marginTop: 180,
+  },
   dropdownItem: {
     paddingVertical: 16,
     paddingHorizontal: 16,
@@ -268,5 +281,11 @@ export const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 6,
     marginHorizontal: 16,
+  },
+  actionButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 6,
+    marginLeft: 16,
   },
 });

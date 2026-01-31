@@ -8,42 +8,42 @@ interface FilterOption {
 }
 
 interface FilterDropdownProps {
-  showTypeModal: boolean;
-  showPolicyModal: boolean;
-  selectedTypes: string[];
+  showChamberModal: boolean;
+  showPartyModal: boolean;
+  selectedChamber: string[];
   selectedPolicies: string[];
-  toggleType: (id: string) => void;
-  togglePolicy: (id: string) => void;
-  setShowTypeModal: (show: boolean) => void;
-  setShowPolicyModal: (show: boolean) => void;
+  toggleChamber: (id: string) => void;
+  toggleParty: (id: string) => void;
+  setShowChamberModal: (show: boolean) => void;
+  setShowPartyModal: (show: boolean) => void;
   onCancel: () => void;
   onApply: () => void;
-  legislationTypes: FilterOption[];
-  policyAreas: FilterOption[];
+  chamber: FilterOption[];
+  party: FilterOption[];
 }
 
 const FilterDropdown: React.FC<FilterDropdownProps> = ({
-  showTypeModal,
-  showPolicyModal,
-  selectedTypes,
+  showChamberModal,
+  showPartyModal,
+  selectedChamber,
   selectedPolicies,
-  toggleType,
-  togglePolicy,
-  setShowTypeModal,
-  setShowPolicyModal,
+  toggleChamber,
+  toggleParty,
+  setShowChamberModal,
+  setShowPartyModal,
   onCancel,
   onApply,
-  legislationTypes,
-  policyAreas,
+  chamber,
+  party,
 }) => {
   const closeModals = () => {
-    setShowTypeModal(false);
-    setShowPolicyModal(false);
+    setShowChamberModal(false);
+    setShowPartyModal(false);
   };
 
   return (
     <>
-      {(showTypeModal || showPolicyModal) && (
+      {(showChamberModal || showPartyModal) && (
         <Modal
           transparent={true}
           animationType="fade"
@@ -52,22 +52,22 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
           <Pressable
             style={styles.modalOverlay}
             onPress={() => {
-              setShowTypeModal(false);
-              setShowPolicyModal(false);
+              setShowChamberModal(false);
+              setShowPartyModal(false);
             }}
           >
             <View style={[{ padding: 0, minHeight: 400 }]}>
               {/* Legislation Type Section */}
               <View style={styles.dropdownMulti}>
                 <Text style={styles.dropdownItemTextLabel}>
-                  Legislation Type
+                  Chamber of Origin
                 </Text>
                 <ScrollView
                   style={{ maxHeight: 200 }}
                   nestedScrollEnabled
                   showsVerticalScrollIndicator={true}
                 >
-                  {legislationTypes.map((option) => (
+                  {chamber.map((option) => (
                     <Pressable
                       key={option.id}
                       style={[
@@ -78,7 +78,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                           alignItems: "center",
                         },
                       ]}
-                      onPress={() => toggleType(option.id)}
+                      onPress={() => toggleChamber(option.id)}
                     >
                       <Text style={styles.dropdownItemText}>
                         {option.label}
@@ -90,14 +90,14 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                           borderWidth: 2,
                           borderColor: "#ccc",
                           borderRadius: 4,
-                          backgroundColor: selectedTypes.includes(option.id)
+                          backgroundColor: selectedChamber.includes(option.id)
                             ? "#008CFF"
                             : "transparent",
                           justifyContent: "center",
                           alignItems: "center",
                         }}
                       >
-                        {selectedTypes.includes(option.id) && (
+                        {selectedChamber.includes(option.id) && (
                           <View
                             style={{
                               width: 12,
@@ -113,15 +113,17 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 </ScrollView>
               </View>
 
-              {/* Policy Area Section */}
+              {/* Party of Origin Section */}
               <View style={[styles.dropdownMulti, { marginTop: 12 }]}>
-                <Text style={styles.dropdownItemTextLabel}>Policy Area</Text>
+                <Text style={styles.dropdownItemTextLabel}>
+                  Party of Origin
+                </Text>
                 <ScrollView
                   style={{ maxHeight: 200 }}
                   nestedScrollEnabled
                   showsVerticalScrollIndicator={true}
                 >
-                  {policyAreas.map((option) => (
+                  {party.map((option) => (
                     <Pressable
                       key={option.id}
                       style={[
@@ -132,7 +134,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                           alignItems: "center",
                         },
                       ]}
-                      onPress={() => togglePolicy(option.id)}
+                      onPress={() => toggleParty(option.id)}
                     >
                       <Text style={styles.dropdownItemText}>
                         {option.label}

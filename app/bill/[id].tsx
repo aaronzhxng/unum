@@ -20,8 +20,8 @@ import {
 // import BillSponsors from './components/BillSponsors';
 // import ActionHistory from './components/ActionHistory';
 // import AmendmentList from './components/AmendmentList';
+import FilterDropdown from "./components/FilterDropdown";
 import SortDropdown from "./components/SortDropdown";
-
 import { styles as componentStyles } from "./styles/components";
 
 export default function BillDetail() {
@@ -36,11 +36,62 @@ export default function BillDetail() {
   // Modals/Search (same as official)
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isFiltered, setIsFiltered] = useState(false);
+  // const [isFiltered, setIsFiltered] = useState(false);
   const [showAmendments, setShowAmendments] = useState(false);
   const [showAmendmentsSort, setShowAmendmentsSort] = useState(false);
   const [selectedAmendmentsSort, setSelectedAmendmentsSort] =
     useState("Most Recent");
+  const [isFiltered, setIsFiltered] = useState(false);
+  const [showChamberModal, setShowChamberModal] = useState(false);
+  const [selectedChamber, setSelectedChamber] = useState(["Bills"]);
+
+  const [showPartyModal, setShowPartyModal] = useState(false);
+  const [selectedPolicies, setSelectedPolicies] = useState(["Congress"]);
+
+  interface FilterOption {
+    id: string;
+    label: string;
+  }
+
+  const chamber: FilterOption[] = [
+    { id: "house", label: "House" },
+    { id: "senate", label: "Senate" },
+  ];
+
+  const party: FilterOption[] = [
+    { id: "democrat", label: "Democrat" },
+    { id: "republican", label: "Republican" },
+    { id: "independent", label: "Independent" },
+  ];
+
+  const toggleChamber = (type: string) => {
+    setSelectedChamber((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    );
+  };
+
+  const toggleParty = (policy: string) => {
+    setSelectedPolicies((prev) =>
+      prev.includes(policy)
+        ? prev.filter((p) => p !== policy)
+        : [...prev, policy],
+    );
+  };
+
+  const handleCancel = () => {
+    setSelectedChamber(["Bills"]);
+    setSelectedPolicies(["Congress"]);
+    setShowChamberModal(false);
+    setShowPartyModal(false);
+  };
+
+  const handleApply = () => {
+    const hasFilters =
+      selectedChamber.length > 1 || selectedPolicies.length > 1;
+    setIsFiltered(hasFilters);
+    setShowChamberModal(false);
+    setShowPartyModal(false);
+  };
 
   // Bill data (from HR5124.jpg)
   const bill = {
@@ -242,59 +293,114 @@ export default function BillDetail() {
             </View>
             <View style={componentStyles.amendmentsSection}>
               <Pressable
-                style={componentStyles.sectionHeader}
+                style={[
+                  componentStyles.sectionHeader,
+                  {
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  },
+                ]}
                 onPress={() => {
-                  if (showAmendments) {
-                    setShowAmendments(false); // Collapse
-                  } else {
-                    setShowAmendments(true); // Expand
-                  }
+                  setShowAmendments(!showAmendments);
                 }}
               >
-                <Text style={componentStyles.detailTitle}>
-                  Amendments ({bill.amendments})
-                </Text>
-                <View style={componentStyles.sectionRow}>
-                  {showAmendments && (
-                    <Pressable
-                      style={componentStyles.sortButton}
-                      onPress={(e) => {
-                        e.stopPropagation(); // ← CRUCIAL: Stop touch from reaching header
-                        setShowAmendmentsSort(!showAmendmentsSort);
-                      }}
-                    >
-                      <Text style={componentStyles.viewAll}>
-                        {selectedAmendmentsSort}
-                      </Text>
-                      {showAmendmentsSort ? (
-                        <ChevronUp size={16} color="#7B7C81" />
-                      ) : (
-                        <ChevronDown size={16} color="#7B7C81" />
-                      )}
-                    </Pressable>
-                  )}
-
-                  {/* Fixed width for expand/collapse chevron */}
+                {/* Left: Title/Button and filterdropdown*/}
+                <View style={{ flex: 1 }}>
                   <View
                     style={{
-                      width: 24,
-                      height: 24,
-                      justifyContent: "center",
-                      alignItems: "center",
+                      alignSelf: "flex-start",
+                      // flexShrink: 1,
+                      // flexGrow: 0,
+                      height: 20, // ← Slightly shorter for icon
+                      // justifyContent: "center",
+                      // alignItems: "flex-start",
+                      // backgroundColor: "blue",
                     }}
                   >
-                    {showAmendments ? (
-                      <ChevronUp
-                        size={showAmendments ? 0 : 20}
-                        color="#7B7C81"
-                      />
+                    {!showAmendments ? (
+                      <Text
+                        style={[
+                          componentStyles.detailTitle,
+                          { lineHeight: 20 },
+                        ]}
+                      >
+                        Amendments ({bill.amendments})
+                      </Text>
                     ) : (
-                      <ChevronDown size={20} color="#7B7C81" />
+                      <Pressable
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                        onPress={() => {
+                          setShowChamberModal(true);
+                          setShowPartyModal(true);
+                        }}
+                      >
+                        <Text
+                          style={[
+                            componentStyles.detailTitle,
+                            { lineHeight: 15 },
+                          ]}
+                        >
+                          Amendments ({bill.amendments})
+                        </Text>
+                        {showChamberModal || showPartyModal ? (
+                          <ChevronUp size={14} color="#7B7C81" />
+                        ) : (
+                          <ChevronDown size={14} color="#7B7C81" />
+                        )}
+                      </Pressable>
                     )}
                   </View>
                 </View>
+
+                {/* Center: Sort button (only expanded) */}
+                {showAmendments && (
+                  <Pressable
+                    style={componentStyles.sortButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setShowAmendmentsSort(!showAmendmentsSort);
+                    }}
+                  >
+                    <Text style={componentStyles.viewAll}>
+                      {selectedAmendmentsSort}
+                    </Text>
+                    {showAmendmentsSort ? (
+                      <ChevronUp size={16} color="#7B7C81" />
+                    ) : (
+                      <ChevronDown size={16} color="#7B7C81" />
+                    )}
+                  </Pressable>
+                )}
+                {/* Right Chevron */}
+                <View // ← Outer View (not Pressable when collapsed)
+                  style={{
+                    width: 24,
+                    height: 24,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  pointerEvents={showAmendments ? "auto" : "none"} // ← KEY: Transparent when collapsed
+                >
+                  {showAmendments ? (
+                    <Pressable // ← Only Pressable when expanded
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      onPress={() => setShowAmendments(false)}
+                      style={{ position: "absolute" }} // Overlay effect
+                    >
+                      <ChevronUp size={20} color="#7B7C81" />
+                    </Pressable>
+                  ) : (
+                    <ChevronDown size={20} color="#7B7C81" />
+                  )}
+                </View>
               </Pressable>
 
+              {/* List only (no sectionRow needed) */}
               {showAmendments && (
                 <View style={componentStyles.expandedAmendments}>
                   {amendmentsList.map((amendment, index) => (
@@ -362,6 +468,20 @@ export default function BillDetail() {
         setShowSortDropdown={setShowAmendmentsSort}
         selectedSort={selectedAmendmentsSort}
         setSelectedSort={setSelectedAmendmentsSort}
+      />
+      <FilterDropdown
+        showChamberModal={showChamberModal}
+        showPartyModal={showPartyModal}
+        selectedChamber={selectedChamber}
+        selectedPolicies={selectedPolicies}
+        toggleChamber={toggleChamber}
+        toggleParty={toggleParty}
+        setShowChamberModal={setShowChamberModal}
+        setShowPartyModal={setShowPartyModal}
+        onCancel={handleCancel}
+        onApply={handleApply}
+        chamber={chamber}
+        party={party}
       />
     </View>
   );
