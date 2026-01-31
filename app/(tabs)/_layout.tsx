@@ -4,7 +4,19 @@ import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "black", headerShown: false }}>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: "black",
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarItemStyle: {
+          marginVertical: 12,
+        },
+        tabBarStyle: {
+          height: 100,
+        },
+      }}
+    >
       <Tabs.Screen
         name="home"
         options={{
@@ -12,20 +24,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="legislation"
-        options={{
-          title: "Legislation",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "document-text" : "document-text-outline"}
-              size={24}
+              size={28}
               color={color}
             />
           ),
@@ -38,7 +37,20 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "people" : "people-outline"}
-              size={24}
+              size={30}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="legislation"
+        options={{
+          title: "Legislation",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "document-text" : "document-text-outline"}
+              size={28}
               color={color}
             />
           ),

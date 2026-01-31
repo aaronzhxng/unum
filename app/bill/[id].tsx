@@ -19,9 +19,9 @@ import {
 // TODO: Create these components in bill/components/ later
 // import BillSponsors from './components/BillSponsors';
 // import ActionHistory from './components/ActionHistory';
-// import AmendmentList from './components/AmendmentList';
 import FilterDropdown from "./components/FilterDropdown";
 import SortDropdown from "./components/SortDropdown";
+import VotingCard from "./components/VotingCard"; // Add this import
 import { styles as componentStyles } from "./styles/components";
 
 export default function BillDetail() {
@@ -291,6 +291,8 @@ export default function BillDetail() {
                 <Text style={componentStyles.link}>H.R.5124</Text>
               </View>
             </View>
+
+            {/* Amendments Section */}
             <View style={componentStyles.amendmentsSection}>
               <Pressable
                 style={[
@@ -414,7 +416,7 @@ export default function BillDetail() {
                         </Text>
                       </View>
                       <Text style={componentStyles.amendmentSummary}>
-                        {`${amendment.date} : ${amendment.summary}`}
+                        {`${amendment.date} · ${amendment.summary}`}
                       </Text>
                     </View>
                   ))}
@@ -426,9 +428,37 @@ export default function BillDetail() {
 
         {/* Other tabs - simplified for now */}
         {activeTab === "voting" && (
-          <View style={componentStyles.section}>
-            <Text style={componentStyles.detailTitle}>Voting History</Text>
-            <Text>Coming soon...</Text>
+          <View>
+            <VotingCard
+              chamberDate="US Senate - 2/27/25"
+              votes={{
+                yea: 52,
+                yeaByParty: { democrat: 12, republican: 38, independent: 2 },
+                nay: 47,
+                nayByParty: { democrat: 35, republican: 11, independent: 1 },
+                notVoting: 1,
+                yeaPercent: 50,
+                nayPercent: 47,
+                notVotingPercent: 1,
+                voters: [
+                  {
+                    name: "Chuck Schumer",
+                    party: "D",
+                    role: "Majority Leader, Senator, NY",
+                    vote: "Nay",
+                    photo: require("../../assets/officials_images/c_schumer.jpg"),
+                  },
+                  {
+                    name: "Kirsten Gillibrand",
+                    party: "D",
+                    role: "Senator - New York",
+                    vote: "Nay",
+                    photo: require("../../assets/officials_images/k_gillibrand.webp"),
+                  },
+                  // Add more to test Yea/Rep
+                ],
+              }}
+            />
           </View>
         )}
 
