@@ -126,7 +126,7 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
                 width: 54,
                 height: 54,
                 borderRadius: 36,
-                borderWidth: 2.5,
+                borderWidth: 3,
                 borderColor: "#008CFF",
               },
             ]}
