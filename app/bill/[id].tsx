@@ -40,7 +40,7 @@ export default function BillDetail() {
   const [showAmendments, setShowAmendments] = useState(false);
   const [showAmendmentsSort, setShowAmendmentsSort] = useState(false);
   const [selectedAmendmentsSort, setSelectedAmendmentsSort] =
-    useState("Most Recent");
+    useState("Most Viewed");
   const [isFiltered, setIsFiltered] = useState(false);
   const [showChamberModal, setShowChamberModal] = useState(false);
   const [selectedChamber, setSelectedChamber] = useState(["Bills"]);
@@ -96,20 +96,20 @@ export default function BillDetail() {
   // Bill data (from HR5124.jpg)
   const bill = {
     id: "HR5124",
-    avatar: require("../../assets/bills_icons/education.png"),
-    name: "H.R.5124 - River's Law",
-    introduced: "01/20/2025",
-    status: "Introduced",
-    committee: "House - Education and Workforce",
+    avatar: require("../../assets/bills_icons/armedservices.png"),
+    name: "S.2296 - National Defense Authorization Act for Fiscal Year 2026",
+    introduced: "07/15/2025",
+    status: "Passed Senate",
+    committee: "Senate - Armed Services",
     sponsor: {
-      role: "Rep.",
-      name: "Ritchie Torres",
-      party: "D",
-      district: "NY-15",
+      role: "Sen.",
+      name: "Roger F. Wicker",
+      party: "R",
+      district: "MS",
     },
-    type: "US House Bill",
+    type: "US Senate Bill",
     summary:
-      "The bill amends the Child Care and Development Block Grant Act of 1990, participating child care providers covered by the bill would be prohibited from having a swimming pool on the premises of the child care facility, and would also require door and window alarms or similar safety devices to prevent children from wandering into dangerous areas, as a condition of receiving CCDBG funds.",
+      "This bill sets forth policies and authorities for FY2026 for Department of Defense (DOD) programs and activities, military construction, and the national security programs of the Department of Energy (DOE). It also authorizes the Defense Nuclear Facilities Safety Board for FY2026. The bill authorizes appropriations but it does not provide budget authority, which is provided by appropriations legislation.",
     amendments: 15,
     actions: [], // Actions tab data
     cosponsors: [], // Cosponsors tab data
@@ -175,6 +175,48 @@ export default function BillDetail() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+  };
+
+  const voteData = {
+    chamberDate: "US Senate - 2/27/25",
+    votes: {
+      yea: 52,
+      yeaDem: 20,
+      yeaRep: 31,
+      yeaInd: 1,
+      nay: 47,
+      nayDem: 45,
+      nayRep: 1,
+      nayInd: 1,
+      present: 0,
+      presentDem: 0,
+      presentRep: 0,
+      presentInd: 0,
+      notVoting: 1,
+      notVotingDem: 1,
+      notVotingRep: 1,
+      notVotingInd: 1,
+      yeaPercent: 50,
+      nayPercent: 47,
+      presentPercent: 0,
+      notVotingPercent: 1,
+      voters: [
+        {
+          name: "Chuck Schumer",
+          party: "D",
+          role: "Majority Leader, Senator, NY",
+          vote: "Nay" as const,
+          photo: require("../../assets/officials_images/c_schumer.jpg"),
+        },
+        {
+          name: "Kirsten Gillibrand",
+          party: "D",
+          role: "Senator, New York",
+          vote: "Nay" as const,
+          photo: require("../../assets/officials_images/k_gillibrand.webp"),
+        },
+      ],
+    },
   };
 
   return (
@@ -428,36 +470,10 @@ export default function BillDetail() {
 
         {/* Other tabs - simplified for now */}
         {activeTab === "voting" && (
-          <View>
+          <View style={componentStyles.section}>
             <VotingCard
-              chamberDate="US Senate - 2/27/25"
-              votes={{
-                yea: 52,
-                yeaByParty: { democrat: 12, republican: 38, independent: 2 },
-                nay: 47,
-                nayByParty: { democrat: 35, republican: 11, independent: 1 },
-                notVoting: 1,
-                yeaPercent: 50,
-                nayPercent: 47,
-                notVotingPercent: 1,
-                voters: [
-                  {
-                    name: "Chuck Schumer",
-                    party: "D",
-                    role: "Majority Leader, Senator, NY",
-                    vote: "Nay",
-                    photo: require("../../assets/officials_images/c_schumer.jpg"),
-                  },
-                  {
-                    name: "Kirsten Gillibrand",
-                    party: "D",
-                    role: "Senator - New York",
-                    vote: "Nay",
-                    photo: require("../../assets/officials_images/k_gillibrand.webp"),
-                  },
-                  // Add more to test Yea/Rep
-                ],
-              }}
+              chamberDate={voteData.chamberDate}
+              votes={voteData.votes}
             />
           </View>
         )}
