@@ -20,6 +20,7 @@ interface FilterDropdownProps {
   onApply: () => void;
   chamber: FilterOption[];
   party: FilterOption[];
+  showOnlyChamber?: boolean;
 }
 
 const FilterDropdown: React.FC<FilterDropdownProps> = ({
@@ -56,7 +57,15 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
               setShowPartyModal(false);
             }}
           >
-            <View style={[{ padding: 0, minHeight: 400 }]}>
+            <View
+              style={[
+                {
+                  padding: 0,
+                  minHeight: 400,
+                  marginTop: showPartyModal ? 0 : 120,
+                },
+              ]}
+            >
               {/* Legislation Type Section */}
               <View style={styles.dropdownMulti}>
                 <Text style={styles.dropdownItemTextLabel}>
@@ -114,60 +123,64 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
               </View>
 
               {/* Party of Origin Section */}
-              <View style={[styles.dropdownMulti, { marginTop: 12 }]}>
-                <Text style={styles.dropdownItemTextLabel}>
-                  Party of Origin
-                </Text>
-                <ScrollView
-                  style={{ maxHeight: 200 }}
-                  nestedScrollEnabled
-                  showsVerticalScrollIndicator={true}
-                >
-                  {party.map((option) => (
-                    <Pressable
-                      key={option.id}
-                      style={[
-                        styles.dropdownItem,
-                        {
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        },
-                      ]}
-                      onPress={() => toggleParty(option.id)}
-                    >
-                      <Text style={styles.dropdownItemText}>
-                        {option.label}
-                      </Text>
-                      <View
-                        style={{
-                          width: 20,
-                          height: 20,
-                          borderWidth: 2,
-                          borderColor: "#ccc",
-                          borderRadius: 4,
-                          backgroundColor: selectedPolicies.includes(option.id)
-                            ? "#008CFF"
-                            : "transparent",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
+              {showPartyModal && (
+                <View style={[styles.dropdownMulti, { marginTop: 12 }]}>
+                  <Text style={styles.dropdownItemTextLabel}>
+                    Party of Origin
+                  </Text>
+                  <ScrollView
+                    style={{ maxHeight: 200 }}
+                    nestedScrollEnabled
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {party.map((option) => (
+                      <Pressable
+                        key={option.id}
+                        style={[
+                          styles.dropdownItem,
+                          {
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          },
+                        ]}
+                        onPress={() => toggleParty(option.id)}
                       >
-                        {selectedPolicies.includes(option.id) && (
-                          <View
-                            style={{
-                              width: 12,
-                              height: 12,
-                              backgroundColor: "#008CFF",
-                              borderRadius: 2,
-                            }}
-                          />
-                        )}
-                      </View>
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              </View>
+                        <Text style={styles.dropdownItemText}>
+                          {option.label}
+                        </Text>
+                        <View
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderWidth: 2,
+                            borderColor: "#ccc",
+                            borderRadius: 4,
+                            backgroundColor: selectedPolicies.includes(
+                              option.id,
+                            )
+                              ? "#008CFF"
+                              : "transparent",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          {selectedPolicies.includes(option.id) && (
+                            <View
+                              style={{
+                                width: 12,
+                                height: 12,
+                                backgroundColor: "#008CFF",
+                                borderRadius: 2,
+                              }}
+                            />
+                          )}
+                        </View>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
 
               {/* Buttons */}
               <View

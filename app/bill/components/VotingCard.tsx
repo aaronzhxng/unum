@@ -81,7 +81,7 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
   };
 
   return (
-    <View style={{ marginBottom: 4, gap: 16 }}>
+    <View style={[componentStyles.section, { marginBottom: 4, gap: 16 }]}>
       {/* Header */}
       <Text
         style={[componentStyles.detailTitle, { fontSize: 16, fontWeight: 600 }]}
@@ -105,8 +105,8 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
             style={[
               componentStyles.avatar,
               {
-                width: 54,
-                height: 54,
+                width: 60,
+                height: 60,
                 borderRadius: 36,
                 borderWidth: 3,
                 borderColor: "#008CFF",

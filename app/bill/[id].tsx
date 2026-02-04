@@ -18,10 +18,10 @@ import {
 
 // TODO: Create these components in bill/components/ later
 // import BillSponsors from './components/BillSponsors';
-// import ActionHistory from './components/ActionHistory';
+import ActionHistory from "./components/ActionHistory";
 import FilterDropdown from "./components/FilterDropdown";
 import SortDropdown from "./components/SortDropdown";
-import VotingCard from "./components/VotingCard"; // Add this import
+import VotingCard from "./components/VotingCard";
 import { styles as componentStyles } from "./styles/components";
 
 export default function BillDetail() {
@@ -47,6 +47,9 @@ export default function BillDetail() {
 
   const [showPartyModal, setShowPartyModal] = useState(false);
   const [selectedPolicies, setSelectedPolicies] = useState(["Congress"]);
+
+  const [showActionsSort, setShowActionsSort] = useState(false);
+  const [selectedActionsSort, setSelectedActionsSort] = useState("Most Recent");
 
   interface FilterOption {
     id: string;
@@ -98,7 +101,8 @@ export default function BillDetail() {
     id: "HR5124",
     avatar: require("../../assets/bills_icons/armedservices.png"),
     name: "S.2296 - National Defense Authorization Act for Fiscal Year 2026",
-    introduced: "07/15/2025",
+    introduced: "04/22/2025",
+    latest_action: "07/15/2025",
     status: "Passed Senate",
     committee: "Senate - Armed Services",
     sponsor: {
@@ -293,7 +297,9 @@ export default function BillDetail() {
             </View>
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Latest Action: </Text>
-              <Text style={componentStyles.detailInfo}>{bill.introduced}</Text>
+              <Text style={componentStyles.detailInfo}>
+                {bill.latest_action}
+              </Text>
             </View>
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Introduced: </Text>
@@ -354,12 +360,7 @@ export default function BillDetail() {
                   <View
                     style={{
                       alignSelf: "flex-start",
-                      // flexShrink: 1,
-                      // flexGrow: 0,
-                      height: 20, // ← Slightly shorter for icon
-                      // justifyContent: "center",
-                      // alignItems: "flex-start",
-                      // backgroundColor: "blue",
+                      height: 20,
                     }}
                   >
                     {!showAmendments ? (
@@ -386,15 +387,15 @@ export default function BillDetail() {
                         <Text
                           style={[
                             componentStyles.detailTitle,
-                            { lineHeight: 15 },
+                            { lineHeight: 16 },
                           ]}
                         >
                           Amendments ({bill.amendments})
                         </Text>
                         {showChamberModal || showPartyModal ? (
-                          <ChevronUp size={14} color="#7B7C81" />
+                          <ChevronUp size={16} color="#7B7C81" />
                         ) : (
-                          <ChevronDown size={14} color="#7B7C81" />
+                          <ChevronDown size={16} color="#7B7C81" />
                         )}
                       </Pressable>
                     )}
@@ -421,20 +422,20 @@ export default function BillDetail() {
                   </Pressable>
                 )}
                 {/* Right Chevron */}
-                <View // ← Outer View (not Pressable when collapsed)
+                <View
                   style={{
                     width: 24,
                     height: 24,
                     justifyContent: "center",
                     alignItems: "center",
                   }}
-                  pointerEvents={showAmendments ? "auto" : "none"} // ← KEY: Transparent when collapsed
+                  pointerEvents={showAmendments ? "auto" : "none"}
                 >
                   {showAmendments ? (
                     <Pressable // ← Only Pressable when expanded
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       onPress={() => setShowAmendments(false)}
-                      style={{ position: "absolute" }} // Overlay effect
+                      style={{ position: "absolute" }}
                     >
                       <ChevronUp size={20} color="#7B7C81" />
                     </Pressable>
@@ -470,7 +471,7 @@ export default function BillDetail() {
 
         {/* Other tabs - simplified for now */}
         {activeTab === "voting" && (
-          <View style={componentStyles.section}>
+          <View>
             <VotingCard
               chamberDate={voteData.chamberDate}
               votes={voteData.votes}
@@ -479,10 +480,33 @@ export default function BillDetail() {
         )}
 
         {activeTab === "actions" && (
-          <View style={componentStyles.section}>
-            <Text style={componentStyles.detailTitle}>Action History</Text>
-            <Text>Coming soon...</Text>
-          </View>
+          <ActionHistory
+            actions={[
+              {
+                date: "07/15/25",
+                chamber: "Senate",
+                description: "Passed Senate",
+              },
+              {
+                date: "05/14/25",
+                chamber: "Senate",
+                description: "Debated in the Senate after committee changes",
+              },
+              {
+                date: "04/22/25",
+                chamber: "Senate",
+                description: "Received in the Senate, read the first time.",
+              },
+            ]}
+            selectedSort={selectedActionsSort}
+            showSort={showActionsSort}
+            setShowSort={setShowActionsSort}
+            showChamberModal={showChamberModal}
+            showPartyModal={showPartyModal}
+            setShowChamberModal={setShowChamberModal}
+            setShowPartyModal={setShowPartyModal}
+            // showOnlyChamber={showOnlyChamber}
+          />
         )}
 
         {activeTab === "cosponsors" && (
@@ -493,7 +517,7 @@ export default function BillDetail() {
               renderItem={({ item }) => (
                 <Text>
                   {item.name} ({item.role})
-                </Text> // Replace with OfficialCard later
+                </Text>
               )}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
@@ -503,12 +527,6 @@ export default function BillDetail() {
         )}
       </ScrollView>
 
-      {/* Search Modal - reuse from official/components */}
-      {/* <SearchModal 
-        isVisible={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
-        onSearch={handleSearch}
-      /> */}
       <SortDropdown
         showSortDropdown={showAmendmentsSort}
         setShowSortDropdown={setShowAmendmentsSort}
@@ -529,6 +547,26 @@ export default function BillDetail() {
         chamber={chamber}
         party={party}
       />
+      <SortDropdown
+        showSortDropdown={showActionsSort}
+        setShowSortDropdown={setShowActionsSort}
+        selectedSort={selectedActionsSort}
+        setSelectedSort={setSelectedActionsSort}
+      />
+      {/* <FilterDropdown
+        showChamberModal={showActionsChamber}
+        showPartyModal={false}
+        selectedChamber={selectedChamber}
+        selectedPolicies={selectedPolicies}
+        toggleChamber={toggleChamber}
+        toggleParty={toggleParty}
+        setShowChamberModal={setShowActionsChamber}
+        setShowPartyModal={() => {}}
+        onCancel={handleCancel}
+        onApply={handleApply}
+        chamber={chamber}
+        party={party}
+      /> */}
     </View>
   );
 }
