@@ -30,18 +30,6 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
   setShowChamberModal,
   setShowPartyModal,
 }) => {
-  //   const sortedActions = React.useMemo(() => {
-  //     const copy = [...actions];
-  //     switch (selectedSort) {
-  //       case "Most Recent":
-  //         return copy.reverse();
-  //       case "Oldest First":
-  //         return copy;
-  //       default:
-  //         return copy;
-  //     }
-  //   }, [actions, selectedSort]);
-
   return (
     <View style={componentStyles.amendmentsSection}>
       <Pressable

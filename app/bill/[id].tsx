@@ -7,18 +7,10 @@ import {
   MoreVertical,
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-  FlatList,
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
-// TODO: Create these components in bill/components/ later
-// import BillSponsors from './components/BillSponsors';
 import ActionHistory from "./components/ActionHistory";
+import Cosponsors, { Cosponsor } from "./components/Cosponsors";
 import FilterDropdown from "./components/FilterDropdown";
 import SortDropdown from "./components/SortDropdown";
 import VotingCard from "./components/VotingCard";
@@ -50,6 +42,10 @@ export default function BillDetail() {
 
   const [showActionsSort, setShowActionsSort] = useState(false);
   const [selectedActionsSort, setSelectedActionsSort] = useState("Most Recent");
+
+  const [showCosponsorFilter, setShowCosponsorFilter] = useState(false);
+  const [showCosponsorSort, setShowCosponsorSort] = useState(false);
+  const [selectedCosponsorSort, setSelectedCosponsorSort] = useState("A–Z");
 
   interface FilterOption {
     id: string;
@@ -222,6 +218,26 @@ export default function BillDetail() {
       ],
     },
   };
+
+  const cosponsors: Cosponsor[] = [
+    {
+      id: "1",
+      name: "Alexandria Ocasio-Cortez",
+      party: "D",
+      role: "Rep, NY 14th District",
+      avatar: require("../../assets/officials_images/aoc.webp"),
+      update: "Original cosponsor",
+    },
+    {
+      id: "2",
+      name: "John Kennedy",
+      party: "R",
+      role: "Sen, Louisiana",
+      avatar: require("../../assets/officials_images/jKennedy.jpg"),
+      update: "Joined 02/10/2025",
+    },
+    // add more…
+  ];
 
   return (
     <View style={componentStyles.screen}>
@@ -510,20 +526,16 @@ export default function BillDetail() {
         )}
 
         {activeTab === "cosponsors" && (
-          <View style={componentStyles.legislationHeader}>
-            <FlatList
-              style={componentStyles.legislationContainer}
-              data={filteredOfficials}
-              renderItem={({ item }) => (
-                <Text>
-                  {item.name} ({item.role})
-                </Text>
-              )}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
+          <Cosponsors
+            cosponsors={cosponsors}
+            showCosponsorFilter={showCosponsorFilter}
+            setShowCosponsorFilter={setShowCosponsorFilter}
+            showCosponsorSort={showCosponsorSort}
+            setShowCosponsorSort={setShowCosponsorSort}
+            selectedCosponsorSort={selectedCosponsorSort}
+            setShowChamberModal={setShowChamberModal}
+            setShowPartyModal={setShowPartyModal}
+          />
         )}
       </ScrollView>
 
@@ -553,20 +565,6 @@ export default function BillDetail() {
         selectedSort={selectedActionsSort}
         setSelectedSort={setSelectedActionsSort}
       />
-      {/* <FilterDropdown
-        showChamberModal={showActionsChamber}
-        showPartyModal={false}
-        selectedChamber={selectedChamber}
-        selectedPolicies={selectedPolicies}
-        toggleChamber={toggleChamber}
-        toggleParty={toggleParty}
-        setShowChamberModal={setShowActionsChamber}
-        setShowPartyModal={() => {}}
-        onCancel={handleCancel}
-        onApply={handleApply}
-        chamber={chamber}
-        party={party}
-      /> */}
     </View>
   );
 }
