@@ -1,14 +1,15 @@
 import { ChevronDown, ChevronUp } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
 import { styles as componentStyles } from "../styles/components"; // adjust path if needed
+import FilterDropdown from "./FilterDropdown"; // Adjust path
 
 type Party = "D" | "R" | "I";
 
 export interface Cosponsor {
   id: string;
   name: string;
-  party: Party | string;
+  party: Party;
   role: string; // e.g., "Senator, Louisiana"
   avatar: any; // require(...) as in home.tsx
   update?: string; // optional tag like "Original cosponsor"
@@ -16,17 +17,28 @@ export interface Cosponsor {
 
 interface CosponsorsProps {
   cosponsors: Cosponsor[];
-
-  // Filter/sort state from parent
   showCosponsorFilter: boolean;
   setShowCosponsorFilter: (show: boolean) => void;
   showCosponsorSort: boolean;
   setShowCosponsorSort: (show: boolean) => void;
   selectedCosponsorSort: string;
-
-  // Reuse modals from parent
+  showChamberModal: boolean;
+  showPartyModal: boolean;
   setShowChamberModal: (show: boolean) => void;
   setShowPartyModal: (show: boolean) => void;
+  selectedRole: string[];
+  setSelectedRole: React.Dispatch<React.SetStateAction<string[]>>;
+  showCosponsorChamberModal: boolean;
+  showCosponsorPartyModal: boolean;
+  setShowCosponsorChamberModal: (show: boolean) => void;
+  setShowCosponsorPartyModal: (show: boolean) => void;
+  showOnlyChamber?: boolean;
+  chamberLabelOverride?: string;
+}
+
+interface FilterOption {
+  id: string;
+  label: string;
 }
 
 const Cosponsors: React.FC<CosponsorsProps> = ({
@@ -36,9 +48,24 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   showCosponsorSort,
   setShowCosponsorSort,
   selectedCosponsorSort,
-  setShowChamberModal,
-  setShowPartyModal,
+  showCosponsorChamberModal,
+  showCosponsorPartyModal,
+  setShowCosponsorChamberModal,
+  setShowCosponsorPartyModal,
+  selectedRole,
+  setSelectedRole,
 }) => {
+  const roleOptions: FilterOption[] = [
+    { id: "representative", label: "Representative" },
+    { id: "senator", label: "Senator" },
+  ];
+
+  const partyOptions: FilterOption[] = [
+    { id: "D", label: "Democrat" },
+    { id: "R", label: "Republican" },
+    { id: "I", label: "Independent" },
+  ];
+
   const sortedCosponsors = React.useMemo(() => {
     const copy = [...cosponsors];
     switch (selectedCosponsorSort) {
@@ -49,20 +76,40 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
       case "Newest First":
         return copy.sort(
           (a, b) =>
-            new Date(
-              (b.update || "").match(/\d{1,2}\/\d{1,2}\/\d{4}/)?.[0] ||
-                "1/1/1970",
-            ).getTime() -
-            new Date(
-              (a.update || "").match(/\d{1,2}\/\d{1,2}\/\d{4}/)?.[0] ||
-                "1/1/1970",
-            ).getTime(),
+            (b.update ? new Date(b.update).getTime() : 0) -
+            (a.update ? new Date(a.update).getTime() : 0),
         );
-      case "Oldest First": /* reverse above */
+      case "Oldest First":
+        return copy.sort(
+          (a, b) =>
+            (a.update ? new Date(a.update).getTime() : 0) -
+            (b.update ? new Date(b.update).getTime() : 0),
+        );
       default:
         return copy;
     }
   }, [cosponsors, selectedCosponsorSort]);
+
+  const toggleRole = (id: string) => {
+    setSelectedRole((prev) =>
+      prev.includes(id) ? prev.filter((role) => role !== id) : [...prev, id],
+    );
+  };
+
+  const filteredCosponsors = sortedCosponsors.filter((cosponsor) => {
+    if (selectedRole.length === 0) return true;
+    return selectedRole.some((role) =>
+      cosponsor.role.toLowerCase().includes(role),
+    );
+  });
+
+  const [selectedParty, setSelectedParty] = useState<string[]>([]);
+
+  const togglePartyFilter = (id: string) => {
+    setSelectedParty((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
+    );
+  };
 
   const renderItem = ({ item }: { item: Cosponsor }) => (
     <View style={componentStyles.officialCard}>
@@ -71,23 +118,22 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
         <Text style={componentStyles.name}>{item.name}</Text>
         <View style={componentStyles.metaRow}>
           <Text style={componentStyles.subtitle}>{item.party}</Text>
-          <Text style={componentStyles.separator}>·</Text>
+          <Text style={componentStyles.separator}>•</Text>
           <Text style={componentStyles.subtitle}>{item.role}</Text>
           {item.update ? (
             <>
-              <Text style={componentStyles.separator}>·</Text>
+              <Text style={componentStyles.separator}>•</Text>
               <Text style={componentStyles.update}>{item.update}</Text>
             </>
           ) : null}
         </View>
-        <View style={componentStyles.metaRow}></View>
       </View>
     </View>
   );
 
   return (
     <View>
-      {/* Top row: filter on left, sort on right (like Actions) */}
+      {/* Top row: filter on left, sort on right */}
       <View
         style={[
           componentStyles.sectionHeader,
@@ -99,7 +145,7 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
           },
         ]}
       >
-        {/* Left: Filter trigger */}
+        {/* Left: Filter trigger - BULLETPROOF VERSION */}
         <Pressable
           style={{
             flexDirection: "row",
@@ -107,19 +153,24 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
             gap: 4,
             flex: 1,
           }}
-          onPress={() => {
-            setShowChamberModal(true);
-            setShowPartyModal(true);
-            setShowCosponsorFilter(true);
+          onPress={(e) => {
+            e.stopPropagation(); // Block parent events
+            e.preventDefault(); // Block default behaviors
+            const willExpand = !showCosponsorFilter;
+            setShowCosponsorFilter(willExpand);
+            if (willExpand) {
+              setShowCosponsorChamberModal(true); // Cosponsor role modal
+              setShowCosponsorPartyModal(false);
+            }
           }}
         >
           <Text
             style={[
               componentStyles.detailTitle,
-              { lineHeight: 16, fontSize: 16, fontWeight: 600 },
+              { lineHeight: 16, fontSize: 16, fontWeight: "600" },
             ]}
           >
-            Cosponsors ({cosponsors.length})
+            Cosponsors ({filteredCosponsors.length})
           </Text>
           {showCosponsorFilter ? (
             <ChevronUp size={16} color="#7B7C81" />
@@ -145,9 +196,39 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
         </Pressable>
       </View>
 
+      {/* FilterDropdown for Cosponsors */}
+      {showCosponsorFilter && (
+        <FilterDropdown
+          showChamberModal={showCosponsorChamberModal}
+          showPartyModal={showCosponsorPartyModal}
+          setShowChamberModal={setShowCosponsorChamberModal}
+          setShowPartyModal={setShowCosponsorPartyModal}
+          selectedChamber={selectedRole} // Role checkboxes
+          selectedPolicies={selectedParty} // NEW: Party checkboxes
+          toggleChamber={toggleRole} // Role toggle ✅ working
+          toggleParty={togglePartyFilter} // NEW: Party toggle ✅ fixes blue
+          chamber={roleOptions}
+          party={partyOptions}
+          showOnlyChamber={false} // Shows party section
+          chamberLabelOverride="Role"
+          marginTopOverride={0}
+          onFilterClose={() => setShowCosponsorFilter(false)}
+          onCancel={() => {
+            setSelectedRole([]);
+            setSelectedParty([]); // NEW: Reset party
+            setShowCosponsorChamberModal(false);
+            setShowCosponsorPartyModal(false);
+          }}
+          onApply={() => {
+            setShowCosponsorChamberModal(false);
+            setShowCosponsorPartyModal(false);
+          }}
+        />
+      )}
+
       {/* List of cosponsor cards */}
       <FlatList
-        data={sortedCosponsors}
+        data={filteredCosponsors}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={componentStyles.legislationContainer}

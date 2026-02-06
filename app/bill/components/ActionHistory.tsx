@@ -18,6 +18,8 @@ interface ActionHistoryProps {
   showPartyModal: boolean;
   setShowChamberModal: (show: boolean) => void;
   setShowPartyModal: (show: boolean) => void;
+  showOnlyChamber?: boolean;
+  chamberLabelOverride?: string;
 }
 
 const ActionHistory: React.FC<ActionHistoryProps> = ({

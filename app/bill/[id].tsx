@@ -46,6 +46,10 @@ export default function BillDetail() {
   const [showCosponsorFilter, setShowCosponsorFilter] = useState(false);
   const [showCosponsorSort, setShowCosponsorSort] = useState(false);
   const [selectedCosponsorSort, setSelectedCosponsorSort] = useState("A–Z");
+  const [selectedRole, setSelectedRole] = useState<string[]>([]);
+  const [showCosponsorChamberModal, setShowCosponsorChamberModal] =
+    useState(false);
+  const [showCosponsorPartyModal, setShowCosponsorPartyModal] = useState(false);
 
   interface FilterOption {
     id: string;
@@ -258,7 +262,11 @@ export default function BillDetail() {
       >
         {/* Bill Header */}
         <View style={componentStyles.centeredRow}>
-          <Image source={bill.avatar} style={componentStyles.avatar} />
+          <Image
+            source={bill.avatar}
+            style={componentStyles.avatarBill}
+            resizeMode="cover"
+          />
           <Text style={componentStyles.billTitle}>{bill.name}</Text>
         </View>
 
@@ -521,7 +529,8 @@ export default function BillDetail() {
             showPartyModal={showPartyModal}
             setShowChamberModal={setShowChamberModal}
             setShowPartyModal={setShowPartyModal}
-            // showOnlyChamber={showOnlyChamber}
+            showOnlyChamber={true}
+            chamberLabelOverride="Chamber of Origin"
           />
         )}
 
@@ -533,8 +542,17 @@ export default function BillDetail() {
             showCosponsorSort={showCosponsorSort}
             setShowCosponsorSort={setShowCosponsorSort}
             selectedCosponsorSort={selectedCosponsorSort}
+            showChamberModal={showChamberModal}
+            showPartyModal={showPartyModal}
             setShowChamberModal={setShowChamberModal}
             setShowPartyModal={setShowPartyModal}
+            showCosponsorChamberModal={showCosponsorChamberModal}
+            showCosponsorPartyModal={showCosponsorPartyModal}
+            setShowCosponsorChamberModal={setShowCosponsorChamberModal}
+            setShowCosponsorPartyModal={setShowCosponsorPartyModal}
+            selectedRole={selectedRole}
+            setSelectedRole={setSelectedRole}
+            showOnlyChamber={true}
           />
         )}
       </ScrollView>
@@ -544,6 +562,7 @@ export default function BillDetail() {
         setShowSortDropdown={setShowAmendmentsSort}
         selectedSort={selectedAmendmentsSort}
         setSelectedSort={setSelectedAmendmentsSort}
+        dropdownType="amendments"
       />
       <FilterDropdown
         showChamberModal={showChamberModal}
@@ -558,12 +577,26 @@ export default function BillDetail() {
         onApply={handleApply}
         chamber={chamber}
         party={party}
+        showOnlyChamber={activeTab === "actions" || activeTab === "cosponsors"}
+        chamberLabelOverride={
+          activeTab === "actions" ? "Chamber of Origin" : undefined
+        }
+        onFilterClose={() => setShowCosponsorFilter(false)}
+        marginTopOverride={120}
       />
       <SortDropdown
         showSortDropdown={showActionsSort}
         setShowSortDropdown={setShowActionsSort}
         selectedSort={selectedActionsSort}
         setSelectedSort={setSelectedActionsSort}
+        dropdownType="actions"
+      />
+      <SortDropdown
+        showSortDropdown={showCosponsorSort}
+        setShowSortDropdown={setShowCosponsorSort}
+        selectedSort={selectedCosponsorSort}
+        setSelectedSort={setSelectedCosponsorSort}
+        dropdownType="cosponsors"
       />
     </View>
   );

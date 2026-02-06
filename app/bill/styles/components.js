@@ -29,12 +29,13 @@ export const styles = StyleSheet.create({
     gap: 16,
     marginBottom: 16,
   },
-  avatar: {
+  avatarBill: {
     width: 72,
     height: 72,
     borderRadius: 36,
     borderWidth: 2,
     borderColor: "#7B7C81",
+    overflow: "hidden",
   },
   billNumber: {
     fontSize: 16,
