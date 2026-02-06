@@ -195,13 +195,13 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#555",
-    marginBottom: 4,
+    marginBottom: -2,
+    height: 42,
   },
   tabActive: {
     color: "#000",
     borderBottomWidth: 2,
     borderBottomColor: "#000",
-    marginBottom: -2,
   },
   bio: {
     fontSize: 14,
@@ -280,7 +280,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  sortButton: {
+  button: {
     flexDirection: "row",
     alignItems: "center",
     minHeight: 40, // Or height: 40, reserves button space

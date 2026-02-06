@@ -33,7 +33,7 @@ export default function OfficialDetail() {
   );
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Most Viewed");
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  // const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   // const [selectedType, setSelectedType] = useState("Bills");
 
   const [isFiltered, setIsFiltered] = useState(false);
@@ -236,17 +236,34 @@ export default function OfficialDetail() {
     <View style={componentStyles.screen}>
       {/* ← Add screen wrapper */}
       {/* Custom header */}
+      {/* Header Bar */}
       <View style={componentStyles.headerBar}>
-        <ChevronLeft size={24} color="#535353" onPress={() => router.back()} />
+        <Pressable
+          onPress={() => router.back()}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.75 : 1 }],
+          })}
+        >
+          <ChevronLeft size={24} color="#535353" />
+        </Pressable>
         <View style={componentStyles.headerRight}>
           <Pressable
             onPress={() => {
               setShowAddModal(true);
             }}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
           >
             <Plus size={24} color="#535353" />
           </Pressable>
-          <MoreVertical size={24} color="#535353" />
+          <Pressable
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <MoreVertical size={24} color="#535353" />
+          </Pressable>
         </View>
       </View>
       <ScrollView
@@ -271,24 +288,36 @@ export default function OfficialDetail() {
         {/* Tabs - full width */}
         <View style={componentStyles.tabsNegative}>
           <View style={componentStyles.tabs}>
-            <Text
-              style={[
-                componentStyles.tab,
-                activeTab === "profile" && componentStyles.tabActive,
-              ]}
+            <Pressable
               onPress={() => setActiveTab("profile")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
-              Profile
-            </Text>
-            <Text
-              style={[
-                componentStyles.tab,
-                activeTab === "legislation" && componentStyles.tabActive,
-              ]}
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "profile" && componentStyles.tabActive,
+                ]}
+              >
+                Profile
+              </Text>
+            </Pressable>
+            <Pressable
               onPress={() => setActiveTab("legislation")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
-              Legislation
-            </Text>
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "legislation" && componentStyles.tabActive,
+                ]}
+              >
+                Legislation
+              </Text>
+            </Pressable>
           </View>
         </View>
 
@@ -335,7 +364,12 @@ export default function OfficialDetail() {
             <View style={componentStyles.legislationHeader}>
               <View style={componentStyles.legislationHeaderLeft}>
                 <Pressable
-                  style={componentStyles.sortButton}
+                  style={({ pressed }) => [
+                    componentStyles.button,
+                    {
+                      transform: [{ scale: pressed ? 0.96 : 1 }],
+                    },
+                  ]}
                   onPress={() => {
                     setShowTypeModal(true);
                     setShowPolicyModal(true);
@@ -343,10 +377,9 @@ export default function OfficialDetail() {
                 >
                   {/* Total Selected Legislation Dropdown */}
                   <Text style={componentStyles.legislationHeaderTotal}>
-                    {/* {selectedType} */}
                     {isFiltered ? "Filtered" : "Total"} Legislation 3,353
                   </Text>
-                  {showTypeDropdown ? (
+                  {showTypeModal || showPolicyModal ? (
                     <ChevronUp
                       size={24}
                       color="#535353"
@@ -360,9 +393,15 @@ export default function OfficialDetail() {
                     />
                   )}
                 </Pressable>
+
                 {/* Sort by Dropdown */}
                 <Pressable
-                  style={componentStyles.sortButton}
+                  style={({ pressed }) => [
+                    componentStyles.button,
+                    {
+                      transform: [{ scale: pressed ? 0.96 : 1 }],
+                    },
+                  ]}
                   onPress={() => setShowSortDropdown(!showSortDropdown)}
                 >
                   {/* <Text style={styles.sortText}>Sort by </Text> */}
@@ -385,7 +424,15 @@ export default function OfficialDetail() {
                 </Pressable>
               </View>
               {/* Search Button */}
-              <Pressable onPress={() => setShowSearchModal(true)}>
+              <Pressable
+                style={({ pressed }) => [
+                  componentStyles.button,
+                  {
+                    transform: [{ scale: pressed ? 0.75 : 1 }],
+                  },
+                ]}
+                onPress={() => setShowSearchModal(true)}
+              >
                 <Search size={24} color="#535353" />
               </Pressable>
             </View>

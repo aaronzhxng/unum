@@ -80,13 +80,13 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#555",
-    marginBottom: 4,
+    marginBottom: -2,
+    height: 42,
   },
   tabActive: {
     color: "#000",
     borderBottomWidth: 2,
     borderBottomColor: "#000",
-    marginBottom: -2,
   },
   details: {
     flexDirection: "row",
@@ -210,7 +210,7 @@ export const styles = StyleSheet.create({
     lineHeight: 18,
     color: "#535353",
   },
-  sortButton: {
+  button: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
@@ -282,6 +282,17 @@ export const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 6,
     marginHorizontal: 16,
+  },
+  dropdownAdd: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 8,
+    margin: 16,
+    marginTop: 280,
   },
   actionButton: {
     paddingHorizontal: 16,

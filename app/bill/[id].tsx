@@ -5,11 +5,13 @@ import {
   ChevronUp,
   Link,
   MoreVertical,
+  Plus,
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
 import ActionHistory from "./components/ActionHistory";
+import AddModal from "./components/AddModal";
 import Cosponsors, { Cosponsor } from "./components/Cosponsors";
 import FilterDropdown from "./components/FilterDropdown";
 import SortDropdown from "./components/SortDropdown";
@@ -50,6 +52,9 @@ export default function BillDetail() {
   const [showCosponsorChamberModal, setShowCosponsorChamberModal] =
     useState(false);
   const [showCosponsorPartyModal, setShowCosponsorPartyModal] = useState(false);
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedLists, setSelectedLists] = useState<string[]>([]);
 
   interface FilterOption {
     id: string;
@@ -247,9 +252,30 @@ export default function BillDetail() {
     <View style={componentStyles.screen}>
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
-        <ChevronLeft size={24} color="#535353" onPress={() => router.back()} />
+        <Pressable
+          onPress={() => router.back()}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.75 : 1 }],
+          })}
+        >
+          <ChevronLeft size={24} color="#535353" />
+        </Pressable>
         <View style={componentStyles.headerRight}>
-          <Pressable>
+          <Pressable
+            onPress={() => {
+              setShowAddModal(true);
+            }}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <Plus size={24} color="#535353" />
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
             <MoreVertical size={24} color="#535353" />
           </Pressable>
         </View>
@@ -273,42 +299,66 @@ export default function BillDetail() {
         {/* Tabs */}
         <View style={componentStyles.tabsNegative}>
           <View style={componentStyles.tabs}>
-            <Text
-              style={[
-                componentStyles.tab,
-                activeTab === "details" && componentStyles.tabActive,
-              ]}
+            <Pressable
               onPress={() => setActiveTab("details")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
-              Details
-            </Text>
-            <Text
-              style={[
-                componentStyles.tab,
-                activeTab === "voting" && componentStyles.tabActive,
-              ]}
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "details" && componentStyles.tabActive,
+                ]}
+              >
+                Details
+              </Text>
+            </Pressable>
+            <Pressable
               onPress={() => setActiveTab("voting")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
-              Voting
-            </Text>
-            <Text
-              style={[
-                componentStyles.tab,
-                activeTab === "actions" && componentStyles.tabActive,
-              ]}
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "voting" && componentStyles.tabActive,
+                ]}
+              >
+                Voting
+              </Text>
+            </Pressable>
+            <Pressable
               onPress={() => setActiveTab("actions")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
-              Actions
-            </Text>
-            <Text
-              style={[
-                componentStyles.tab,
-                activeTab === "cosponsors" && componentStyles.tabActive,
-              ]}
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "actions" && componentStyles.tabActive,
+                ]}
+              >
+                Actions
+              </Text>
+            </Pressable>
+            <Pressable
               onPress={() => setActiveTab("cosponsors")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
-              Cosponsors
-            </Text>
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "cosponsors" && componentStyles.tabActive,
+                ]}
+              >
+                Cosponsors
+              </Text>
+            </Pressable>
           </View>
         </View>
 
@@ -398,11 +448,15 @@ export default function BillDetail() {
                       </Text>
                     ) : (
                       <Pressable
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
+                        style={({ pressed }) => [
+                          {
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 4,
+                            flex: 1,
+                            transform: [{ scale: pressed ? 0.96 : 1 }],
+                          },
+                        ]}
                         onPress={() => {
                           setShowChamberModal(true);
                           setShowPartyModal(true);
@@ -429,7 +483,12 @@ export default function BillDetail() {
                 {/* Center: Sort button (only expanded) */}
                 {showAmendments && (
                   <Pressable
-                    style={componentStyles.sortButton}
+                    style={({ pressed }) => [
+                      componentStyles.button,
+                      {
+                        transform: [{ scale: pressed ? 0.96 : 1 }],
+                      },
+                    ]}
                     onPress={(e) => {
                       e.stopPropagation();
                       setShowAmendmentsSort(!showAmendmentsSort);
@@ -582,7 +641,7 @@ export default function BillDetail() {
           activeTab === "actions" ? "Chamber of Origin" : undefined
         }
         onFilterClose={() => setShowCosponsorFilter(false)}
-        marginTopOverride={120}
+        // marginTopOverride={0}
       />
       <SortDropdown
         showSortDropdown={showActionsSort}
@@ -597,6 +656,13 @@ export default function BillDetail() {
         selectedSort={selectedCosponsorSort}
         setSelectedSort={setSelectedCosponsorSort}
         dropdownType="cosponsors"
+      />
+      {/* Add Modal Popup */}
+      <AddModal
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
+        selectedLists={selectedLists}
+        setSelectedLists={setSelectedLists}
       />
     </View>
   );

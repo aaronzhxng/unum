@@ -33,7 +33,11 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
   setShowPartyModal,
 }) => {
   return (
-    <View style={componentStyles.amendmentsSection}>
+    <View
+      style={{
+        marginTop: -8,
+      }}
+    >
       <Pressable
         style={[
           componentStyles.sectionHeader,
@@ -53,11 +57,15 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
             }}
           >
             <Pressable
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-              }}
+              style={({ pressed }) => [
+                {
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  flex: 1,
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                },
+              ]}
               onPress={() => {
                 setShowChamberModal(true);
                 setShowPartyModal(false);
@@ -82,7 +90,13 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
 
         {/* Center: Sort button */}
         <Pressable
-          style={[componentStyles.sortButton, { marginRight: -12 }]}
+          style={({ pressed }) => [
+            componentStyles.button,
+            { marginRight: -12 },
+            {
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            },
+          ]}
           onPress={(e) => {
             e.stopPropagation();
             setShowSort(!showSort);

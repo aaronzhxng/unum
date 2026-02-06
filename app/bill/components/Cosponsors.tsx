@@ -147,12 +147,15 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
       >
         {/* Left: Filter trigger - BULLETPROOF VERSION */}
         <Pressable
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 4,
-            flex: 1,
-          }}
+          style={({ pressed }) => [
+            {
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              flex: 1,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            },
+          ]}
           onPress={(e) => {
             e.stopPropagation(); // Block parent events
             e.preventDefault(); // Block default behaviors
@@ -181,7 +184,13 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
 
         {/* Right: Sort button */}
         <Pressable
-          style={[componentStyles.sortButton, { marginRight: -12 }]}
+          style={({ pressed }) => [
+            componentStyles.button,
+            { marginRight: -12 },
+            {
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            },
+          ]}
           onPress={(e) => {
             e.stopPropagation();
             setShowCosponsorSort(!showCosponsorSort);
