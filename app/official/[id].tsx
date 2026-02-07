@@ -21,6 +21,7 @@ import {
 import AddModal from "./components/AddModal";
 import BillCard from "./components/BillCard";
 import FilterDropdown from "./components/FilterDropdown";
+import OptionsModal from "./components/OptionsModal";
 import SearchModal from "./components/SearchModal";
 import SortDropdown from "./components/SortDropdown";
 import { styles as componentStyles } from "./styles/components";
@@ -48,6 +49,11 @@ export default function OfficialDetail() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
+
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
+    [],
+  );
 
   interface FilterOption {
     id: string;
@@ -258,6 +264,9 @@ export default function OfficialDetail() {
             <Plus size={24} color="#535353" />
           </Pressable>
           <Pressable
+            onPress={() => {
+              setShowOptionsModal(true);
+            }}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
@@ -486,6 +495,13 @@ export default function OfficialDetail() {
           setShowAddModal={setShowAddModal}
           selectedLists={selectedLists}
           setSelectedLists={setSelectedLists}
+        />
+        {/* Options Modal Popup */}
+        <OptionsModal
+          showOptionsModal={showOptionsModal}
+          setShowOptionsModal={setShowOptionsModal}
+          selectedNotifications={selectedNotifications}
+          setSelectedNotifications={setSelectedNotifications}
         />
       </ScrollView>
     </View>

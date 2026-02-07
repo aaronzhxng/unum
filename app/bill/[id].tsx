@@ -14,6 +14,7 @@ import ActionHistory from "./components/ActionHistory";
 import AddModal from "./components/AddModal";
 import Cosponsors, { Cosponsor } from "./components/Cosponsors";
 import FilterDropdown from "./components/FilterDropdown";
+import OptionsModal from "./components/OptionsModal";
 import SortDropdown from "./components/SortDropdown";
 import VotingCard from "./components/VotingCard";
 import { styles as componentStyles } from "./styles/components";
@@ -55,6 +56,11 @@ export default function BillDetail() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
+
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
+    [],
+  );
 
   interface FilterOption {
     id: string;
@@ -272,6 +278,9 @@ export default function BillDetail() {
             <Plus size={24} color="#535353" />
           </Pressable>
           <Pressable
+            onPress={() => {
+              setShowOptionsModal(true);
+            }}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
@@ -663,6 +672,13 @@ export default function BillDetail() {
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
+      />
+      {/* Options Modal Popup */}
+      <OptionsModal
+        showOptionsModal={showOptionsModal}
+        setShowOptionsModal={setShowOptionsModal}
+        selectedNotifications={selectedNotifications}
+        setSelectedNotifications={setSelectedNotifications}
       />
     </View>
   );
