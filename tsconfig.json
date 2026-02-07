@@ -12,7 +12,7 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/official/styles/index.js",
-    "app/official/styles/components.js",
-    "app/bill/styles/components.js"
+    "app/official/styles.js",
+    "app/bill/styles.js"
   ]
 }

@@ -1,12 +1,9 @@
 import { useRouter } from "expo-router";
-import {
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { MoreVertical, Search } from "lucide-react-native";
+import { useState } from "react";
+import { FlatList, Image, Pressable, Text, View } from "react-native";
+import SearchModal from "../global_components/SearchModal";
+import { styles as componentStyles } from "../global_styles/styles";
 
 type ItemType = "official" | "bill";
 
@@ -71,14 +68,56 @@ const MOCK_ITEMS: Item[] = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>My List</Text>
+    <View style={componentStyles.container}>
+      <View style={componentStyles.headerBar}>
+        <Pressable
+          // onPress={() => router.back()}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.96 : 1 }],
+          })}
+        >
+          <Text style={componentStyles.header}>My List</Text>
+        </Pressable>
+        <View style={componentStyles.headerRight}>
+          <Pressable
+            onPress={() => setShowSearchModal(true)}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <Search size={24} color="#535353" />
+          </Pressable>
+          <Pressable
+            // onPress={() => {
+            //   setShowOptionsModal(true);
+            // }}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <MoreVertical size={24} color="#535353" />
+          </Pressable>
+        </View>
+      </View>
       <FlatList
         data={MOCK_ITEMS}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={componentStyles.listContent}
         renderItem={({ item }) => <Card item={item} />}
+      />
+      {/* Search Modal Popup */}
+      <SearchModal
+        isVisible={showSearchModal}
+        onClose={() => {
+          setShowSearchModal(false);
+        }}
+        // onSearch={(query) => {
+        //   setSearchQuery(query);
+        // }}
+        onSearch={setSearchQuery}
       />
     </View>
   );
@@ -103,37 +142,37 @@ function Card({ item }: { item: Item }) {
         transform: [{ scale: pressed ? 0.96 : 1 }],
       })}
     >
-      <View style={[styles.officialCard]}>
-        <Image source={item.avatar} style={styles.avatar} />
+      <View style={[componentStyles.officialCard]}>
+        <Image source={item.avatar} style={componentStyles.avatar} />
 
         {isOfficial ? (
           <View>
-            <Text style={styles.name}>{item.name}</Text>
+            <Text style={componentStyles.name}>{item.name}</Text>
 
-            <View style={styles.metaRow}>
-              <Text style={styles.subtitle}>{item.party}</Text>
-              <Text style={styles.separator}>·</Text>
-              <Text style={styles.subtitle}>{item.role}</Text>
+            <View style={componentStyles.metaRow}>
+              <Text style={componentStyles.subtitle}>{item.party}</Text>
+              <Text style={componentStyles.separator}>·</Text>
+              <Text style={componentStyles.subtitle}>{item.role}</Text>
               {item.update ? (
                 <>
-                  <Text style={styles.separator}>·</Text>
-                  <Text style={styles.update}>{item.update}</Text>
+                  <Text style={componentStyles.separator}>·</Text>
+                  <Text style={componentStyles.update}>{item.update}</Text>
                 </>
               ) : null}
             </View>
           </View>
         ) : (
           <View>
-            <Text style={styles.name}>{item.name}</Text>
+            <Text style={componentStyles.name}>{item.name}</Text>
 
-            <View style={styles.metaRow}>
-              <Text style={styles.subtitle}>{item.date}</Text>
-              <Text style={styles.separator}>·</Text>
-              <Text style={styles.subtitle}>{item.committee}</Text>
+            <View style={componentStyles.metaRow}>
+              <Text style={componentStyles.subtitle}>{item.date}</Text>
+              <Text style={componentStyles.separator}>·</Text>
+              <Text style={componentStyles.subtitle}>{item.committee}</Text>
               {item.update ? (
                 <>
-                  <Text style={styles.separator}>·</Text>
-                  <Text style={styles.update}>{item.update}</Text>
+                  <Text style={componentStyles.separator}>·</Text>
+                  <Text style={componentStyles.update}>{item.update}</Text>
                 </>
               ) : null}
             </View>
@@ -143,73 +182,3 @@ function Card({ item }: { item: Item }) {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    backgroundColor: "#fafafa",
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  listContent: {
-    paddingBottom: 24,
-  },
-  officialCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    margin: 2,
-    borderRadius: 24,
-    backgroundColor: "#fafafa",
-    marginBottom: 12,
-    shadowColor: "#000000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 32,
-    marginRight: 12,
-    backgroundColor: "#eee",
-  },
-  iconText: {
-    fontWeight: "600",
-  },
-  cardText: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 15,
-    color: "#535353",
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  metaRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "baseline",
-  },
-  subtitle: {
-    fontSize: 12,
-    color: "#7B7C81",
-  },
-  separator: {
-    fontSize: 12,
-    color: "#000000",
-    marginHorizontal: 4,
-  },
-  update: {
-    fontSize: 12,
-    color: "#000000",
-    fontWeight: 600,
-  },
-});

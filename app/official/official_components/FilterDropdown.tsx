@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
-import { styles } from "../styles/components";
+import { styles } from "../styles";
 
 interface FilterOption {
   id: string;

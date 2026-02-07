@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 50,
+    paddingTop: 48,
   },
   headerRight: {
     flexDirection: "row",
@@ -342,10 +342,11 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: "#7B7C81",
   },
-  separator: {
+  separator1: {
     fontSize: 12,
     color: "#000000",
     marginHorizontal: 4,
+    fontWeight: 100,
   },
   update: {
     fontSize: 12,

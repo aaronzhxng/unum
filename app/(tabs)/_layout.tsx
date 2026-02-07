@@ -17,6 +17,7 @@ export default function TabsLayout() {
         },
       }}
     >
+      <Tabs.Screen name="(tabs)" options={{ href: null }} />
       <Tabs.Screen
         name="home"
         options={{

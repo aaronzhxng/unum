@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react-native";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { styles as componentStyles } from "../styles/components"; // Adjust path
+import { styles as componentStyles } from "../styles"; // Adjust path
 
 interface Action {
   date: string;

@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Pressable, Text, View } from "react-native";
-import { styles } from "../styles/components";
+import { styles } from "../styles";
 
 interface Props {
   showSortDropdown: boolean;

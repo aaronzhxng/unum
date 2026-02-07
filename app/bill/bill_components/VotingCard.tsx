@@ -1,6 +1,6 @@
 import React from "react";
 import { Image, Text, View } from "react-native";
-import { styles as componentStyles } from "../styles/components"; // Adjust path if needed
+import { styles as componentStyles } from "../styles"; // Adjust path if needed
 
 interface Vote {
   name: string;

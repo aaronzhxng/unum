@@ -10,14 +10,14 @@ import {
 import { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
-import ActionHistory from "./components/ActionHistory";
-import AddModal from "./components/AddModal";
-import Cosponsors, { Cosponsor } from "./components/Cosponsors";
-import FilterDropdown from "./components/FilterDropdown";
-import OptionsModal from "./components/OptionsModal";
-import SortDropdown from "./components/SortDropdown";
-import VotingCard from "./components/VotingCard";
-import { styles as componentStyles } from "./styles/components";
+import ActionHistory from "./bill_components/ActionHistory";
+import AddModal from "./bill_components/AddModal";
+import Cosponsors, { Cosponsor } from "./bill_components/Cosponsors";
+import FilterDropdown from "./bill_components/FilterDropdown";
+import OptionsModal from "./bill_components/OptionsModal";
+import SortDropdown from "./bill_components/SortDropdown";
+import VotingCard from "./bill_components/VotingCard";
+import { styles as componentStyles } from "./styles";
 
 export default function BillDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();

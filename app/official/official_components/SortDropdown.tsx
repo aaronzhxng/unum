@@ -1,6 +1,6 @@
 import React from "react"; // ✅ 1. ADD React
 import { Modal, Pressable, Text, View } from "react-native"; // ✅ 2. ADD Text
-import { styles } from "../styles/components"; // ✅ 3. ADD styles
+import { styles } from "../styles"; // ✅ 3. ADD styles
 
 interface Props {
   // ✅ 4. ADD Props interface

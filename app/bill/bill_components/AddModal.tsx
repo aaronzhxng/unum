@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
-import { styles } from "../styles/components"; // Adjust path as needed
+import { styles } from "../styles"; // Adjust path as needed
 
 interface Props {
   showAddModal: boolean;

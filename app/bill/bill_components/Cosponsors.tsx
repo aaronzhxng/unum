@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
-import { styles as componentStyles } from "../styles/components"; // adjust path if needed
+import { styles as componentStyles } from "../styles"; // adjust path if needed
 import FilterDropdown from "./FilterDropdown"; // Adjust path
 
 type Party = "D" | "R" | "I";
@@ -118,11 +118,11 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
         <Text style={componentStyles.name}>{item.name}</Text>
         <View style={componentStyles.metaRow}>
           <Text style={componentStyles.subtitle}>{item.party}</Text>
-          <Text style={componentStyles.separator}>•</Text>
+          <Text style={componentStyles.separator1}>•</Text>
           <Text style={componentStyles.subtitle}>{item.role}</Text>
           {item.update ? (
             <>
-              <Text style={componentStyles.separator}>•</Text>
+              <Text style={componentStyles.separator1}>•</Text>
               <Text style={componentStyles.update}>{item.update}</Text>
             </>
           ) : null}

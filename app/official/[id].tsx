@@ -18,13 +18,13 @@ import {
   View,
 } from "react-native";
 
-import AddModal from "./components/AddModal";
-import BillCard from "./components/BillCard";
-import FilterDropdown from "./components/FilterDropdown";
-import OptionsModal from "./components/OptionsModal";
-import SearchModal from "./components/SearchModal";
-import SortDropdown from "./components/SortDropdown";
-import { styles as componentStyles } from "./styles/components";
+import AddModal from "./official_components/AddModal";
+import BillCard from "./official_components/BillCard";
+import FilterDropdown from "./official_components/FilterDropdown";
+import OptionsModal from "./official_components/OptionsModal";
+import SearchModal from "./official_components/SearchModal";
+import SortDropdown from "./official_components/SortDropdown";
+import { styles as componentStyles } from "./styles";
 
 export default function OfficialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();

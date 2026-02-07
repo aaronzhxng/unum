@@ -1,6 +1,6 @@
 import React from "react"; // ✅ ADD THIS
 import { Image, Text, View } from "react-native";
-import { styles } from "../styles/components"; // ✅ ADD THIS (your styles)
+import { styles } from "../styles"; // ✅ ADD THIS (your styles)
 
 export type Bill = {
   // ✅ Export for main screen use

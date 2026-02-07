@@ -139,7 +139,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 50,
+    paddingTop: 48,
   },
   headerRight: {
     flexDirection: "row",
@@ -160,6 +160,7 @@ export const styles = StyleSheet.create({
     color: "#000000",
     fontWeight: "800",
     marginBottom: 24,
+    marginLeft: 8,
   },
   centeredRow: {
     flexDirection: "row",

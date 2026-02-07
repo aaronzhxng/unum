@@ -1,32 +1,31 @@
 import React from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
-import { styles } from "../styles/components"; // Adjust path as needed
+import { styles } from "../styles"; // Adjust path as needed
 
 interface Props {
-  showOptionsModal: boolean;
-  setShowOptionsModal: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedNotifications: string[];
-  setSelectedNotifications: React.Dispatch<React.SetStateAction<string[]>>;
+  showAddModal: boolean;
+  setShowAddModal: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedLists: string[];
+  setSelectedLists: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const listOptions = [
-  { id: "all-notications", label: "All" },
-  { id: "bills-voted", label: "Bills voted on" },
-  { id: "bills-cosponsored", label: "Bills cosponsored" },
-  { id: "bills-introduced", label: "Bills introduced" },
-  { id: "elections", label: "Elections" },
+  { id: "my-list", label: "My List" },
+  { id: "tri-state-area", label: "Tri State Area" },
+  { id: "swing-states", label: "Swing States" },
+  { id: "new-list", label: "New List" },
 ];
 
-export default function OptionsModal({
-  showOptionsModal,
-  setShowOptionsModal,
-  selectedNotifications,
-  setSelectedNotifications,
+export default function AddModal({
+  showAddModal,
+  setShowAddModal,
+  selectedLists,
+  setSelectedLists,
 }: Props) {
-  const closeModal = () => setShowOptionsModal(false);
+  const closeModal = () => setShowAddModal(false);
 
   const toggleList = (id: string) => {
-    setSelectedNotifications((prev: string[]) =>
+    setSelectedLists((prev: string[]) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
@@ -36,24 +35,22 @@ export default function OptionsModal({
     // Add any onApply logic here if needed
   };
 
-  return showOptionsModal ? (
+  return showAddModal ? (
     <Modal
-      visible={showOptionsModal}
+      visible={showAddModal}
       transparent={true}
       animationType="fade"
       statusBarTranslucent={true}
       onRequestClose={closeModal}
     >
       <Pressable style={styles.modalOverlay} onPress={closeModal}>
-        <View style={{ padding: 0, minHeight: 400, marginTop: -60 }}>
+        <View style={{ padding: 0, minHeight: 400 }}>
           <ScrollView
             style={styles.dropdownAdd}
             nestedScrollEnabled
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.dropdownItemTextLabel}>
-              Select Notifications
-            </Text>
+            <Text style={styles.dropdownItemTextLabel}>Add to List</Text>
             {listOptions.map((option) => (
               <Pressable
                 key={option.id}
@@ -83,14 +80,14 @@ export default function OptionsModal({
                     borderWidth: 2,
                     borderColor: "#ccc",
                     borderRadius: 4,
-                    backgroundColor: selectedNotifications.includes(option.id)
+                    backgroundColor: selectedLists.includes(option.id)
                       ? "#008CFF"
                       : "transparent",
                     justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
-                  {selectedNotifications.includes(option.id) && (
+                  {selectedLists.includes(option.id) && (
                     <View
                       style={{
                         width: 12,
@@ -103,25 +100,6 @@ export default function OptionsModal({
                 </View>
               </Pressable>
             ))}
-            <Pressable
-              style={({ pressed }) => [
-                styles.dropdownItem, // base
-                {
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderTopWidth: 1,
-                  borderColor: "#ccc",
-                  paddingTop: 12,
-                  marginTop: 12,
-                },
-                pressed && styles.dropdownItemPressed,
-              ]}
-            >
-              <Text style={[styles.dropdownItemText, { color: "#D45252" }]}>
-                Report an Error
-              </Text>
-            </Pressable>
           </ScrollView>
           {/* Buttons */}
           <View style={{ flexDirection: "row", gap: 12 }}>
@@ -150,7 +128,7 @@ export default function OptionsModal({
               <Text
                 style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
               >
-                Save
+                Add
               </Text>
             </Pressable>
           </View>
