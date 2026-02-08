@@ -1,7 +1,14 @@
 import { useRouter } from "expo-router";
-import { MoreVertical, Search } from "lucide-react-native";
+import {
+  ChevronDown,
+  ChevronUp,
+  MoreVertical,
+  Search,
+} from "lucide-react-native";
 import { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
+import ListSelection from "../global_components/ListSelection";
+import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 
@@ -70,17 +77,49 @@ export default function HomeScreen() {
   const router = useRouter();
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
+    [],
+  );
+  const [showListSelection, setShowListSelection] = useState(false);
+  const [selectedList, setSelectedList] = useState("Most Viewed");
+
   return (
     <View style={componentStyles.container}>
       <View style={componentStyles.headerBar}>
-        <Pressable
-          // onPress={() => router.back()}
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.96 : 1 }],
-          })}
-        >
-          <Text style={componentStyles.header}>My List</Text>
-        </Pressable>
+        <View style={componentStyles.headerLeft}>
+          <Pressable
+            onPress={() => setShowListSelection(!showListSelection)}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            })}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <Text style={[componentStyles.header, { alignItems: "center" }]}>
+                My List
+              </Text>
+              {showListSelection ? (
+                <ChevronUp
+                  size={24}
+                  color="#535353"
+                  style={{ marginBottom: 14 }}
+                />
+              ) : (
+                <ChevronDown
+                  size={24}
+                  color="#535353"
+                  style={{ marginBottom: 14 }}
+                />
+              )}
+            </View>
+          </Pressable>
+        </View>
         <View style={componentStyles.headerRight}>
           <Pressable
             onPress={() => setShowSearchModal(true)}
@@ -91,9 +130,9 @@ export default function HomeScreen() {
             <Search size={24} color="#535353" />
           </Pressable>
           <Pressable
-            // onPress={() => {
-            //   setShowOptionsModal(true);
-            // }}
+            onPress={() => {
+              setShowOptionsModal(true);
+            }}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
@@ -108,6 +147,7 @@ export default function HomeScreen() {
         contentContainerStyle={componentStyles.listContent}
         renderItem={({ item }) => <Card item={item} />}
       />
+
       {/* Search Modal Popup */}
       <SearchModal
         isVisible={showSearchModal}
@@ -118,6 +158,20 @@ export default function HomeScreen() {
         //   setSearchQuery(query);
         // }}
         onSearch={setSearchQuery}
+      />
+      {/* Options Modal Popup */}
+      <OptionsModal
+        showOptionsModal={showOptionsModal}
+        setShowOptionsModal={setShowOptionsModal}
+        selectedNotifications={selectedNotifications}
+        setSelectedNotifications={setSelectedNotifications}
+      />
+      {/* List Selection Modal Popup */}
+      <ListSelection
+        showListSelection={showListSelection}
+        setShowListSelection={setShowListSelection}
+        selectedList={selectedList}
+        setSelectedList={setSelectedList}
       />
     </View>
   );
