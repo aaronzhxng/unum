@@ -68,7 +68,7 @@ const MOCK_OFFICIALS: Official[] = [
     id: "7",
     name: "Alexandria Ocasio-Cortez",
     party: "D",
-    role: "Representative · 14th District",
+    role: "Representative, NY 14th District",
     avatar: require("../../assets/officials_images/aoc.webp"),
   },
 ];

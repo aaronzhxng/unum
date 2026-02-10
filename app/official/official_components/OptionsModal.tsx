@@ -81,7 +81,9 @@ export default function OptionsModal({
                     width: 20,
                     height: 20,
                     borderWidth: 2,
-                    borderColor: "#ccc",
+                    borderColor: selectedNotifications.includes(option.id)
+                      ? "#008CFF"
+                      : "#ccc",
                     borderRadius: 4,
                     backgroundColor: selectedNotifications.includes(option.id)
                       ? "#008CFF"
@@ -128,7 +130,7 @@ export default function OptionsModal({
             <Pressable
               style={({ pressed }) => [
                 styles.actionButton,
-                { backgroundColor: "#f5f5f5" },
+                { backgroundColor: "#fafafa" },
                 pressed && { transform: [{ scale: 0.96 }] },
               ]}
               onPress={closeModal}

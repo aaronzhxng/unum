@@ -238,7 +238,7 @@ export const styles = StyleSheet.create({
     zIndex: 1000,
   },
   dropdown: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fafafa",
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -252,7 +252,7 @@ export const styles = StyleSheet.create({
     minWidth: 200,
   },
   dropdownMulti: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fafafa",
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -284,7 +284,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   dropdownAdd: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fafafa",
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

@@ -113,7 +113,7 @@ export default function OptionsModal({
                       width: 20,
                       height: 20,
                       borderWidth: 2,
-                      borderColor: "#ccc",
+                      borderColor: notificationsEnabled ? "#008CFF" : "#ccc",
                       borderRadius: 4,
                       backgroundColor: notificationsEnabled
                         ? "#008CFF"
@@ -227,7 +227,7 @@ export default function OptionsModal({
               style={{
                 fontSize: 16,
                 fontWeight: "600",
-                color: "#1a1a1a",
+                color: "#000000",
                 marginBottom: 8,
               }}
             >
@@ -241,7 +241,7 @@ export default function OptionsModal({
                 marginBottom: 4,
               }}
             >
-              This List will be permanently deleted.
+              This list will be permanently deleted.
             </Text>
 
             {/* <View style={componentStyles.divider} /> */}
@@ -261,7 +261,11 @@ export default function OptionsModal({
                 style={componentStyles.actionButton}
                 onPress={handleDeleteConfirm}
               >
-                <Text style={{ fontSize: 16, color: "#535353" }}>Delete</Text>
+                <Text
+                  style={{ fontSize: 16, color: "#FF3B30", fontWeight: 600 }}
+                >
+                  Delete
+                </Text>
               </TouchableOpacity>
             </View>
           </Pressable>

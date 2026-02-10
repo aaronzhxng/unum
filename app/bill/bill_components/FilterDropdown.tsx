@@ -113,7 +113,9 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                         width: 20,
                         height: 20,
                         borderWidth: 2,
-                        borderColor: "#7B7C81",
+                        borderColor: selectedChamber.includes(option.id)
+                          ? "#008CFF"
+                          : "#ccc",
                         borderRadius: 4,
                         backgroundColor: selectedChamber.includes(option.id)
                           ? "#008CFF"
@@ -170,7 +172,9 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                           width: 20,
                           height: 20,
                           borderWidth: 2,
-                          borderColor: "#7B7C81",
+                          borderColor: selectedPolicies.includes(option.id)
+                            ? "#008CFF"
+                            : "#ccc",
                           borderRadius: 4,
                           backgroundColor: selectedPolicies.includes(option.id)
                             ? "#008CFF"
@@ -201,7 +205,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
               <Pressable
                 style={({ pressed }) => [
                   styles.actionButton,
-                  { backgroundColor: "#f5f5f5" },
+                  { backgroundColor: "#fafafa" },
                   { transform: pressed ? [{ scale: 0.96 }] : [] },
                 ]}
                 onPress={handleCancel}
