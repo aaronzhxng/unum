@@ -78,11 +78,9 @@ export default function HomeScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showOptionsModal, setShowOptionsModal] = useState(false);
-  const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
-    [],
-  );
+  const [selectedNotifications, setSelectedNotifications] = useState("My List");
   const [showListSelection, setShowListSelection] = useState(false);
-  const [selectedList, setSelectedList] = useState("Most Viewed");
+  const [selectedList, setSelectedList] = useState("My List");
 
   return (
     <View style={componentStyles.container}>
@@ -102,19 +100,19 @@ export default function HomeScreen() {
               }}
             >
               <Text style={[componentStyles.header, { alignItems: "center" }]}>
-                My List
+                {selectedList}
               </Text>
               {showListSelection ? (
                 <ChevronUp
                   size={24}
                   color="#535353"
-                  style={{ marginBottom: 14 }}
+                  style={{ marginBottom: 12 }}
                 />
               ) : (
                 <ChevronDown
                   size={24}
                   color="#535353"
-                  style={{ marginBottom: 14 }}
+                  style={{ marginBottom: 12 }}
                 />
               )}
             </View>

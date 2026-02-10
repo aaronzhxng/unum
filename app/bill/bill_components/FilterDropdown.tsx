@@ -113,7 +113,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                         width: 20,
                         height: 20,
                         borderWidth: 2,
-                        borderColor: "#ccc",
+                        borderColor: "#7B7C81",
                         borderRadius: 4,
                         backgroundColor: selectedChamber.includes(option.id)
                           ? "#008CFF"
@@ -170,7 +170,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                           width: 20,
                           height: 20,
                           borderWidth: 2,
-                          borderColor: "#ccc",
+                          borderColor: "#7B7C81",
                           borderRadius: 4,
                           backgroundColor: selectedPolicies.includes(option.id)
                             ? "#008CFF"

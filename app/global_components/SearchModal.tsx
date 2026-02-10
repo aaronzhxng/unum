@@ -1,12 +1,15 @@
-import React from "react";
+import { ChevronLeft } from "lucide-react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    TextInput,
-    View,
+  BackHandler,
+  Keyboard,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Modal from "react-native-modal";
+import { styles as componentStyles } from "../global_styles/styles";
 
 interface SearchModalProps {
   isVisible: boolean;
@@ -19,82 +22,128 @@ export default function SearchModal({
   isVisible,
   onClose,
   onSearch,
-  query = "",
+  query,
 }: SearchModalProps) {
-  const [searchQuery, setSearchQuery] = React.useState(query);
-  const inputRef = React.useRef<TextInput>(null);
+  const [searchQuery, setSearchQuery] = useState(query || "");
+  const inputRef = useRef<TextInput>(null);
 
-  // Focus when modal becomes visible
-  React.useEffect(() => {
-    if (isVisible) {
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 300); // ↑ Increased to 300ms
-      return () => clearTimeout(timer);
-    }
+  // Define handleClose first so useEffect can reference it
+  const handleClose = useCallback(() => {
+    Keyboard.dismiss();
+    onClose();
+  }, [onClose]);
+
+  // Focus input when modal opens
+  useEffect(() => {
+    if (!isVisible) return;
+    const timer = setTimeout(() => inputRef.current?.focus(), 100);
+    return () => clearTimeout(timer);
   }, [isVisible]);
 
-  // Focus AGAIN after modal fully shows
-  const handleOnShow = () => {
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
+  // Android hardware back button
+  useEffect(() => {
+    if (!isVisible) return;
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        handleClose();
+        return true;
+      },
+    );
+    return () => backHandler.remove();
+  }, [isVisible, handleClose]); // handleClose in deps so it's never stale
+
+  // Sync external query
+  useEffect(() => {
+    setSearchQuery(query || "");
+  }, [query]);
+
+  const handleSubmit = () => {
+    Keyboard.dismiss();
+    onSearch(searchQuery);
   };
 
-  React.useEffect(() => {
-    setSearchQuery(query);
-  }, [query]);
+  if (!isVisible) return null;
 
   return (
     <Modal
       isVisible={isVisible}
-      onBackdropPress={() => {
-        Keyboard.dismiss(); // Close keyboard
-        setTimeout(onClose); // Close modal after
-      }}
-      onShow={handleOnShow}
-      style={{ margin: 0, justifyContent: "flex-end" }}
-      backdropOpacity={0.5}
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      animationInTiming={700} // ← ADD: 500ms (slower slide up)
-      animationOutTiming={700} // ← ADD: 400ms (slide down)
-      backdropTransitionInTiming={700} // ← ADD: Backdrop fade matches
-      backdropTransitionOutTiming={700} // ← ADD: Backdrop fade matches
+      onBackdropPress={handleClose}
+      onBackButtonPress={handleClose}
+      style={{ margin: 0 }}
+      backdropOpacity={0}
+      animationIn="slideInRight"
+      animationOut="slideOutRight"
+      animationInTiming={250}
+      animationOutTiming={200}
+      statusBarTranslucent
+      useNativeDriver
     >
-      <KeyboardAvoidingView
-        enabled
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{
-          backgroundColor: "white",
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-        }}
-      >
-        <View style={{ padding: 20, paddingTop: 10 }}>
-          <TextInput
-            ref={inputRef}
+      <View style={componentStyles.container}>
+        {/* Search Header */}
+        <View style={componentStyles.headerBar}>
+          <TouchableOpacity
+            onPress={handleClose}
+            style={{ marginRight: 8, paddingHorizontal: 4 }}
+          >
+            <ChevronLeft size={24} color="#535353" />
+          </TouchableOpacity>
+
+          <View
             style={{
-              borderWidth: 1,
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "white",
               borderColor: "#bfbfbf",
-              borderRadius: 12,
+              borderWidth: 1,
+              borderRadius: 100,
               paddingHorizontal: 16,
-              paddingVertical: 12,
-              fontSize: 16,
-              marginTop: 12,
+              paddingVertical: 10,
             }}
-            placeholder="Search legislation..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            returnKeyType="search"
-            // bluronSubmit={false}
-            onSubmitEditing={() => {
-              onSearch(searchQuery);
-              onClose();
-            }}
-          />
+          >
+            <TextInput
+              ref={inputRef}
+              style={{
+                flex: 1,
+                fontSize: 16,
+                color: "#212529",
+                paddingVertical: 0,
+              }}
+              placeholder="Search"
+              placeholderTextColor="#adb5bd"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+              onSubmitEditing={handleSubmit}
+              blurOnSubmit={false}
+            />
+          </View>
         </View>
-      </KeyboardAvoidingView>
+
+        {/* Search Results Area */}
+        <View style={{ flex: 1 }}>
+          {searchQuery ? (
+            <Text
+              style={[
+                componentStyles.subtitle,
+                { alignSelf: "center", marginTop: 16 },
+              ]}
+            >
+              Searching for "{searchQuery}"...
+            </Text>
+          ) : (
+            <Text
+              style={[
+                componentStyles.subtitle,
+                { alignSelf: "center", marginTop: 16 },
+              ]}
+            >
+              Start typing to search
+            </Text>
+          )}
+        </View>
+      </View>
     </Modal>
   );
 }

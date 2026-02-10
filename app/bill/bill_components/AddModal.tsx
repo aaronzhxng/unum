@@ -67,7 +67,7 @@ export default function AddModal({
                 <Text
                   style={[
                     styles.dropdownItemText,
-                    option.id === "new-list" && { color: "#999" }, // Gray for new-list
+                    option.id === "new-list" && { color: "#7B7C81" }, // Gray for new-list
                   ]}
                 >
                   {option.label}

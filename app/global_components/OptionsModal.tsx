@@ -1,21 +1,22 @@
-import React from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
-import { styles } from "../global_styles/styles"; // ✅ 3. ADD styles
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { styles as componentStyles } from "../global_styles/styles";
 
 interface Props {
   showOptionsModal: boolean;
   setShowOptionsModal: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedNotifications: string[];
-  setSelectedNotifications: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedNotifications: string;
+  setSelectedNotifications: React.Dispatch<React.SetStateAction<string>>;
 }
-
-const listOptions = [
-  { id: "all-notications", label: "All" },
-  { id: "voting", label: "Voting" },
-  { id: "actions", label: "Actions" },
-  { id: "cosponsors", label: "Cosponsors" },
-  { id: "amendments", label: "Amendments" },
-];
 
 export default function OptionsModal({
   showOptionsModal,
@@ -23,139 +24,249 @@ export default function OptionsModal({
   selectedNotifications,
   setSelectedNotifications,
 }: Props) {
-  const closeModal = () => setShowOptionsModal(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [renameValue, setRenameValue] = useState("New List");
 
-  const toggleList = (id: string) => {
-    setSelectedNotifications((prev: string[]) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
+  const handleToggleNotifications = () => {
+    setNotificationsEnabled((prev) => !prev);
+    setSelectedNotifications("Notifications for this List");
   };
 
-  const handleApply = () => {
-    closeModal();
-    // Add any onApply logic here if needed
+  const handleRenameConfirm = () => {
+    setSelectedNotifications(renameValue);
+    setShowRenameModal(false);
   };
 
-  return showOptionsModal ? (
-    <Modal
-      visible={showOptionsModal}
-      transparent={true}
-      animationType="fade"
-      statusBarTranslucent={true}
-      onRequestClose={closeModal}
-    >
-      <Pressable style={styles.modalOverlay} onPress={closeModal}>
-        <View style={{ padding: 0, minHeight: 400, marginTop: -60 }}>
-          <ScrollView
-            style={styles.dropdownAdd}
-            nestedScrollEnabled
-            showsVerticalScrollIndicator={false}
-          >
-            <Text style={styles.dropdownItemTextLabel}>
-              Select Notifications
-            </Text>
-            {listOptions.map((option) => (
-              <Pressable
-                key={option.id}
-                style={[
-                  styles.dropdownItem,
-                  {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  },
-                ]}
-                onPress={() => toggleList(option.id)}
-              >
-                <Text
-                  style={[
-                    styles.dropdownItemText,
-                    option.id === "new-list" && { color: "#999" }, // Gray for new-list
-                  ]}
-                >
-                  {option.label}
-                </Text>
+  const handleDeleteConfirm = () => {
+    setSelectedNotifications("Deleted");
+    setShowDeleteModal(false);
+  };
 
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderWidth: 2,
-                    borderColor: "#ccc",
-                    borderRadius: 4,
-                    backgroundColor: selectedNotifications.includes(option.id)
-                      ? "#008CFF"
-                      : "transparent",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  {selectedNotifications.includes(option.id) && (
-                    <View
-                      style={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "#008CFF",
-                        borderRadius: 2,
-                      }}
-                    />
-                  )}
-                </View>
-              </Pressable>
-            ))}
+  return (
+    <>
+      {/* Main Options Dropdown */}
+      <Modal
+        visible={showOptionsModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowOptionsModal(false)}
+        statusBarTranslucent
+      >
+        <Pressable
+          style={componentStyles.modalOverlay}
+          onPress={() => setShowOptionsModal(false)}
+        >
+          <View style={componentStyles.dropdown}>
+            {/* Rename */}
             <Pressable
-              style={({ pressed }) => [
-                styles.dropdownItem, // base
-                {
+              style={({ pressed }) =>
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem
+              }
+              onPress={() => {
+                setShowOptionsModal(false);
+                setTimeout(() => setShowRenameModal(true), 200);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>Rename</Text>
+            </Pressable>
+
+            {/* Delete List */}
+            <Pressable
+              style={({ pressed }) =>
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem
+              }
+              onPress={() => {
+                setShowOptionsModal(false);
+                setTimeout(() => setShowDeleteModal(true), 200);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>Delete List</Text>
+            </Pressable>
+
+            {/* Notifications with checkbox */}
+            <Pressable style={componentStyles.dropdownItem}>
+              <View
+                style={{
                   flexDirection: "row",
-                  justifyContent: "space-between",
                   alignItems: "center",
-                  borderTopWidth: 1,
-                  borderColor: "#ccc",
-                  paddingTop: 12,
-                  marginTop: 12,
-                },
-                pressed && styles.dropdownItemPressed,
-              ]}
-            >
-              <Text style={[styles.dropdownItemText, { color: "#D45252" }]}>
-                Report an Error
-              </Text>
-            </Pressable>
-          </ScrollView>
-          {/* Buttons */}
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.actionButton,
-                { backgroundColor: "#f5f5f5" },
-                pressed && { transform: [{ scale: 0.96 }] },
-              ]}
-              onPress={closeModal}
-            >
-              <Text
-                style={{ color: "#535353", fontWeight: "500", fontSize: 16 }}
+                  justifyContent: "space-between",
+                }}
               >
-                Cancel
-              </Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [
-                styles.actionButton,
-                { backgroundColor: "#00AFFF" },
-                pressed && { transform: [{ scale: 0.96 }] },
-              ]}
-              onPress={handleApply}
-            >
-              <Text
-                style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
-              >
-                Save
-              </Text>
+                <Text style={componentStyles.dropdownItemText}>
+                  Notifications for this List
+                </Text>
+                <Pressable
+                  style={({ pressed }) => ({
+                    padding: 4,
+                    borderRadius: 4,
+                  })}
+                  onPress={handleToggleNotifications}
+                >
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderWidth: 2,
+                      borderColor: "#ccc",
+                      borderRadius: 4,
+                      backgroundColor: notificationsEnabled
+                        ? "#008CFF"
+                        : "transparent",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {notificationsEnabled && (
+                      <View
+                        style={{
+                          width: 12,
+                          height: 12,
+                          backgroundColor: "#008CFF",
+                          borderRadius: 2,
+                        }}
+                      />
+                    )}
+                  </View>
+                </Pressable>
+              </View>
             </Pressable>
           </View>
-        </View>
-      </Pressable>
-    </Modal>
-  ) : null;
+        </Pressable>
+      </Modal>
+
+      {/* Rename Confirmation Modal */}
+      <Modal
+        visible={showRenameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowRenameModal(false)}
+        statusBarTranslucent
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <Pressable
+            style={componentStyles.modalOverlay}
+            onPress={() => setShowRenameModal(false)}
+          >
+            <Pressable onPress={() => {}} style={componentStyles.subModalCard}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: "#1a1a1a",
+                  marginBottom: 16,
+                }}
+              >
+                Rename List
+              </Text>
+
+              {/* Text Input */}
+              <TextInput
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#535353",
+                  fontSize: 15,
+                  color: "#1a1a1a",
+                  paddingVertical: 6,
+                  marginBottom: 4,
+                }}
+                value={renameValue}
+                onChangeText={setRenameValue}
+                autoFocus
+                selectTextOnFocus
+                placeholderTextColor="#adb5bd"
+              />
+
+              {/* <View style={componentStyles.divider} /> */}
+
+              {/* Action Buttons */}
+              <View style={componentStyles.actionRow}>
+                <TouchableOpacity
+                  style={componentStyles.actionButton}
+                  onPress={() => setShowRenameModal(false)}
+                >
+                  <Text style={{ fontSize: 16, color: "#535353" }}>Cancel</Text>
+                </TouchableOpacity>
+
+                <View style={componentStyles.verticalDivider} />
+
+                <TouchableOpacity
+                  style={componentStyles.actionButton}
+                  onPress={handleRenameConfirm}
+                >
+                  <Text style={{ fontSize: 16, color: "#535353" }}>Rename</Text>
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+        statusBarTranslucent
+      >
+        <Pressable
+          style={componentStyles.modalOverlay}
+          onPress={() => setShowDeleteModal(false)}
+        >
+          <Pressable onPress={() => {}} style={componentStyles.subModalCard}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginBottom: 8,
+              }}
+            >
+              Delete
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#7B7C81",
+                marginBottom: 4,
+              }}
+            >
+              This List will be permanently deleted.
+            </Text>
+
+            {/* <View style={componentStyles.divider} /> */}
+
+            {/* Action Buttons */}
+            <View style={componentStyles.actionRow}>
+              <TouchableOpacity
+                style={componentStyles.actionButton}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={{ fontSize: 16, color: "#535353" }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <View style={componentStyles.verticalDivider} />
+
+              <TouchableOpacity
+                style={componentStyles.actionButton}
+                onPress={handleDeleteConfirm}
+              >
+                <Text style={{ fontSize: 16, color: "#535353" }}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
+  );
 }

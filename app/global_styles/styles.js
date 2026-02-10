@@ -10,13 +10,13 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
     paddingTop: 45,
   },
   header: {
     fontSize: 22,
     fontWeight: "600",
     marginBottom: 16,
+    marginLeft: 8,
   },
   headerLeft: {
     flexDirection: "row",
@@ -88,7 +88,8 @@ export const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    position: "absolute",
+    // position: "absolute",
+    justifyContent: "center",
     top: 0,
     left: 0,
     right: 0,
@@ -158,5 +159,36 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 6,
     marginLeft: 16,
+  },
+
+  subModalCard: {
+    backgroundColor: "#f5f5f5",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    paddingTop: 24,
+    paddingHorizontal: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 12,
+  },
+
+  actionButton: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+
+  verticalDivider: {
+    width: 1,
+    backgroundColor: "#e0e0e0",
+    marginVertical: 12,
   },
 });

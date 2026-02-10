@@ -34,44 +34,46 @@ export default function ListSelection({
               pressed ? styles.dropdownItemPressed : styles.dropdownItem
             }
             onPress={() => {
-              setSelectedList("Most Viewed");
+              setSelectedList("My List");
               setShowListSelection(false);
             }}
           >
-            <Text style={styles.dropdownItemText}>Most Viewed</Text>
+            <Text style={styles.dropdownItemText}>My List</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) =>
               pressed ? styles.dropdownItemPressed : styles.dropdownItem
             }
             onPress={() => {
-              setSelectedList("Most Recent Action");
+              setSelectedList("Tri State Area");
               setShowListSelection(false);
             }}
           >
-            <Text style={styles.dropdownItemText}>Most Recent Action</Text>
+            <Text style={styles.dropdownItemText}>Tri State Area</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) =>
               pressed ? styles.dropdownItemPressed : styles.dropdownItem
             }
             onPress={() => {
-              setSelectedList("Newest First");
+              setSelectedList("Swing States");
               setShowListSelection(false);
             }}
           >
-            <Text style={styles.dropdownItemText}>Newest First</Text>
+            <Text style={styles.dropdownItemText}>Swing States</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) =>
               pressed ? styles.dropdownItemPressed : styles.dropdownItem
             }
             onPress={() => {
-              setSelectedList("Oldest First");
+              setSelectedList("New List");
               setShowListSelection(false);
             }}
           >
-            <Text style={styles.dropdownItemText}>Oldest First</Text>
+            <Text style={[styles.dropdownItemText, { color: "#7B7C81" }]}>
+              New List
+            </Text>
           </Pressable>
         </View>
       </Pressable>
