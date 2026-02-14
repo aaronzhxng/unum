@@ -116,10 +116,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 8,
-    position: "absolute",
-    top: 330,
-    right: 16,
-    left: 16,
+    marginHorizontal: 16,
     minWidth: 200,
   },
   dropdownItemPressed: {

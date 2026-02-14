@@ -7,7 +7,9 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
-import OptionsModal from "../global_components/OptionsModal";
+import LegislationFilterModal from "../global_components/LegislationFilterModal";
+import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
+import SortDropdown from "../global_components/LegislationSortDropdown";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 
@@ -89,13 +91,59 @@ export default function LegislationScreen() {
   const [selectedNotifications, setSelectedNotifications] =
     useState("Congress");
 
-  // Filter dropdown (Congress) — placeholder until FilterDropdown is wired up
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("Congress");
-
   // Sort dropdown (Most Viewed)
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Most Viewed");
+
+  const handleReportError = () => {
+    console.log("Report error for legislation");
+    // TODO: Navigate to error reporting form or open modal
+  };
+
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedChambers, setSelectedChambers] = useState<string[]>([]);
+  const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
+  const [selectedLegislationTypes, setSelectedLegislationTypes] = useState<
+    string[]
+  >([]);
+
+  const SORT_OPTIONS = [
+    "Most Viewed",
+    "Most Recent Action",
+    "Newest First",
+    "Oldest First",
+  ];
+
+  const toggleChamber = (id: string) => {
+    setSelectedChambers((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const togglePolicyArea = (id: string) => {
+    setSelectedPolicyAreas((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const toggleLegislationType = (id: string) => {
+    setSelectedLegislationTypes((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const handleFilterCancel = () => {
+    // Reset to defaults or keep selections
+    setShowFilterModal(false);
+  };
+
+  const handleFilterApply = () => {
+    // Apply filters to your bill list
+    console.log("Chambers:", selectedChambers);
+    console.log("Policy Areas:", selectedPolicyAreas);
+    console.log("Types:", selectedLegislationTypes);
+    setShowFilterModal(false);
+  };
 
   return (
     <View style={componentStyles.container}>
@@ -106,7 +154,7 @@ export default function LegislationScreen() {
           <Pressable
             onPress={() => {
               setShowSortDropdown(false);
-              setShowFilterDropdown(!showFilterDropdown);
+              setShowFilterModal(true);
             }}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.96 : 1 }],
@@ -116,9 +164,9 @@ export default function LegislationScreen() {
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
               <Text style={[componentStyles.header, { alignItems: "center" }]}>
-                {selectedFilter}
+                Congress
               </Text>
-              {showFilterDropdown ? (
+              {showFilterModal ? (
                 <ChevronUp
                   size={24}
                   color="#535353"
@@ -137,7 +185,7 @@ export default function LegislationScreen() {
           {/* Most Viewed Sort Dropdown */}
           <Pressable
             onPress={() => {
-              setShowFilterDropdown(false);
+              setShowFilterModal(false);
               setShowSortDropdown(!showSortDropdown);
             }}
             style={({ pressed }) => ({
@@ -150,7 +198,6 @@ export default function LegislationScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 4,
-                paddingTop: 5,
               }}
             >
               <Text
@@ -202,33 +249,6 @@ export default function LegislationScreen() {
         </View>
       </View>
 
-      {/* Sort Dropdown Menu */}
-      {showSortDropdown && (
-        <Pressable
-          style={componentStyles.modalOverlay}
-          onPress={() => setShowSortDropdown(false)}
-        >
-          <View style={componentStyles.dropdown}>
-            {SORT_OPTIONS.map((option) => (
-              <Pressable
-                key={option}
-                style={({ pressed }) =>
-                  pressed
-                    ? componentStyles.dropdownItemPressed
-                    : componentStyles.dropdownItem
-                }
-                onPress={() => {
-                  setSelectedSort(option);
-                  setShowSortDropdown(false);
-                }}
-              >
-                <Text style={componentStyles.dropdownItemText}>{option}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </Pressable>
-      )}
-
       <FlatList
         data={MOCK_BILLS}
         keyExtractor={(item) => item.id}
@@ -243,12 +263,31 @@ export default function LegislationScreen() {
         onSearch={setSearchQuery}
       />
 
-      {/* Options Modal */}
-      <OptionsModal
+      {/* Legislation Options Modal */}
+      <LegislationOptionsModal
         showOptionsModal={showOptionsModal}
         setShowOptionsModal={setShowOptionsModal}
-        selectedNotifications={selectedNotifications}
-        setSelectedNotifications={setSelectedNotifications}
+        onReportError={handleReportError}
+      />
+      {/* Legislation Filter Modal */}
+      <LegislationFilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        selectedChambers={selectedChambers}
+        selectedPolicyAreas={selectedPolicyAreas}
+        selectedLegislationTypes={selectedLegislationTypes}
+        toggleChamber={toggleChamber}
+        togglePolicyArea={togglePolicyArea}
+        toggleLegislationType={toggleLegislationType}
+        onCancel={handleFilterCancel}
+        onApply={handleFilterApply}
+      />
+      {/* Legislation Sort Dropdown */}
+      <SortDropdown
+        showSortDropdown={showSortDropdown}
+        setShowSortDropdown={setShowSortDropdown}
+        selectedSort={selectedSort}
+        setSelectedSort={setSelectedSort}
       />
     </View>
   );

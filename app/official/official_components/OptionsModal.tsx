@@ -120,7 +120,7 @@ export default function OptionsModal({
                 pressed && styles.dropdownItemPressed,
               ]}
             >
-              <Text style={[styles.dropdownItemText, { color: "#D45252" }]}>
+              <Text style={[styles.dropdownItemText, { color: "#FF3B30" }]}>
                 Report an Error
               </Text>
             </Pressable>

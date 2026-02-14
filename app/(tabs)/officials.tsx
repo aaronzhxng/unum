@@ -1,14 +1,22 @@
 import { useRouter } from "expo-router";
 import {
+  Check,
   ChevronDown,
   ChevronUp,
   MoreVertical,
   Search,
 } from "lucide-react-native";
 import { useState } from "react";
-import { FlatList, Image, Pressable, Text, View } from "react-native";
-import ListSelection from "../global_components/ListSelection";
-import OptionsModal from "../global_components/OptionsModal";
+import {
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 
@@ -81,6 +89,68 @@ export default function OfficialsScreen() {
     useState("New York");
   const [showListSelection, setShowListSelection] = useState(false);
   const [selectedList, setSelectedList] = useState("New York");
+  const handleSetPriority = () => {
+    console.log("Set as priority:", selectedList);
+    // TODO: Backend call to mark this state as priority
+  };
+
+  const handleReportError = () => {
+    console.log("Report error for:", selectedList);
+    // TODO: Navigate to error reporting form or open modal
+  };
+
+  const LOCATION_OPTIONS = [
+    "Federal",
+    "Alabama",
+    "Alaska",
+    "Arizona",
+    "Arkansas",
+    "California",
+    "Colorado",
+    "Connecticut",
+    "Delaware",
+    "Florida",
+    "Georgia",
+    "Hawaii",
+    "Idaho",
+    "Illinois",
+    "Indiana",
+    "Iowa",
+    "Kansas",
+    "Kentucky",
+    "Louisiana",
+    "Maine",
+    "Maryland",
+    "Massachusetts",
+    "Michigan",
+    "Minnesota",
+    "Mississippi",
+    "Missouri",
+    "Montana",
+    "Nebraska",
+    "Nevada",
+    "New Hampshire",
+    "New Jersey",
+    "New Mexico",
+    "New York",
+    "North Carolina",
+    "North Dakota",
+    "Ohio",
+    "Oregon",
+    "Pennsylvania",
+    "Rhode Island",
+    "South Carolina",
+    "South Dakota",
+    "Tennessee",
+    "Texas",
+    "Utah",
+    "Vermont",
+    "Virginia",
+    "Washington",
+    "West Virginia",
+    "Wisconsin",
+    "Wyoming",
+  ];
 
   return (
     <View style={componentStyles.container}>
@@ -149,21 +219,59 @@ export default function OfficialsScreen() {
         onSearch={setSearchQuery}
       />
 
-      {/* Options Modal */}
-      <OptionsModal
+      {/* Official Options Modal */}
+      <OfficialsOptionsModal
         showOptionsModal={showOptionsModal}
         setShowOptionsModal={setShowOptionsModal}
-        selectedNotifications={selectedNotifications}
-        setSelectedNotifications={setSelectedNotifications}
+        onSetPriority={handleSetPriority}
+        onReportError={handleReportError}
       />
 
-      {/* List Selection Modal */}
-      <ListSelection
-        showListSelection={showListSelection}
-        setShowListSelection={setShowListSelection}
-        selectedList={selectedList}
-        setSelectedList={setSelectedList}
-      />
+      {/* Location Selection Dropdown */}
+      <Modal
+        visible={showListSelection}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowListSelection(false)}
+        statusBarTranslucent
+      >
+        <Pressable
+          style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
+          onPress={() => setShowListSelection(false)}
+        >
+          <ScrollView
+            style={[componentStyles.dropdown, { marginVertical: 96 }]}
+          >
+            {LOCATION_OPTIONS.map((option) => (
+              <Pressable
+                key={option}
+                style={({ pressed }) =>
+                  pressed
+                    ? componentStyles.dropdownItemPressed
+                    : componentStyles.dropdownItem
+                }
+                onPress={() => {
+                  setSelectedList(option);
+                  setShowListSelection(false);
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={componentStyles.dropdownItemText}>{option}</Text>
+                  {selectedList === option && (
+                    <Check size={20} color="#008CFF" strokeWidth={4} />
+                  )}
+                </View>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
