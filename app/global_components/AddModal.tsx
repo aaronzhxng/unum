@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
-import { styles } from "../styles";
 
 interface Props {
   showAddModal: boolean;
@@ -16,6 +15,46 @@ const listOptions = [
   { id: "new-list", label: "New List" },
 ];
 
+// Inline styles to avoid path dependencies
+const modalStyles = {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.2)",
+  },
+  dropdownAdd: {
+    backgroundColor: "#fafafa",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 8,
+    margin: 16,
+    marginTop: 280,
+  },
+  dropdownItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    color: "#000000",
+  },
+  dropdownItemTextLabel: {
+    fontSize: 16,
+    color: "#7B7C81",
+    marginTop: 16,
+    marginBottom: 6,
+    marginHorizontal: 16,
+  },
+  actionButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 6,
+    marginLeft: 16,
+  },
+};
+
 export default function AddModal({
   showAddModal,
   setShowAddModal,
@@ -25,12 +64,31 @@ export default function AddModal({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentListIndex, setCurrentListIndex] = useState(0);
+  const [initialSelections, setInitialSelections] = useState<string[]>([]);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const selectedListLabels = listOptions
     .filter((opt) => selectedLists.includes(opt.id))
     .map((opt) => opt.label);
 
-  const closeModal = () => setShowAddModal(false);
+  const removedListLabels = listOptions
+    .filter(
+      (opt) =>
+        initialSelections.includes(opt.id) && !selectedLists.includes(opt.id),
+    )
+    .map((opt) => opt.label);
+
+  // Track initial selections when modal opens
+  useEffect(() => {
+    if (showAddModal) {
+      setInitialSelections([...selectedLists]);
+    }
+  }, [showAddModal]);
+
+  const closeModal = () => {
+    setShowAddModal(false);
+    setIsRemoving(false);
+  };
 
   const toggleList = (id: string) => {
     setSelectedLists((prev: string[]) =>
@@ -39,29 +97,44 @@ export default function AddModal({
   };
 
   const handleApply = () => {
-    if (selectedLists.length === 0) {
+    const hasRemovals = removedListLabels.length > 0;
+    const hasAdditions = selectedLists.some(
+      (id) => !initialSelections.includes(id),
+    );
+
+    if (!hasRemovals && !hasAdditions) {
       closeModal();
       return;
     }
 
     closeModal();
-    setShowConfirmModal(true);
-    setProgress(0);
-    setCurrentListIndex(0);
+
+    // Show removal progress first if there are removals
+    if (hasRemovals) {
+      setIsRemoving(true);
+      setShowConfirmModal(true);
+      setProgress(0);
+      setCurrentListIndex(0);
+    } else {
+      setIsRemoving(false);
+      setShowConfirmModal(true);
+      setProgress(0);
+      setCurrentListIndex(0);
+    }
   };
 
   // Animate progress bar
   useEffect(() => {
     if (!showConfirmModal) return;
 
-    const totalLists = selectedListLabels.length;
+    const activeList = isRemoving ? removedListLabels : selectedListLabels;
+    const totalLists = activeList.length;
     let currentProgress = 0;
 
     const interval = setInterval(() => {
-      currentProgress += 2; // Increment by 2% each tick
+      currentProgress += 2;
       setProgress(currentProgress);
 
-      // Update current list index based on progress
       const newListIndex = Math.floor((currentProgress / 100) * totalLists);
       if (newListIndex < totalLists) {
         setCurrentListIndex(newListIndex);
@@ -69,16 +142,36 @@ export default function AddModal({
 
       if (currentProgress >= 100) {
         clearInterval(interval);
-        setTimeout(() => {
-          setShowConfirmModal(false);
-          setProgress(0);
-          setCurrentListIndex(0);
-        }, 300);
+
+        // If we just finished removing and there are additions, switch to adding
+        if (
+          isRemoving &&
+          selectedLists.some((id) => !initialSelections.includes(id))
+        ) {
+          setTimeout(() => {
+            setIsRemoving(false);
+            setProgress(0);
+            setCurrentListIndex(0);
+          }, 300);
+        } else {
+          // All done
+          setTimeout(() => {
+            setShowConfirmModal(false);
+            setProgress(0);
+            setCurrentListIndex(0);
+            setIsRemoving(false);
+          }, 300);
+        }
       }
-    }, 30); // Update every 30ms for smooth animation
+    }, 30);
 
     return () => clearInterval(interval);
-  }, [showConfirmModal, selectedListLabels.length]);
+  }, [
+    showConfirmModal,
+    isRemoving,
+    selectedListLabels.length,
+    removedListLabels.length,
+  ]);
 
   return (
     <>
@@ -90,19 +183,19 @@ export default function AddModal({
         statusBarTranslucent={true}
         onRequestClose={closeModal}
       >
-        <Pressable style={styles.modalOverlay} onPress={closeModal}>
+        <Pressable style={modalStyles.modalOverlay} onPress={closeModal}>
           <View style={{ padding: 0, minHeight: 400 }}>
             <ScrollView
-              style={styles.dropdownAdd}
+              style={modalStyles.dropdownAdd}
               nestedScrollEnabled
               showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.dropdownItemTextLabel}>Add to List</Text>
+              <Text style={modalStyles.dropdownItemTextLabel}>Add to List</Text>
               {listOptions.map((option) => (
                 <Pressable
                   key={option.id}
                   style={[
-                    styles.dropdownItem,
+                    modalStyles.dropdownItem,
                     {
                       flexDirection: "row",
                       justifyContent: "space-between",
@@ -113,7 +206,7 @@ export default function AddModal({
                 >
                   <Text
                     style={[
-                      styles.dropdownItemText,
+                      modalStyles.dropdownItemText,
                       option.id === "new-list" && { color: "#7B7C81" },
                     ]}
                   >
@@ -154,9 +247,9 @@ export default function AddModal({
             <View style={{ flexDirection: "row", gap: 12 }}>
               <Pressable
                 style={({ pressed }) => [
-                  styles.actionButton,
+                  modalStyles.actionButton,
                   { backgroundColor: "#fafafa" },
-                  pressed && { transform: [{ scale: 0.96 }] },
+                  { transform: pressed ? [{ scale: 0.96 }] : [] },
                 ]}
                 onPress={closeModal}
               >
@@ -168,7 +261,7 @@ export default function AddModal({
               </Pressable>
               <Pressable
                 style={({ pressed }) => [
-                  styles.actionButton,
+                  modalStyles.actionButton,
                   { backgroundColor: "#00AFFF" },
                   pressed && { transform: [{ scale: 0.96 }] },
                 ]}
@@ -177,7 +270,7 @@ export default function AddModal({
                 <Text
                   style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
                 >
-                  Add
+                  Confirm
                 </Text>
               </Pressable>
             </View>
@@ -193,7 +286,7 @@ export default function AddModal({
         statusBarTranslucent
       >
         <Pressable
-          style={[styles.modalOverlay, { justifyContent: "center" }]}
+          style={[modalStyles.modalOverlay, { justifyContent: "center" }]}
           onPress={() => {}}
         >
           <View
@@ -218,12 +311,16 @@ export default function AddModal({
                 textAlign: "center",
               }}
             >
-              {selectedListLabels.length > 1
-                ? `Add to ${selectedListLabels[currentListIndex]}`
-                : `Add to ${selectedListLabels[0]}`}
+              {isRemoving
+                ? removedListLabels.length > 1
+                  ? `Removing from ${removedListLabels[currentListIndex]}`
+                  : `Removing from ${removedListLabels[0]}`
+                : selectedListLabels.length > 1
+                  ? `Add to ${selectedListLabels[currentListIndex]}`
+                  : `Add to ${selectedListLabels[0]}`}
             </Text>
 
-            {/* Progress Bar Background */}
+            {/* Progress Bar */}
             <View
               style={{
                 width: "100%",
@@ -234,7 +331,6 @@ export default function AddModal({
                 overflow: "hidden",
               }}
             >
-              {/* Progress Bar Fill */}
               <View
                 style={{
                   width: `${progress}%`,
@@ -254,7 +350,10 @@ export default function AddModal({
               }}
             >
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/{selectedListLabels.length}
+                {currentListIndex + 1}/
+                {isRemoving
+                  ? removedListLabels.length
+                  : selectedListLabels.length}
               </Text>
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
                 {Math.round(progress)}%

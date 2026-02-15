@@ -99,6 +99,8 @@ export default function OfficialsScreen() {
     // TODO: Navigate to error reporting form or open modal
   };
 
+  const router = useRouter();
+
   const LOCATION_OPTIONS = [
     "Federal",
     "Alabama",
@@ -217,6 +219,11 @@ export default function OfficialsScreen() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
+        searchContext={selectedList} // This already exists as state
+        items={MOCK_OFFICIALS} // Use your MOCK_OFFICIALS array
+        onItemPress={(item) => {
+          router.navigate(`/official/${item.id}`);
+        }}
       />
 
       {/* Official Options Modal */}

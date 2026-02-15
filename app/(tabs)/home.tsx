@@ -443,6 +443,16 @@ export default function HomeScreen() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
+        searchContext={selectedList} // "My List", "Swing States", etc.
+        items={items} // Your MOCK_ITEMS or filtered items
+        onItemPress={(item) => {
+          // Navigate to the item
+          if (item.type === "official") {
+            router.navigate(`/official/${item.id}`);
+          } else {
+            router.navigate(`/bill/${item.id}`);
+          }
+        }}
       />
 
       {/* Options Modal */}

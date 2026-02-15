@@ -81,7 +81,7 @@ const MOCK_BILLS: Bill[] = [
   },
 ];
 
-const SORT_OPTIONS = ["Most Viewed", "Most Recent", "Alphabetical"];
+// const SORT_OPTIONS = ["Most Viewed", "Most Recent", "Alphabetical"];
 
 export default function LegislationScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -106,10 +106,21 @@ export default function LegislationScreen() {
   const [selectedLegislationTypes, setSelectedLegislationTypes] = useState<
     string[]
   >([]);
+  const [selectedFilter, setSelectedFilter] = useState("Congress");
+
+  const getFilterLabel = () => {
+    if (selectedChambers.length === 1) {
+      const chamber = selectedChambers[0];
+      if (chamber === "house") return "House";
+      if (chamber === "senate") return "Senate";
+      if (chamber === "joint") return "Joint";
+    }
+    return "Congress";
+  };
 
   const SORT_OPTIONS = [
     "Most Viewed",
-    "Most Recent Action",
+    "Recent Action",
     "Newest First",
     "Oldest First",
   ];
@@ -145,6 +156,8 @@ export default function LegislationScreen() {
     setShowFilterModal(false);
   };
 
+  const router = useRouter();
+
   return (
     <View style={componentStyles.container}>
       {/* Header */}
@@ -164,7 +177,7 @@ export default function LegislationScreen() {
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
               <Text style={[componentStyles.header, { alignItems: "center" }]}>
-                Congress
+                {getFilterLabel()}
               </Text>
               {showFilterModal ? (
                 <ChevronUp
@@ -261,6 +274,11 @@ export default function LegislationScreen() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
+        searchContext={selectedFilter} // Use selectedFilter instead (shows "Congress")
+        items={MOCK_BILLS} // Use your MOCK_BILLS array
+        onItemPress={(item) => {
+          router.navigate(`/bill/${item.id}`);
+        }}
       />
 
       {/* Legislation Options Modal */}
