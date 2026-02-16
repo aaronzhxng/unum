@@ -6,7 +6,6 @@ import {
   Pressable,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
@@ -185,25 +184,31 @@ export default function OptionsModal({
                 placeholderTextColor="#adb5bd"
               />
 
-              {/* <View style={componentStyles.divider} /> */}
-
               {/* Action Buttons */}
               <View style={componentStyles.actionRow}>
-                <TouchableOpacity
-                  style={componentStyles.actionButton}
+                <Pressable
+                  style={({ pressed }) => [
+                    componentStyles.actionButton,
+                    { transform: pressed ? [{ scale: 0.96 }] : [] },
+                    // { opacity: pressed ? 0.7 : 1 },
+                  ]}
                   onPress={() => setShowRenameModal(false)}
                 >
                   <Text style={{ fontSize: 16, color: "#535353" }}>Cancel</Text>
-                </TouchableOpacity>
+                </Pressable>
 
                 <View style={componentStyles.verticalDivider} />
 
-                <TouchableOpacity
-                  style={componentStyles.actionButton}
+                <Pressable
+                  style={({ pressed }) => [
+                    componentStyles.actionButton,
+                    { transform: pressed ? [{ scale: 0.96 }] : [] },
+                    // { opacity: pressed ? 0.7 : 1 },
+                  ]}
                   onPress={handleRenameConfirm}
                 >
                   <Text style={{ fontSize: 16, color: "#535353" }}>Rename</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </Pressable>
           </Pressable>
@@ -244,21 +249,27 @@ export default function OptionsModal({
               This list will be permanently deleted.
             </Text>
 
-            {/* <View style={componentStyles.divider} /> */}
-
             {/* Action Buttons */}
             <View style={componentStyles.actionRow}>
-              <TouchableOpacity
-                style={componentStyles.actionButton}
+              <Pressable
+                style={({ pressed }) => [
+                  componentStyles.actionButton,
+                  { transform: pressed ? [{ scale: 0.96 }] : [] },
+                  // { opacity: pressed ? 0.7 : 1 },
+                ]}
                 onPress={() => setShowDeleteModal(false)}
               >
                 <Text style={{ fontSize: 16, color: "#535353" }}>Cancel</Text>
-              </TouchableOpacity>
+              </Pressable>
 
               <View style={componentStyles.verticalDivider} />
 
-              <TouchableOpacity
-                style={componentStyles.actionButton}
+              <Pressable
+                style={({ pressed }) => [
+                  componentStyles.actionButton,
+                  { transform: pressed ? [{ scale: 0.96 }] : [] },
+                  // { opacity: pressed ? 0.7 : 1 },
+                ]}
                 onPress={handleDeleteConfirm}
               >
                 <Text
@@ -266,7 +277,7 @@ export default function OptionsModal({
                 >
                   Delete
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </Pressable>
         </Pressable>

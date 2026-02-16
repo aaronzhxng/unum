@@ -16,6 +16,7 @@ import {
   Text,
   View,
 } from "react-native";
+import NewListNameModal from "../global_components/NewListNameModal";
 import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
@@ -89,6 +90,11 @@ export default function OfficialsScreen() {
     useState("New York");
   const [showListSelection, setShowListSelection] = useState(false);
   const [selectedList, setSelectedList] = useState("New York");
+
+  // New List Modal
+  const [showNewListModal, setShowNewListModal] = useState(false);
+  const [newListName, setNewListName] = useState("");
+
   const handleSetPriority = () => {
     console.log("Set as priority:", selectedList);
     // TODO: Backend call to mark this state as priority
@@ -97,6 +103,15 @@ export default function OfficialsScreen() {
   const handleReportError = () => {
     console.log("Report error for:", selectedList);
     // TODO: Navigate to error reporting form or open modal
+  };
+
+  const handleNewListCreate = () => {
+    if (newListName.trim()) {
+      // TODO: Add to officials list management when backend is ready
+      console.log("New list created:", newListName.trim());
+      setNewListName("");
+      setShowNewListModal(false);
+    }
   };
 
   const router = useRouter();
@@ -219,11 +234,12 @@ export default function OfficialsScreen() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
-        searchContext={selectedList} // This already exists as state
-        items={MOCK_OFFICIALS} // Use your MOCK_OFFICIALS array
+        searchContext={selectedList}
+        items={MOCK_OFFICIALS}
         onItemPress={(item) => {
           router.navigate(`/official/${item.id}`);
         }}
+        onNewListPress={() => setShowNewListModal(true)}
       />
 
       {/* Official Options Modal */}
@@ -279,6 +295,18 @@ export default function OfficialsScreen() {
           </ScrollView>
         </Pressable>
       </Modal>
+
+      {/* New List Name Modal */}
+      <NewListNameModal
+        visible={showNewListModal}
+        onClose={() => {
+          setShowNewListModal(false);
+          setNewListName("");
+        }}
+        onConfirm={handleNewListCreate}
+        value={newListName}
+        onChangeText={setNewListName}
+      />
     </View>
   );
 }

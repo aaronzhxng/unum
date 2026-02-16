@@ -6,6 +6,7 @@ interface Props {
   setShowAddModal: React.Dispatch<React.SetStateAction<boolean>>;
   selectedLists: string[];
   setSelectedLists: React.Dispatch<React.SetStateAction<string[]>>;
+  onNewListPress: () => void;
 }
 
 const listOptions = [
@@ -60,6 +61,7 @@ export default function AddModal({
   setShowAddModal,
   selectedLists,
   setSelectedLists,
+  onNewListPress,
 }: Props) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -68,7 +70,7 @@ export default function AddModal({
   const [isRemoving, setIsRemoving] = useState(false);
 
   const selectedListLabels = listOptions
-    .filter((opt) => selectedLists.includes(opt.id))
+    .filter((opt) => selectedLists.includes(opt.id) && opt.id !== "new-list")
     .map((opt) => opt.label);
 
   const removedListLabels = listOptions
@@ -91,6 +93,8 @@ export default function AddModal({
   };
 
   const toggleList = (id: string) => {
+    // Just toggle selection - don't open modal yet
+    // Modal will open after Confirm is pressed and progress completes
     setSelectedLists((prev: string[]) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
@@ -98,11 +102,20 @@ export default function AddModal({
 
   const handleApply = () => {
     const hasRemovals = removedListLabels.length > 0;
-    const hasAdditions = selectedLists.some(
-      (id) => !initialSelections.includes(id),
+    const hasNewList = selectedLists.includes("new-list");
+    const hasExistingAdditions = selectedLists.some(
+      (id) => id !== "new-list" && !initialSelections.includes(id),
     );
 
-    if (!hasRemovals && !hasAdditions) {
+    // If ONLY "New List" is selected with no other changes, open modal immediately
+    if (hasNewList && !hasRemovals && !hasExistingAdditions) {
+      closeModal();
+      setTimeout(() => onNewListPress(), 200);
+      return;
+    }
+
+    // If no changes at all
+    if (!hasRemovals && !hasExistingAdditions && !hasNewList) {
       closeModal();
       return;
     }
@@ -146,7 +159,9 @@ export default function AddModal({
         // If we just finished removing and there are additions, switch to adding
         if (
           isRemoving &&
-          selectedLists.some((id) => !initialSelections.includes(id))
+          selectedLists.some(
+            (id) => id !== "new-list" && !initialSelections.includes(id),
+          )
         ) {
           setTimeout(() => {
             setIsRemoving(false);
@@ -154,12 +169,17 @@ export default function AddModal({
             setCurrentListIndex(0);
           }, 300);
         } else {
-          // All done
+          // All done with progress
           setTimeout(() => {
             setShowConfirmModal(false);
             setProgress(0);
             setCurrentListIndex(0);
             setIsRemoving(false);
+
+            // If "New List" was selected, open the name modal now
+            if (selectedLists.includes("new-list")) {
+              setTimeout(() => onNewListPress(), 200);
+            }
           }, 300);
         }
       }
@@ -270,7 +290,7 @@ export default function AddModal({
                 <Text
                   style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
                 >
-                  Confirm
+                  Add
                 </Text>
               </Pressable>
             </View>

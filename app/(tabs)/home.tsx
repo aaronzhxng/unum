@@ -7,17 +7,10 @@ import {
   Search,
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import {
-  FlatList,
-  Image,
-  Modal,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import EditOptionsModal from "../global_components/EditOptionsModal";
 import ListSelection from "../global_components/ListSelection";
+import NewListNameModal from "../global_components/NewListNameModal";
 import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
@@ -136,6 +129,9 @@ export default function HomeScreen() {
 
   const allSelected = selectedIds.size === items.length;
 
+  const [showNewListModal, setShowNewListModal] = useState(false);
+  const [newListName, setNewListName] = useState("");
+
   const enterEditMode = (triggerId: string) => {
     setIsEditMode(true);
     setSelectedIds(new Set([triggerId]));
@@ -182,6 +178,19 @@ export default function HomeScreen() {
     exitEditMode();
   };
 
+  const handleNewListCreate = () => {
+    if (newListName.trim()) {
+      // Set the new list as selected
+      setSelectedList(newListName.trim());
+
+      // Clear and close modal
+      setNewListName("");
+      setShowNewListModal(false);
+
+      // TODO: When you add backend, make API call here to save the new list
+    }
+  };
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -199,7 +208,13 @@ export default function HomeScreen() {
           <>
             <View style={componentStyles.headerLeft}>
               {/* Select All circle */}
-              <Pressable onPress={toggleSelectAll} style={{ marginRight: 12 }}>
+              <Pressable
+                onPress={toggleSelectAll}
+                style={({ pressed }) => ({
+                  marginRight: 12,
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                })}
+              >
                 <View
                   style={{
                     width: 24,
@@ -332,19 +347,31 @@ export default function HomeScreen() {
             paddingBottom: 48,
           }}
         >
-          <TouchableOpacity
-            style={{ flex: 1, paddingVertical: 16, alignItems: "center" }}
+          <Pressable
+            style={({ pressed }) => ({
+              flex: 1,
+              paddingVertical: 16,
+              alignItems: "center",
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+              // opacity: pressed ? 0.7 : 1,
+            })}
             onPress={exitEditMode}
           >
             <Text style={{ fontSize: 16, color: "#535353" }}>Cancel</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <View
             style={{ width: 1, backgroundColor: "#e0e0e0", marginVertical: 12 }}
           />
 
-          <TouchableOpacity
-            style={{ flex: 1, paddingVertical: 16, alignItems: "center" }}
+          <Pressable
+            style={({ pressed }) => ({
+              flex: 1,
+              paddingVertical: 16,
+              alignItems: "center",
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+              // opacity: pressed ? 0.7 : 1,
+            })}
             onPress={() => selectedIds.size > 0 && setShowRemoveModal(true)}
           >
             <Text
@@ -356,7 +383,7 @@ export default function HomeScreen() {
             >
               Remove
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
 
@@ -403,17 +430,19 @@ export default function HomeScreen() {
                 : `${selectedIds.size} items will be removed from your list.`}
             </Text>
 
-            {/* <View
-              style={{ height: 1, backgroundColor: "#e0e0e0", marginTop: 16 }}
-            /> */}
-
             <View style={{ flexDirection: "row", marginVertical: 12 }}>
-              <TouchableOpacity
-                style={{ flex: 1, paddingVertical: 14, alignItems: "center" }}
+              <Pressable
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                  // opacity: pressed ? 0.7 : 1,
+                })}
                 onPress={() => setShowRemoveModal(false)}
               >
                 <Text style={{ fontSize: 16, color: "#535353" }}>Cancel</Text>
-              </TouchableOpacity>
+              </Pressable>
 
               <View
                 style={{
@@ -423,8 +452,14 @@ export default function HomeScreen() {
                 }}
               />
 
-              <TouchableOpacity
-                style={{ flex: 1, paddingVertical: 14, alignItems: "center" }}
+              <Pressable
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                  // opacity: pressed ? 0.7 : 1,
+                })}
                 onPress={handleRemoveConfirm}
               >
                 <Text
@@ -432,7 +467,7 @@ export default function HomeScreen() {
                 >
                   Remove
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </Pressable>
         </Pressable>
@@ -443,16 +478,16 @@ export default function HomeScreen() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
-        searchContext={selectedList} // "My List", "Swing States", etc.
-        items={items} // Your MOCK_ITEMS or filtered items
+        searchContext={selectedList}
+        items={items}
         onItemPress={(item) => {
-          // Navigate to the item
           if (item.type === "official") {
             router.navigate(`/official/${item.id}`);
           } else {
             router.navigate(`/bill/${item.id}`);
           }
         }}
+        onNewListPress={() => setShowNewListModal(true)}
       />
 
       {/* Options Modal */}
@@ -475,6 +510,17 @@ export default function HomeScreen() {
         visible={showEditOptions}
         onClose={() => setShowEditOptions(false)}
         onConfirm={handleEditConfirm}
+        onNewListPress={() => setShowNewListModal(true)} // 👈 Add this
+      />
+      <NewListNameModal
+        visible={showNewListModal}
+        onClose={() => {
+          setShowNewListModal(false);
+          setNewListName("");
+        }}
+        onConfirm={handleNewListCreate}
+        value={newListName}
+        onChangeText={setNewListName}
       />
     </View>
   );

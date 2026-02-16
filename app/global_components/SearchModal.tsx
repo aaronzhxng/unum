@@ -22,6 +22,7 @@ interface SearchModalProps {
   searchContext?: string; // e.g., "My List", "Swing States"
   items?: any[]; // The items to search through
   onItemPress?: (item: any) => void; // Handle item selection
+  onNewListPress: () => void; // Handle New List creation
 }
 
 export default function SearchModal({
@@ -32,6 +33,7 @@ export default function SearchModal({
   searchContext = "this list",
   items = [],
   onItemPress,
+  onNewListPress,
 }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState(query || "");
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
@@ -102,7 +104,6 @@ export default function SearchModal({
 
   const handleAddPress = (item: any, event: any) => {
     event.stopPropagation(); // Prevent card navigation
-    Keyboard.dismiss(); // 👈 Add this line
     setSelectedAddItem(item);
     setShowAddModal(true);
   };
@@ -171,7 +172,7 @@ export default function SearchModal({
             <Text
               style={[
                 componentStyles.subtitle,
-                { alignSelf: "center", marginTop: 16, marginBottom: 16 },
+                { alignSelf: "center", marginTop: 16 },
               ]}
             >
               Start typing to search
@@ -180,7 +181,7 @@ export default function SearchModal({
             <Text
               style={[
                 componentStyles.subtitle,
-                { alignSelf: "center", marginTop: 16, marginBottom: 16 },
+                { alignSelf: "center", marginTop: 16 },
               ]}
             >
               No results for "{searchQuery}" in {searchContext}
@@ -190,7 +191,7 @@ export default function SearchModal({
               <Text
                 style={[
                   componentStyles.subtitle,
-                  { alignSelf: "center", marginTop: 16, marginBottom: 16 },
+                  { marginLeft: 16, marginTop: 16, marginBottom: 8 },
                 ]}
               >
                 {filteredItems.length} result
@@ -201,7 +202,6 @@ export default function SearchModal({
                 data={filteredItems}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={componentStyles.listContent}
-                keyboardShouldPersistTaps="handled" // 👈 Add this
                 renderItem={({ item }) => (
                   <Pressable
                     onPress={() => handleItemPress(item)}
@@ -293,6 +293,7 @@ export default function SearchModal({
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
+        onNewListPress={onNewListPress}
       />
     </Modal>
   );

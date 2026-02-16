@@ -10,6 +10,7 @@ import { FlatList, Image, Pressable, Text, View } from "react-native";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
 import SortDropdown from "../global_components/LegislationSortDropdown";
+import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 
@@ -81,8 +82,6 @@ const MOCK_BILLS: Bill[] = [
   },
 ];
 
-// const SORT_OPTIONS = ["Most Viewed", "Most Recent", "Alphabetical"];
-
 export default function LegislationScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,9 +94,22 @@ export default function LegislationScreen() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Most Viewed");
 
+  // New List Modal
+  const [showNewListModal, setShowNewListModal] = useState(false);
+  const [newListName, setNewListName] = useState("");
+
   const handleReportError = () => {
     console.log("Report error for legislation");
     // TODO: Navigate to error reporting form or open modal
+  };
+
+  const handleNewListCreate = () => {
+    if (newListName.trim()) {
+      // TODO: Add to bills list management when backend is ready
+      console.log("New list created:", newListName.trim());
+      setNewListName("");
+      setShowNewListModal(false);
+    }
   };
 
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -274,11 +286,12 @@ export default function LegislationScreen() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
-        searchContext={selectedFilter} // Use selectedFilter instead (shows "Congress")
-        items={MOCK_BILLS} // Use your MOCK_BILLS array
+        searchContext={selectedFilter}
+        items={MOCK_BILLS}
         onItemPress={(item) => {
           router.navigate(`/bill/${item.id}`);
         }}
+        onNewListPress={() => setShowNewListModal(true)}
       />
 
       {/* Legislation Options Modal */}
@@ -287,6 +300,7 @@ export default function LegislationScreen() {
         setShowOptionsModal={setShowOptionsModal}
         onReportError={handleReportError}
       />
+
       {/* Legislation Filter Modal */}
       <LegislationFilterModal
         visible={showFilterModal}
@@ -300,12 +314,25 @@ export default function LegislationScreen() {
         onCancel={handleFilterCancel}
         onApply={handleFilterApply}
       />
+
       {/* Legislation Sort Dropdown */}
       <SortDropdown
         showSortDropdown={showSortDropdown}
         setShowSortDropdown={setShowSortDropdown}
         selectedSort={selectedSort}
         setSelectedSort={setSelectedSort}
+      />
+
+      {/* New List Name Modal */}
+      <NewListNameModal
+        visible={showNewListModal}
+        onClose={() => {
+          setShowNewListModal(false);
+          setNewListName("");
+        }}
+        onConfirm={handleNewListCreate}
+        value={newListName}
+        onChangeText={setNewListName}
       />
     </View>
   );
