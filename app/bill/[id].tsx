@@ -10,6 +10,7 @@ import {
 import { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
+import NewListNameModal from "../global_components/NewListNameModal";
 import ActionHistory from "./bill_components/ActionHistory";
 import AddModal from "./bill_components/AddModal";
 import Cosponsors, { Cosponsor } from "./bill_components/Cosponsors";
@@ -61,6 +62,17 @@ export default function BillDetail() {
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
     [],
   );
+
+  const [showNewListModal, setShowNewListModal] = useState(false);
+  const [newListName, setNewListName] = useState("");
+
+  const handleNewListCreate = () => {
+    if (newListName.trim()) {
+      console.log("New list created:", newListName.trim());
+      setNewListName("");
+      setShowNewListModal(false);
+    }
+  };
 
   interface FilterOption {
     id: string;
@@ -672,6 +684,18 @@ export default function BillDetail() {
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
+        onNewListPress={() => setShowNewListModal(true)} // 👈 Add this
+      />
+      {/* New list name Modal Popup */}
+      <NewListNameModal
+        visible={showNewListModal}
+        onClose={() => {
+          setShowNewListModal(false);
+          setNewListName("");
+        }}
+        onConfirm={handleNewListCreate}
+        value={newListName}
+        onChangeText={setNewListName}
       />
       {/* Options Modal Popup */}
       <OptionsModal

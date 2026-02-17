@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 
+import NewListNameModal from "../global_components/NewListNameModal";
 import AddModal from "./official_components/AddModal";
 import BillCard from "./official_components/BillCard";
 import FilterDropdown from "./official_components/FilterDropdown";
@@ -54,6 +55,17 @@ export default function OfficialDetail() {
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
     [],
   );
+
+  const [showNewListModal, setShowNewListModal] = useState(false);
+  const [newListName, setNewListName] = useState("");
+
+  const handleNewListCreate = () => {
+    if (newListName.trim()) {
+      console.log("New list created:", newListName.trim());
+      setNewListName("");
+      setShowNewListModal(false);
+    }
+  };
 
   interface FilterOption {
     id: string;
@@ -495,6 +507,7 @@ export default function OfficialDetail() {
           setShowAddModal={setShowAddModal}
           selectedLists={selectedLists}
           setSelectedLists={setSelectedLists}
+          onNewListPress={() => setShowNewListModal(true)} // 👈 Add this
         />
         {/* Options Modal Popup */}
         <OptionsModal
@@ -502,6 +515,17 @@ export default function OfficialDetail() {
           setShowOptionsModal={setShowOptionsModal}
           selectedNotifications={selectedNotifications}
           setSelectedNotifications={setSelectedNotifications}
+        />
+        {/* New List Name Modal Popup */}
+        <NewListNameModal
+          visible={showNewListModal}
+          onClose={() => {
+            setShowNewListModal(false);
+            setNewListName("");
+          }}
+          onConfirm={handleNewListCreate}
+          value={newListName}
+          onChangeText={setNewListName}
         />
       </ScrollView>
     </View>

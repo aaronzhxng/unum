@@ -357,6 +357,7 @@ export default function AddModal({
                   fontSize: 14,
                   color: "#535353",
                   textAlign: "center",
+                  marginLeft: -16,
                 }}
               >
                 Cancel

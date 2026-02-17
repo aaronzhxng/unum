@@ -32,16 +32,13 @@ export default function EditOptionsModal({
 
   const isListSectionEnabled = selectedAction !== null;
 
+  // Filter out "New List" for progress display
+  const progressLists = selectedLists.filter((list) => list !== "New List");
+
   const toggleList = (list: string) => {
     if (!isListSectionEnabled) return;
 
-    // Handle "New List" click
-    if (list === "New List") {
-      onClose();
-      setTimeout(() => onNewListPress(), 200);
-      return;
-    }
-
+    // Just toggle - don't open modal immediately
     setSelectedLists((prev) =>
       prev.includes(list) ? prev.filter((l) => l !== list) : [...prev, list],
     );
@@ -56,7 +53,19 @@ export default function EditOptionsModal({
   const handleConfirm = () => {
     if (!selectedAction || selectedLists.length === 0) return;
 
-    // Close main modal and show progress
+    const hasNewList = selectedLists.includes("New List");
+    const hasOtherLists = progressLists.length > 0;
+
+    // If ONLY "New List" is selected, open modal immediately
+    if (hasNewList && !hasOtherLists) {
+      onClose();
+      setSelectedAction(null);
+      setSelectedLists([]);
+      setTimeout(() => onNewListPress(), 200);
+      return;
+    }
+
+    // Otherwise show progress for other lists first
     onClose();
     setShowProgressModal(true);
     setProgress(0);
@@ -67,7 +76,7 @@ export default function EditOptionsModal({
   useEffect(() => {
     if (!showProgressModal) return;
 
-    const totalLists = selectedLists.length;
+    const totalLists = progressLists.length;
     let currentProgress = 0;
 
     const interval = setInterval(() => {
@@ -85,18 +94,26 @@ export default function EditOptionsModal({
           setShowProgressModal(false);
           setProgress(0);
           setCurrentListIndex(0);
-          // Call onConfirm after progress completes
+
+          // Call onConfirm with only the regular lists (not "New List")
           if (selectedAction) {
-            onConfirm(selectedAction, selectedLists);
+            onConfirm(selectedAction, progressLists);
           }
+
+          const hasNewList = selectedLists.includes("New List");
           setSelectedAction(null);
           setSelectedLists([]);
+
+          // If "New List" was selected, open the name modal now
+          if (hasNewList) {
+            setTimeout(() => onNewListPress(), 200);
+          }
         }, 300);
       }
     }, 30);
 
     return () => clearInterval(interval);
-  }, [showProgressModal, selectedLists.length]);
+  }, [showProgressModal, progressLists.length]);
 
   const canConfirm = selectedAction !== null && selectedLists.length > 0;
 
@@ -329,7 +346,7 @@ export default function EditOptionsModal({
           <View
             style={{
               backgroundColor: "#f5f5f5",
-              marginHorizontal: 48,
+              marginHorizontal: 16,
               borderRadius: 16,
               padding: 24,
               shadowColor: "#000",
@@ -344,12 +361,13 @@ export default function EditOptionsModal({
                 fontSize: 16,
                 fontWeight: "600",
                 color: "#1a1a1a",
-                marginBottom: 16,
+                marginTop: 8,
+                marginBottom: 32,
                 textAlign: "center",
               }}
             >
               {selectedAction === "copy" ? "Copying to" : "Moving to"}{" "}
-              {selectedLists[currentListIndex]}
+              {progressLists[currentListIndex]}
             </Text>
 
             {/* Progress Bar Background */}
@@ -379,11 +397,11 @@ export default function EditOptionsModal({
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                marginBottom: 16,
+                marginBottom: 0,
               }}
             >
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/{selectedLists.length}
+                {currentListIndex + 1}/{progressLists.length}
               </Text>
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
                 {Math.round(progress)}%

@@ -1,13 +1,13 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    Text,
-    TextInput,
-    View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { styles } from "../global_styles/styles";
 
@@ -26,9 +26,22 @@ export default function NewListNameModal({
   value,
   onChangeText,
 }: NewListNameModalProps) {
+  const inputRef = useRef<TextInput>(null);
+
+  // Focus input when modal becomes visible
+  useEffect(() => {
+    if (visible) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
+
   const handleCancel = () => {
-    onClose();
     Keyboard.dismiss();
+    onClose();
   };
 
   const handleConfirm = () => {
@@ -64,6 +77,7 @@ export default function NewListNameModal({
               </Text>
 
               <TextInput
+                ref={inputRef}
                 style={{
                   borderBottomWidth: 1,
                   borderBottomColor: "#535353",
@@ -76,7 +90,6 @@ export default function NewListNameModal({
                 placeholderTextColor="#adb5bd"
                 value={value}
                 onChangeText={onChangeText}
-                autoFocus
                 returnKeyType="done"
                 onSubmitEditing={handleConfirm}
               />

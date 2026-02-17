@@ -104,6 +104,7 @@ export default function SearchModal({
 
   const handleAddPress = (item: any, event: any) => {
     event.stopPropagation(); // Prevent card navigation
+    Keyboard.dismiss(); // Dismiss SearchModal's keyboard
     setSelectedAddItem(item);
     setShowAddModal(true);
   };
@@ -202,6 +203,7 @@ export default function SearchModal({
                 data={filteredItems}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={componentStyles.listContent}
+                keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => (
                   <Pressable
                     onPress={() => handleItemPress(item)}

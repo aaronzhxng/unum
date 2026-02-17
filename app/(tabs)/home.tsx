@@ -132,6 +132,10 @@ export default function HomeScreen() {
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
 
+  const [newListContext, setNewListContext] = useState<"main" | "search">(
+    "main",
+  );
+
   const enterEditMode = (triggerId: string) => {
     setIsEditMode(true);
     setSelectedIds(new Set([triggerId]));
@@ -180,14 +184,12 @@ export default function HomeScreen() {
 
   const handleNewListCreate = () => {
     if (newListName.trim()) {
-      // Set the new list as selected
+      // ALWAYS switch to the new list
       setSelectedList(newListName.trim());
 
-      // Clear and close modal
       setNewListName("");
       setShowNewListModal(false);
-
-      // TODO: When you add backend, make API call here to save the new list
+      setNewListContext("main");
     }
   };
 
@@ -487,7 +489,11 @@ export default function HomeScreen() {
             router.navigate(`/bill/${item.id}`);
           }
         }}
-        onNewListPress={() => setShowNewListModal(true)}
+        onNewListPress={() => {
+          setNewListContext("search");
+          setShowSearchModal(false); // Close SearchModal first
+          setTimeout(() => setShowNewListModal(true), 300); // Then open after animation
+        }}
       />
 
       {/* Options Modal */}
@@ -510,7 +516,10 @@ export default function HomeScreen() {
         visible={showEditOptions}
         onClose={() => setShowEditOptions(false)}
         onConfirm={handleEditConfirm}
-        onNewListPress={() => setShowNewListModal(true)} // 👈 Add this
+        onNewListPress={() => {
+          setNewListContext("main");
+          setShowNewListModal(true);
+        }}
       />
       <NewListNameModal
         visible={showNewListModal}

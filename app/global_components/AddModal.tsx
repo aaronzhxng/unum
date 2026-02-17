@@ -327,7 +327,8 @@ export default function AddModal({
                 fontSize: 16,
                 fontWeight: "600",
                 color: "#1a1a1a",
-                marginBottom: 16,
+                marginTop: 8,
+                marginBottom: 32,
                 textAlign: "center",
               }}
             >
@@ -366,7 +367,7 @@ export default function AddModal({
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                marginBottom: 16,
+                marginBottom: 0,
               }}
             >
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
