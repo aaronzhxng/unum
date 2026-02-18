@@ -6,13 +6,16 @@ import {
   Search,
 } from "lucide-react-native";
 import { useState } from "react";
-import { FlatList, Image, Pressable, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
 import SortDropdown from "../global_components/LegislationSortDropdown";
 import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
+
+import { useQuery } from "@tanstack/react-query";
+import { billsService } from "../services/bills";
 
 type Bill = {
   id: string;
@@ -23,64 +26,64 @@ type Bill = {
   avatar?: any;
 };
 
-const MOCK_BILLS: Bill[] = [
-  {
-    id: "1",
-    name: "H.R.187 : MAPWaters Act of 2025",
-    date: "11/9/2024",
-    status: "",
-    committee: "Education",
-    avatar: require("../../assets/bills_icons/agriculture.png"),
-  },
-  {
-    id: "2",
-    name: "SB2 : Foundation School Program",
-    date: "2/27/2025",
-    status: "In Progress",
-    committee: "Judiciary",
-    avatar: require("../../assets/bills_icons/judiciary.png"),
-  },
-  {
-    id: "3",
-    name: "H.R.6636 : To advance sensible pri..",
-    date: "12/11/2025",
-    status: "Introduced",
-    committee: "Budget",
-    avatar: require("../../assets/bills_icons/budget.png"),
-  },
-  {
-    id: "4",
-    name: "SB2 : Foundation School Program",
-    date: "2/27/2025",
-    status: "In Progress",
-    committee: "Homeland Security",
-    avatar: require("../../assets/bills_icons/homelandsecurity.png"),
-  },
-  {
-    id: "5",
-    name: "SB2 : Foundation School Program",
-    date: "2/27/2025",
-    status: "In Progress",
-    committee: "Natural Resources",
-    avatar: require("../../assets/bills_icons/naturalresources.png"),
-  },
-  {
-    id: "6",
-    name: "H.R.6039 : Commonsense Legislat..",
-    date: "2/27/2025",
-    status: "Introduced",
-    committee: "Ethics",
-    avatar: require("../../assets/bills_icons/ethics.png"),
-  },
-  {
-    id: "7",
-    name: "SB2 : Foundation School Program",
-    date: "2/27/2025",
-    status: "In Progress",
-    committee: "Rules",
-    avatar: require("../../assets/bills_icons/rules.png"),
-  },
-];
+// const MOCK_BILLS: Bill[] = [
+//   {
+//     id: "1",
+//     name: "H.R.187 : MAPWaters Act of 2025",
+//     date: "11/9/2024",
+//     status: "",
+//     committee: "Education",
+//     avatar: require("../../assets/bills_icons/agriculture.png"),
+//   },
+//   {
+//     id: "2",
+//     name: "SB2 : Foundation School Program",
+//     date: "2/27/2025",
+//     status: "In Progress",
+//     committee: "Judiciary",
+//     avatar: require("../../assets/bills_icons/judiciary.png"),
+//   },
+//   {
+//     id: "3",
+//     name: "H.R.6636 : To advance sensible pri..",
+//     date: "12/11/2025",
+//     status: "Introduced",
+//     committee: "Budget",
+//     avatar: require("../../assets/bills_icons/budget.png"),
+//   },
+//   {
+//     id: "4",
+//     name: "SB2 : Foundation School Program",
+//     date: "2/27/2025",
+//     status: "In Progress",
+//     committee: "Homeland Security",
+//     avatar: require("../../assets/bills_icons/homelandsecurity.png"),
+//   },
+//   {
+//     id: "5",
+//     name: "SB2 : Foundation School Program",
+//     date: "2/27/2025",
+//     status: "In Progress",
+//     committee: "Natural Resources",
+//     avatar: require("../../assets/bills_icons/naturalresources.png"),
+//   },
+//   {
+//     id: "6",
+//     name: "H.R.6039 : Commonsense Legislat..",
+//     date: "2/27/2025",
+//     status: "Introduced",
+//     committee: "Ethics",
+//     avatar: require("../../assets/bills_icons/ethics.png"),
+//   },
+//   {
+//     id: "7",
+//     name: "SB2 : Foundation School Program",
+//     date: "2/27/2025",
+//     status: "In Progress",
+//     committee: "Rules",
+//     avatar: require("../../assets/bills_icons/rules.png"),
+//   },
+// ];
 
 export default function LegislationScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -169,6 +172,17 @@ export default function LegislationScreen() {
   };
 
   const router = useRouter();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["bills"],
+    queryFn: billsService.getAll,
+  });
+
+  console.log("Bills data:", data);
+  console.log("Loading:", isLoading);
+  console.log("Error:", error);
+
+  const bills = data?.bills || [];
 
   return (
     <View style={componentStyles.container}>
@@ -274,9 +288,19 @@ export default function LegislationScreen() {
         </View>
       </View>
 
-      <FlatList
+      {/* <FlatList
         data={MOCK_BILLS}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={componentStyles.listContent}
+        renderItem={({ item }) => <BillCard item={item} />}
+      /> */}
+
+      {isLoading && <Text>Loading...</Text>}
+      {error && <Text>Error loading bills</Text>}
+
+      <FlatList
+        data={bills}
+        keyExtractor={(item) => `${item.type}${item.number}`}
         contentContainerStyle={componentStyles.listContent}
         renderItem={({ item }) => <BillCard item={item} />}
       />
@@ -287,9 +311,9 @@ export default function LegislationScreen() {
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
         searchContext={selectedFilter}
-        items={MOCK_BILLS}
+        items={bills}
         onItemPress={(item) => {
-          router.navigate(`/bill/${item.id}`);
+          router.navigate(`/bill/${item.nnumber}`);
         }}
         onNewListPress={() => setShowNewListModal(true)}
       />
@@ -338,32 +362,65 @@ export default function LegislationScreen() {
   );
 }
 
-function BillCard({ item }: { item: Bill }) {
+// function BillCard({ item }: { item: Bill }) {
+//   const router = useRouter();
+
+//   return (
+//     <Pressable
+//       onPress={() => router.navigate(`/bill/${item.id}`)}
+//       style={({ pressed }) => ({
+//         transform: [{ scale: pressed ? 0.96 : 1 }],
+//       })}
+//     >
+//       <View style={componentStyles.officialCard}>
+//         <Image source={item.avatar} style={componentStyles.avatar} />
+
+//         <View>
+//           <Text style={componentStyles.name}>{item.name}</Text>
+
+//           <View style={componentStyles.metaRow}>
+//             <Text style={componentStyles.subtitle}>{item.date}</Text>
+//             {item.status ? (
+//               <>
+//                 <Text style={componentStyles.separator}>·</Text>
+//                 <Text style={componentStyles.subtitle}>{item.status}</Text>
+//               </>
+//             ) : null}
+//             <Text style={componentStyles.separator}>·</Text>
+//             <Text style={componentStyles.subtitle}>{item.committee}</Text>
+//           </View>
+//         </View>
+//       </View>
+//     </Pressable>
+//   );
+// }
+
+function BillCard({ item }: { item: any }) {
   const router = useRouter();
 
   return (
     <Pressable
-      onPress={() => router.navigate(`/bill/${item.id}`)}
+      onPress={() => router.navigate(`/bill/${item.number}`)}
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.96 : 1 }],
       })}
     >
       <View style={componentStyles.officialCard}>
-        <Image source={item.avatar} style={componentStyles.avatar} />
+        {/* You'll need to handle the avatar differently - for now, skip it */}
 
         <View>
-          <Text style={componentStyles.name}>{item.name}</Text>
+          <Text style={componentStyles.name}>
+            {item.type}.{item.number} - {item.title}
+          </Text>
 
           <View style={componentStyles.metaRow}>
-            <Text style={componentStyles.subtitle}>{item.date}</Text>
-            {item.status ? (
-              <>
-                <Text style={componentStyles.separator}>·</Text>
-                <Text style={componentStyles.subtitle}>{item.status}</Text>
-              </>
-            ) : null}
+            <Text style={componentStyles.subtitle}>
+              {item.latestAction.actionDate}
+            </Text>
             <Text style={componentStyles.separator}>·</Text>
-            <Text style={componentStyles.subtitle}>{item.committee}</Text>
+            <Text style={componentStyles.subtitle}>
+              {item.latestAction.text.substring(0, 30)}...
+            </Text>
           </View>
         </View>
       </View>

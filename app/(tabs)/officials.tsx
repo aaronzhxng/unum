@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 import {
   FlatList,
-  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -21,6 +20,9 @@ import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 
+import { useQuery } from "@tanstack/react-query";
+import { officialsService } from "../services/officials";
+
 type Official = {
   id: string;
   name: string;
@@ -30,57 +32,57 @@ type Official = {
   avatar?: any;
 };
 
-const MOCK_OFFICIALS: Official[] = [
-  {
-    id: "1",
-    name: "Kathy Hochul",
-    party: "D",
-    role: "Governor",
-    avatar: require("../../assets/officials_images/k_hochul.jpg"),
-  },
-  {
-    id: "2",
-    name: "Antonio Delgado",
-    party: "D",
-    role: "Lieutenant Governor",
-    avatar: require("../../assets/officials_images/a_delgado.jpg"),
-  },
-  {
-    id: "3",
-    name: "Charles E. Schumer",
-    party: "D",
-    role: "Senator",
-    avatar: require("../../assets/officials_images/c_schumer.jpg"),
-  },
-  {
-    id: "4",
-    name: "Kirsten Gillibrand",
-    party: "D",
-    role: "Senator",
-    avatar: require("../../assets/officials_images/k_gillibrand.webp"),
-  },
-  {
-    id: "5",
-    name: "Letitia James",
-    party: "D",
-    role: "Attorney General",
-    avatar: require("../../assets/officials_images/l_james.png"),
-  },
-  {
-    id: "6",
-    name: "Thomas P. DiNapoli",
-    party: "D",
-    role: "Comptroller",
-    avatar: require("../../assets/officials_images/t_dinapoli.jpg"),
-  },
-  {
-    id: "7",
-    name: "Alexandria Ocasio-Cortez",
-    party: "D",
-    role: "Representative, NY 14th District",
-    avatar: require("../../assets/officials_images/aoc.webp"),
-  },
-];
+// const MOCK_OFFICIALS: Official[] = [
+//   {
+//     id: "1",
+//     name: "Kathy Hochul",
+//     party: "D",
+//     role: "Governor",
+//     avatar: require("../../assets/officials_images/k_hochul.jpg"),
+//   },
+//   {
+//     id: "2",
+//     name: "Antonio Delgado",
+//     party: "D",
+//     role: "Lieutenant Governor",
+//     avatar: require("../../assets/officials_images/a_delgado.jpg"),
+//   },
+//   {
+//     id: "3",
+//     name: "Charles E. Schumer",
+//     party: "D",
+//     role: "Senator",
+//     avatar: require("../../assets/officials_images/c_schumer.jpg"),
+//   },
+//   {
+//     id: "4",
+//     name: "Kirsten Gillibrand",
+//     party: "D",
+//     role: "Senator",
+//     avatar: require("../../assets/officials_images/k_gillibrand.webp"),
+//   },
+//   {
+//     id: "5",
+//     name: "Letitia James",
+//     party: "D",
+//     role: "Attorney General",
+//     avatar: require("../../assets/officials_images/l_james.png"),
+//   },
+//   {
+//     id: "6",
+//     name: "Thomas P. DiNapoli",
+//     party: "D",
+//     role: "Comptroller",
+//     avatar: require("../../assets/officials_images/t_dinapoli.jpg"),
+//   },
+//   {
+//     id: "7",
+//     name: "Alexandria Ocasio-Cortez",
+//     party: "D",
+//     role: "Representative, NY 14th District",
+//     avatar: require("../../assets/officials_images/aoc.webp"),
+//   },
+// ];
 
 export default function OfficialsScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -169,6 +171,13 @@ export default function OfficialsScreen() {
     "Wyoming",
   ];
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["officials"],
+    queryFn: officialsService.getAll,
+  });
+
+  const officials = data?.officials || [];
+
   return (
     <View style={componentStyles.container}>
       <View style={componentStyles.headerBar}>
@@ -223,8 +232,8 @@ export default function OfficialsScreen() {
       </View>
 
       <FlatList
-        data={MOCK_OFFICIALS}
-        keyExtractor={(item) => item.id}
+        data={officials}
+        keyExtractor={(item) => item.bioguideId}
         contentContainerStyle={componentStyles.listContent}
         renderItem={({ item }) => <OfficialCard item={item} />}
       />
@@ -235,9 +244,9 @@ export default function OfficialsScreen() {
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
         searchContext={selectedList}
-        items={MOCK_OFFICIALS}
+        items={officials}
         onItemPress={(item) => {
-          router.navigate(`/official/${item.id}`);
+          router.navigate(`/official/${item.number}`);
         }}
         onNewListPress={() => setShowNewListModal(true)}
       />
@@ -311,32 +320,62 @@ export default function OfficialsScreen() {
   );
 }
 
-function OfficialCard({ item }: { item: Official }) {
+// function OfficialCard({ item }: { item: Official }) {
+//   const router = useRouter();
+
+//   return (
+//     <Pressable
+//       onPress={() => router.navigate(`/official/${item.id}`)}
+//       style={({ pressed }) => ({
+//         transform: [{ scale: pressed ? 0.96 : 1 }],
+//       })}
+//     >
+//       <View style={componentStyles.officialCard}>
+//         <Image source={item.avatar} style={componentStyles.avatar} />
+
+//         <View>
+//           <Text style={componentStyles.name}>{item.name}</Text>
+
+//           <View style={componentStyles.metaRow}>
+//             <Text style={componentStyles.subtitle}>{item.party}</Text>
+//             <Text style={componentStyles.separator}>·</Text>
+//             <Text style={componentStyles.subtitle}>{item.role}</Text>
+//             {item.update ? (
+//               <>
+//                 <Text style={componentStyles.separator}>·</Text>
+//                 <Text style={componentStyles.update}>{item.update}</Text>
+//               </>
+//             ) : null}
+//           </View>
+//         </View>
+//       </View>
+//     </Pressable>
+//   );
+// }
+
+function OfficialCard({ item }: { item: any }) {
   const router = useRouter();
 
   return (
     <Pressable
-      onPress={() => router.navigate(`/official/${item.id}`)}
+      onPress={() => router.navigate(`/official/${item.bioguideId}`)}
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.96 : 1 }],
       })}
     >
       <View style={componentStyles.officialCard}>
-        <Image source={item.avatar} style={componentStyles.avatar} />
+        {/* Skip avatar for now */}
 
         <View>
           <Text style={componentStyles.name}>{item.name}</Text>
 
           <View style={componentStyles.metaRow}>
-            <Text style={componentStyles.subtitle}>{item.party}</Text>
+            <Text style={componentStyles.subtitle}>{item.partyName}</Text>
             <Text style={componentStyles.separator}>·</Text>
-            <Text style={componentStyles.subtitle}>{item.role}</Text>
-            {item.update ? (
-              <>
-                <Text style={componentStyles.separator}>·</Text>
-                <Text style={componentStyles.update}>{item.update}</Text>
-              </>
-            ) : null}
+            <Text style={componentStyles.subtitle}>
+              {item.state}
+              {item.district ? ` - District ${item.district}` : ""}
+            </Text>
           </View>
         </View>
       </View>

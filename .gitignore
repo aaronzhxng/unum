@@ -41,3 +41,18 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.*
+
+# Keep frontend ignores
+node_modules/
+.expo/
+.expo-shared/
+
+# Both
+*.log
+.DS_Store
