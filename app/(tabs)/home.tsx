@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useNavigation, useRouter } from "expo-router";
 import {
   Check,
@@ -6,7 +7,7 @@ import {
   MoreVertical,
   Search,
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import EditOptionsModal from "../global_components/EditOptionsModal";
 import ListSelection from "../global_components/ListSelection";
@@ -15,105 +16,122 @@ import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 
+import { storage } from "../utils/storage";
+
 type ItemType = "official" | "bill";
 
-type Item = {
-  id: string;
-  type: ItemType;
-  name: string;
-  party: string;
-  role: string;
-  date: string;
-  committee: string;
-  update: string;
-  avatar?: any;
-};
+// type Item = {
+//   id: string;
+//   type: ItemType;
+//   name: string;
+//   party: string;
+//   role: string;
+//   date: string;
+//   committee: string;
+//   update: string;
+//   avatar?: any;
+// };
 
-const INITIAL_ITEMS: Item[] = [
-  {
-    id: "1",
-    type: "official",
-    name: "Zohran Mamdani",
-    party: "D",
-    role: "Mayor, New York City",
-    date: "",
-    committee: "",
-    update: "",
-    avatar: require("../../assets/officials_images/zohran.jpg"),
-  },
-  {
-    id: "2",
-    type: "bill",
-    name: "H.R.187 · MAPWaters Act of 2025",
-    party: "",
-    role: "",
-    date: "12/18/2025",
-    committee: "Agriculture",
-    update: "To President",
-    avatar: require("../../assets/bills_icons/agriculture.png"),
-  },
-  {
-    id: "3",
-    type: "official",
-    name: "Alexandria Ocasio-Cortez",
-    party: "D",
-    role: "Representative, NY 14th District",
-    date: "",
-    committee: "",
-    update: "",
-    avatar: require("../../assets/officials_images/aoc.webp"),
-  },
-  {
-    id: "4",
-    type: "official",
-    name: "John Kennedy",
-    party: "R",
-    role: "Senator, Louisiana",
-    date: "",
-    committee: "",
-    update: "Up for Reelection",
-    avatar: require("../../assets/officials_images/jKennedy.jpg"),
-  },
-  {
-    id: "5",
-    type: "official",
-    name: "Donald Trump",
-    party: "R",
-    role: "President, United States",
-    date: "",
-    committee: "",
-    update: "",
-    avatar: require("../../assets/officials_images/d_trump.jpg"),
-  },
-  {
-    id: "6",
-    type: "official",
-    name: "Andy Beshear",
-    party: "D",
-    role: "Governor, Kentucky",
-    date: "",
-    committee: "",
-    update: "",
-    avatar: require("../../assets/officials_images/a_beshear.jpg"),
-  },
-  {
-    id: "7",
-    type: "bill",
-    name: "H.R.187 - National Defense Authorizatio..",
-    party: "",
-    role: "",
-    date: "7/15/2025",
-    committee: "Armed Services",
-    update: "Passed Senate",
-    avatar: require("../../assets/bills_icons/armedservices.png"),
-  },
-];
+import { ListItem } from "../utils/storage";
+
+type Item = ListItem;
+
+// const INITIAL_ITEMS: Item[] = [
+//   {
+//     id: "1",
+//     type: "official",
+//     name: "Zohran Mamdani",
+//     party: "D",
+//     role: "Mayor, New York City",
+//     date: "",
+//     committee: "",
+//     update: "",
+//     avatar: require("../../assets/officials_images/zohran.jpg"),
+//   },
+//   {
+//     id: "2",
+//     type: "bill",
+//     name: "H.R.187 · MAPWaters Act of 2025",
+//     party: "",
+//     role: "",
+//     date: "12/18/2025",
+//     committee: "Agriculture",
+//     update: "To President",
+//     avatar: require("../../assets/bills_icons/agriculture.png"),
+//   },
+//   {
+//     id: "3",
+//     type: "official",
+//     name: "Alexandria Ocasio-Cortez",
+//     party: "D",
+//     role: "Representative, NY 14th District",
+//     date: "",
+//     committee: "",
+//     update: "",
+//     avatar: require("../../assets/officials_images/aoc.webp"),
+//   },
+//   {
+//     id: "4",
+//     type: "official",
+//     name: "John Kennedy",
+//     party: "R",
+//     role: "Senator, Louisiana",
+//     date: "",
+//     committee: "",
+//     update: "Up for Reelection",
+//     avatar: require("../../assets/officials_images/jKennedy.jpg"),
+//   },
+//   {
+//     id: "5",
+//     type: "official",
+//     name: "Donald Trump",
+//     party: "R",
+//     role: "President, United States",
+//     date: "",
+//     committee: "",
+//     update: "",
+//     avatar: require("../../assets/officials_images/d_trump.jpg"),
+//   },
+//   {
+//     id: "6",
+//     type: "official",
+//     name: "Andy Beshear",
+//     party: "D",
+//     role: "Governor, Kentucky",
+//     date: "",
+//     committee: "",
+//     update: "",
+//     avatar: require("../../assets/officials_images/a_beshear.jpg"),
+//   },
+//   {
+//     id: "7",
+//     type: "bill",
+//     name: "H.R.187 - National Defense Authorizatio..",
+//     party: "",
+//     role: "",
+//     date: "7/15/2025",
+//     committee: "Armed Services",
+//     update: "Passed Senate",
+//     avatar: require("../../assets/bills_icons/armedservices.png"),
+//   },
+// ];
 
 export default function HomeScreen() {
   const router = useRouter();
 
   // Normal mode state
-  const [items, setItems] = useState<Item[]>(INITIAL_ITEMS);
+  // const [items, setItems] = useState<Item[]>(INITIAL_ITEMS);
+
+  const saveItems = async (newItems: ListItem[]) => {
+    const lists = await storage.getLists();
+    const listIndex = lists.findIndex((l) => l.name === selectedList);
+
+    if (listIndex >= 0) {
+      lists[listIndex].items = newItems;
+      await storage.saveLists(lists);
+    }
+  };
+
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -127,7 +145,10 @@ export default function HomeScreen() {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showEditOptions, setShowEditOptions] = useState(false);
 
-  const allSelected = selectedIds.size === items.length;
+  const [items, setItems] = useState<ListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const allSelected = items.length > 0 && selectedIds.size === items.length;
 
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -162,8 +183,10 @@ export default function HomeScreen() {
     }
   };
 
-  const handleRemoveConfirm = () => {
-    setItems((prev) => prev.filter((item) => !selectedIds.has(item.id)));
+  const handleRemoveConfirm = async () => {
+    const newItems = items.filter((item) => !selectedIds.has(item.id));
+    setItems(newItems);
+    await saveItems(newItems); // Save to storage
     setShowRemoveModal(false);
     exitEditMode();
   };
@@ -182,15 +205,48 @@ export default function HomeScreen() {
     exitEditMode();
   };
 
-  const handleNewListCreate = () => {
+  const handleNewListCreate = async () => {
     if (newListName.trim()) {
-      // ALWAYS switch to the new list
+      const lists = await storage.getLists();
+      const newList = {
+        id: Date.now().toString(),
+        name: newListName.trim(),
+        items: [],
+      };
+
+      lists.push(newList);
+      await storage.saveLists(lists);
       setSelectedList(newListName.trim());
 
       setNewListName("");
       setShowNewListModal(false);
       setNewListContext("main");
     }
+  };
+
+  const loadItems = async () => {
+    setIsLoading(true);
+    const lists = await storage.getLists();
+    const currentList = lists.find((l) => l.name === selectedList);
+
+    if (currentList && currentList.items.length > 0) {
+      setItems(currentList.items);
+    } else {
+      // TEMPORARY TEST DATA
+      const testItems: ListItem[] = [
+        {
+          id: "1",
+          type: "bill",
+          name: "H.R.187 - Test Bill",
+          date: "2025-01-15",
+          committee: "Agriculture",
+          update: "In Progress",
+        },
+      ];
+      setItems(testItems);
+    }
+
+    setIsLoading(false);
   };
 
   const navigation = useNavigation();
@@ -200,6 +256,12 @@ export default function HomeScreen() {
       tabBarStyle: isEditMode ? { display: "none" } : { height: 100 },
     });
   }, [isEditMode]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadItems();
+    }, [selectedList]),
+  );
 
   return (
     <View style={componentStyles.container}>
@@ -315,22 +377,28 @@ export default function HomeScreen() {
           </>
         )}
       </View>
-
-      {/* List */}
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item }) => (
-          <Card
-            item={item}
-            isEditMode={isEditMode}
-            isSelected={selectedIds.has(item.id)}
-            onLongPress={() => enterEditMode(item.id)}
-            onPress={() => isEditMode && toggleSelect(item.id)}
-          />
-        )}
-      />
+      {isLoading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Loading...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={componentStyles.listContent}
+          renderItem={({ item }) => (
+            <Card
+              item={item}
+              isEditMode={isEditMode}
+              isSelected={selectedIds.has(item.id)}
+              onLongPress={() => enterEditMode(item.id)}
+              onPress={() => toggleSelect(item.id)}
+            />
+          )}
+        />
+      )}
 
       {/* Bottom Cancel / Remove bar (edit mode only) */}
       {isEditMode && (
@@ -542,7 +610,7 @@ function Card({
   onLongPress,
   onPress,
 }: {
-  item: Item;
+  item: ListItem;
   isEditMode: boolean;
   isSelected: boolean;
   onLongPress: () => void;

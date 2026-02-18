@@ -4,6 +4,7 @@ import {
   ChevronDown,
   ChevronUp,
   MoreVertical,
+  Plus,
   Search,
 } from "lucide-react-native";
 import { useState } from "react";
@@ -22,6 +23,8 @@ import { styles as componentStyles } from "../global_styles/styles";
 
 import { useQuery } from "@tanstack/react-query";
 import { officialsService } from "../services/officials";
+
+import { ListItem, storage } from "../utils/storage";
 
 type Official = {
   id: string;
@@ -356,6 +359,34 @@ export default function OfficialsScreen() {
 function OfficialCard({ item }: { item: any }) {
   const router = useRouter();
 
+  const handleAddToList = async () => {
+    const listItem: ListItem = {
+      id: item.bioguideId,
+      type: "official",
+      name: item.name,
+      party: item.partyName,
+      role: `${item.state}${item.district ? ` - District ${item.district}` : ""}`,
+      update: "",
+    };
+
+    // Get current lists
+    const lists = await storage.getLists();
+    const myList = lists.find((l) => l.name === "My List");
+
+    if (myList) {
+      // Check if already added
+      const alreadyExists = myList.items.some((i) => i.id === listItem.id);
+
+      if (!alreadyExists) {
+        myList.items.push(listItem);
+        await storage.saveLists(lists);
+        alert("Added to My List!");
+      } else {
+        alert("Already in your list!");
+      }
+    }
+  };
+
   return (
     <Pressable
       onPress={() => router.navigate(`/official/${item.bioguideId}`)}
@@ -364,9 +395,7 @@ function OfficialCard({ item }: { item: any }) {
       })}
     >
       <View style={componentStyles.officialCard}>
-        {/* Skip avatar for now */}
-
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={componentStyles.name}>{item.name}</Text>
 
           <View style={componentStyles.metaRow}>
@@ -378,6 +407,20 @@ function OfficialCard({ item }: { item: any }) {
             </Text>
           </View>
         </View>
+
+        {/* Add Plus Button */}
+        <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            handleAddToList();
+          }}
+          style={({ pressed }) => ({
+            padding: 8,
+            transform: [{ scale: pressed ? 0.9 : 1 }],
+          })}
+        >
+          <Plus size={24} color="#008CFF" />
+        </Pressable>
       </View>
     </Pressable>
   );
