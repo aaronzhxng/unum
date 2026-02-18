@@ -226,24 +226,17 @@ export default function HomeScreen() {
 
   const loadItems = async () => {
     setIsLoading(true);
+
+    // Always initialize first
+    await storage.initializeDefaultList();
+
     const lists = await storage.getLists();
     const currentList = lists.find((l) => l.name === selectedList);
 
     if (currentList && currentList.items.length > 0) {
       setItems(currentList.items);
     } else {
-      // TEMPORARY TEST DATA
-      const testItems: ListItem[] = [
-        {
-          id: "1",
-          type: "bill",
-          name: "H.R.187 - Test Bill",
-          date: "2025-01-15",
-          committee: "Agriculture",
-          update: "In Progress",
-        },
-      ];
-      setItems(testItems);
+      setItems([]);
     }
 
     setIsLoading(false);

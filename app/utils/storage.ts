@@ -62,20 +62,24 @@ export const storage = {
   },
 
   // Initialize with default list
+  // Initialize with default list
   initializeDefaultList: async (): Promise<UserList> => {
     const lists = await storage.getLists();
 
-    if (lists.length === 0) {
-      const defaultList: UserList = {
+    // Always ensure default list exists
+    let defaultList = lists.find((l) => l.name === "My List");
+
+    if (!defaultList) {
+      defaultList = {
         id: "my-list",
         name: "My List",
         items: [],
       };
-      await storage.saveLists([defaultList]);
+      lists.push(defaultList);
+      await storage.saveLists(lists);
       await storage.setCurrentListId(defaultList.id);
-      return defaultList;
     }
 
-    return lists[0];
+    return defaultList;
   },
 };
