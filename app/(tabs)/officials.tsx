@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import {
   FlatList,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -35,58 +36,6 @@ type Official = {
   avatar?: any;
 };
 
-// const MOCK_OFFICIALS: Official[] = [
-//   {
-//     id: "1",
-//     name: "Kathy Hochul",
-//     party: "D",
-//     role: "Governor",
-//     avatar: require("../../assets/officials_images/k_hochul.jpg"),
-//   },
-//   {
-//     id: "2",
-//     name: "Antonio Delgado",
-//     party: "D",
-//     role: "Lieutenant Governor",
-//     avatar: require("../../assets/officials_images/a_delgado.jpg"),
-//   },
-//   {
-//     id: "3",
-//     name: "Charles E. Schumer",
-//     party: "D",
-//     role: "Senator",
-//     avatar: require("../../assets/officials_images/c_schumer.jpg"),
-//   },
-//   {
-//     id: "4",
-//     name: "Kirsten Gillibrand",
-//     party: "D",
-//     role: "Senator",
-//     avatar: require("../../assets/officials_images/k_gillibrand.webp"),
-//   },
-//   {
-//     id: "5",
-//     name: "Letitia James",
-//     party: "D",
-//     role: "Attorney General",
-//     avatar: require("../../assets/officials_images/l_james.png"),
-//   },
-//   {
-//     id: "6",
-//     name: "Thomas P. DiNapoli",
-//     party: "D",
-//     role: "Comptroller",
-//     avatar: require("../../assets/officials_images/t_dinapoli.jpg"),
-//   },
-//   {
-//     id: "7",
-//     name: "Alexandria Ocasio-Cortez",
-//     party: "D",
-//     role: "Representative, NY 14th District",
-//     avatar: require("../../assets/officials_images/aoc.webp"),
-//   },
-// ];
-
 export default function OfficialsScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,19 +50,19 @@ export default function OfficialsScreen() {
   const [newListName, setNewListName] = useState("");
 
   const handleSetPriority = () => {
-    console.log("Set as priority:", selectedList);
+    // console.log("Set as priority:", selectedList);
     // TODO: Backend call to mark this state as priority
   };
 
   const handleReportError = () => {
-    console.log("Report error for:", selectedList);
+    // console.log("Report error for:", selectedList);
     // TODO: Navigate to error reporting form or open modal
   };
 
   const handleNewListCreate = () => {
     if (newListName.trim()) {
       // TODO: Add to officials list management when backend is ready
-      console.log("New list created:", newListName.trim());
+      // console.log("New list created:", newListName.trim());
       setNewListName("");
       setShowNewListModal(false);
     }
@@ -323,58 +272,34 @@ export default function OfficialsScreen() {
   );
 }
 
-// function OfficialCard({ item }: { item: Official }) {
-//   const router = useRouter();
-
-//   return (
-//     <Pressable
-//       onPress={() => router.navigate(`/official/${item.id}`)}
-//       style={({ pressed }) => ({
-//         transform: [{ scale: pressed ? 0.96 : 1 }],
-//       })}
-//     >
-//       <View style={componentStyles.officialCard}>
-//         <Image source={item.avatar} style={componentStyles.avatar} />
-
-//         <View>
-//           <Text style={componentStyles.name}>{item.name}</Text>
-
-//           <View style={componentStyles.metaRow}>
-//             <Text style={componentStyles.subtitle}>{item.party}</Text>
-//             <Text style={componentStyles.separator}>·</Text>
-//             <Text style={componentStyles.subtitle}>{item.role}</Text>
-//             {item.update ? (
-//               <>
-//                 <Text style={componentStyles.separator}>·</Text>
-//                 <Text style={componentStyles.update}>{item.update}</Text>
-//               </>
-//             ) : null}
-//           </View>
-//         </View>
-//       </View>
-//     </Pressable>
-//   );
-// }
-
 function OfficialCard({ item }: { item: any }) {
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
+
+  // console.log("Officials list item:", item);
+  // console.log("Item properties:", {
+  //   name: item.name,
+  //   lastName: item.lastName,
+  //   directOrderName: item.directOrderName,
+  // });
 
   const handleAddToList = async () => {
     const listItem: ListItem = {
       id: item.bioguideId,
       type: "official",
       name: item.name,
-      party: item.partyName,
-      role: `${item.state}${item.district ? ` - District ${item.district}` : ""}`,
+      party: item.partyName?.charAt(0) || "",
+      role: item.district
+        ? `Representative, ${item.state} - District ${item.district}`
+        : `Senator, ${item.state}`,
       update: "",
+      photoUrl: item.depiction?.imageUrl,
     };
 
-    // Get current lists
     const lists = await storage.getLists();
     const myList = lists.find((l) => l.name === "My List");
 
     if (myList) {
-      // Check if already added
       const alreadyExists = myList.items.some((i) => i.id === listItem.id);
 
       if (!alreadyExists) {
@@ -395,20 +320,58 @@ function OfficialCard({ item }: { item: any }) {
       })}
     >
       <View style={componentStyles.officialCard}>
+        {/* Avatar */}
+        {item.depiction?.imageUrl ? (
+          <View style={componentStyles.avatar}>
+            {item.depiction?.imageUrl && !imageError ? (
+              <Image
+                source={{ uri: item.depiction.imageUrl }}
+                style={{
+                  width: "100%",
+                  height: "120%",
+                }}
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "#008CFF",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                >
+                  {item.name?.split(",")[0]?.charAt(0) || "?"}
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={[componentStyles.avatar, { backgroundColor: "#eee" }]} />
+        )}
+
+        {/* Official Info */}
         <View style={{ flex: 1 }}>
           <Text style={componentStyles.name}>{item.name}</Text>
-
           <View style={componentStyles.metaRow}>
-            <Text style={componentStyles.subtitle}>{item.partyName}</Text>
+            <Text style={componentStyles.subtitle}>
+              {item.partyName?.charAt(0) || ""}
+            </Text>
             <Text style={componentStyles.separator}>·</Text>
             <Text style={componentStyles.subtitle}>
-              {item.state}
-              {item.district ? ` - District ${item.district}` : ""}
+              {item.district
+                ? `Representative, ${item.state} - District ${item.district}`
+                : `Senator, ${item.state}`}
             </Text>
           </View>
         </View>
 
-        {/* Add Plus Button */}
+        {/* Plus Button */}
         <Pressable
           onPress={(e) => {
             e.stopPropagation();

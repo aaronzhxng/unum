@@ -52,6 +52,7 @@ export const styles = StyleSheet.create({
     borderRadius: 32,
     marginRight: 12,
     backgroundColor: "#eee",
+    overflow: "hidden",
   },
   iconText: {
     fontWeight: "600",

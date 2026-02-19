@@ -20,101 +20,9 @@ import { storage } from "../utils/storage";
 
 type ItemType = "official" | "bill";
 
-// type Item = {
-//   id: string;
-//   type: ItemType;
-//   name: string;
-//   party: string;
-//   role: string;
-//   date: string;
-//   committee: string;
-//   update: string;
-//   avatar?: any;
-// };
-
 import { ListItem } from "../utils/storage";
 
 type Item = ListItem;
-
-// const INITIAL_ITEMS: Item[] = [
-//   {
-//     id: "1",
-//     type: "official",
-//     name: "Zohran Mamdani",
-//     party: "D",
-//     role: "Mayor, New York City",
-//     date: "",
-//     committee: "",
-//     update: "",
-//     avatar: require("../../assets/officials_images/zohran.jpg"),
-//   },
-//   {
-//     id: "2",
-//     type: "bill",
-//     name: "H.R.187 · MAPWaters Act of 2025",
-//     party: "",
-//     role: "",
-//     date: "12/18/2025",
-//     committee: "Agriculture",
-//     update: "To President",
-//     avatar: require("../../assets/bills_icons/agriculture.png"),
-//   },
-//   {
-//     id: "3",
-//     type: "official",
-//     name: "Alexandria Ocasio-Cortez",
-//     party: "D",
-//     role: "Representative, NY 14th District",
-//     date: "",
-//     committee: "",
-//     update: "",
-//     avatar: require("../../assets/officials_images/aoc.webp"),
-//   },
-//   {
-//     id: "4",
-//     type: "official",
-//     name: "John Kennedy",
-//     party: "R",
-//     role: "Senator, Louisiana",
-//     date: "",
-//     committee: "",
-//     update: "Up for Reelection",
-//     avatar: require("../../assets/officials_images/jKennedy.jpg"),
-//   },
-//   {
-//     id: "5",
-//     type: "official",
-//     name: "Donald Trump",
-//     party: "R",
-//     role: "President, United States",
-//     date: "",
-//     committee: "",
-//     update: "",
-//     avatar: require("../../assets/officials_images/d_trump.jpg"),
-//   },
-//   {
-//     id: "6",
-//     type: "official",
-//     name: "Andy Beshear",
-//     party: "D",
-//     role: "Governor, Kentucky",
-//     date: "",
-//     committee: "",
-//     update: "",
-//     avatar: require("../../assets/officials_images/a_beshear.jpg"),
-//   },
-//   {
-//     id: "7",
-//     type: "bill",
-//     name: "H.R.187 - National Defense Authorizatio..",
-//     party: "",
-//     role: "",
-//     date: "7/15/2025",
-//     committee: "Armed Services",
-//     update: "Passed Senate",
-//     avatar: require("../../assets/bills_icons/armedservices.png"),
-//   },
-// ];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -611,6 +519,7 @@ function Card({
 }) {
   const router = useRouter();
   const isOfficial = item.type === "official";
+  const [imageError, setImageError] = useState(false); // Add this
 
   const handlePress = () => {
     if (isEditMode) {
@@ -634,16 +543,45 @@ function Card({
       <View style={componentStyles.officialCard}>
         {/* Avatar with selection overlay */}
         <View>
-          <Image source={item.avatar} style={componentStyles.avatar} />
+          <View style={componentStyles.avatar}>
+            {(item.photoUrl && !imageError) || item.avatar ? (
+              <Image
+                source={item.avatar || { uri: item.photoUrl }}
+                style={{
+                  width: "100%",
+                  height: "120%",
+                }}
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "#008CFF",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                >
+                  {item.name?.charAt(0) || "?"}
+                </Text>
+              </View>
+            )}
+          </View>
+
           {isEditMode && (
             <View
               style={{
                 position: "absolute",
                 top: 0,
                 left: 0,
-                width: 50,
-                height: 50,
-                borderRadius: 32,
+                width: 72,
+                height: 72,
+                borderRadius: 36,
                 backgroundColor: isSelected ? "#008CFF" : "rgba(0,0,0,0.15)",
                 justifyContent: "center",
                 alignItems: "center",

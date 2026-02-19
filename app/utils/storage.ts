@@ -10,6 +10,7 @@ export interface ListItem {
   committee?: string;
   update?: string;
   avatar?: any;
+  photoUrl?: string;
 }
 
 export interface UserList {

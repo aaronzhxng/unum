@@ -9,7 +9,6 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Initialize storage on app load
     const init = async () => {
       await storage.initializeDefaultList();
       setIsReady(true);
@@ -18,7 +17,7 @@ export default function RootLayout() {
   }, []);
 
   if (!isReady) {
-    return null; // Or a loading screen
+    return null;
   }
 
   return (
@@ -26,6 +25,8 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="bill/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="official/[id]" options={{ headerShown: false }} />
       </Stack>
     </QueryClientProvider>
   );

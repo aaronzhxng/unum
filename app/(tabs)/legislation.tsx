@@ -104,14 +104,14 @@ export default function LegislationScreen() {
   const [newListName, setNewListName] = useState("");
 
   const handleReportError = () => {
-    console.log("Report error for legislation");
+    // console.log("Report error for legislation");
     // TODO: Navigate to error reporting form or open modal
   };
 
   const handleNewListCreate = () => {
     if (newListName.trim()) {
       // TODO: Add to bills list management when backend is ready
-      console.log("New list created:", newListName.trim());
+      // console.log("New list created:", newListName.trim());
       setNewListName("");
       setShowNewListModal(false);
     }
@@ -167,9 +167,9 @@ export default function LegislationScreen() {
 
   const handleFilterApply = () => {
     // Apply filters to your bill list
-    console.log("Chambers:", selectedChambers);
-    console.log("Policy Areas:", selectedPolicyAreas);
-    console.log("Types:", selectedLegislationTypes);
+    // console.log("Chambers:", selectedChambers);
+    // console.log("Policy Areas:", selectedPolicyAreas);
+    // console.log("Types:", selectedLegislationTypes);
     setShowFilterModal(false);
   };
 
@@ -180,9 +180,9 @@ export default function LegislationScreen() {
     queryFn: billsService.getAll,
   });
 
-  console.log("Bills data:", data);
-  console.log("Loading:", isLoading);
-  console.log("Error:", error);
+  // console.log("Bills data:", data);
+  // console.log("Loading:", isLoading);
+  // console.log("Error:", error);
 
   const bills = data?.bills || [];
 

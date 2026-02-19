@@ -7,7 +7,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
@@ -68,9 +68,15 @@ export default function OfficialDetail() {
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
 
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [id]);
+
   const handleNewListCreate = () => {
     if (newListName.trim()) {
-      console.log("New list created:", newListName.trim());
+      // console.log("New list created:", newListName.trim());
       setNewListName("");
       setShowNewListModal(false);
     }
@@ -230,6 +236,15 @@ export default function OfficialDetail() {
 
   const official = data?.member;
 
+  const filteredBills = useMemo(() => {
+    if (!searchQuery.trim()) return mockBills;
+    return mockBills.filter(
+      (bill) =>
+        bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bill.committee.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [searchQuery]);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -246,14 +261,12 @@ export default function OfficialDetail() {
     );
   }
 
-  const filteredBills = useMemo(() => {
-    if (!searchQuery.trim()) return mockBills;
-    return mockBills.filter(
-      (bill) =>
-        bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bill.committee.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }, [searchQuery]);
+  // console.log("Official data:", official);
+  // console.log("Official name fields:", {
+  //   directOrderName: official.directOrderName,
+  //   lastName: official.lastName,
+  //   firstName: official.firstName,
+  // });
 
   return (
     <View style={componentStyles.screen}>
@@ -295,15 +308,45 @@ export default function OfficialDetail() {
         <View style={componentStyles.header}>
           <Text style={componentStyles.roleTop}>
             {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
-            {official.state}
-            {official.district ? `, District ${official.district}` : " Senator"}
+            {official.district
+              ? ` Representative, ${official.state} - District ${official.district}`
+              : ` Senator, ${official.state}`}
           </Text>
           <View style={componentStyles.centeredRow}>
             {official.depiction?.imageUrl && (
-              <Image
-                source={{ uri: official.depiction.imageUrl }}
-                style={componentStyles.avatar}
-              />
+              <View style={componentStyles.avatar}>
+                {official.depiction?.imageUrl && !imageError ? (
+                  <Image
+                    source={{ uri: official.depiction.imageUrl }}
+                    style={{
+                      width: "100%",
+                      height: "120%",
+                    }}
+                    resizeMode="cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "#008CFF",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 24,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {official.lastName?.charAt(0) || "?"}
+                    </Text>
+                  </View>
+                )}
+              </View>
             )}
             <Text style={componentStyles.name}>{official.directOrderName}</Text>
           </View>
@@ -368,9 +411,9 @@ export default function OfficialDetail() {
               </View>
               <View style={componentStyles.termRow}>
                 <Text style={componentStyles.term}>
-                  {official.state}
+                  {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
                   {official.district
-                    ? ` District ${official.district}`
+                    ? ` Representative, ${official.state} - District ${official.district}`
                     : " Senator"}
                 </Text>
               </View>

@@ -98,6 +98,7 @@ export const styles = StyleSheet.create({
     borderRadius: 36,
     borderWidth: 4,
     borderColor: "#008CFF",
+    overflow: "hidden",
   },
   name: {
     fontSize: 20,
@@ -144,7 +145,7 @@ export const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
     flexDirection: "column",
-    paddingVertical: 16,
+    paddingVertical: 0,
     paddingHorizontal: 16,
     borderRadius: 24,
     backgroundColor: "#fafafa",
@@ -157,6 +158,7 @@ export const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
+    marginBottom: -12,
   },
   termRow: {
     flexDirection: "row",
