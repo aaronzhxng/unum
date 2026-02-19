@@ -290,4 +290,46 @@ export const styles = StyleSheet.create({
     borderRadius: 6,
     marginLeft: 16,
   },
+  // Add these to the existing StyleSheet.create({ ... })
+
+  officialHeader: {
+    alignItems: "center",
+    marginBottom: 24,
+    paddingVertical: 16,
+  },
+  avatarLarge: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: "#008CFF",
+    marginBottom: 16,
+  },
+  officialName: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#000000",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  officialRole: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#535353",
+    textAlign: "center",
+  },
+  details: {
+    marginBottom: 12,
+  },
+  detailTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#000000",
+    marginBottom: 4,
+  },
+  detailInfo: {
+    fontSize: 14,
+    color: "#535353",
+    lineHeight: 20,
+  },
 });

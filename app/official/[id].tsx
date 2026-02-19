@@ -8,24 +8,35 @@ import {
   Search,
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-  FlatList,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
+import { useQuery } from "@tanstack/react-query";
 import NewListNameModal from "../global_components/NewListNameModal";
+import { officialsService } from "../services/officials";
 import AddModal from "./official_components/AddModal";
-import BillCard from "./official_components/BillCard";
 import FilterDropdown from "./official_components/FilterDropdown";
 import OptionsModal from "./official_components/OptionsModal";
 import SearchModal from "./official_components/SearchModal";
 import SortDropdown from "./official_components/SortDropdown";
 import { styles as componentStyles } from "./styles";
+
+function BillCard({ item }: { item: any }) {
+  return (
+    <View style={componentStyles.billCard}>
+      <Image source={item.icon} style={componentStyles.billIcon} />
+      <View style={componentStyles.billInfo}>
+        <Text style={componentStyles.billNumber}>{item.name}</Text>
+        <View style={componentStyles.billStatusRow}>
+          <Text style={componentStyles.billTitle}>{item.date}</Text>
+          <Text style={componentStyles.separator}>·</Text>
+          <Text style={componentStyles.billTitle}>{item.committee}</Text>
+          <Text style={componentStyles.separator}>·</Text>
+          <Text style={componentStyles.update}>{item.update}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
 
 export default function OfficialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,8 +46,6 @@ export default function OfficialDetail() {
   );
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Most Viewed");
-  // const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-  // const [selectedType, setSelectedType] = useState("Bills");
 
   const [isFiltered, setIsFiltered] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
@@ -154,34 +163,6 @@ export default function OfficialDetail() {
     setShowPolicyModal(false);
   };
 
-  const official = {
-    name: "Alexandria Ocasio-Cortez",
-    avatar: require("../../assets/officials_images/aoc.webp"),
-    party: "D",
-    role: "Representative, NY 14th District",
-    bio: "Waitress turned Congresswoman for the Bronx and Queens. Grassroots elected, small-dollar supported. A better world is possible.",
-    website: "ocasiocortez.com",
-    congressHistory: [
-      {
-        term: "119th Congress (2025-Present)",
-        role: "Representative, NY-14",
-      },
-      {
-        term: "118th Congress (2023-2025)",
-        role: "Representative, NY-14",
-      },
-      {
-        term: "117th Congress (2021-2023)",
-        role: "Representative, NY-14",
-      },
-      {
-        term: "116th Congress (2019-2021)",
-        role: "Representative, NY-14",
-      },
-    ],
-    map: require("../../assets/maps/aoc.png"),
-  };
-
   const mockBills = [
     {
       id: "1",
@@ -241,6 +222,30 @@ export default function OfficialDetail() {
     },
   ];
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["official", id],
+    queryFn: () => officialsService.getById(id as string),
+    enabled: !!id,
+  });
+
+  const official = data?.member;
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error || !official) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Error loading official</Text>
+      </View>
+    );
+  }
+
   const filteredBills = useMemo(() => {
     if (!searchQuery.trim()) return mockBills;
     return mockBills.filter(
@@ -248,12 +253,10 @@ export default function OfficialDetail() {
         bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         bill.committee.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [searchQuery, mockBills]);
+  }, [searchQuery]);
 
   return (
     <View style={componentStyles.screen}>
-      {/* ← Add screen wrapper */}
-      {/* Custom header */}
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
         <Pressable
@@ -266,9 +269,7 @@ export default function OfficialDetail() {
         </Pressable>
         <View style={componentStyles.headerRight}>
           <Pressable
-            onPress={() => {
-              setShowAddModal(true);
-            }}
+            onPress={() => setShowAddModal(true)}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
@@ -276,9 +277,7 @@ export default function OfficialDetail() {
             <Plus size={24} color="#535353" />
           </Pressable>
           <Pressable
-            onPress={() => {
-              setShowOptionsModal(true);
-            }}
+            onPress={() => setShowOptionsModal(true)}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
@@ -287,26 +286,30 @@ export default function OfficialDetail() {
           </Pressable>
         </View>
       </View>
+
       <ScrollView
         style={componentStyles.container}
         keyboardShouldPersistTaps="handled"
-        // keyboardDismissMode="on-drag"
       >
-        {/* Profile Header */}
+        {/* Official Header - ABOVE TABS */}
         <View style={componentStyles.header}>
-          {/* Role at top */}
           <Text style={componentStyles.roleTop}>
-            {official.party} · {official.role}
+            {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
+            {official.state}
+            {official.district ? `, District ${official.district}` : " Senator"}
           </Text>
-
-          {/* Centered image + name line */}
           <View style={componentStyles.centeredRow}>
-            <Image source={official.avatar} style={componentStyles.avatar} />
-            <Text style={componentStyles.name}>{official.name}</Text>
+            {official.depiction?.imageUrl && (
+              <Image
+                source={{ uri: official.depiction.imageUrl }}
+                style={componentStyles.avatar}
+              />
+            )}
+            <Text style={componentStyles.name}>{official.directOrderName}</Text>
           </View>
         </View>
 
-        {/* Tabs - full width */}
+        {/* Tabs */}
         <View style={componentStyles.tabsNegative}>
           <View style={componentStyles.tabs}>
             <Pressable
@@ -342,12 +345,17 @@ export default function OfficialDetail() {
           </View>
         </View>
 
+        {/* Tab Content */}
         {activeTab === "profile" ? (
           <>
-            {/* Bio */}
+            {/* Bio placeholder */}
             <View>
-              <Text style={componentStyles.bio}>{official.bio}</Text>
-              <Text style={componentStyles.website}>{official.website}</Text>
+              <Text style={componentStyles.bio}>
+                Bio not available from Congress.gov API
+              </Text>
+              <Text style={componentStyles.website}>
+                {official.officialWebsiteUrl || "No website available"}
+              </Text>
             </View>
 
             {/* Congress History */}
@@ -358,25 +366,21 @@ export default function OfficialDetail() {
                   (2019 - Present)
                 </Text>
               </View>
-              {official.congressHistory.map((term) => (
-                <View key={term.term} style={componentStyles.termRow}>
-                  <Text style={componentStyles.term}>{term.term}</Text>
-                  <Text style={componentStyles.termRole}>{term.role}</Text>
-                </View>
-              ))}
+              <View style={componentStyles.termRow}>
+                <Text style={componentStyles.term}>
+                  {official.state}
+                  {official.district
+                    ? ` District ${official.district}`
+                    : " Senator"}
+                </Text>
+              </View>
             </View>
 
             {/* Map */}
             <View style={componentStyles.map}>
-              <Image
-                source={official.map}
-                style={{
-                  width: "100%",
-                  height: 369,
-                  marginBottom: 96,
-                }}
-                resizeMode="cover"
-              />
+              <Text style={{ padding: 20, color: "#7B7C81" }}>
+                District map not available from API
+              </Text>
             </View>
           </>
         ) : (
@@ -396,7 +400,6 @@ export default function OfficialDetail() {
                     setShowPolicyModal(true);
                   }}
                 >
-                  {/* Total Selected Legislation Dropdown */}
                   <Text style={componentStyles.legislationHeaderTotal}>
                     {isFiltered ? "Filtered" : "Total"} Legislation 3,353
                   </Text>
@@ -425,7 +428,6 @@ export default function OfficialDetail() {
                   ]}
                   onPress={() => setShowSortDropdown(!showSortDropdown)}
                 >
-                  {/* <Text style={styles.sortText}>Sort by </Text> */}
                   <Text style={componentStyles.sortText}>{selectedSort}</Text>
                   <Text>
                     {showSortDropdown ? (
@@ -457,26 +459,24 @@ export default function OfficialDetail() {
                 <Search size={24} color="#535353" />
               </Pressable>
             </View>
+
             {/* Bill Cards */}
-            <FlatList
+            {/* <FlatList
               style={componentStyles.legislationContainer}
               data={filteredBills}
               renderItem={({ item }) => <BillCard item={item} />}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
-            />
+            /> */}
+
             {/* Search Modal Popup */}
             <SearchModal
               isVisible={showSearchModal}
-              onClose={() => {
-                setShowSearchModal(false);
-              }}
-              // onSearch={(query) => {
-              //   setSearchQuery(query);
-              // }}
+              onClose={() => setShowSearchModal(false)}
               onSearch={setSearchQuery}
             />
+
             {/* Sort by Modal Popup */}
             <SortDropdown
               showSortDropdown={showSortDropdown}
@@ -484,6 +484,7 @@ export default function OfficialDetail() {
               selectedSort={selectedSort}
               setSelectedSort={setSelectedSort}
             />
+
             {/* Selected Legislation Dropdown Popup */}
             <FilterDropdown
               showTypeModal={showTypeModal}
@@ -501,35 +502,36 @@ export default function OfficialDetail() {
             />
           </View>
         )}
-        {/* Add Modal Popup */}
-        <AddModal
-          showAddModal={showAddModal}
-          setShowAddModal={setShowAddModal}
-          selectedLists={selectedLists}
-          setSelectedLists={setSelectedLists}
-          onNewListPress={() => setShowNewListModal(true)} // 👈 Add this
-        />
-        {/* Options Modal Popup */}
-        <OptionsModal
-          showOptionsModal={showOptionsModal}
-          setShowOptionsModal={setShowOptionsModal}
-          selectedNotifications={selectedNotifications}
-          setSelectedNotifications={setSelectedNotifications}
-        />
-        {/* New List Name Modal Popup */}
-        <NewListNameModal
-          visible={showNewListModal}
-          onClose={() => {
-            setShowNewListModal(false);
-            setNewListName("");
-          }}
-          onConfirm={handleNewListCreate}
-          value={newListName}
-          onChangeText={setNewListName}
-        />
       </ScrollView>
+
+      {/* Add Modal Popup */}
+      <AddModal
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
+        selectedLists={selectedLists}
+        setSelectedLists={setSelectedLists}
+        onNewListPress={() => setShowNewListModal(true)}
+      />
+
+      {/* Options Modal Popup */}
+      <OptionsModal
+        showOptionsModal={showOptionsModal}
+        setShowOptionsModal={setShowOptionsModal}
+        selectedNotifications={selectedNotifications}
+        setSelectedNotifications={setSelectedNotifications}
+      />
+
+      {/* New List Name Modal Popup */}
+      <NewListNameModal
+        visible={showNewListModal}
+        onClose={() => {
+          setShowNewListModal(false);
+          setNewListName("");
+        }}
+        onConfirm={handleNewListCreate}
+        value={newListName}
+        onChangeText={setNewListName}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({});

@@ -23,4 +23,9 @@ export const billsService = {
   getAll: async (): Promise<BillsResponse> => {
     return apiClient.get<BillsResponse>("/bills");
   },
+
+  // Add this:
+  getById: async (billId: string): Promise<any> => {
+    return apiClient.get(`/bills/${billId}`);
+  },
 };

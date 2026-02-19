@@ -1,16 +1,11 @@
 import { useLocalSearchParams, useRouter, type Router } from "expo-router";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronUp,
-  Link,
-  MoreVertical,
-  Plus,
-} from "lucide-react-native";
+import { ChevronLeft, MoreVertical, Plus } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
+import { useQuery } from "@tanstack/react-query";
 import NewListNameModal from "../global_components/NewListNameModal";
+import { billsService } from "../services/bills";
 import ActionHistory from "./bill_components/ActionHistory";
 import AddModal from "./bill_components/AddModal";
 import Cosponsors, { Cosponsor } from "./bill_components/Cosponsors";
@@ -120,27 +115,53 @@ export default function BillDetail() {
   };
 
   // Bill data (from HR5124.jpg)
-  const bill = {
-    id: "HR5124",
-    avatar: require("../../assets/bills_icons/armedservices.png"),
-    name: "S.2296 - National Defense Authorization Act for Fiscal Year 2026",
-    introduced: "04/22/2025",
-    latest_action: "07/15/2025",
-    status: "Passed Senate",
-    committee: "Senate - Armed Services",
-    sponsor: {
-      role: "Sen.",
-      name: "Roger F. Wicker",
-      party: "R",
-      district: "MS",
-    },
-    type: "US Senate Bill",
-    summary:
-      "This bill sets forth policies and authorities for FY2026 for Department of Defense (DOD) programs and activities, military construction, and the national security programs of the Department of Energy (DOE). It also authorizes the Defense Nuclear Facilities Safety Board for FY2026. The bill authorizes appropriations but it does not provide budget authority, which is provided by appropriations legislation.",
-    amendments: 15,
-    actions: [], // Actions tab data
-    cosponsors: [], // Cosponsors tab data
-  };
+  // const bill = {
+  //   id: "HR5124",
+  //   avatar: require("../../assets/bills_icons/armedservices.png"),
+  //   name: "S.2296 - National Defense Authorization Act for Fiscal Year 2026",
+  //   introduced: "04/22/2025",
+  //   latest_action: "07/15/2025",
+  //   status: "Passed Senate",
+  //   committee: "Senate - Armed Services",
+  //   sponsor: {
+  //     role: "Sen.",
+  //     name: "Roger F. Wicker",
+  //     party: "R",
+  //     district: "MS",
+  //   },
+  //   type: "US Senate Bill",
+  //   summary:
+  //     "This bill sets forth policies and authorities for FY2026 for Department of Defense (DOD) programs and activities, military construction, and the national security programs of the Department of Energy (DOE). It also authorizes the Defense Nuclear Facilities Safety Board for FY2026. The bill authorizes appropriations but it does not provide budget authority, which is provided by appropriations legislation.",
+  //   amendments: 15,
+  //   actions: [], // Actions tab data
+  //   cosponsors: [], // Cosponsors tab data
+  // };
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["bill", id],
+    queryFn: () => billsService.getById(id as string),
+    enabled: !!id,
+  });
+
+  console.log("Bill detail data:", data);
+
+  const bill = data?.bill;
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error || !bill) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Error loading bill</Text>
+      </View>
+    );
+  }
 
   const amendmentsList = [
     {
@@ -309,12 +330,14 @@ export default function BillDetail() {
       >
         {/* Bill Header */}
         <View style={componentStyles.centeredRow}>
-          <Image
+          {/* <Image
             source={bill.avatar}
             style={componentStyles.avatarBill}
             resizeMode="cover"
-          />
-          <Text style={componentStyles.billTitle}>{bill.name}</Text>
+          /> */}
+          <Text style={componentStyles.billTitle}>
+            {bill.type}.{bill.number}
+          </Text>
         </View>
 
         {/* Tabs */}
@@ -386,189 +409,46 @@ export default function BillDetail() {
         {/* Details Tab */}
         {activeTab === "details" && (
           <>
-            <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Status: </Text>
-              <Text style={componentStyles.status}>{bill.status}</Text>
+            <View style={componentStyles.section}>
+              <Text style={componentStyles.billTitle}>{bill.title}</Text>
             </View>
-            <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Latest Action: </Text>
-              <Text style={componentStyles.detailInfo}>
-                {bill.latest_action}
-              </Text>
-            </View>
-            <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Introduced: </Text>
-              <Text style={componentStyles.detailInfo}>{bill.introduced}</Text>
-            </View>
-            <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Committees: </Text>
-              <Text style={componentStyles.detailInfo}>{bill.committee}</Text>
-            </View>
-            <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Sponsor: </Text>
-              <Text style={componentStyles.detailInfo}>
-                {`${bill.sponsor.role} ${bill.sponsor.name} [${bill.sponsor.party} - ${bill.sponsor.district}]`}
-              </Text>
-            </View>
+
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Type: </Text>
               <Text style={componentStyles.detailInfo}>{bill.type}</Text>
             </View>
-            <View style={componentStyles.section}>
-              <Text style={componentStyles.detailTitle}>Summary</Text>
-              <Text style={componentStyles.summary}>{bill.summary}</Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 4,
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#7B7C81",
-                  padding: 6,
-                  paddingHorizontal: 8,
-                  borderRadius: 24,
-                  alignSelf: "flex-start",
-                }}
-              >
-                <Link size={14} color="#7B7C81" />
-                <Text style={componentStyles.link}>H.R.5124</Text>
-              </View>
+
+            <View style={componentStyles.details}>
+              <Text style={componentStyles.detailTitle}>Number: </Text>
+              <Text style={componentStyles.detailInfo}>{bill.number}</Text>
             </View>
 
-            {/* Amendments Section */}
-            <View style={componentStyles.amendmentsSection}>
-              <Pressable
-                style={[
-                  componentStyles.sectionHeader,
-                  {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  },
-                ]}
-                onPress={() => {
-                  setShowAmendments(!showAmendments);
-                }}
-              >
-                {/* Left: Title/Button and filterdropdown*/}
-                <View style={{ flex: 1 }}>
-                  <View
-                    style={{
-                      alignSelf: "flex-start",
-                      height: 20,
-                    }}
-                  >
-                    {!showAmendments ? (
-                      <Text
-                        style={[
-                          componentStyles.detailTitle,
-                          { lineHeight: 20 },
-                        ]}
-                      >
-                        Amendments ({bill.amendments})
-                      </Text>
-                    ) : (
-                      <Pressable
-                        style={({ pressed }) => [
-                          {
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 4,
-                            flex: 1,
-                            transform: [{ scale: pressed ? 0.96 : 1 }],
-                          },
-                        ]}
-                        onPress={() => {
-                          setShowChamberModal(true);
-                          setShowPartyModal(true);
-                        }}
-                      >
-                        <Text
-                          style={[
-                            componentStyles.detailTitle,
-                            { lineHeight: 16 },
-                          ]}
-                        >
-                          Amendments ({bill.amendments})
-                        </Text>
-                        {showChamberModal || showPartyModal ? (
-                          <ChevronUp size={16} color="#7B7C81" />
-                        ) : (
-                          <ChevronDown size={16} color="#7B7C81" />
-                        )}
-                      </Pressable>
-                    )}
-                  </View>
-                </View>
+            <View style={componentStyles.details}>
+              <Text style={componentStyles.detailTitle}>Introduced: </Text>
+              <Text style={componentStyles.detailInfo}>
+                {bill.introducedDate}
+              </Text>
+            </View>
 
-                {/* Center: Sort button (only expanded) */}
-                {showAmendments && (
-                  <Pressable
-                    style={({ pressed }) => [
-                      componentStyles.button,
-                      {
-                        transform: [{ scale: pressed ? 0.96 : 1 }],
-                      },
-                    ]}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      setShowAmendmentsSort(!showAmendmentsSort);
-                    }}
-                  >
-                    <Text style={componentStyles.viewAll}>
-                      {selectedAmendmentsSort}
-                    </Text>
-                    {showAmendmentsSort ? (
-                      <ChevronUp size={16} color="#7B7C81" />
-                    ) : (
-                      <ChevronDown size={16} color="#7B7C81" />
-                    )}
-                  </Pressable>
-                )}
-                {/* Right Chevron */}
-                <View
-                  style={{
-                    width: 24,
-                    height: 24,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  pointerEvents={showAmendments ? "auto" : "none"}
-                >
-                  {showAmendments ? (
-                    <Pressable // ← Only Pressable when expanded
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      onPress={() => setShowAmendments(false)}
-                      style={{ position: "absolute" }}
-                    >
-                      <ChevronUp size={20} color="#7B7C81" />
-                    </Pressable>
-                  ) : (
-                    <ChevronDown size={20} color="#7B7C81" />
-                  )}
-                </View>
-              </Pressable>
+            <View style={componentStyles.details}>
+              <Text style={componentStyles.detailTitle}>Latest Action: </Text>
+              <Text style={componentStyles.detailInfo}>
+                {bill.latestAction.actionDate} - {bill.latestAction.text}
+              </Text>
+            </View>
 
-              {/* List only (no sectionRow needed) */}
-              {showAmendments && (
-                <View style={componentStyles.expandedAmendments}>
-                  {amendmentsList.map((amendment, index) => (
-                    <View key={index} style={componentStyles.amendmentItem}>
-                      <View style={componentStyles.amendmentTitleandSponsor}>
-                        <Text style={componentStyles.detailTitle}>
-                          {amendment.title}
-                        </Text>
-                        <Text style={componentStyles.amendmentSponsor}>
-                          {`${amendment.sponsor.role} ${amendment.sponsor.name} [${amendment.sponsor.party} - ${amendment.sponsor.district}]`}
-                        </Text>
-                      </View>
-                      <Text style={componentStyles.amendmentSummary}>
-                        {`${amendment.date} · ${amendment.summary}`}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
+            <View style={componentStyles.details}>
+              <Text style={componentStyles.detailTitle}>Policy Area: </Text>
+              <Text style={componentStyles.detailInfo}>
+                {bill.policyArea?.name || "N/A"}
+              </Text>
+            </View>
+
+            <View style={componentStyles.details}>
+              <Text style={componentStyles.detailTitle}>Origin: </Text>
+              <Text style={componentStyles.detailInfo}>
+                {bill.originChamber}
+              </Text>
             </View>
           </>
         )}

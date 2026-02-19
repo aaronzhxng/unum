@@ -18,4 +18,9 @@ export const officialsService = {
   getAll: async (): Promise<OfficialsResponse> => {
     return apiClient.get<OfficialsResponse>("/officials");
   },
+
+  // Add this:
+  getById: async (bioguideId: string): Promise<any> => {
+    return apiClient.get(`/officials/${bioguideId}`);
+  },
 };

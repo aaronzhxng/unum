@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronUp,
   MoreVertical,
+  Plus,
   Search,
 } from "lucide-react-native";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import { styles as componentStyles } from "../global_styles/styles";
 
 import { useQuery } from "@tanstack/react-query";
 import { billsService } from "../services/bills";
+import { ListItem, storage } from "../utils/storage";
 
 type Bill = {
   id: string;
@@ -398,17 +400,43 @@ export default function LegislationScreen() {
 function BillCard({ item }: { item: any }) {
   const router = useRouter();
 
+  const handleAddToList = async () => {
+    const listItem: ListItem = {
+      id: `${item.type.toLowerCase()}${item.number}`,
+      type: "bill",
+      name: `${item.type}.${item.number} - ${item.title}`,
+      date: item.latestAction.actionDate,
+      committee: item.latestAction.text.substring(0, 30),
+      update: "",
+    };
+
+    const lists = await storage.getLists();
+    const myList = lists.find((l) => l.name === "My List");
+
+    if (myList) {
+      const alreadyExists = myList.items.some((i) => i.id === listItem.id);
+
+      if (!alreadyExists) {
+        myList.items.push(listItem);
+        await storage.saveLists(lists);
+        alert("Added to My List!");
+      } else {
+        alert("Already in your list!");
+      }
+    }
+  };
+
   return (
     <Pressable
-      onPress={() => router.navigate(`/bill/${item.number}`)}
+      onPress={() =>
+        router.navigate(`/bill/${item.type.toLowerCase()}${item.number}`)
+      }
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.96 : 1 }],
       })}
     >
       <View style={componentStyles.officialCard}>
-        {/* You'll need to handle the avatar differently - for now, skip it */}
-
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={componentStyles.name}>
             {item.type}.{item.number} - {item.title}
           </Text>
@@ -423,6 +451,19 @@ function BillCard({ item }: { item: any }) {
             </Text>
           </View>
         </View>
+
+        <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            handleAddToList();
+          }}
+          style={({ pressed }) => ({
+            padding: 8,
+            transform: [{ scale: pressed ? 0.9 : 1 }],
+          })}
+        >
+          <Plus size={24} color="#008CFF" />
+        </Pressable>
       </View>
     </Pressable>
   );
