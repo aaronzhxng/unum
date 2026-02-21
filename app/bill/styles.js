@@ -32,16 +32,14 @@ export const styles = StyleSheet.create({
   avatarBill: {
     width: 72,
     height: 72,
-    borderRadius: 36,
-    borderWidth: 2,
-    borderColor: "#7B7C81",
-    overflow: "hidden",
+    borderRadius: 48,
+    // marginRight: 12,
   },
   billNumber: {
-    fontSize: 16,
-    color: "#000000",
+    fontSize: 15,
     fontWeight: "600",
-    marginBottom: 8,
+    color: "#000000",
+    marginBottom: 4,
   },
   billTitle: {
     fontSize: 20,
@@ -49,6 +47,10 @@ export const styles = StyleSheet.create({
     color: "#000000",
     lineHeight: 24,
     flexShrink: 1,
+  },
+  billDate: {
+    fontSize: 12,
+    color: "#7B7C81",
   },
   statusRow: {
     flexDirection: "row",
@@ -62,6 +64,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 6,
+    marginRight: 48,
   },
   tabsNegative: {
     marginHorizontal: -16,
@@ -124,12 +127,14 @@ export const styles = StyleSheet.create({
   },
   summary: {
     fontSize: 14,
+    color: "#535353",
     lineHeight: 20,
-    color: "#000000",
+    marginTop: 8,
   },
   link: {
-    color: "#46AAD8",
     fontSize: 12,
+    color: "#46AAD8",
+    fontWeight: "500",
   },
   committee: {
     fontSize: 14,
