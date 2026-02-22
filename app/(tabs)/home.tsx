@@ -518,8 +518,8 @@ function Card({
   onPress: () => void;
 }) {
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
   const isOfficial = item.type === "official";
-  const [imageError, setImageError] = useState(false); // Add this
 
   const handlePress = () => {
     if (isEditMode) {
@@ -529,6 +529,17 @@ function Card({
     } else {
       router.navigate(`/bill/${item.id}`);
     }
+  };
+
+  // Date formatter
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
   };
 
   return (
@@ -543,35 +554,57 @@ function Card({
       <View style={componentStyles.officialCard}>
         {/* Avatar with selection overlay */}
         <View>
-          <View style={componentStyles.avatar}>
-            {(item.photoUrl && !imageError) || item.avatar ? (
-              <Image
-                source={item.avatar || { uri: item.photoUrl }}
-                style={{
-                  width: "100%",
-                  height: "120%",
-                }}
-                resizeMode="cover"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <View
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#008CFF",
+          {isOfficial ? (
+            // Official avatar
+            <View style={componentStyles.avatar}>
+              {(item.photoUrl && !imageError) || item.avatar ? (
+                <Image
+                  source={item.avatar || { uri: item.photoUrl }}
+                  style={{
+                    width: "100%",
+                    height: "120%",
+                  }}
+                  resizeMode="cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "#008CFF",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                  >
+                    {item.name?.charAt(0) || "?"}
+                  </Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            // Bill icon/avatar
+            <View
+              style={[
+                componentStyles.avatar,
+                {
+                  backgroundColor: "#eee",
                   justifyContent: "center",
                   alignItems: "center",
-                }}
+                  borderWidth: 0, // Remove blue border for bills
+                },
+              ]}
+            >
+              <Text
+                style={{ fontSize: 16, fontWeight: "bold", color: "#535353" }}
               >
-                <Text
-                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
-                >
-                  {item.name?.charAt(0) || "?"}
-                </Text>
-              </View>
-            )}
-          </View>
+                {item.name?.split(".")[0] || "HR"}
+              </Text>
+            </View>
+          )}
 
           {isEditMode && (
             <View
@@ -593,12 +626,16 @@ function Card({
         </View>
 
         {isOfficial ? (
-          <View>
-            <Text style={componentStyles.name}>{item.name}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={componentStyles.name} numberOfLines={1}>
+              {item.name}
+            </Text>
             <View style={componentStyles.metaRow}>
               <Text style={componentStyles.subtitle}>{item.party}</Text>
               <Text style={componentStyles.separator}>·</Text>
-              <Text style={componentStyles.subtitle}>{item.role}</Text>
+              <Text style={componentStyles.subtitle} numberOfLines={1}>
+                {item.role}
+              </Text>
               {item.update ? (
                 <>
                   <Text style={componentStyles.separator}>·</Text>
@@ -608,18 +645,18 @@ function Card({
             </View>
           </View>
         ) : (
-          <View>
-            <Text style={componentStyles.name}>{item.name}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={componentStyles.name} numberOfLines={1}>
+              {item.name}
+            </Text>
             <View style={componentStyles.metaRow}>
-              <Text style={componentStyles.subtitle}>{item.date}</Text>
+              <Text style={componentStyles.subtitle}>
+                {formatDate(item.date)}
+              </Text>
               <Text style={componentStyles.separator}>·</Text>
-              <Text style={componentStyles.subtitle}>{item.committee}</Text>
-              {item.update ? (
-                <>
-                  <Text style={componentStyles.separator}>·</Text>
-                  <Text style={componentStyles.update}>{item.update}</Text>
-                </>
-              ) : null}
+              <Text style={componentStyles.subtitle} numberOfLines={1}>
+                {item.committee}
+              </Text>
             </View>
           </View>
         )}

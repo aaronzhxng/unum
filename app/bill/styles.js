@@ -88,8 +88,9 @@ export const styles = StyleSheet.create({
   },
   tabActive: {
     color: "#000",
-    borderBottomWidth: 2,
+    borderBottomWidth: 1.5,
     borderBottomColor: "#000",
+    marginBottom: -1.75,
   },
   details: {
     flexDirection: "row",
@@ -111,6 +112,7 @@ export const styles = StyleSheet.create({
   detailInfo: {
     fontSize: 14,
     color: "#535353",
+    marginRight: 84,
   },
   section: {
     marginBottom: 24,

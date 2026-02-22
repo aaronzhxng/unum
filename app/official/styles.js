@@ -127,8 +127,9 @@ export const styles = StyleSheet.create({
   },
   tabActive: {
     color: "#000",
-    borderBottomWidth: 2,
+    borderBottomWidth: 1.5,
     borderBottomColor: "#000",
+    marginBottom: -1.75,
   },
   bio: {
     fontSize: 14,

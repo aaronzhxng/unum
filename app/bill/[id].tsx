@@ -2,9 +2,11 @@ import { useLocalSearchParams, useRouter, type Router } from "expo-router";
 import {
   ChevronDown,
   ChevronLeft,
+  ChevronUp,
   MoreVertical,
   Plus,
 } from "lucide-react-native";
+
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -68,7 +70,7 @@ export default function BillDetail() {
 
   const handleNewListCreate = () => {
     if (newListName.trim()) {
-      console.log("New list created:", newListName.trim());
+      // console.log("New list created:", newListName.trim());
       setNewListName("");
       setShowNewListModal(false);
     }
@@ -119,36 +121,13 @@ export default function BillDetail() {
     setShowPartyModal(false);
   };
 
-  // Bill data (from HR5124.jpg)
-  // const bill = {
-  //   id: "HR5124",
-  //   avatar: require("../../assets/bills_icons/armedservices.png"),
-  //   name: "S.2296 - National Defense Authorization Act for Fiscal Year 2026",
-  //   introduced: "04/22/2025",
-  //   latest_action: "07/15/2025",
-  //   status: "Passed Senate",
-  //   committee: "Senate - Armed Services",
-  //   sponsor: {
-  //     role: "Sen.",
-  //     name: "Roger F. Wicker",
-  //     party: "R",
-  //     district: "MS",
-  //   },
-  //   type: "US Senate Bill",
-  //   summary:
-  //     "This bill sets forth policies and authorities for FY2026 for Department of Defense (DOD) programs and activities, military construction, and the national security programs of the Department of Energy (DOE). It also authorizes the Defense Nuclear Facilities Safety Board for FY2026. The bill authorizes appropriations but it does not provide budget authority, which is provided by appropriations legislation.",
-  //   amendments: 15,
-  //   actions: [], // Actions tab data
-  //   cosponsors: [], // Cosponsors tab data
-  // };
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["bill", id],
     queryFn: () => billsService.getById(id as string),
     enabled: !!id,
   });
 
-  console.log("Bill detail data:", data);
+  // console.log("Bill detail data:", data);
 
   const bill = data?.bill;
 
@@ -334,8 +313,6 @@ export default function BillDetail() {
       >
         {/* Bill Header - ABOVE TABS */}
         <View style={componentStyles.centeredRow}>
-          {/* You'll need to add bill icons to assets/bills_icons/ */}
-          {/* For now, placeholder circle */}
           <View
             style={[
               componentStyles.avatarBill,
@@ -356,15 +333,84 @@ export default function BillDetail() {
             <Text style={componentStyles.billNumber}>
               {bill.type}.{bill.number} - {bill.title}
             </Text>
-            <Text style={componentStyles.billDate}>
-              {bill.introducedDate} · Introduced
+            <Text style={componentStyles.billDate} numberOfLines={1}>
+              {new Date(bill.latestAction.actionDate).toLocaleDateString(
+                "en-US",
+                {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "numeric",
+                },
+              )}{" "}
+              · {bill.latestAction.text}
             </Text>
           </View>
         </View>
 
         {/* Tabs */}
         <View style={componentStyles.tabsNegative}>
-          {/* ... keep your existing tabs code ... */}
+          <View style={componentStyles.tabs}>
+            <Pressable
+              onPress={() => setActiveTab("details")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+            >
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "details" && componentStyles.tabActive,
+                ]}
+              >
+                Details
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setActiveTab("voting")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+            >
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "voting" && componentStyles.tabActive,
+                ]}
+              >
+                Voting
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setActiveTab("actions")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+            >
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "actions" && componentStyles.tabActive,
+                ]}
+              >
+                Actions
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setActiveTab("cosponsors")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+            >
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "cosponsors" && componentStyles.tabActive,
+                ]}
+              >
+                Cosponsors
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Details Tab */}
@@ -378,6 +424,31 @@ export default function BillDetail() {
             </View>
 
             <View style={componentStyles.details}>
+              <Text style={componentStyles.detailTitle}>Latest Action: </Text>
+              <Text style={componentStyles.detailInfo}>
+                {new Date(bill.latestAction.actionDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric",
+                  },
+                )}
+              </Text>
+            </View>
+
+            <View style={componentStyles.details}>
+              <Text style={componentStyles.detailTitle}>Introduced: </Text>
+              <Text style={componentStyles.detailInfo}>
+                {new Date(bill.introducedDate).toLocaleDateString("en-US", {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "numeric",
+                })}
+              </Text>
+            </View>
+
+            <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Committees: </Text>
               <Text style={componentStyles.detailInfo}>
                 {bill.originChamber} - {bill.policyArea?.name || "N/A"}
@@ -387,7 +458,6 @@ export default function BillDetail() {
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Sponsor: </Text>
               <Text style={componentStyles.detailInfo}>
-                {/* You'll need to fetch sponsor data from bill.sponsors API */}
                 Not available from current API
               </Text>
             </View>
@@ -403,19 +473,14 @@ export default function BillDetail() {
 
             {/* Summary Section */}
             <View style={componentStyles.section}>
-              <Text style={componentStyles.detailTitle}>
-                {bill.type}.{bill.number} - {bill.title}
-              </Text>
+              <Text style={componentStyles.detailTitle}>Summary</Text>
               <Text style={componentStyles.summary}>
-                {/* Summary needs to be fetched from bill.summaries.url */}
                 Summary not available from current API endpoint. The
                 Congress.gov API requires an additional call to fetch summaries.
               </Text>
               <Pressable
                 onPress={() => {
-                  // Open Congress.gov link
                   const url = `https://www.congress.gov/bill/${bill.congress}th-congress/${bill.type.toLowerCase()}-bill/${bill.number}`;
-                  // You'll need to import Linking from react-native
                   // Linking.openURL(url);
                 }}
                 style={{
@@ -437,7 +502,7 @@ export default function BillDetail() {
               </Pressable>
             </View>
 
-            {/* Amendments Section - Add this */}
+            {/* Amendments Section */}
             <Pressable
               style={componentStyles.section}
               onPress={() => setShowAmendments(!showAmendments)}
@@ -450,13 +515,17 @@ export default function BillDetail() {
                 }}
               >
                 <Text style={componentStyles.detailTitle}>Amendments (0)</Text>
-                <ChevronDown size={20} color="#7B7C81" />
+                {showAmendments ? (
+                  <ChevronUp size={20} color="#7B7C81" />
+                ) : (
+                  <ChevronDown size={20} color="#7B7C81" />
+                )}
               </View>
             </Pressable>
           </>
         )}
 
-        {/* Other tabs - simplified for now */}
+        {/* Voting Tab */}
         {activeTab === "voting" && (
           <View>
             <VotingCard
@@ -466,6 +535,7 @@ export default function BillDetail() {
           </View>
         )}
 
+        {/* Actions Tab */}
         {activeTab === "actions" && (
           <ActionHistory
             actions={[
@@ -497,6 +567,7 @@ export default function BillDetail() {
           />
         )}
 
+        {/* Cosponsors Tab */}
         {activeTab === "cosponsors" && (
           <Cosponsors
             cosponsors={cosponsors}

@@ -28,65 +28,6 @@ type Bill = {
   avatar?: any;
 };
 
-// const MOCK_BILLS: Bill[] = [
-//   {
-//     id: "1",
-//     name: "H.R.187 : MAPWaters Act of 2025",
-//     date: "11/9/2024",
-//     status: "",
-//     committee: "Education",
-//     avatar: require("../../assets/bills_icons/agriculture.png"),
-//   },
-//   {
-//     id: "2",
-//     name: "SB2 : Foundation School Program",
-//     date: "2/27/2025",
-//     status: "In Progress",
-//     committee: "Judiciary",
-//     avatar: require("../../assets/bills_icons/judiciary.png"),
-//   },
-//   {
-//     id: "3",
-//     name: "H.R.6636 : To advance sensible pri..",
-//     date: "12/11/2025",
-//     status: "Introduced",
-//     committee: "Budget",
-//     avatar: require("../../assets/bills_icons/budget.png"),
-//   },
-//   {
-//     id: "4",
-//     name: "SB2 : Foundation School Program",
-//     date: "2/27/2025",
-//     status: "In Progress",
-//     committee: "Homeland Security",
-//     avatar: require("../../assets/bills_icons/homelandsecurity.png"),
-//   },
-//   {
-//     id: "5",
-//     name: "SB2 : Foundation School Program",
-//     date: "2/27/2025",
-//     status: "In Progress",
-//     committee: "Natural Resources",
-//     avatar: require("../../assets/bills_icons/naturalresources.png"),
-//   },
-//   {
-//     id: "6",
-//     name: "H.R.6039 : Commonsense Legislat..",
-//     date: "2/27/2025",
-//     status: "Introduced",
-//     committee: "Ethics",
-//     avatar: require("../../assets/bills_icons/ethics.png"),
-//   },
-//   {
-//     id: "7",
-//     name: "SB2 : Foundation School Program",
-//     date: "2/27/2025",
-//     status: "In Progress",
-//     committee: "Rules",
-//     avatar: require("../../assets/bills_icons/rules.png"),
-//   },
-// ];
-
 export default function LegislationScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -436,22 +377,50 @@ function BillCard({ item }: { item: any }) {
       })}
     >
       <View style={componentStyles.officialCard}>
+        {/* Bill Icon/Avatar */}
+        <View
+          style={[
+            componentStyles.avatar,
+            {
+              backgroundColor: "#eee",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          ]}
+        >
+          <Text style={{ fontSize: 16, fontWeight: "bold", color: "#535353" }}>
+            {item.type}
+          </Text>
+        </View>
+
+        {/* Bill Info */}
         <View style={{ flex: 1 }}>
-          <Text style={componentStyles.name}>
+          <Text style={componentStyles.name} numberOfLines={2}>
             {item.type}.{item.number} - {item.title}
           </Text>
 
           <View style={componentStyles.metaRow}>
             <Text style={componentStyles.subtitle}>
-              {item.latestAction.actionDate}
+              {new Date(item.latestAction.actionDate).toLocaleDateString(
+                "en-US",
+                {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "numeric",
+                },
+              )}
             </Text>
             <Text style={componentStyles.separator}>·</Text>
-            <Text style={componentStyles.subtitle}>
-              {item.latestAction.text.substring(0, 30)}...
+            <Text
+              style={[componentStyles.subtitle, { maxWidth: 148 }]}
+              numberOfLines={1}
+            >
+              {item.latestAction.text}
             </Text>
           </View>
         </View>
 
+        {/* Plus Button */}
         <Pressable
           onPress={(e) => {
             e.stopPropagation();

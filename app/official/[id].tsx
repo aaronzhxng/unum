@@ -305,6 +305,7 @@ export default function OfficialDetail() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Official Header - ABOVE TABS */}
+        {/* Official Header - ABOVE TABS */}
         <View style={componentStyles.header}>
           <Text style={componentStyles.roleTop}>
             {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
@@ -313,41 +314,54 @@ export default function OfficialDetail() {
               : ` Senator, ${official.state}`}
           </Text>
           <View style={componentStyles.centeredRow}>
-            {official.depiction?.imageUrl && (
-              <View style={componentStyles.avatar}>
-                {official.depiction?.imageUrl && !imageError ? (
-                  <Image
-                    source={{ uri: official.depiction.imageUrl }}
+            <View
+              style={[
+                componentStyles.avatar,
+                {
+                  borderColor:
+                    official.partyHistory?.[0]?.partyName === "Republican"
+                      ? "#D45252"
+                      : official.partyHistory?.[0]?.partyName === "Democratic"
+                        ? "#008CFF"
+                        : official.partyHistory?.[0]?.partyName ===
+                            "Independent"
+                          ? "#FFE627"
+                          : "#008CFF", // default
+                },
+              ]}
+            >
+              {official.depiction?.imageUrl && !imageError ? (
+                <Image
+                  source={{ uri: official.depiction.imageUrl }}
+                  style={{
+                    width: "100%",
+                    height: "120%",
+                  }}
+                  resizeMode="cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "#008CFF",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
                     style={{
-                      width: "100%",
-                      height: "120%",
-                    }}
-                    resizeMode="cover"
-                    onError={() => setImageError(true)}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: "#008CFF",
-                      justifyContent: "center",
-                      alignItems: "center",
+                      color: "white",
+                      fontSize: 24,
+                      fontWeight: "bold",
                     }}
                   >
-                    <Text
-                      style={{
-                        color: "white",
-                        fontSize: 24,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {official.lastName?.charAt(0) || "?"}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
+                    {official.lastName?.charAt(0) || "?"}
+                  </Text>
+                </View>
+              )}
+            </View>
             <Text style={componentStyles.name}>{official.directOrderName}</Text>
           </View>
         </View>
@@ -502,16 +516,6 @@ export default function OfficialDetail() {
                 <Search size={24} color="#535353" />
               </Pressable>
             </View>
-
-            {/* Bill Cards */}
-            {/* <FlatList
-              style={componentStyles.legislationContainer}
-              data={filteredBills}
-              renderItem={({ item }) => <BillCard item={item} />}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-            /> */}
 
             {/* Search Modal Popup */}
             <SearchModal
