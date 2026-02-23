@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
 import { useNavigation, useRouter } from "expo-router";
 import {
   Check,
@@ -62,18 +63,28 @@ export default function HomeScreen() {
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
 
+  const [hasMoved, setHasMoved] = useState(false);
+  const [originalOrder, setOriginalOrder] = useState<ListItem[]>([]);
+
   const [newListContext, setNewListContext] = useState<"main" | "search">(
     "main",
   );
 
   const enterEditMode = (triggerId: string) => {
     setIsEditMode(true);
-    setSelectedIds(new Set([triggerId]));
+    setSelectedIds(new Set());
+    setOriginalOrder([...items]); // Save current order
+    setHasMoved(false);
   };
 
-  const exitEditMode = () => {
+  const exitEditMode = (shouldSave = false) => {
+    if (!shouldSave && hasMoved) {
+      setItems(originalOrder); // Restore original order on cancel
+    }
     setIsEditMode(false);
     setSelectedIds(new Set());
+    setHasMoved(false);
+    setOriginalOrder([]);
   };
 
   const toggleSelect = (id: string) => {
@@ -290,13 +301,21 @@ export default function HomeScreen() {
       ) : isEditMode ? (
         <DraggableFlatList
           data={items}
+          onDragBegin={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
           onDragEnd={({ data }) => {
             setItems(data);
-            saveItems(data);
+            setHasMoved(true);
           }}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={componentStyles.listContent}
+          contentContainerStyle={[
+            componentStyles.listContent,
+            { paddingBottom: 220 }, // Extra padding for bottom bar + drag space
+          ]}
           activationDistance={10}
+          autoscrollThreshold={80} // Start auto-scroll when near edges
+          autoscrollSpeed={100}
           renderItem={({ item, drag }) => (
             <Card
               item={item}
@@ -343,15 +362,15 @@ export default function HomeScreen() {
             paddingBottom: 48,
           }}
         >
+          {/* Cancel */}
           <Pressable
             style={({ pressed }) => ({
               flex: 1,
               paddingVertical: 16,
               alignItems: "center",
               transform: [{ scale: pressed ? 0.96 : 1 }],
-              // opacity: pressed ? 0.7 : 1,
             })}
-            onPress={exitEditMode}
+            onPress={() => exitEditMode(false)} // Don't save
           >
             <Text style={{ fontSize: 16, color: "#535353" }}>Cancel</Text>
           </Pressable>
@@ -360,13 +379,43 @@ export default function HomeScreen() {
             style={{ width: 1, backgroundColor: "#e0e0e0", marginVertical: 12 }}
           />
 
+          {/* Save */}
           <Pressable
             style={({ pressed }) => ({
               flex: 1,
               paddingVertical: 16,
               alignItems: "center",
               transform: [{ scale: pressed ? 0.96 : 1 }],
-              // opacity: pressed ? 0.7 : 1,
+            })}
+            onPress={async () => {
+              if (hasMoved) {
+                await saveItems(items);
+                exitEditMode(true);
+              }
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: hasMoved ? "#008CFF" : "#bfbfbf",
+              }}
+            >
+              Save
+            </Text>
+          </Pressable>
+
+          <View
+            style={{ width: 1, backgroundColor: "#e0e0e0", marginVertical: 12 }}
+          />
+
+          {/* Remove */}
+          <Pressable
+            style={({ pressed }) => ({
+              flex: 1,
+              paddingVertical: 16,
+              alignItems: "center",
+              transform: [{ scale: pressed ? 0.96 : 1 }],
             })}
             onPress={() => selectedIds.size > 0 && setShowRemoveModal(true)}
           >
@@ -671,15 +720,18 @@ function Card({
           </View>
         ) : (
           <View style={{ flex: 1 }}>
-            <Text style={componentStyles.name} numberOfLines={1}>
+            <Text style={componentStyles.name} numberOfLines={2}>
               {item.name}
             </Text>
-            <View style={componentStyles.metaRow}>
-              <Text style={componentStyles.subtitle}>
+            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+              <Text style={componentStyles.subtitle} numberOfLines={1}>
                 {formatDate(item.date)}
               </Text>
               <Text style={componentStyles.separator}>·</Text>
-              <Text style={componentStyles.subtitle} numberOfLines={1}>
+              <Text
+                style={[componentStyles.subtitle, { flex: 1 }]}
+                numberOfLines={1}
+              >
                 {item.committee}
               </Text>
             </View>

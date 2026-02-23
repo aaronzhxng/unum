@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { ListItem, storage } from "../../utils/storage";
 import { styles } from "../styles";
 
 interface Props {
@@ -8,14 +9,17 @@ interface Props {
   selectedLists: string[];
   setSelectedLists: React.Dispatch<React.SetStateAction<string[]>>;
   onNewListPress: () => void;
+  currentItem?: {
+    id: string;
+    type: "official" | "bill";
+    name: string;
+    party?: string;
+    role?: string;
+    date?: string;
+    committee?: string;
+    photoUrl?: string;
+  };
 }
-
-const listOptions = [
-  { id: "my-list", label: "My List" },
-  { id: "tri-state-area", label: "Tri State Area" },
-  { id: "swing-states", label: "Swing States" },
-  { id: "new-list", label: "New List" },
-];
 
 export default function AddModal({
   showAddModal,
@@ -23,18 +27,40 @@ export default function AddModal({
   selectedLists,
   setSelectedLists,
   onNewListPress,
+  currentItem,
 }: Props) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentListIndex, setCurrentListIndex] = useState(0);
   const [initialSelections, setInitialSelections] = useState<string[]>([]);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [availableLists, setAvailableLists] = useState<
+    Array<{ id: string; label: string }>
+  >([]);
 
-  const selectedListLabels = listOptions
+  // Load available lists from storage
+  useEffect(() => {
+    const loadLists = async () => {
+      const lists = await storage.getLists();
+      const listOptions = lists.map((list) => ({
+        id: list.id,
+        label: list.name,
+      }));
+      // Add "New List" option at the end
+      listOptions.push({ id: "new-list", label: "New List" });
+      setAvailableLists(listOptions);
+    };
+
+    if (showAddModal) {
+      loadLists();
+    }
+  }, [showAddModal]);
+
+  const selectedListLabels = availableLists
     .filter((opt) => selectedLists.includes(opt.id) && opt.id !== "new-list")
     .map((opt) => opt.label);
 
-  const removedListLabels = listOptions
+  const removedListLabels = availableLists
     .filter(
       (opt) =>
         initialSelections.includes(opt.id) && !selectedLists.includes(opt.id),
@@ -51,23 +77,23 @@ export default function AddModal({
   const closeModal = () => {
     setShowAddModal(false);
     setIsRemoving(false);
+    setSelectedLists([]);
   };
 
   const toggleList = (id: string) => {
-    // Just toggle selection - modal will open after Confirm if needed
     setSelectedLists((prev: string[]) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     const hasRemovals = removedListLabels.length > 0;
     const hasNewList = selectedLists.includes("new-list");
     const hasExistingAdditions = selectedLists.some(
       (id) => id !== "new-list" && !initialSelections.includes(id),
     );
 
-    // If ONLY "New List" is selected, open modal immediately
+    // If ONLY "New List" is selected
     if (hasNewList && !hasRemovals && !hasExistingAdditions) {
       closeModal();
       setTimeout(() => onNewListPress(), 200);
@@ -80,6 +106,51 @@ export default function AddModal({
       return;
     }
 
+    // Actually add/remove from storage
+    if (currentItem) {
+      const lists = await storage.getLists();
+
+      // Remove from lists
+      for (const listId of initialSelections) {
+        if (!selectedLists.includes(listId) && listId !== "new-list") {
+          const list = lists.find((l) => l.id === listId);
+          if (list) {
+            list.items = list.items.filter(
+              (item) => item.id !== currentItem.id,
+            );
+          }
+        }
+      }
+
+      // Add to lists
+      for (const listId of selectedLists) {
+        if (!initialSelections.includes(listId) && listId !== "new-list") {
+          const list = lists.find((l) => l.id === listId);
+          if (list) {
+            const alreadyExists = list.items.some(
+              (i) => i.id === currentItem.id,
+            );
+            if (!alreadyExists) {
+              const listItem: ListItem = {
+                id: currentItem.id,
+                type: currentItem.type,
+                name: currentItem.name,
+                party: currentItem.party,
+                role: currentItem.role,
+                date: currentItem.date,
+                committee: currentItem.committee,
+                update: "",
+                photoUrl: currentItem.photoUrl,
+              };
+              list.items.push(listItem);
+            }
+          }
+        }
+      }
+
+      await storage.saveLists(lists);
+    }
+
     closeModal();
 
     // Show removal progress first if there are removals
@@ -88,7 +159,7 @@ export default function AddModal({
       setShowConfirmModal(true);
       setProgress(0);
       setCurrentListIndex(0);
-    } else {
+    } else if (hasExistingAdditions) {
       setIsRemoving(false);
       setShowConfirmModal(true);
       setProgress(0);
@@ -171,7 +242,7 @@ export default function AddModal({
               showsVerticalScrollIndicator={false}
             >
               <Text style={styles.dropdownItemTextLabel}>Add to List</Text>
-              {listOptions.map((option) => (
+              {availableLists.map((option) => (
                 <Pressable
                   key={option.id}
                   style={[

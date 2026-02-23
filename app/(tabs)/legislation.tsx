@@ -8,6 +8,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
+import AddModal from "../bill/bill_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
 import SortDropdown from "../global_components/LegislationSortDropdown";
@@ -17,7 +18,6 @@ import { styles as componentStyles } from "../global_styles/styles";
 
 import { useQuery } from "@tanstack/react-query";
 import { billsService } from "../services/bills";
-import { ListItem, storage } from "../utils/storage";
 
 type Bill = {
   id: string;
@@ -65,6 +65,10 @@ export default function LegislationScreen() {
     string[]
   >([]);
   const [selectedFilter, setSelectedFilter] = useState("Congress");
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedLists, setSelectedLists] = useState<string[]>([]);
+  const [currentBillId, setCurrentBillId] = useState<string | null>(null);
 
   const getFilterLabel = () => {
     if (selectedChambers.length === 1) {
@@ -126,6 +130,10 @@ export default function LegislationScreen() {
   // console.log("Error:", error);
 
   const bills = data?.bills || [];
+
+  const currentBill = bills.find(
+    (b) => `${b.type.toLowerCase()}${b.number}` === currentBillId,
+  );
 
   return (
     <View style={componentStyles.container}>
@@ -231,13 +239,6 @@ export default function LegislationScreen() {
         </View>
       </View>
 
-      {/* <FlatList
-        data={MOCK_BILLS}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item }) => <BillCard item={item} />}
-      /> */}
-
       {isLoading && <Text>Loading...</Text>}
       {error && <Text>Error loading bills</Text>}
 
@@ -245,7 +246,15 @@ export default function LegislationScreen() {
         data={bills}
         keyExtractor={(item) => `${item.type}${item.number}`}
         contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item }) => <BillCard item={item} />}
+        renderItem={({ item }) => (
+          <BillCard
+            item={item}
+            onAddPress={(id) => {
+              setCurrentBillId(id);
+              setShowAddModal(true);
+            }}
+          />
+        )}
       />
 
       {/* Search Modal */}
@@ -301,71 +310,37 @@ export default function LegislationScreen() {
         value={newListName}
         onChangeText={setNewListName}
       />
+
+      <AddModal
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
+        selectedLists={selectedLists}
+        setSelectedLists={setSelectedLists}
+        onNewListPress={() => setShowNewListModal(true)}
+        currentItem={
+          currentBill
+            ? {
+                id: `${currentBill.type.toLowerCase()}${currentBill.number}`,
+                type: "bill",
+                name: `${currentBill.type}.${currentBill.number} - ${currentBill.title}`,
+                date: currentBill.latestAction.actionDate,
+                committee: currentBill.latestAction.text,
+              }
+            : undefined
+        }
+      />
     </View>
   );
 }
 
-// function BillCard({ item }: { item: Bill }) {
-//   const router = useRouter();
-
-//   return (
-//     <Pressable
-//       onPress={() => router.navigate(`/bill/${item.id}`)}
-//       style={({ pressed }) => ({
-//         transform: [{ scale: pressed ? 0.96 : 1 }],
-//       })}
-//     >
-//       <View style={componentStyles.officialCard}>
-//         <Image source={item.avatar} style={componentStyles.avatar} />
-
-//         <View>
-//           <Text style={componentStyles.name}>{item.name}</Text>
-
-//           <View style={componentStyles.metaRow}>
-//             <Text style={componentStyles.subtitle}>{item.date}</Text>
-//             {item.status ? (
-//               <>
-//                 <Text style={componentStyles.separator}>·</Text>
-//                 <Text style={componentStyles.subtitle}>{item.status}</Text>
-//               </>
-//             ) : null}
-//             <Text style={componentStyles.separator}>·</Text>
-//             <Text style={componentStyles.subtitle}>{item.committee}</Text>
-//           </View>
-//         </View>
-//       </View>
-//     </Pressable>
-//   );
-// }
-
-function BillCard({ item }: { item: any }) {
+function BillCard({
+  item,
+  onAddPress,
+}: {
+  item: any;
+  onAddPress: (id: string) => void;
+}) {
   const router = useRouter();
-
-  const handleAddToList = async () => {
-    const listItem: ListItem = {
-      id: `${item.type.toLowerCase()}${item.number}`,
-      type: "bill",
-      name: `${item.type}.${item.number} - ${item.title}`,
-      date: item.latestAction.actionDate,
-      committee: item.latestAction.text.substring(0, 30),
-      update: "",
-    };
-
-    const lists = await storage.getLists();
-    const myList = lists.find((l) => l.name === "My List");
-
-    if (myList) {
-      const alreadyExists = myList.items.some((i) => i.id === listItem.id);
-
-      if (!alreadyExists) {
-        myList.items.push(listItem);
-        await storage.saveLists(lists);
-        alert("Added to My List!");
-      } else {
-        alert("Already in your list!");
-      }
-    }
-  };
 
   return (
     <Pressable
@@ -424,7 +399,7 @@ function BillCard({ item }: { item: any }) {
         <Pressable
           onPress={(e) => {
             e.stopPropagation();
-            handleAddToList();
+            onAddPress(`${item.type.toLowerCase()}${item.number}`);
           }}
           style={({ pressed }) => ({
             padding: 8,

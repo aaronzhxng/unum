@@ -273,12 +273,12 @@ export default function SearchModal({
                           width: 32,
                           height: 32,
                           borderRadius: 16,
-                          backgroundColor: pressed ? "#e0e0e0" : "#f0f0f0",
                           justifyContent: "center",
                           alignItems: "center",
+                          transform: [{ scale: pressed ? 0.75 : 1 }],
                         })}
                       >
-                        <Plus size={20} color="#535353" strokeWidth={2.5} />
+                        <Plus size={24} color="#008CFF" />
                       </Pressable>
                     </View>
                   </Pressable>

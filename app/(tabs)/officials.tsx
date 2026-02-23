@@ -21,11 +21,10 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
+import AddModal from "../official/official_components/AddModal";
 
 import { useQuery } from "@tanstack/react-query";
 import { officialsService } from "../services/officials";
-
-import { ListItem, storage } from "../utils/storage";
 
 type Official = {
   id: string;
@@ -68,6 +67,11 @@ export default function OfficialsScreen() {
     }
   };
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedLists, setSelectedLists] = useState<string[]>([]);
+  const [currentOfficialId, setCurrentOfficialId] = useState<string | null>(
+    null,
+  );
   const router = useRouter();
 
   const LOCATION_OPTIONS = [
@@ -129,6 +133,9 @@ export default function OfficialsScreen() {
   });
 
   const officials = data?.officials || [];
+  const currentOfficial = officials.find(
+    (o) => o.bioguideId === currentOfficialId,
+  );
 
   return (
     <View style={componentStyles.container}>
@@ -187,7 +194,39 @@ export default function OfficialsScreen() {
         data={officials}
         keyExtractor={(item) => item.bioguideId}
         contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item }) => <OfficialCard item={item} />}
+        renderItem={({ item }) => (
+          <OfficialCard
+            item={item}
+            onAddPress={(id) => {
+              setCurrentOfficialId(id);
+              setShowAddModal(true);
+            }}
+          />
+        )}
+      />
+
+      {/* Add Modal */}
+      <AddModal
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
+        selectedLists={selectedLists}
+        setSelectedLists={setSelectedLists}
+        onNewListPress={() => setShowNewListModal(true)}
+        currentItem={
+          currentOfficial
+            ? {
+                id: currentOfficial.bioguideId,
+                type: "official",
+                name: currentOfficial.name,
+                party: currentOfficial.partyName?.charAt(0) || "",
+                role: currentOfficial.district
+                  ? `Representative, ${currentOfficial.state} - District ${currentOfficial.district}`
+                  : `Senator, ${currentOfficial.state}`,
+                photoUrl:
+                  (currentOfficial as any).depiction?.imageUrl || undefined,
+              }
+            : undefined
+        }
       />
 
       {/* Search Modal */}
@@ -272,45 +311,15 @@ export default function OfficialsScreen() {
   );
 }
 
-function OfficialCard({ item }: { item: any }) {
+function OfficialCard({
+  item,
+  onAddPress,
+}: {
+  item: any;
+  onAddPress: (id: string) => void;
+}) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
-
-  // console.log("Officials list item:", item);
-  // console.log("Item properties:", {
-  //   name: item.name,
-  //   lastName: item.lastName,
-  //   directOrderName: item.directOrderName,
-  // });
-
-  const handleAddToList = async () => {
-    const listItem: ListItem = {
-      id: item.bioguideId,
-      type: "official",
-      name: item.name,
-      party: item.partyName?.charAt(0) || "",
-      role: item.district
-        ? `Representative, ${item.state} - District ${item.district}`
-        : `Senator, ${item.state}`,
-      update: "",
-      photoUrl: item.depiction?.imageUrl,
-    };
-
-    const lists = await storage.getLists();
-    const myList = lists.find((l) => l.name === "My List");
-
-    if (myList) {
-      const alreadyExists = myList.items.some((i) => i.id === listItem.id);
-
-      if (!alreadyExists) {
-        myList.items.push(listItem);
-        await storage.saveLists(lists);
-        alert("Added to My List!");
-      } else {
-        alert("Already in your list!");
-      }
-    }
-  };
 
   return (
     <Pressable
@@ -375,7 +384,7 @@ function OfficialCard({ item }: { item: any }) {
         <Pressable
           onPress={(e) => {
             e.stopPropagation();
-            handleAddToList();
+            onAddPress(item.bioguideId);
           }}
           style={({ pressed }) => ({
             padding: 8,
