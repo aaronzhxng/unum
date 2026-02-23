@@ -345,7 +345,7 @@ export default function OfficialDetail() {
                   style={{
                     width: "100%",
                     height: "100%",
-                    backgroundColor: "#008CFF",
+                    backgroundColor: "#BFBFBF",
                     justifyContent: "center",
                     alignItems: "center",
                   }}

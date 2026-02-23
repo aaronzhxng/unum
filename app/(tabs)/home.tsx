@@ -9,6 +9,7 @@ import {
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
+import DraggableFlatList from "react-native-draggable-flatlist";
 import EditOptionsModal from "../global_components/EditOptionsModal";
 import ListSelection from "../global_components/ListSelection";
 import NewListNameModal from "../global_components/NewListNameModal";
@@ -278,12 +279,34 @@ export default function HomeScreen() {
           </>
         )}
       </View>
+
+      {/* List Content */}
       {isLoading ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
           <Text>Loading...</Text>
         </View>
+      ) : isEditMode ? (
+        <DraggableFlatList
+          data={items}
+          onDragEnd={({ data }) => {
+            setItems(data);
+            saveItems(data);
+          }}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={componentStyles.listContent}
+          activationDistance={10}
+          renderItem={({ item, drag }) => (
+            <Card
+              item={item}
+              isEditMode={isEditMode}
+              isSelected={selectedIds.has(item.id)}
+              onLongPress={drag}
+              onPress={() => toggleSelect(item.id)}
+            />
+          )}
+        />
       ) : (
         <FlatList
           data={items}
@@ -300,6 +323,8 @@ export default function HomeScreen() {
           )}
         />
       )}
+
+      {/* Bottom Cancel / Remove bar and modals stay the same */}
 
       {/* Bottom Cancel / Remove bar (edit mode only) */}
       {isEditMode && (
@@ -572,7 +597,7 @@ function Card({
                   style={{
                     width: "100%",
                     height: "100%",
-                    backgroundColor: "#008CFF",
+                    backgroundColor: "#BFBFBF",
                     justifyContent: "center",
                     alignItems: "center",
                   }}
@@ -612,8 +637,8 @@ function Card({
                 position: "absolute",
                 top: 0,
                 left: 0,
-                width: 72,
-                height: 72,
+                width: 50,
+                height: 50,
                 borderRadius: 36,
                 backgroundColor: isSelected ? "#008CFF" : "rgba(0,0,0,0.15)",
                 justifyContent: "center",

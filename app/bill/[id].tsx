@@ -147,6 +147,23 @@ export default function BillDetail() {
     );
   }
 
+  const getBillTypeName = (typeCode: string, chamber: string) => {
+    const types: { [key: string]: string } = {
+      HR: "House Bill",
+      HRES: "House Simple Resolution",
+      HJRES: "House Joint Resolution",
+      HCONRES: "House Concurrent Resolution",
+      S: "Senate Bill",
+      SRES: "Senate Simple Resolution",
+      SJRES: "Senate Joint Resolution",
+      SCONRES: "Senate Concurrent Resolution",
+      PN: "Nomination",
+      TREATY: "Treaty Document",
+    };
+
+    return types[typeCode.toUpperCase()] || `${chamber} Bill`;
+  };
+
   const amendmentsList = [
     {
       title: "S.Amdt.327 to S.Amdt.348",
@@ -465,9 +482,7 @@ export default function BillDetail() {
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Type: </Text>
               <Text style={componentStyles.detailInfo}>
-                {bill.originChamber === "House"
-                  ? "US House Bill"
-                  : "US Senate Bill"}
+                {getBillTypeName(bill.type, bill.originChamber)}
               </Text>
             </View>
 
