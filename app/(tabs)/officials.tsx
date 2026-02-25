@@ -7,7 +7,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -42,7 +42,7 @@ export default function OfficialsScreen() {
   const [selectedNotifications, setSelectedNotifications] =
     useState("New York");
   const [showListSelection, setShowListSelection] = useState(false);
-  const [selectedList, setSelectedList] = useState("New York");
+  const [selectedList, setSelectedList] = useState("Federal");
 
   // New List Modal
   const [showNewListModal, setShowNewListModal] = useState(false);
@@ -132,8 +132,77 @@ export default function OfficialsScreen() {
     queryFn: officialsService.getAll,
   });
 
-  const officials = data?.officials || [];
-  const currentOfficial = officials.find(
+  const allOfficials = data?.officials || [];
+
+  // Add state name to code mapping
+  const STATE_CODES: { [key: string]: string } = {
+    Alabama: "AL",
+    Alaska: "AK",
+    Arizona: "AZ",
+    Arkansas: "AR",
+    California: "CA",
+    Colorado: "CO",
+    Connecticut: "CT",
+    Delaware: "DE",
+    Florida: "FL",
+    Georgia: "GA",
+    Hawaii: "HI",
+    Idaho: "ID",
+    Illinois: "IL",
+    Indiana: "IN",
+    Iowa: "IA",
+    Kansas: "KS",
+    Kentucky: "KY",
+    Louisiana: "LA",
+    Maine: "ME",
+    Maryland: "MD",
+    Massachusetts: "MA",
+    Michigan: "MI",
+    Minnesota: "MN",
+    Mississippi: "MS",
+    Missouri: "MO",
+    Montana: "MT",
+    Nebraska: "NE",
+    Nevada: "NV",
+    "New Hampshire": "NH",
+    "New Jersey": "NJ",
+    "New Mexico": "NM",
+    "New York": "NY",
+    "North Carolina": "NC",
+    "North Dakota": "ND",
+    Ohio: "OH",
+    Oklahoma: "OK",
+    Oregon: "OR",
+    Pennsylvania: "PA",
+    "Rhode Island": "RI",
+    "South Carolina": "SC",
+    "South Dakota": "SD",
+    Tennessee: "TN",
+    Texas: "TX",
+    Utah: "UT",
+    Vermont: "VT",
+    Virginia: "VA",
+    Washington: "WA",
+    "West Virginia": "WV",
+    Wisconsin: "WI",
+    Wyoming: "WY",
+  };
+
+  // Filter officials based on selected state
+  const officials = useMemo(() => {
+    if (selectedList === "Federal") {
+      return allOfficials;
+    }
+
+    // Direct comparison - API returns full state names
+    const filtered = allOfficials.filter(
+      (official) => official.state === selectedList,
+    );
+
+    return filtered;
+  }, [allOfficials, selectedList]);
+
+  const currentOfficial = allOfficials.find(
     (o) => o.bioguideId === currentOfficialId,
   );
 

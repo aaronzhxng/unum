@@ -37,6 +37,7 @@ export default function AddModal({
   const [availableLists, setAvailableLists] = useState<
     Array<{ id: string; label: string }>
   >([]);
+  const [activeListLabels, setActiveListLabels] = useState<string[]>([]);
 
   // Load available lists from storage
   useEffect(() => {
@@ -154,12 +155,14 @@ export default function AddModal({
     closeModal();
 
     // Show removal progress first if there are removals
-    if (hasRemovals) {
+    if (hasRemovals && removedListLabels.length > 0) {
+      setActiveListLabels(removedListLabels); // ADD THIS
       setIsRemoving(true);
       setShowConfirmModal(true);
       setProgress(0);
       setCurrentListIndex(0);
-    } else if (hasExistingAdditions) {
+    } else if (hasExistingAdditions && selectedListLabels.length > 0) {
+      setActiveListLabels(selectedListLabels); // ADD THIS
       setIsRemoving(false);
       setShowConfirmModal(true);
       setProgress(0);
@@ -364,12 +367,12 @@ export default function AddModal({
               }}
             >
               {isRemoving
-                ? removedListLabels.length > 1
-                  ? `Removing from ${removedListLabels[currentListIndex]}`
-                  : `Removing from ${removedListLabels[0]}`
-                : selectedListLabels.length > 1
-                  ? `Add to ${selectedListLabels[currentListIndex]}`
-                  : `Add to ${selectedListLabels[0]}`}
+                ? activeListLabels.length > 1
+                  ? `Removing from ${activeListLabels[currentListIndex] || activeListLabels[0]}`
+                  : `Removing from ${activeListLabels[0]}`
+                : activeListLabels.length > 1
+                  ? `Adding to ${activeListLabels[currentListIndex] || activeListLabels[0]}`
+                  : `Adding to ${activeListLabels[0]}`}
             </Text>
 
             {/* Progress Bar */}
@@ -402,10 +405,7 @@ export default function AddModal({
               }}
             >
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/
-                {isRemoving
-                  ? removedListLabels.length
-                  : selectedListLabels.length}
+                {currentListIndex + 1}/{activeListLabels.length}
               </Text>
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
                 {Math.round(progress)}%

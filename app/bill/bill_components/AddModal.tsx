@@ -37,16 +37,18 @@ export default function AddModal({
   const [availableLists, setAvailableLists] = useState<
     Array<{ id: string; label: string }>
   >([]);
+  const [activeListLabels, setActiveListLabels] = useState<string[]>([]);
 
   // Load available lists from storage
   useEffect(() => {
     const loadLists = async () => {
       const lists = await storage.getLists();
+      // console.log("Raw lists from storage:", lists); // ADD THIS
       const listOptions = lists.map((list) => ({
         id: list.id,
         label: list.name,
       }));
-      // Add "New List" option at the end
+      // console.log("List options:", listOptions); // ADD THIS
       listOptions.push({ id: "new-list", label: "New List" });
       setAvailableLists(listOptions);
     };
@@ -87,11 +89,20 @@ export default function AddModal({
   };
 
   const handleApply = async () => {
+    // console.log("=== handleApply Debug ===");
+    // console.log("selectedLists:", selectedLists);
+    // console.log("initialSelections:", initialSelections);
+    // console.log("availableLists:", availableLists);
+    // console.log("selectedListLabels:", selectedListLabels);
+
     const hasRemovals = removedListLabels.length > 0;
     const hasNewList = selectedLists.includes("new-list");
     const hasExistingAdditions = selectedLists.some(
       (id) => id !== "new-list" && !initialSelections.includes(id),
     );
+
+    // console.log("hasExistingAdditions:", hasExistingAdditions);
+    // console.log("selectedListLabels.length:", selectedListLabels.length);
 
     // If ONLY "New List" is selected
     if (hasNewList && !hasRemovals && !hasExistingAdditions) {
@@ -155,11 +166,13 @@ export default function AddModal({
 
     // Show progress animation - ONLY if there are actual changes
     if (hasRemovals && removedListLabels.length > 0) {
+      setActiveListLabels(removedListLabels); // ADD THIS
       setIsRemoving(true);
       setShowConfirmModal(true);
       setProgress(0);
       setCurrentListIndex(0);
     } else if (hasExistingAdditions && selectedListLabels.length > 0) {
+      setActiveListLabels(selectedListLabels); // ADD THIS
       setIsRemoving(false);
       setShowConfirmModal(true);
       setProgress(0);
@@ -362,12 +375,12 @@ export default function AddModal({
               }}
             >
               {isRemoving
-                ? removedListLabels.length > 1
-                  ? `Removing from ${removedListLabels[currentListIndex]}`
-                  : `Removing from ${removedListLabels[0]}`
-                : selectedListLabels.length > 1
-                  ? `Add to ${selectedListLabels[currentListIndex]}`
-                  : `Add to ${selectedListLabels[0]}`}
+                ? activeListLabels.length > 1
+                  ? `Removing from ${activeListLabels[currentListIndex] || activeListLabels[0]}`
+                  : `Removing from ${activeListLabels[0]}`
+                : activeListLabels.length > 1
+                  ? `Adding to ${activeListLabels[currentListIndex] || activeListLabels[0]}`
+                  : `Adding to ${activeListLabels[0]}`}
             </Text>
 
             {/* Progress Bar */}
@@ -400,10 +413,7 @@ export default function AddModal({
               }}
             >
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/
-                {isRemoving
-                  ? removedListLabels.length
-                  : selectedListLabels.length}
+                {currentListIndex + 1}/{activeListLabels.length}
               </Text>
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
                 {Math.round(progress)}%
