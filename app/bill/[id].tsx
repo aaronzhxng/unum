@@ -7,13 +7,13 @@ import {
   Plus,
 } from "lucide-react-native";
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
-
-import { useQuery } from "@tanstack/react-query";
 import AddModal from "../global_components/AddModal";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { billsService } from "../services/bills";
+import { billCache } from "../utils/billCache";
 import { getBillIcon } from "../utils/billIcons";
 import ActionHistory from "./bill_components/ActionHistory";
 import Cosponsors, { Cosponsor } from "./bill_components/Cosponsors";
@@ -22,6 +22,8 @@ import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
 import VotingCard from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
+
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { storage } from "../utils/storage";
 
@@ -147,7 +149,63 @@ export default function BillDetail() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["bill", id],
-    queryFn: () => billsService.getById(id as string),
+    queryFn: async () => {
+      const billId = id as string;
+      const cached = await billCache.getBill(billId);
+
+      if (cached) {
+        console.log("Using cached bill data for", billId);
+        return { bill: cached };
+      }
+
+      console.log("Fetching bill from API:", billId);
+
+      // Fetch both bill details AND summaries in parallel
+      const [billResult, summariesResult] = await Promise.all([
+        billsService.getById(billId),
+        billsService.getSummaries(billId).catch((err) => {
+          console.log("Summaries fetch failed:", err);
+          return { summaries: [] };
+        }),
+      ]);
+
+      console.log("Full bill result:", JSON.stringify(billResult, null, 2));
+      console.log(
+        "Full summaries result:",
+        JSON.stringify(summariesResult, null, 2),
+      );
+
+      console.log("Bill result:", billResult);
+      console.log("Summaries result:", summariesResult);
+
+      // Merge summaries into bill data
+      const enrichedBill = {
+        ...billResult.bill,
+        summaries: summariesResult.summaries || [],
+      };
+
+      // Save enriched bill to cache
+      await billCache.saveBill(billId, enrichedBill);
+
+      // Update stored list items with policyArea
+      const lists = await storage.getLists();
+      let updated = false;
+
+      for (const list of lists) {
+        for (const item of list.items) {
+          if (item.id === billId && item.type === "bill") {
+            (item as any).policyArea = enrichedBill.policyArea?.name;
+            updated = true;
+          }
+        }
+      }
+
+      if (updated) {
+        await storage.saveLists(lists);
+      }
+
+      return { bill: enrichedBill };
+    },
     enabled: !!id,
   });
 
@@ -334,6 +392,16 @@ export default function BillDetail() {
     <View style={componentStyles.screen}>
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
+        {/* <Pressable
+          onPress={async () => {
+            await billCache.clearAll();
+            await AsyncStorage.clear();
+            alert("Cache cleared! Restart app.");
+          }}
+          style={{ padding: 10, backgroundColor: "red", margin: 10 }}
+        >
+          <Text style={{ color: "white" }}>Clear All Cache (Debug)</Text>
+        </Pressable> */}
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => ({
@@ -382,11 +450,19 @@ export default function BillDetail() {
               },
             ]}
           >
-            <Image
-              source={getBillIcon(bill.policyArea?.name)}
-              style={{ width: "100%", height: "100%", borderRadius: 6 }}
-              resizeMode="contain"
-            />
+            {bill.policyArea?.name ? (
+              <Image
+                source={getBillIcon(bill.policyArea.name)}
+                style={{ width: "100%", height: "100%", borderRadius: 6 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text
+                style={{ fontSize: 20, fontWeight: "bold", color: "#535353" }}
+              >
+                {bill.type}
+              </Text>
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={componentStyles.billNumber}>
@@ -531,14 +607,31 @@ export default function BillDetail() {
             {/* Summary Section */}
             <View style={componentStyles.section}>
               <Text style={componentStyles.detailTitle}>Summary</Text>
-              <Text style={componentStyles.summary}>
-                Summary not available from current API endpoint. The
-                Congress.gov API requires an additional call to fetch summaries.
-              </Text>
+              {bill.summaries && bill.summaries.length > 0 ? (
+                <>
+                  <Text style={componentStyles.summary}>
+                    {bill.summaries[0].text}
+                  </Text>
+                  <Text
+                    style={{ fontSize: 12, color: "#7B7C81", marginTop: 8 }}
+                  >
+                    Last updated:{" "}
+                    {new Date(
+                      bill.summaries[0].updateDate,
+                    ).toLocaleDateString()}
+                  </Text>
+                </>
+              ) : (
+                <Text style={componentStyles.summary}>
+                  No summary available yet. Check back later or view the full
+                  text.
+                </Text>
+              )}
+
               <Pressable
                 onPress={() => {
                   const url = `https://www.congress.gov/bill/${bill.congress}th-congress/${bill.type.toLowerCase()}-bill/${bill.number}`;
-                  // Linking.openURL(url);
+                  // Linking.openURL(url) when you're ready
                 }}
                 style={{
                   flexDirection: "row",
@@ -553,9 +646,7 @@ export default function BillDetail() {
                   marginTop: 12,
                 }}
               >
-                <Text style={componentStyles.link}>
-                  {bill.type}.{bill.number}
-                </Text>
+                <Text style={componentStyles.link}>View on Congress.gov</Text>
               </Pressable>
             </View>
 

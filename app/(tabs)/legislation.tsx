@@ -17,7 +17,8 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
-import { getIconFromActionText } from "../utils/billIcons";
+import { billCache } from "../utils/billCache";
+import { getBillIcon } from "../utils/billIcons";
 
 import { storage } from "../utils/storage";
 
@@ -55,6 +56,10 @@ export default function LegislationScreen() {
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
   const [createdListName, setCreatedListName] = useState("");
+
+  const [enrichedBills, setEnrichedBills] = useState<{ [key: string]: any }>(
+    {},
+  );
 
   const handleReportError = () => {
     // console.log("Report error for legislation");
@@ -189,10 +194,10 @@ export default function LegislationScreen() {
   const bills = useMemo(() => {
     let filtered = allBills;
 
-    if (filtered.length > 0) {
-      console.log("First bill data:", filtered[0]);
-      console.log("Policy area:", (filtered[0] as any).policyArea);
-    }
+    // if (filtered.length > 0) {
+    //   console.log("First bill data:", filtered[0]);
+    //   console.log("Policy area:", (filtered[0] as any).policyArea);
+    // }
 
     // Filter by chamber
     if (selectedChambers.length > 0) {
@@ -265,6 +270,27 @@ export default function LegislationScreen() {
     selectedPolicyAreas,
     selectedLegislationTypes,
   ]);
+
+  useEffect(() => {
+    const enrichBillsFromCache = async () => {
+      const enriched: { [key: string]: any } = {};
+
+      for (const bill of bills) {
+        const billId = `${bill.type.toLowerCase()}${bill.number}`;
+        const cached = await billCache.getBill(billId);
+
+        if (cached?.policyArea) {
+          enriched[billId] = cached;
+        }
+      }
+
+      setEnrichedBills(enriched);
+    };
+
+    if (bills.length > 0) {
+      enrichBillsFromCache();
+    }
+  }, [bills]);
 
   // Then use 'bills' in your FlatList (which you already do)
   const currentBill = bills.find(
@@ -402,15 +428,19 @@ export default function LegislationScreen() {
         data={bills}
         keyExtractor={(item) => `${item.type}${item.number}`}
         contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item }) => (
-          <BillCard
-            item={item}
-            onAddPress={(id) => {
-              setCurrentBillId(id);
-              setShowAddModal(true);
-            }}
-          />
-        )}
+        renderItem={({ item }) => {
+          const billId = `${item.type.toLowerCase()}${item.number}`;
+          return (
+            <BillCard
+              item={item}
+              onAddPress={(id) => {
+                setCurrentBillId(id);
+                setShowAddModal(true);
+              }}
+              enrichedData={enrichedBills[billId]}
+            />
+          );
+        }}
       />
 
       {/* Search Modal */}
@@ -606,23 +636,20 @@ export default function LegislationScreen() {
 function BillCard({
   item,
   onAddPress,
+  enrichedData,
 }: {
   item: any;
   onAddPress: (id: string) => void;
+  enrichedData?: any;
 }) {
   const router = useRouter();
+  const billId = `${item.type.toLowerCase()}${item.number}`;
+  const policyArea =
+    enrichedData?.policyArea?.name || (item as any).policyArea?.name;
 
   return (
-    <Pressable
-      onPress={() =>
-        router.navigate(`/bill/${item.type.toLowerCase()}${item.number}`)
-      }
-      style={({ pressed }) => ({
-        transform: [{ scale: pressed ? 0.96 : 1 }],
-      })}
-    >
+    <Pressable onPress={() => router.navigate(`/bill/${billId}`)}>
       <View style={componentStyles.officialCard}>
-        {/* Bill Icon/Avatar */}
         <View
           style={[
             componentStyles.avatar,
@@ -633,11 +660,19 @@ function BillCard({
             },
           ]}
         >
-          <Image
-            source={getIconFromActionText(item.latestAction?.text)}
-            style={{ width: "100%", height: "100%", borderRadius: 6 }}
-            resizeMode="contain"
-          />
+          {policyArea ? (
+            <Image
+              source={getBillIcon(policyArea)}
+              style={{ width: "100%", height: "100%", borderRadius: 6 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text
+              style={{ fontSize: 16, fontWeight: "bold", color: "#535353" }}
+            >
+              {item.type}
+            </Text>
+          )}
         </View>
 
         {/* Bill Info */}

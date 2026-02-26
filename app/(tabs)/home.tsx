@@ -17,6 +17,7 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
+import { getBillIcon } from "../utils/billIcons";
 
 import { storage, UserList } from "../utils/storage";
 
@@ -83,12 +84,18 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadItems = async () => {
+    // console.log("=== loadItems called ===");
     setIsLoading(true); // Start loading
 
     const lists = await storage.getLists();
     const currentList = lists.find((l) => l.name === selectedList) || lists[0];
 
     if (currentList) {
+      // console.log(
+      //   "Full items data:",
+      //   JSON.stringify(currentList.items, null, 2),
+      // );
+
       setCurrentListId(currentList.id);
       setItems(currentList.items);
     }
@@ -257,8 +264,8 @@ export default function HomeScreen() {
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
       };
       loadAllLists();
-      loadItems();
-    }, [selectedList]),
+      loadItems(); // This should reload items each time you navigate back
+    }, [selectedList]), // Make sure selectedList is in dependencies
   );
 
   return (
@@ -824,39 +831,8 @@ function Card({
       <View style={componentStyles.officialCard}>
         {/* Avatar with selection overlay */}
         <View>
-          {isOfficial ? (
-            // Official avatar
-            <View style={componentStyles.avatar}>
-              {(item.photoUrl && !imageError) || item.avatar ? (
-                <Image
-                  source={item.avatar || { uri: item.photoUrl }}
-                  style={{
-                    width: "100%",
-                    height: "120%",
-                  }}
-                  resizeMode="cover"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <View
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "#BFBFBF",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
-                  >
-                    {item.name?.charAt(0) || "?"}
-                  </Text>
-                </View>
-              )}
-            </View>
-          ) : (
-            // Bill icon/avatar
+          {item.type === "bill" ? (
+            // Bill icon - check this FIRST
             <View
               style={[
                 componentStyles.avatar,
@@ -864,18 +840,52 @@ function Card({
                   backgroundColor: "#eee",
                   justifyContent: "center",
                   alignItems: "center",
-                  borderWidth: 0, // Remove blue border for bills
                 },
               ]}
             >
-              <Text
-                style={{ fontSize: 16, fontWeight: "bold", color: "#535353" }}
+              <Image
+                source={
+                  (item as any).policyArea
+                    ? getBillIcon((item as any).policyArea)
+                    : getBillIcon()
+                }
+                style={{ width: "100%", height: "100%", borderRadius: 6 }}
+                resizeMode="contain"
+              />
+            </View>
+          ) : (item.photoUrl && !imageError) || item.avatar ? (
+            // Official with photo
+            <View style={componentStyles.avatar}>
+              <Image
+                source={item.avatar || { uri: item.photoUrl }}
+                style={{
+                  width: "100%",
+                  height: "120%",
+                }}
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
+            </View>
+          ) : (
+            // Official fallback (initials)
+            <View style={componentStyles.avatar}>
+              <View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "#BFBFBF",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
-                {item.name?.split(".")[0] || "HR"}
-              </Text>
+                <Text
+                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                >
+                  {item.name?.charAt(0) || "?"}
+                </Text>
+              </View>
             </View>
           )}
-
           {isEditMode && (
             <View
               style={{
