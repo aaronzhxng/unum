@@ -25,7 +25,7 @@ app.get("/api/bills", async (req, res) => {
         "X-Api-Key": process.env.CONGRESS_API_KEY,
       },
       params: {
-        limit: 20,
+        limit: 250, // Change from 20 to 250 (max allowed)
       },
     });
 

@@ -155,49 +155,68 @@ export default function BillDetail() {
       const cached = await billCache.getBill(billId);
 
       if (cached) {
+        console.log("Using cached bill data for", billId);
         return { bill: cached };
       }
 
-      // Fetch bill details, summaries, AND actions in parallel
-      const [billResult, summariesResult, actionsResult, amendmentsResult] =
-        await Promise.all([
-          billsService.getById(billId),
-          billsService.getSummaries(billId).catch(() => ({ summaries: [] })),
-          billsService.getActions(billId).catch(() => ({ actions: [] })),
-          billsService.getAmendments(billId).catch(() => ({ amendments: [] })),
-        ]);
+      console.log("Fetching bill from API:", billId);
+      console.log("Bill amendments metadata:", bill.amendments);
 
-      console.log("Amendments result:", amendmentsResult);
+      try {
+        // Fetch bill details, summaries, actions, and amendments in parallel
+        const [billResult, summariesResult, actionsResult, amendmentsResult] =
+          await Promise.all([
+            billsService.getById(billId),
+            billsService.getSummaries(billId).catch((err) => {
+              console.log("Summaries fetch error:", err.message);
+              return { summaries: [] };
+            }),
+            billsService.getActions(billId).catch((err) => {
+              console.log("Actions fetch error:", err.message);
+              return { actions: [] };
+            }),
+            billsService.getAmendments(billId).catch((err) => {
+              console.log("Amendments fetch error:", err.message);
+              return { amendments: [] };
+            }),
+          ]);
 
-      // Merge everything into bill data
-      const enrichedBill = {
-        ...billResult.bill,
-        summaries: summariesResult.summaries || [],
-        actions: actionsResult.actions || [],
-        amendments: amendmentsResult.amendments || [],
-      };
+        console.log("Bill fetched successfully");
+        console.log("Amendments result:", amendmentsResult);
 
-      // Save enriched bill to cache
-      await billCache.saveBill(billId, enrichedBill);
+        // Merge everything into bill data
+        const enrichedBill = {
+          ...billResult.bill,
+          summaries: summariesResult.summaries || [],
+          actions: actionsResult.actions || [],
+          amendments: amendmentsResult.amendments || [],
+        };
 
-      // Update stored list items with policyArea
-      const lists = await storage.getLists();
-      let updated = false;
+        // Save enriched bill to cache
+        await billCache.saveBill(billId, enrichedBill);
 
-      for (const list of lists) {
-        for (const item of list.items) {
-          if (item.id === billId && item.type === "bill") {
-            (item as any).policyArea = enrichedBill.policyArea?.name;
-            updated = true;
+        // Update stored list items with policyArea
+        const lists = await storage.getLists();
+        let updated = false;
+
+        for (const list of lists) {
+          for (const item of list.items) {
+            if (item.id === billId && item.type === "bill") {
+              (item as any).policyArea = enrichedBill.policyArea?.name;
+              updated = true;
+            }
           }
         }
-      }
 
-      if (updated) {
-        await storage.saveLists(lists);
-      }
+        if (updated) {
+          await storage.saveLists(lists);
+        }
 
-      return { bill: enrichedBill };
+        return { bill: enrichedBill };
+      } catch (error) {
+        console.error("Error in bill fetch:", error);
+        throw error;
+      }
     },
     enabled: !!id,
   });
@@ -646,7 +665,7 @@ export default function BillDetail() {
 
             {/* Amendments Section */}
             <Pressable
-              style={componentStyles.section}
+              style={[componentStyles.section, { marginBottom: 96 }]}
               onPress={() => setShowAmendments(!showAmendments)}
             >
               <View
