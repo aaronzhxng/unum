@@ -161,28 +161,20 @@ export default function BillDetail() {
 
       console.log("Fetching bill from API:", billId);
 
-      // Fetch both bill details AND summaries in parallel
-      const [billResult, summariesResult] = await Promise.all([
+      // Fetch bill details, summaries, AND actions in parallel
+      const [billResult, summariesResult, actionsResult] = await Promise.all([
         billsService.getById(billId),
-        billsService.getSummaries(billId).catch((err) => {
-          console.log("Summaries fetch failed:", err);
-          return { summaries: [] };
-        }),
+        billsService.getSummaries(billId).catch(() => ({ summaries: [] })),
+        billsService.getActions(billId).catch(() => ({ actions: [] })),
       ]);
 
-      console.log("Full bill result:", JSON.stringify(billResult, null, 2));
-      console.log(
-        "Full summaries result:",
-        JSON.stringify(summariesResult, null, 2),
-      );
+      console.log("Actions result:", actionsResult);
 
-      console.log("Bill result:", billResult);
-      console.log("Summaries result:", summariesResult);
-
-      // Merge summaries into bill data
+      // Merge everything into bill data
       const enrichedBill = {
         ...billResult.bill,
         summaries: summariesResult.summaries || [],
+        actions: actionsResult.actions || [],
       };
 
       // Save enriched bill to cache
@@ -688,23 +680,17 @@ export default function BillDetail() {
         {/* Actions Tab */}
         {activeTab === "actions" && (
           <ActionHistory
-            actions={[
-              {
-                date: "07/15/25",
-                chamber: "Senate",
-                description: "Passed Senate",
-              },
-              {
-                date: "05/14/25",
-                chamber: "Senate",
-                description: "Debated in the Senate after committee changes",
-              },
-              {
-                date: "04/22/25",
-                chamber: "Senate",
-                description: "Received in the Senate, read the first time.",
-              },
-            ]}
+            actions={
+              bill.actions?.map((action: any) => ({
+                date: new Date(action.actionDate).toLocaleDateString("en-US", {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "2-digit",
+                }),
+                chamber: action.sourceSystem?.name || "Congress",
+                description: action.text,
+              })) || []
+            }
             selectedSort={selectedActionsSort}
             showSort={showActionsSort}
             setShowSort={setShowActionsSort}

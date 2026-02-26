@@ -146,3 +146,34 @@ app.get("/api/officials/:bioguideId", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch official details" });
   }
 });
+
+// Get bill actions
+app.get("/api/bills/:billId/actions", async (req, res) => {
+  try {
+    const { billId } = req.params;
+
+    // billId format: "hr187" or "s2296"
+    // Extract type and number
+    const match = billId.match(/^([a-z]+)(\d+)$/i);
+    if (!match) {
+      return res.status(400).json({ error: "Invalid bill ID format" });
+    }
+
+    const billType = match[1].toLowerCase();
+    const billNumber = match[2];
+
+    const response = await axios.get(
+      `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/actions`,
+      {
+        headers: {
+          "X-Api-Key": process.env.CONGRESS_API_KEY,
+        },
+      },
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching actions:", error);
+    res.status(500).json({ error: "Failed to fetch bill actions" });
+  }
+});
