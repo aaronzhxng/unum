@@ -9,12 +9,15 @@ import {
   View,
 } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
+import { storage } from "../utils/storage"; // adjust relative path if needed
 
 interface Props {
   showOptionsModal: boolean;
   setShowOptionsModal: React.Dispatch<React.SetStateAction<boolean>>;
   selectedNotifications: string;
   setSelectedNotifications: React.Dispatch<React.SetStateAction<string>>;
+  selectedListId: string; // <-- add this
+  refreshLists: () => Promise<void>;
 }
 
 export default function OptionsModal({
@@ -22,6 +25,8 @@ export default function OptionsModal({
   setShowOptionsModal,
   selectedNotifications,
   setSelectedNotifications,
+  selectedListId,
+  refreshLists,
 }: Props) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
@@ -38,9 +43,12 @@ export default function OptionsModal({
     setShowRenameModal(false);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
+    if (!selectedListId) return;
+    await storage.deleteList(selectedListId);
     setSelectedNotifications("Deleted");
     setShowDeleteModal(false);
+    await refreshLists();
   };
 
   return (

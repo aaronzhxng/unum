@@ -63,7 +63,6 @@ export const storage = {
   },
 
   // Initialize with default list
-  // Initialize with default list
   initializeDefaultList: async (): Promise<UserList> => {
     const lists = await storage.getLists();
 
@@ -82,5 +81,22 @@ export const storage = {
     }
 
     return defaultList;
+  },
+
+  // Delete a list by ID
+  deleteList: async (listId: string): Promise<void> => {
+    try {
+      const lists = await storage.getLists();
+      const updatedLists = lists.filter((l) => l.id !== listId);
+      await storage.saveLists(updatedLists);
+
+      // Reset current list if the deleted one was active
+      const currentId = await storage.getCurrentListId();
+      if (currentId === listId && updatedLists.length > 0) {
+        await storage.setCurrentListId(updatedLists[0].id);
+      }
+    } catch (error) {
+      console.error("Error deleting list:", error);
+    }
   },
 };

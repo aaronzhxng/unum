@@ -18,9 +18,15 @@ interface LegislationFilterModalProps {
   toggleLegislationType: (id: string) => void;
   onCancel: () => void;
   onApply: () => void;
+  // Add these new props
+  setSelectedChambers: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedPolicyAreas: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedLegislationTypes: React.Dispatch<React.SetStateAction<string[]>>;
+  resultCount: number;
 }
 
 const CHAMBER_OPTIONS: FilterOption[] = [
+  { id: "all", label: "All" },
   { id: "house", label: "House" },
   { id: "senate", label: "Senate" },
 ];
@@ -59,20 +65,16 @@ const POLICY_AREA_OPTIONS: FilterOption[] = [
   { id: "transportation", label: "Transportation and Public Works" },
   { id: "water", label: "Water Resources Development" },
 ];
+
 const LEGISLATION_TYPE_OPTIONS: FilterOption[] = [
   { id: "all", label: "All" },
-  { id: "house_bill", label: "House Bills" },
-  { id: "senate_bill", label: "Senate Bills" },
-  { id: "house_amdt", label: "House Amendment" },
-  { id: "senate_amdt", label: "Senate Amendment" },
-  { id: "house_joint_resolution", label: "House Joint Resolution" },
-  { id: "senate_joint_resolution", label: "Senate Joint Resolution" },
-  { id: "house_con_res", label: "House Concurrent Resolution" },
-  { id: "senate_con_res", label: "Senate Concurrent Resolution" },
-  { id: "house_res", label: "House Resolution" },
-  { id: "senate_res", label: "Senate Resolution" },
-  { id: "nominations", label: "Nominations" },
-  { id: "treaty_doc", label: "Treaty Document" },
+  { id: "bill", label: "Bills" },
+  { id: "joint_resolution", label: "Joint Resolutions" },
+  { id: "concurrent_resolution", label: "Concurrent Resolutions" },
+  { id: "resolution", label: "Simple Resolutions" },
+  { id: "amendment", label: "Amendments" },
+  { id: "nomination", label: "Nominations" },
+  { id: "treaty", label: "Treaty Documents" },
 ];
 
 export default function LegislationFilterModal({
@@ -86,6 +88,10 @@ export default function LegislationFilterModal({
   toggleLegislationType,
   onCancel,
   onApply,
+  setSelectedChambers,
+  setSelectedPolicyAreas,
+  setSelectedLegislationTypes,
+  resultCount,
 }: LegislationFilterModalProps) {
   const handleCancel = () => {
     onCancel();
@@ -96,6 +102,12 @@ export default function LegislationFilterModal({
     onApply();
     onClose();
   };
+
+  const nonAllChambers = CHAMBER_OPTIONS.filter((o) => o.id !== "all");
+  const nonAllPolicyAreas = POLICY_AREA_OPTIONS.filter((o) => o.id !== "all");
+  const nonAllLegislationTypes = LEGISLATION_TYPE_OPTIONS.filter(
+    (o) => o.id !== "all",
+  );
 
   return (
     <Modal
@@ -109,72 +121,55 @@ export default function LegislationFilterModal({
         <View style={{ padding: 0, minHeight: 200, marginTop: -200 }}>
           {/* Chamber of Congress */}
           <View style={componentStyles.dropdownMulti}>
-            <Text style={componentStyles.dropdownItemTextLabel}>
-              Chamber of Congress
-            </Text>
-            {CHAMBER_OPTIONS.map((option) => (
-              <Pressable
-                key={option.id}
-                style={[
-                  componentStyles.dropdownItem,
-                  {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  },
-                ]}
-                onPress={() => toggleChamber(option.id)}
-              >
-                <Text style={componentStyles.dropdownItemText}>
-                  {option.label}
-                </Text>
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderWidth: 2,
-                    borderColor: selectedChambers.includes(option.id)
-                      ? "#008CFF"
-                      : "#7B7C81",
-                    borderRadius: 4,
-                    backgroundColor: selectedChambers.includes(option.id)
-                      ? "#008CFF"
-                      : "transparent",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  {selectedChambers.includes(option.id) && (
-                    <View
-                      style={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "#008CFF",
-                        borderRadius: 2,
-                      }}
-                    />
-                  )}
-                </View>
-              </Pressable>
-            ))}
-          </View>
-
-          {/* Policy Area */}
-          <View
-            style={[
-              componentStyles.dropdownMulti,
-              { marginTop: 12, height: 200 },
-            ]}
-          >
-            <Text style={componentStyles.dropdownItemTextLabel}>
-              Policy Area
-            </Text>
-            <ScrollView
-              style={{ maxHeight: 200 }}
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={true}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 16,
+                marginBottom: 8,
+              }}
             >
-              {POLICY_AREA_OPTIONS.map((option) => (
+              <Text style={componentStyles.dropdownItemTextLabel}>
+                Chamber of Congress
+              </Text>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 24 }}
+              >
+                <Text
+                  style={[
+                    componentStyles.dropdownItemTextLabel,
+                    { fontSize: 14, marginLeft: 48 },
+                  ]}
+                >
+                  {selectedChambers.length === nonAllChambers.length
+                    ? "All selected"
+                    : `${selectedChambers.length} selected`}
+                </Text>
+                {selectedChambers.length > 0 && (
+                  <Pressable onPress={() => setSelectedChambers([])}>
+                    <Text
+                      style={[
+                        componentStyles.dropdownItemTextLabel,
+                        { fontSize: 14, color: "#008CFF" },
+                      ]}
+                    >
+                      Clear
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+
+            {CHAMBER_OPTIONS.map((option) => {
+              const isAllOption = option.id === "all";
+              const allSelected =
+                selectedChambers.length === nonAllChambers.length;
+              const isChecked = isAllOption
+                ? allSelected
+                : selectedChambers.includes(option.id);
+
+              return (
                 <Pressable
                   key={option.id}
                   style={[
@@ -185,7 +180,17 @@ export default function LegislationFilterModal({
                       alignItems: "center",
                     },
                   ]}
-                  onPress={() => togglePolicyArea(option.id)}
+                  onPress={() => {
+                    if (isAllOption) {
+                      if (allSelected) {
+                        setSelectedChambers([]);
+                      } else {
+                        setSelectedChambers(nonAllChambers.map((o) => o.id));
+                      }
+                    } else {
+                      toggleChamber(option.id);
+                    }
+                  }}
                 >
                   <Text style={componentStyles.dropdownItemText}>
                     {option.label}
@@ -195,18 +200,14 @@ export default function LegislationFilterModal({
                       width: 20,
                       height: 20,
                       borderWidth: 2,
-                      borderColor: selectedPolicyAreas.includes(option.id)
-                        ? "#008CFF"
-                        : "#7B7C81",
+                      borderColor: isChecked ? "#008CFF" : "#7B7C81",
                       borderRadius: 4,
-                      backgroundColor: selectedPolicyAreas.includes(option.id)
-                        ? "#008CFF"
-                        : "transparent",
+                      backgroundColor: isChecked ? "#008CFF" : "transparent",
                       justifyContent: "center",
                       alignItems: "center",
                     }}
                   >
-                    {selectedPolicyAreas.includes(option.id) && (
+                    {isChecked && (
                       <View
                         style={{
                           width: 12,
@@ -218,9 +219,127 @@ export default function LegislationFilterModal({
                     )}
                   </View>
                 </Pressable>
-              ))}
-            </ScrollView>
+              );
+            })}
           </View>
+
+          {/* Policy Area */}
+          {/* <View
+            style={[
+              componentStyles.dropdownMulti,
+              { marginTop: 12, height: 200 },
+            ]}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 16,
+                marginBottom: 8,
+              }}
+            >
+              <Text style={componentStyles.dropdownItemTextLabel}>
+                Policy Area
+              </Text>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 24 }}
+              >
+                <Text
+                  style={[
+                    componentStyles.dropdownItemTextLabel,
+                    { fontSize: 14, marginLeft: 48 },
+                  ]}
+                >
+                  {" "}
+                  {selectedPolicyAreas.length === nonAllPolicyAreas.length
+                    ? "All selected"
+                    : `${selectedPolicyAreas.length} selected`}
+                </Text>
+                {selectedPolicyAreas.length > 0 && (
+                  <Pressable onPress={() => setSelectedPolicyAreas([])}>
+                    <Text
+                      style={[
+                        componentStyles.dropdownItemTextLabel,
+                        { fontSize: 14, color: "#008CFF" },
+                      ]}
+                    >
+                      Clear
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+
+            <ScrollView
+              style={{ maxHeight: 200 }}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={true}
+            >
+              {POLICY_AREA_OPTIONS.map((option) => {
+                const isAllOption = option.id === "all";
+                const allSelected =
+                  selectedPolicyAreas.length === nonAllPolicyAreas.length;
+                const isChecked = isAllOption
+                  ? allSelected
+                  : selectedPolicyAreas.includes(option.id);
+
+                return (
+                  <Pressable
+                    key={option.id}
+                    style={[
+                      componentStyles.dropdownItem,
+                      {
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      },
+                    ]}
+                    onPress={() => {
+                      if (isAllOption) {
+                        if (allSelected) {
+                          setSelectedPolicyAreas([]);
+                        } else {
+                          setSelectedPolicyAreas(
+                            nonAllPolicyAreas.map((o) => o.id),
+                          );
+                        }
+                      } else {
+                        togglePolicyArea(option.id);
+                      }
+                    }}
+                  >
+                    <Text style={componentStyles.dropdownItemText}>
+                      {option.label}
+                    </Text>
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderWidth: 2,
+                        borderColor: isChecked ? "#008CFF" : "#7B7C81",
+                        borderRadius: 4,
+                        backgroundColor: isChecked ? "#008CFF" : "transparent",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {isChecked && (
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: "#008CFF",
+                            borderRadius: 2,
+                          }}
+                        />
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View> */}
 
           {/* Legislation Type */}
           <View
@@ -229,61 +348,116 @@ export default function LegislationFilterModal({
               { marginTop: 12, height: 200 },
             ]}
           >
-            <Text style={componentStyles.dropdownItemTextLabel}>
-              Legislation Type
-            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 16,
+                marginBottom: 8,
+              }}
+            >
+              <Text style={componentStyles.dropdownItemTextLabel}>
+                Legislation Type
+              </Text>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 24 }}
+              >
+                <Text
+                  style={[
+                    componentStyles.dropdownItemTextLabel,
+                    { fontSize: 14, paddingRight: 0 },
+                  ]}
+                >
+                  {" "}
+                  {selectedLegislationTypes.length ===
+                  nonAllLegislationTypes.length
+                    ? "All selected"
+                    : `${selectedLegislationTypes.length} selected`}
+                </Text>
+                {selectedLegislationTypes.length > 0 && (
+                  <Pressable onPress={() => setSelectedLegislationTypes([])}>
+                    <Text
+                      style={[
+                        componentStyles.dropdownItemTextLabel,
+                        { fontSize: 14, color: "#008CFF" },
+                      ]}
+                    >
+                      Clear
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+
             <ScrollView
               style={{ maxHeight: 200 }}
               nestedScrollEnabled
               showsVerticalScrollIndicator={true}
             >
-              {LEGISLATION_TYPE_OPTIONS.map((option) => (
-                <Pressable
-                  key={option.id}
-                  style={[
-                    componentStyles.dropdownItem,
-                    {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    },
-                  ]}
-                  onPress={() => toggleLegislationType(option.id)}
-                >
-                  <Text style={componentStyles.dropdownItemText}>
-                    {option.label}
-                  </Text>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: selectedLegislationTypes.includes(option.id)
-                        ? "#008CFF"
-                        : "#7B7C81",
-                      borderRadius: 4,
-                      backgroundColor: selectedLegislationTypes.includes(
-                        option.id,
-                      )
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
+              {LEGISLATION_TYPE_OPTIONS.map((option) => {
+                const isAllOption = option.id === "all";
+                const allSelected =
+                  selectedLegislationTypes.length ===
+                  nonAllLegislationTypes.length;
+                const isChecked = isAllOption
+                  ? allSelected
+                  : selectedLegislationTypes.includes(option.id);
+
+                return (
+                  <Pressable
+                    key={option.id}
+                    style={[
+                      componentStyles.dropdownItem,
+                      {
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      },
+                    ]}
+                    onPress={() => {
+                      if (isAllOption) {
+                        if (allSelected) {
+                          setSelectedLegislationTypes([]);
+                        } else {
+                          setSelectedLegislationTypes(
+                            nonAllLegislationTypes.map((o) => o.id),
+                          );
+                        }
+                      } else {
+                        toggleLegislationType(option.id);
+                      }
                     }}
                   >
-                    {selectedLegislationTypes.includes(option.id) && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
-                        }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
-              ))}
+                    <Text style={componentStyles.dropdownItemText}>
+                      {option.label}
+                    </Text>
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderWidth: 2,
+                        borderColor: isChecked ? "#008CFF" : "#7B7C81",
+                        borderRadius: 4,
+                        backgroundColor: isChecked ? "#008CFF" : "transparent",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {isChecked && (
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: "#008CFF",
+                            borderRadius: 2,
+                          }}
+                        />
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           </View>
 
@@ -316,7 +490,7 @@ export default function LegislationFilterModal({
               <Text
                 style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
               >
-                Results
+                {resultCount} {resultCount === 1 ? "Result" : "Results"}
               </Text>
             </Pressable>
           </View>

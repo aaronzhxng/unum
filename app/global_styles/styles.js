@@ -108,7 +108,7 @@ export const styles = StyleSheet.create({
     color: "#7B7C81",
     marginTop: 16,
     marginBottom: 6,
-    marginHorizontal: 16,
+    // marginHorizontal: 16,
   },
   dropdown: {
     backgroundColor: "#fafafa",

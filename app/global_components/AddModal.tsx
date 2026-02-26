@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { ListItem, storage } from "../utils/storage";
 
 interface Props {
   showAddModal: boolean;
   setShowAddModal: React.Dispatch<React.SetStateAction<boolean>>;
   selectedLists: string[];
   setSelectedLists: React.Dispatch<React.SetStateAction<string[]>>;
-  onNewListPress: () => void;
+  onNewListPress: (item?: any) => void; // Add item parameter
+  currentItem?: {
+    id: string;
+    type: "official" | "bill";
+    name: string;
+    party?: string;
+    role?: string;
+    date?: string;
+    committee?: string;
+    photoUrl?: string;
+  };
 }
 
-const listOptions = [
-  { id: "my-list", label: "My List" },
-  { id: "tri-state-area", label: "Tri State Area" },
-  { id: "swing-states", label: "Swing States" },
-  { id: "new-list", label: "New List" },
-];
-
-// Inline styles to avoid path dependencies
+// Inline styles
 const modalStyles = {
   modalOverlay: {
     flex: 1,
@@ -62,18 +66,40 @@ export default function AddModal({
   selectedLists,
   setSelectedLists,
   onNewListPress,
+  currentItem,
 }: Props) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentListIndex, setCurrentListIndex] = useState(0);
   const [initialSelections, setInitialSelections] = useState<string[]>([]);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [availableLists, setAvailableLists] = useState<
+    Array<{ id: string; label: string }>
+  >([]);
+  const [activeListLabels, setActiveListLabels] = useState<string[]>([]);
 
-  const selectedListLabels = listOptions
+  // Load available lists from storage
+  useEffect(() => {
+    const loadLists = async () => {
+      const lists = await storage.getLists();
+      const listOptions = lists.map((list) => ({
+        id: list.id,
+        label: list.name,
+      }));
+      listOptions.push({ id: "new-list", label: "New List" });
+      setAvailableLists(listOptions);
+    };
+
+    if (showAddModal) {
+      loadLists();
+    }
+  }, [showAddModal]);
+
+  const selectedListLabels = availableLists
     .filter((opt) => selectedLists.includes(opt.id) && opt.id !== "new-list")
     .map((opt) => opt.label);
 
-  const removedListLabels = listOptions
+  const removedListLabels = availableLists
     .filter(
       (opt) =>
         initialSelections.includes(opt.id) && !selectedLists.includes(opt.id),
@@ -90,45 +116,96 @@ export default function AddModal({
   const closeModal = () => {
     setShowAddModal(false);
     setIsRemoving(false);
+    setSelectedLists([]);
   };
 
   const toggleList = (id: string) => {
-    // Just toggle selection - don't open modal yet
-    // Modal will open after Confirm is pressed and progress completes
     setSelectedLists((prev: string[]) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
-  const handleApply = () => {
+  const [savedChanges, setSavedChanges] = useState<{
+    listsToAdd: string[];
+    listsToRemove: string[];
+  } | null>(null);
+
+  const handleApply = async () => {
     const hasRemovals = removedListLabels.length > 0;
     const hasNewList = selectedLists.includes("new-list");
     const hasExistingAdditions = selectedLists.some(
       (id) => id !== "new-list" && !initialSelections.includes(id),
     );
 
-    // If ONLY "New List" is selected with no other changes, open modal immediately
     if (hasNewList && !hasRemovals && !hasExistingAdditions) {
       closeModal();
-      setTimeout(() => onNewListPress(), 200);
+      setTimeout(() => onNewListPress(currentItem), 200); // Pass currentItem
       return;
     }
 
-    // If no changes at all
     if (!hasRemovals && !hasExistingAdditions && !hasNewList) {
       closeModal();
       return;
     }
 
+    // Track what we're about to change
+    const listsToRemove = initialSelections.filter(
+      (id) => !selectedLists.includes(id) && id !== "new-list",
+    );
+    const listsToAdd = selectedLists.filter(
+      (id) => !initialSelections.includes(id) && id !== "new-list",
+    );
+
+    setSavedChanges({ listsToAdd, listsToRemove });
+
+    // SAVE TO STORAGE
+    if (currentItem) {
+      const lists = await storage.getLists();
+
+      // Remove from lists
+      for (const listId of listsToRemove) {
+        const list = lists.find((l) => l.id === listId);
+        if (list) {
+          list.items = list.items.filter((item) => item.id !== currentItem.id);
+        }
+      }
+
+      // Add to lists
+      for (const listId of listsToAdd) {
+        const list = lists.find((l) => l.id === listId);
+        if (list) {
+          const alreadyExists = list.items.some((i) => i.id === currentItem.id);
+          if (!alreadyExists) {
+            const listItem: ListItem = {
+              id: currentItem.id,
+              type: currentItem.type,
+              name: currentItem.name,
+              party: currentItem.party,
+              role: currentItem.role,
+              date: currentItem.date,
+              committee: currentItem.committee,
+              update: "",
+              photoUrl: currentItem.photoUrl,
+            };
+            list.items.push(listItem);
+          }
+        }
+      }
+
+      await storage.saveLists(lists);
+    }
+
     closeModal();
 
-    // Show removal progress first if there are removals
-    if (hasRemovals) {
+    // Show progress
+    if (hasRemovals && removedListLabels.length > 0) {
+      setActiveListLabels(removedListLabels);
       setIsRemoving(true);
       setShowConfirmModal(true);
       setProgress(0);
       setCurrentListIndex(0);
-    } else {
+    } else if (hasExistingAdditions && selectedListLabels.length > 0) {
+      setActiveListLabels(selectedListLabels);
       setIsRemoving(false);
       setShowConfirmModal(true);
       setProgress(0);
@@ -136,12 +213,11 @@ export default function AddModal({
     }
   };
 
-  // Animate progress bar
+  // Keep the simple progress animation (no saving in here)
   useEffect(() => {
     if (!showConfirmModal) return;
 
-    const activeList = isRemoving ? removedListLabels : selectedListLabels;
-    const totalLists = activeList.length;
+    const totalLists = activeListLabels.length;
     let currentProgress = 0;
 
     const interval = setInterval(() => {
@@ -156,7 +232,6 @@ export default function AddModal({
       if (currentProgress >= 100) {
         clearInterval(interval);
 
-        // If we just finished removing and there are additions, switch to adding
         if (
           isRemoving &&
           selectedLists.some(
@@ -164,21 +239,20 @@ export default function AddModal({
           )
         ) {
           setTimeout(() => {
+            setActiveListLabels(selectedListLabels);
             setIsRemoving(false);
             setProgress(0);
             setCurrentListIndex(0);
           }, 300);
         } else {
-          // All done with progress
           setTimeout(() => {
             setShowConfirmModal(false);
             setProgress(0);
             setCurrentListIndex(0);
             setIsRemoving(false);
 
-            // If "New List" was selected, open the name modal now
             if (selectedLists.includes("new-list")) {
-              setTimeout(() => onNewListPress(), 200);
+              setTimeout(() => onNewListPress(currentItem), 200); // Pass currentItem
             }
           }, 300);
         }
@@ -189,8 +263,10 @@ export default function AddModal({
   }, [
     showConfirmModal,
     isRemoving,
-    selectedListLabels.length,
-    removedListLabels.length,
+    activeListLabels.length,
+    selectedLists,
+    initialSelections,
+    selectedListLabels,
   ]);
 
   return (
@@ -211,7 +287,7 @@ export default function AddModal({
               showsVerticalScrollIndicator={false}
             >
               <Text style={modalStyles.dropdownItemTextLabel}>Add to List</Text>
-              {listOptions.map((option) => (
+              {availableLists.map((option) => (
                 <Pressable
                   key={option.id}
                   style={[
@@ -290,7 +366,7 @@ export default function AddModal({
                 <Text
                   style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
                 >
-                  Add
+                  Confirm
                 </Text>
               </Pressable>
             </View>
@@ -333,12 +409,12 @@ export default function AddModal({
               }}
             >
               {isRemoving
-                ? removedListLabels.length > 1
-                  ? `Removing from ${removedListLabels[currentListIndex]}`
-                  : `Removing from ${removedListLabels[0]}`
-                : selectedListLabels.length > 1
-                  ? `Add to ${selectedListLabels[currentListIndex]}`
-                  : `Add to ${selectedListLabels[0]}`}
+                ? activeListLabels.length > 1
+                  ? `Removing from ${activeListLabels[currentListIndex] || activeListLabels[0]}`
+                  : `Removing from ${activeListLabels[0]}`
+                : activeListLabels.length > 1
+                  ? `Adding to ${activeListLabels[currentListIndex] || activeListLabels[0]}`
+                  : `Adding to ${activeListLabels[0]}`}
             </Text>
 
             {/* Progress Bar */}
@@ -371,10 +447,7 @@ export default function AddModal({
               }}
             >
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/
-                {isRemoving
-                  ? removedListLabels.length
-                  : selectedListLabels.length}
+                {currentListIndex + 1}/{activeListLabels.length}
               </Text>
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
                 {Math.round(progress)}%
@@ -383,17 +456,55 @@ export default function AddModal({
 
             {/* Cancel Button */}
             <Pressable
-              onPress={() => {
+              onPress={async () => {
+                // Undo the save
+                if (savedChanges && currentItem) {
+                  const lists = await storage.getLists();
+
+                  // Re-add to lists we removed from
+                  for (const listId of savedChanges.listsToRemove) {
+                    const list = lists.find((l) => l.id === listId);
+                    if (list) {
+                      const alreadyExists = list.items.some(
+                        (i) => i.id === currentItem.id,
+                      );
+                      if (!alreadyExists) {
+                        const listItem: ListItem = {
+                          id: currentItem.id,
+                          type: currentItem.type,
+                          name: currentItem.name,
+                          party: currentItem.party,
+                          role: currentItem.role,
+                          date: currentItem.date,
+                          committee: currentItem.committee,
+                          update: "",
+                          photoUrl: currentItem.photoUrl,
+                        };
+                        list.items.push(listItem);
+                      }
+                    }
+                  }
+
+                  // Remove from lists we added to
+                  for (const listId of savedChanges.listsToAdd) {
+                    const list = lists.find((l) => l.id === listId);
+                    if (list) {
+                      list.items = list.items.filter(
+                        (item) => item.id !== currentItem.id,
+                      );
+                    }
+                  }
+
+                  await storage.saveLists(lists);
+                }
+
                 setShowConfirmModal(false);
                 setProgress(0);
+                setSavedChanges(null);
               }}
             >
               <Text
-                style={{
-                  fontSize: 14,
-                  color: "#535353",
-                  textAlign: "center",
-                }}
+                style={{ fontSize: 14, color: "#535353", textAlign: "center" }}
               >
                 Cancel
               </Text>

@@ -18,7 +18,7 @@ import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 
-import { storage } from "../utils/storage";
+import { storage, UserList } from "../utils/storage";
 
 type ItemType = "official" | "bill";
 
@@ -62,13 +62,30 @@ export default function HomeScreen() {
 
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [newListContext, setNewListContext] = useState<"main" | "search">(
+    "main",
+  );
+  const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
+  const [showNewListProgressModal, setShowNewListProgressModal] =
+    useState(false);
+  const [newListProgress, setNewListProgress] = useState(0);
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
 
   const [hasMoved, setHasMoved] = useState(false);
   const [originalOrder, setOriginalOrder] = useState<ListItem[]>([]);
 
-  const [newListContext, setNewListContext] = useState<"main" | "search">(
-    "main",
-  );
+  const [lists, setLists] = useState<Array<{ id: string; name: string }>>([]);
+  const [currentList, setCurrentList] = useState<UserList | null>(null);
+
+  const refreshLists = async () => {
+    const savedLists = await storage.getLists();
+    setLists(savedLists);
+
+    // Set current list (e.g., based on storage)
+    const currentId = await storage.getCurrentListId();
+    const active = savedLists.find((l) => l.id === currentId);
+    setCurrentList(active ?? savedLists[0] ?? null);
+  };
 
   const enterEditMode = (triggerId: string) => {
     setIsEditMode(true);
@@ -127,20 +144,25 @@ export default function HomeScreen() {
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
-      const lists = await storage.getLists();
+      const allLists = await storage.getLists();
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: [],
+        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
       };
 
-      lists.push(newList);
-      await storage.saveLists(lists);
-      setSelectedList(newListName.trim());
+      allLists.push(newList);
+      await storage.saveLists(allLists);
+
+      // For home.tsx only
+      setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
+
+      // Show progress modal
+      setShowNewListProgressModal(true);
 
       setNewListName("");
       setShowNewListModal(false);
-      setNewListContext("main");
+      setPendingItemForNewList(null);
     }
   };
 
@@ -165,13 +187,49 @@ export default function HomeScreen() {
   const navigation = useNavigation();
 
   useEffect(() => {
+    refreshLists();
+  }, []);
+
+  useEffect(() => {
     navigation.setOptions({
       tabBarStyle: isEditMode ? { display: "none" } : { height: 100 },
     });
   }, [isEditMode]);
 
+  useEffect(() => {
+    const debugStorage = async () => {
+      const lists = await storage.getLists();
+    };
+    debugStorage();
+  }, []);
+
+  useEffect(() => {
+    if (!showNewListProgressModal) return;
+
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setNewListProgress(currentProgress);
+
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowNewListProgressModal(false);
+          setNewListProgress(0);
+        }, 300);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [showNewListProgressModal]);
+
   useFocusEffect(
     React.useCallback(() => {
+      const loadAllLists = async () => {
+        const allLists = await storage.getLists();
+        setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
+      };
+      loadAllLists();
       loadItems();
     }, [selectedList]),
   );
@@ -545,6 +603,8 @@ export default function HomeScreen() {
         setShowOptionsModal={setShowOptionsModal}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
+        selectedListId={currentList?.id ?? ""}
+        refreshLists={refreshLists}
       />
 
       {/* List Selection Modal */}
@@ -553,6 +613,8 @@ export default function HomeScreen() {
         setShowListSelection={setShowListSelection}
         selectedList={selectedList}
         setSelectedList={setSelectedList}
+        lists={lists} // ADD THIS
+        onNewListPress={() => setShowNewListModal(true)} // ADD THIS
       />
       {/* Edit Options Modal */}
       <EditOptionsModal
@@ -574,6 +636,73 @@ export default function HomeScreen() {
         value={newListName}
         onChangeText={setNewListName}
       />
+      {/* New List Progress Modal */}
+      <Modal
+        visible={showNewListProgressModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <Pressable
+          style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
+          onPress={() => {}}
+        >
+          <View
+            style={{
+              backgroundColor: "#f5f5f5",
+              marginHorizontal: 16,
+              borderRadius: 16,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.12,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginTop: 8,
+                marginBottom: 32,
+                textAlign: "center",
+              }}
+            >
+              Creating {newListName || "new list"}...
+            </Text>
+
+            {/* Progress Bar */}
+            <View
+              style={{
+                width: "100%",
+                height: 6,
+                backgroundColor: "#e0e0e0",
+                borderRadius: 3,
+                marginBottom: 12,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${newListProgress}%`,
+                  height: "100%",
+                  backgroundColor: "#00AFFF",
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+
+            {/* Progress Text */}
+            <Text
+              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+            >
+              {Math.round(newListProgress)}%
+            </Text>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

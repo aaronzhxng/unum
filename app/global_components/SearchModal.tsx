@@ -103,9 +103,16 @@ export default function SearchModal({
   };
 
   const handleAddPress = (item: any, event: any) => {
-    event.stopPropagation(); // Prevent card navigation
-    Keyboard.dismiss(); // Dismiss SearchModal's keyboard
-    setSelectedAddItem(item);
+    event.stopPropagation();
+    Keyboard.dismiss();
+
+    // Determine type based on item properties
+    const itemType = item.type || (item.role ? "official" : "bill");
+
+    setSelectedAddItem({
+      ...item,
+      type: itemType,
+    });
     setShowAddModal(true);
   };
 
@@ -296,6 +303,20 @@ export default function SearchModal({
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
         onNewListPress={onNewListPress}
+        currentItem={
+          selectedAddItem
+            ? {
+                id: selectedAddItem.id,
+                type: selectedAddItem.type || "official", // Determine based on your data structure
+                name: selectedAddItem.name,
+                party: selectedAddItem.party,
+                role: selectedAddItem.role,
+                date: selectedAddItem.date,
+                committee: selectedAddItem.committee,
+                photoUrl: selectedAddItem.photoUrl,
+              }
+            : undefined
+        }
       />
     </Modal>
   );

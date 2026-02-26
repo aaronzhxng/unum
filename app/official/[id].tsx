@@ -8,17 +8,19 @@ import {
   Search,
 } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
+import AddModal from "../global_components/AddModal";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { officialsService } from "../services/officials";
-import AddModal from "./official_components/AddModal";
 import FilterDropdown from "./official_components/FilterDropdown";
 import OptionsModal from "./official_components/OptionsModal";
 import SearchModal from "./official_components/SearchModal";
 import SortDropdown from "./official_components/SortDropdown";
 import { styles as componentStyles } from "./styles";
+
+import { storage } from "../utils/storage";
 
 function BillCard({ item }: { item: any }) {
   return (
@@ -67,6 +69,10 @@ export default function OfficialDetail() {
 
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
+  const [showNewListProgressModal, setShowNewListProgressModal] =
+    useState(false);
+  const [newListProgress, setNewListProgress] = useState(0);
 
   const [imageError, setImageError] = useState(false);
 
@@ -74,11 +80,24 @@ export default function OfficialDetail() {
     setImageError(false);
   }, [id]);
 
-  const handleNewListCreate = () => {
+  const handleNewListCreate = async () => {
     if (newListName.trim()) {
-      // console.log("New list created:", newListName.trim());
+      const allLists = await storage.getLists();
+      const newList = {
+        id: Date.now().toString(),
+        name: newListName.trim(),
+        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+      };
+
+      allLists.push(newList);
+      await storage.saveLists(allLists);
+
+      // Show progress modal
+      setShowNewListProgressModal(true);
+
       setNewListName("");
       setShowNewListModal(false);
+      setPendingItemForNewList(null);
     }
   };
 
@@ -261,12 +280,25 @@ export default function OfficialDetail() {
     );
   }
 
-  // console.log("Official data:", official);
-  // console.log("Official name fields:", {
-  //   directOrderName: official.directOrderName,
-  //   lastName: official.lastName,
-  //   firstName: official.firstName,
-  // });
+  useEffect(() => {
+    if (!showNewListProgressModal) return;
+
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setNewListProgress(currentProgress);
+
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowNewListProgressModal(false);
+          setNewListProgress(0);
+        }, 300);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [showNewListProgressModal]);
 
   return (
     <View style={componentStyles.screen}>
@@ -557,7 +589,20 @@ export default function OfficialDetail() {
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
-        onNewListPress={() => setShowNewListModal(true)}
+        onNewListPress={(item) => {
+          setPendingItemForNewList(item);
+          setShowNewListModal(true);
+        }}
+        currentItem={{
+          id: official.bioguideId,
+          type: "official",
+          name: official.name,
+          party: official.partyName?.charAt(0) || "",
+          role: official.district
+            ? `Representative, ${official.state} - District ${official.district}`
+            : `Senator, ${official.state}`,
+          photoUrl: (official as any).depiction?.imageUrl,
+        }}
       />
 
       {/* Options Modal Popup */}
@@ -579,6 +624,73 @@ export default function OfficialDetail() {
         value={newListName}
         onChangeText={setNewListName}
       />
+      {/* New List Progress Modal */}
+      <Modal
+        visible={showNewListProgressModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <Pressable
+          style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
+          onPress={() => {}}
+        >
+          <View
+            style={{
+              backgroundColor: "#f5f5f5",
+              marginHorizontal: 16,
+              borderRadius: 16,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.12,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginTop: 8,
+                marginBottom: 32,
+                textAlign: "center",
+              }}
+            >
+              Creating {newListName || "new list"}...
+            </Text>
+
+            {/* Progress Bar */}
+            <View
+              style={{
+                width: "100%",
+                height: 6,
+                backgroundColor: "#e0e0e0",
+                borderRadius: 3,
+                marginBottom: 12,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${newListProgress}%`,
+                  height: "100%",
+                  backgroundColor: "#00AFFF",
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+
+            {/* Progress Text */}
+            <Text
+              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+            >
+              {Math.round(newListProgress)}%
+            </Text>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

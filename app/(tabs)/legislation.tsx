@@ -6,9 +6,9 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
-import AddModal from "../bill/bill_components/AddModal";
+import { useEffect, useMemo, useState } from "react";
+import { FlatList, Modal, Pressable, Text, View } from "react-native";
+import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
 import SortDropdown from "../global_components/LegislationSortDropdown";
@@ -18,6 +18,13 @@ import { styles as componentStyles } from "../global_styles/styles";
 
 import { useQuery } from "@tanstack/react-query";
 import { billsService } from "../services/bills";
+
+import { storage } from "../utils/storage";
+
+interface FilterOption {
+  id: string;
+  label: string;
+}
 
 type Bill = {
   id: string;
@@ -43,18 +50,34 @@ export default function LegislationScreen() {
   // New List Modal
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
+  const [showNewListProgressModal, setShowNewListProgressModal] =
+    useState(false);
+  const [newListProgress, setNewListProgress] = useState(0);
 
   const handleReportError = () => {
     // console.log("Report error for legislation");
     // TODO: Navigate to error reporting form or open modal
   };
 
-  const handleNewListCreate = () => {
+  const handleNewListCreate = async () => {
     if (newListName.trim()) {
-      // TODO: Add to bills list management when backend is ready
-      // console.log("New list created:", newListName.trim());
+      const allLists = await storage.getLists();
+      const newList = {
+        id: Date.now().toString(),
+        name: newListName.trim(),
+        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+      };
+
+      allLists.push(newList);
+      await storage.saveLists(allLists);
+
+      // Show progress modal
+      setShowNewListProgressModal(true);
+
       setNewListName("");
       setShowNewListModal(false);
+      setPendingItemForNewList(null);
     }
   };
 
@@ -75,10 +98,47 @@ export default function LegislationScreen() {
       const chamber = selectedChambers[0];
       if (chamber === "house") return "House";
       if (chamber === "senate") return "Senate";
-      if (chamber === "joint") return "Joint";
     }
     return "Congress";
   };
+
+  const POLICY_AREA_OPTIONS: FilterOption[] = [
+    { id: "all", label: "All" },
+    { id: "agriculture", label: "Agriculture and Food" },
+    { id: "animals", label: "Animals" },
+    { id: "armed-forces", label: "Armed Forces and National Security" },
+    { id: "arts", label: "Arts, Culture, Religion" },
+    {
+      id: "civil-rights",
+      label: "Civil Rights and Liberties, Minority Issues",
+    },
+    { id: "commerce", label: "Commerce" },
+    { id: "congress", label: "Congress" },
+    { id: "crime", label: "Crime and Law Enforcement" },
+    { id: "economics", label: "Economics and Public Finance" },
+    { id: "education", label: "Education" },
+    { id: "emergency", label: "Emergency Management" },
+    { id: "energy", label: "Energy" },
+    { id: "environmental", label: "Environmental Protection" },
+    { id: "families", label: "Families" },
+    { id: "finance", label: "Finance and Financial Sector" },
+    { id: "foreign-trade", label: "Foreign Trade and International Finance" },
+    { id: "government", label: "Government Operations and Politics" },
+    { id: "health", label: "Health" },
+    { id: "housing", label: "Housing and Community Development" },
+    { id: "immigration", label: "Immigration" },
+    { id: "international", label: "International Affairs" },
+    { id: "labor", label: "Labor and Employment" },
+    { id: "law", label: "Law" },
+    { id: "native-americans", label: "Native Americans" },
+    { id: "public-lands", label: "Public Lands and Natural Resources" },
+    { id: "science", label: "Science, Technology, Communications" },
+    { id: "social-welfare", label: "Social Welfare" },
+    { id: "sports", label: "Sports and Recreation" },
+    { id: "taxation", label: "Taxation" },
+    { id: "transportation", label: "Transportation and Public Works" },
+    { id: "water", label: "Water Resources Development" },
+  ];
 
   const SORT_OPTIONS = [
     "Most Viewed",
@@ -106,15 +166,10 @@ export default function LegislationScreen() {
   };
 
   const handleFilterCancel = () => {
-    // Reset to defaults or keep selections
     setShowFilterModal(false);
   };
 
   const handleFilterApply = () => {
-    // Apply filters to your bill list
-    // console.log("Chambers:", selectedChambers);
-    // console.log("Policy Areas:", selectedPolicyAreas);
-    // console.log("Types:", selectedLegislationTypes);
     setShowFilterModal(false);
   };
 
@@ -125,15 +180,107 @@ export default function LegislationScreen() {
     queryFn: billsService.getAll,
   });
 
-  // console.log("Bills data:", data);
-  // console.log("Loading:", isLoading);
-  // console.log("Error:", error);
+  const allBills = data?.bills || []; // Rename to allBills
 
-  const bills = data?.bills || [];
+  const bills = useMemo(() => {
+    let filtered = allBills;
 
+    // Filter by chamber
+    if (selectedChambers.length > 0) {
+      filtered = filtered.filter((bill) =>
+        selectedChambers.some((chamber) => {
+          if (chamber === "house")
+            return (bill as any).originChamber === "House";
+          if (chamber === "senate")
+            return (bill as any).originChamber === "Senate";
+          return false;
+        }),
+      );
+    }
+
+    // Filter by policy area
+    // if (
+    //   selectedPolicyAreas.length > 0 &&
+    //   !selectedPolicyAreas.includes("all")
+    // ) {
+    //   // Map IDs to labels for comparison
+    //   const policyLabels = selectedPolicyAreas
+    //     .map((id) => POLICY_AREA_OPTIONS.find((opt) => opt.id === id)?.label)
+    //     .filter(Boolean); // Remove undefined values
+
+    //   console.log("Selected policy labels:", policyLabels);
+    //   console.log(
+    //     "Sample bill policy areas:",
+    //     allBills.slice(0, 3).map((b) => (b as any).policyArea?.name),
+    //   );
+
+    //   filtered = filtered.filter((bill) => {
+    //     const matches = policyLabels.includes((bill as any).policyArea?.name);
+    //     if (matches) console.log("Matched:", (bill as any).policyArea?.name);
+    //     return matches;
+    //   });
+
+    //   console.log("After policy filter:", filtered.length);
+    //   console.log("Full bill sample:", JSON.stringify(allBills[0], null, 2));
+    // }
+
+    // Filter by legislation type
+    // Filter by legislation type
+    if (
+      selectedLegislationTypes.length > 0 &&
+      !selectedLegislationTypes.includes("all")
+    ) {
+      const typeMap: { [key: string]: string[] } = {
+        bill: ["HR", "S"],
+        joint_resolution: ["HJRES", "SJRES"],
+        concurrent_resolution: ["HCONRES", "SCONRES"],
+        resolution: ["HRES", "SRES"],
+        amendment: ["HAMDT", "SAMDT"],
+        nomination: ["PN"],
+        treaty: ["TREATY"],
+      };
+
+      const apiTypes = selectedLegislationTypes.flatMap(
+        (id) => typeMap[id] || [],
+      );
+
+      filtered = filtered.filter((bill) =>
+        apiTypes.includes((bill as any).type),
+      );
+    }
+
+    return filtered;
+  }, [
+    allBills,
+    selectedChambers,
+    selectedPolicyAreas,
+    selectedLegislationTypes,
+  ]);
+
+  // Then use 'bills' in your FlatList (which you already do)
   const currentBill = bills.find(
     (b) => `${b.type.toLowerCase()}${b.number}` === currentBillId,
   );
+
+  useEffect(() => {
+    if (!showNewListProgressModal) return;
+
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setNewListProgress(currentProgress);
+
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowNewListProgressModal(false);
+          setNewListProgress(0);
+        }, 300);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [showNewListProgressModal]);
 
   return (
     <View style={componentStyles.container}>
@@ -289,6 +436,10 @@ export default function LegislationScreen() {
         toggleLegislationType={toggleLegislationType}
         onCancel={handleFilterCancel}
         onApply={handleFilterApply}
+        setSelectedChambers={setSelectedChambers} // ADD THIS
+        setSelectedPolicyAreas={setSelectedPolicyAreas} // ADD THIS
+        setSelectedLegislationTypes={setSelectedLegislationTypes} // ADD THIS
+        resultCount={bills.length} // ADD THIS
       />
 
       {/* Legislation Sort Dropdown */}
@@ -316,7 +467,10 @@ export default function LegislationScreen() {
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
-        onNewListPress={() => setShowNewListModal(true)}
+        onNewListPress={(item) => {
+          setPendingItemForNewList(item);
+          setShowNewListModal(true);
+        }}
         currentItem={
           currentBill
             ? {
@@ -329,6 +483,74 @@ export default function LegislationScreen() {
             : undefined
         }
       />
+
+      {/* New List Progress Modal */}
+      <Modal
+        visible={showNewListProgressModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <Pressable
+          style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
+          onPress={() => {}}
+        >
+          <View
+            style={{
+              backgroundColor: "#f5f5f5",
+              marginHorizontal: 16,
+              borderRadius: 16,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.12,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginTop: 8,
+                marginBottom: 32,
+                textAlign: "center",
+              }}
+            >
+              Creating {newListName || "new list"}...
+            </Text>
+
+            {/* Progress Bar */}
+            <View
+              style={{
+                width: "100%",
+                height: 6,
+                backgroundColor: "#e0e0e0",
+                borderRadius: 3,
+                marginBottom: 12,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${newListProgress}%`,
+                  height: "100%",
+                  backgroundColor: "#00AFFF",
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+
+            {/* Progress Text */}
+            <Text
+              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+            >
+              {Math.round(newListProgress)}%
+            </Text>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

@@ -7,20 +7,22 @@ import {
   Plus,
 } from "lucide-react-native";
 
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
+import AddModal from "../global_components/AddModal";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { billsService } from "../services/bills";
 import ActionHistory from "./bill_components/ActionHistory";
-import AddModal from "./bill_components/AddModal";
 import Cosponsors, { Cosponsor } from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
 import VotingCard from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
+
+import { storage } from "../utils/storage";
 
 export default function BillDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -67,12 +69,29 @@ export default function BillDetail() {
 
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
+  const [showNewListProgressModal, setShowNewListProgressModal] =
+    useState(false);
+  const [newListProgress, setNewListProgress] = useState(0);
 
-  const handleNewListCreate = () => {
+  const handleNewListCreate = async () => {
     if (newListName.trim()) {
-      // console.log("New list created:", newListName.trim());
+      const allLists = await storage.getLists();
+      const newList = {
+        id: Date.now().toString(),
+        name: newListName.trim(),
+        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+      };
+
+      allLists.push(newList);
+      await storage.saveLists(allLists);
+
+      // Show progress modal
+      setShowNewListProgressModal(true);
+
       setNewListName("");
       setShowNewListModal(false);
+      setPendingItemForNewList(null);
     }
   };
 
@@ -127,9 +146,14 @@ export default function BillDetail() {
     enabled: !!id,
   });
 
-  // console.log("Bill detail data:", data);
-
   const bill = data?.bill;
+
+  const filteredOfficials = useMemo(() => {
+    if (!searchQuery.trim()) return mockRelatedOfficials;
+    return mockRelatedOfficials.filter((official) =>
+      official.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [searchQuery]);
 
   if (isLoading) {
     return (
@@ -215,13 +239,6 @@ export default function BillDetail() {
     { id: "2", name: "Ritchie Torres", party: "D", role: "Sponsor" },
   ];
 
-  const filteredOfficials = useMemo(() => {
-    if (!searchQuery.trim()) return mockRelatedOfficials;
-    return mockRelatedOfficials.filter((official) =>
-      official.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }, [searchQuery]);
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -287,6 +304,26 @@ export default function BillDetail() {
     },
     // add more…
   ];
+
+  useEffect(() => {
+    if (!showNewListProgressModal) return;
+
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setNewListProgress(currentProgress);
+
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowNewListProgressModal(false);
+          setNewListProgress(0);
+        }, 300);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [showNewListProgressModal]);
 
   return (
     <View style={componentStyles.screen}>
@@ -653,7 +690,21 @@ export default function BillDetail() {
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
-        onNewListPress={() => setShowNewListModal(true)} // 👈 Add this
+        onNewListPress={(item) => {
+          setPendingItemForNewList(item);
+          setShowNewListModal(true);
+        }}
+        currentItem={
+          bill
+            ? {
+                id: `${bill.type.toLowerCase()}${bill.number}`,
+                type: "bill",
+                name: `${bill.type}.${bill.number} - ${bill.title}`,
+                date: bill.latestAction?.actionDate,
+                committee: bill.latestAction?.text,
+              }
+            : undefined
+        }
       />
       {/* New list name Modal Popup */}
       <NewListNameModal
@@ -673,6 +724,73 @@ export default function BillDetail() {
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
       />
+      {/* New List Progress Modal */}
+      <Modal
+        visible={showNewListProgressModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <Pressable
+          style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
+          onPress={() => {}}
+        >
+          <View
+            style={{
+              backgroundColor: "#f5f5f5",
+              marginHorizontal: 16,
+              borderRadius: 16,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.12,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginTop: 8,
+                marginBottom: 32,
+                textAlign: "center",
+              }}
+            >
+              Creating {newListName || "new list"}...
+            </Text>
+
+            {/* Progress Bar */}
+            <View
+              style={{
+                width: "100%",
+                height: 6,
+                backgroundColor: "#e0e0e0",
+                borderRadius: 3,
+                marginBottom: 12,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${newListProgress}%`,
+                  height: "100%",
+                  backgroundColor: "#00AFFF",
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+
+            {/* Progress Text */}
+            <Text
+              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+            >
+              {Math.round(newListProgress)}%
+            </Text>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

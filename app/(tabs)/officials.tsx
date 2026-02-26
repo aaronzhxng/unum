@@ -7,7 +7,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -17,14 +17,16 @@ import {
   Text,
   View,
 } from "react-native";
+import AddModal from "../global_components/AddModal";
 import NewListNameModal from "../global_components/NewListNameModal";
 import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
-import AddModal from "../official/official_components/AddModal";
 
 import { useQuery } from "@tanstack/react-query";
 import { officialsService } from "../services/officials";
+
+import { storage } from "../utils/storage";
 
 type Official = {
   id: string;
@@ -47,6 +49,10 @@ export default function OfficialsScreen() {
   // New List Modal
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
+  const [showNewListProgressModal, setShowNewListProgressModal] =
+    useState(false);
+  const [newListProgress, setNewListProgress] = useState(0);
 
   const handleSetPriority = () => {
     // console.log("Set as priority:", selectedList);
@@ -58,12 +64,24 @@ export default function OfficialsScreen() {
     // TODO: Navigate to error reporting form or open modal
   };
 
-  const handleNewListCreate = () => {
+  const handleNewListCreate = async () => {
     if (newListName.trim()) {
-      // TODO: Add to officials list management when backend is ready
-      // console.log("New list created:", newListName.trim());
+      const allLists = await storage.getLists();
+      const newList = {
+        id: Date.now().toString(),
+        name: newListName.trim(),
+        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+      };
+
+      allLists.push(newList);
+      await storage.saveLists(allLists);
+
+      // Show progress modal
+      setShowNewListProgressModal(true);
+
       setNewListName("");
       setShowNewListModal(false);
+      setPendingItemForNewList(null);
     }
   };
 
@@ -206,6 +224,26 @@ export default function OfficialsScreen() {
     (o) => o.bioguideId === currentOfficialId,
   );
 
+  useEffect(() => {
+    if (!showNewListProgressModal) return;
+
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setNewListProgress(currentProgress);
+
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowNewListProgressModal(false);
+          setNewListProgress(0);
+        }, 300);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [showNewListProgressModal]);
+
   return (
     <View style={componentStyles.container}>
       <View style={componentStyles.headerBar}>
@@ -280,7 +318,10 @@ export default function OfficialsScreen() {
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
-        onNewListPress={() => setShowNewListModal(true)}
+        onNewListPress={(item) => {
+          setPendingItemForNewList(item);
+          setShowNewListModal(true);
+        }}
         currentItem={
           currentOfficial
             ? {
@@ -376,6 +417,73 @@ export default function OfficialsScreen() {
         value={newListName}
         onChangeText={setNewListName}
       />
+      {/* New List Progress Modal */}
+      <Modal
+        visible={showNewListProgressModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <Pressable
+          style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
+          onPress={() => {}}
+        >
+          <View
+            style={{
+              backgroundColor: "#f5f5f5",
+              marginHorizontal: 16,
+              borderRadius: 16,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.12,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginTop: 8,
+                marginBottom: 32,
+                textAlign: "center",
+              }}
+            >
+              Creating {newListName || "new list"}...
+            </Text>
+
+            {/* Progress Bar */}
+            <View
+              style={{
+                width: "100%",
+                height: 6,
+                backgroundColor: "#e0e0e0",
+                borderRadius: 3,
+                marginBottom: 12,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${newListProgress}%`,
+                  height: "100%",
+                  backgroundColor: "#00AFFF",
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+
+            {/* Progress Text */}
+            <Text
+              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+            >
+              {Math.round(newListProgress)}%
+            </Text>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
