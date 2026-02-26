@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
   ChevronDown,
@@ -7,7 +8,7 @@ import {
   Search,
 } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
-import { FlatList, Modal, Pressable, Text, View } from "react-native";
+import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
@@ -15,9 +16,8 @@ import SortDropdown from "../global_components/LegislationSortDropdown";
 import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
-
-import { useQuery } from "@tanstack/react-query";
 import { billsService } from "../services/bills";
+import { getIconFromActionText } from "../utils/billIcons";
 
 import { storage } from "../utils/storage";
 
@@ -54,6 +54,7 @@ export default function LegislationScreen() {
   const [showNewListProgressModal, setShowNewListProgressModal] =
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
+  const [createdListName, setCreatedListName] = useState("");
 
   const handleReportError = () => {
     // console.log("Report error for legislation");
@@ -66,11 +67,14 @@ export default function LegislationScreen() {
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+        items: pendingItemForNewList ? [pendingItemForNewList] : [],
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
+
+      // Track the created list name
+      setCreatedListName(newListName.trim());
 
       // Show progress modal
       setShowNewListProgressModal(true);
@@ -184,6 +188,11 @@ export default function LegislationScreen() {
 
   const bills = useMemo(() => {
     let filtered = allBills;
+
+    if (filtered.length > 0) {
+      console.log("First bill data:", filtered[0]);
+      console.log("Policy area:", (filtered[0] as any).policyArea);
+    }
 
     // Filter by chamber
     if (selectedChambers.length > 0) {
@@ -485,6 +494,7 @@ export default function LegislationScreen() {
       />
 
       {/* New List Progress Modal */}
+      {/* New List Progress Modal */}
       <Modal
         visible={showNewListProgressModal}
         transparent
@@ -544,10 +554,48 @@ export default function LegislationScreen() {
 
             {/* Progress Text */}
             <Text
-              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+              style={{
+                fontSize: 12,
+                color: "#7B7C81",
+                textAlign: "center",
+                marginBottom: 16,
+              }}
             >
               {Math.round(newListProgress)}%
             </Text>
+
+            {/* Cancel Button - ADD THIS */}
+            <Pressable
+              onPress={async () => {
+                // Delete the newly created list
+                const allLists = await storage.getLists();
+                const newlyCreatedList = allLists.find(
+                  (l) => l.name === createdListName,
+                );
+
+                if (newlyCreatedList) {
+                  await storage.deleteList(newlyCreatedList.id);
+                }
+
+                // Close modal and reset
+                setShowNewListProgressModal(false);
+                setNewListProgress(0);
+                setCreatedListName("");
+              }}
+              style={({ pressed }) => ({
+                transform: pressed ? [{ scale: 0.96 }] : [],
+              })}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#535353",
+                  textAlign: "center",
+                }}
+              >
+                Cancel
+              </Text>
+            </Pressable>
           </View>
         </Pressable>
       </Modal>
@@ -585,9 +633,11 @@ function BillCard({
             },
           ]}
         >
-          <Text style={{ fontSize: 16, fontWeight: "bold", color: "#535353" }}>
-            {item.type}
-          </Text>
+          <Image
+            source={getIconFromActionText(item.latestAction?.text)}
+            style={{ width: "100%", height: "100%", borderRadius: 6 }}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Bill Info */}

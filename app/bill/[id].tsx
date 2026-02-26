@@ -8,12 +8,13 @@ import {
 } from "lucide-react-native";
 
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
 import AddModal from "../global_components/AddModal";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { billsService } from "../services/bills";
+import { getBillIcon } from "../utils/billIcons";
 import ActionHistory from "./bill_components/ActionHistory";
 import Cosponsors, { Cosponsor } from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
@@ -73,6 +74,7 @@ export default function BillDetail() {
   const [showNewListProgressModal, setShowNewListProgressModal] =
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
+  const [createdListName, setCreatedListName] = useState("");
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
@@ -80,11 +82,14 @@ export default function BillDetail() {
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+        items: pendingItemForNewList ? [pendingItemForNewList] : [],
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
+
+      // Track the created list name
+      setCreatedListName(newListName.trim());
 
       // Show progress modal
       setShowNewListProgressModal(true);
@@ -154,6 +159,26 @@ export default function BillDetail() {
       official.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [searchQuery]);
+
+  useEffect(() => {
+    if (!showNewListProgressModal) return;
+
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setNewListProgress(currentProgress);
+
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowNewListProgressModal(false);
+          setNewListProgress(0);
+        }, 300);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [showNewListProgressModal]);
 
   if (isLoading) {
     return (
@@ -305,26 +330,6 @@ export default function BillDetail() {
     // add more…
   ];
 
-  useEffect(() => {
-    if (!showNewListProgressModal) return;
-
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += 5;
-      setNewListProgress(currentProgress);
-
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setShowNewListProgressModal(false);
-          setNewListProgress(0);
-        }, 300);
-      }
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, [showNewListProgressModal]);
-
   return (
     <View style={componentStyles.screen}>
       {/* Header Bar */}
@@ -377,11 +382,11 @@ export default function BillDetail() {
               },
             ]}
           >
-            <Text
-              style={{ fontSize: 20, fontWeight: "bold", color: "#535353" }}
-            >
-              {bill.type}
-            </Text>
+            <Image
+              source={getBillIcon(bill.policyArea?.name)}
+              style={{ width: "100%", height: "100%", borderRadius: 6 }}
+              resizeMode="contain"
+            />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={componentStyles.billNumber}>
@@ -503,9 +508,9 @@ export default function BillDetail() {
             </View>
 
             <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Committees: </Text>
+              <Text style={componentStyles.detailTitle}>Policy Area: </Text>
               <Text style={componentStyles.detailInfo}>
-                {bill.originChamber} - {bill.policyArea?.name || "N/A"}
+                {bill.policyArea?.name || "N/A"}
               </Text>
             </View>
 
@@ -725,6 +730,7 @@ export default function BillDetail() {
         setSelectedNotifications={setSelectedNotifications}
       />
       {/* New List Progress Modal */}
+      {/* New List Progress Modal */}
       <Modal
         visible={showNewListProgressModal}
         transparent
@@ -784,10 +790,48 @@ export default function BillDetail() {
 
             {/* Progress Text */}
             <Text
-              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+              style={{
+                fontSize: 12,
+                color: "#7B7C81",
+                textAlign: "center",
+                marginBottom: 16,
+              }}
             >
               {Math.round(newListProgress)}%
             </Text>
+
+            {/* Cancel Button - ADD THIS */}
+            <Pressable
+              onPress={async () => {
+                // Delete the newly created list
+                const allLists = await storage.getLists();
+                const newlyCreatedList = allLists.find(
+                  (l) => l.name === createdListName,
+                );
+
+                if (newlyCreatedList) {
+                  await storage.deleteList(newlyCreatedList.id);
+                }
+
+                // Close modal and reset
+                setShowNewListProgressModal(false);
+                setNewListProgress(0);
+                setCreatedListName("");
+              }}
+              style={({ pressed }) => ({
+                transform: pressed ? [{ scale: 0.96 }] : [],
+              })}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#535353",
+                  textAlign: "center",
+                }}
+              >
+                Cancel
+              </Text>
+            </Pressable>
           </View>
         </Pressable>
       </Modal>

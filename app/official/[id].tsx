@@ -7,7 +7,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
@@ -73,6 +73,7 @@ export default function OfficialDetail() {
   const [showNewListProgressModal, setShowNewListProgressModal] =
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
+  const [createdListName, setCreatedListName] = useState("");
 
   const [imageError, setImageError] = useState(false);
 
@@ -86,11 +87,14 @@ export default function OfficialDetail() {
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+        items: pendingItemForNewList ? [pendingItemForNewList] : [],
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
+
+      // Track the created list name
+      setCreatedListName(newListName.trim());
 
       // Show progress modal
       setShowNewListProgressModal(true);
@@ -188,65 +192,6 @@ export default function OfficialDetail() {
     setShowPolicyModal(false);
   };
 
-  const mockBills = [
-    {
-      id: "1",
-      name: "H.R.6636 : To advance sensible pri..",
-      date: "12/11/2025",
-      committee: "Budget",
-      update: "Introduced",
-      icon: require("../../assets/bills_icons/budget.png"),
-    },
-    {
-      id: "2",
-      name: "SB2 : Foundation School Program",
-      date: "2/27/2025",
-      committee: "Rules",
-      update: "In Progress",
-      icon: require("../../assets/bills_icons/rules.png"),
-    },
-    {
-      id: "3",
-      name: "H.R.6819 : To reduce State adminis..",
-      date: "12/17/2025",
-      committee: "Education & Workforce",
-      update: "Introduced",
-      icon: require("../../assets/bills_icons/education.png"),
-    },
-    {
-      id: "4",
-      name: "H.R.6819 : To reduce State adminis..",
-      date: "12/17/2025",
-      committee: "Education & Workforce",
-      update: "Introduced",
-      icon: require("../../assets/bills_icons/education.png"),
-    },
-    {
-      id: "5",
-      name: "H.R.6819 : To reduce State adminis..",
-      date: "12/17/2025",
-      committee: "Education & Workforce",
-      update: "Introduced",
-      icon: require("../../assets/bills_icons/education.png"),
-    },
-    {
-      id: "6",
-      name: "H.R.6819 : To reduce State adminis..",
-      date: "12/17/2025",
-      committee: "Education & Workforce",
-      update: "Introduced",
-      icon: require("../../assets/bills_icons/education.png"),
-    },
-    {
-      id: "7",
-      name: "H.R.6819 : To reduce State adminis..",
-      date: "12/17/2025",
-      committee: "Education & Workforce",
-      update: "Introduced",
-      icon: require("../../assets/bills_icons/education.png"),
-    },
-  ];
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["official", id],
     queryFn: () => officialsService.getById(id as string),
@@ -255,30 +200,14 @@ export default function OfficialDetail() {
 
   const official = data?.member;
 
-  const filteredBills = useMemo(() => {
-    if (!searchQuery.trim()) return mockBills;
-    return mockBills.filter(
-      (bill) =>
-        bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bill.committee.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }, [searchQuery]);
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (error || !official) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Error loading official</Text>
-      </View>
-    );
-  }
+  // const filteredBills = useMemo(() => {
+  //   if (!searchQuery.trim()) return mockBills;
+  //   return mockBills.filter(
+  //     (bill) =>
+  //       bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //       bill.committee.toLowerCase().includes(searchQuery.toLowerCase()),
+  //   );
+  // }, [searchQuery]);
 
   useEffect(() => {
     if (!showNewListProgressModal) return;
@@ -299,6 +228,22 @@ export default function OfficialDetail() {
 
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error || !official) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Error loading official</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={componentStyles.screen}>
@@ -596,12 +541,12 @@ export default function OfficialDetail() {
         currentItem={{
           id: official.bioguideId,
           type: "official",
-          name: official.name,
-          party: official.partyName?.charAt(0) || "",
+          name: official.directOrderName, // Changed from official.name
+          party: official.partyHistory?.[0]?.partyName?.charAt(0) || "", // Changed from official.partyName
           role: official.district
             ? `Representative, ${official.state} - District ${official.district}`
             : `Senator, ${official.state}`,
-          photoUrl: (official as any).depiction?.imageUrl,
+          photoUrl: official.depiction?.imageUrl,
         }}
       />
 
@@ -684,10 +629,48 @@ export default function OfficialDetail() {
 
             {/* Progress Text */}
             <Text
-              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+              style={{
+                fontSize: 12,
+                color: "#7B7C81",
+                textAlign: "center",
+                marginBottom: 16,
+              }}
             >
               {Math.round(newListProgress)}%
             </Text>
+
+            {/* Cancel Button - ADD THIS */}
+            <Pressable
+              onPress={async () => {
+                // Delete the newly created list
+                const allLists = await storage.getLists();
+                const newlyCreatedList = allLists.find(
+                  (l) => l.name === createdListName,
+                );
+
+                if (newlyCreatedList) {
+                  await storage.deleteList(newlyCreatedList.id);
+                }
+
+                // Close modal and reset
+                setShowNewListProgressModal(false);
+                setNewListProgress(0);
+                setCreatedListName("");
+              }}
+              style={({ pressed }) => ({
+                transform: pressed ? [{ scale: 0.96 }] : [],
+              })}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#535353",
+                  textAlign: "center",
+                }}
+              >
+                Cancel
+              </Text>
+            </Pressable>
           </View>
         </Pressable>
       </Modal>

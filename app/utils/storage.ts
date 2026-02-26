@@ -66,11 +66,9 @@ export const storage = {
   initializeDefaultList: async (): Promise<UserList> => {
     const lists = await storage.getLists();
 
-    // Always ensure default list exists
-    let defaultList = lists.find((l) => l.name === "My List");
-
-    if (!defaultList) {
-      defaultList = {
+    // Only create default list if NO lists exist
+    if (lists.length === 0) {
+      const defaultList = {
         id: "my-list",
         name: "My List",
         items: [],
@@ -78,15 +76,24 @@ export const storage = {
       lists.push(defaultList);
       await storage.saveLists(lists);
       await storage.setCurrentListId(defaultList.id);
+      return defaultList;
     }
 
-    return defaultList;
+    // Return first list if it exists
+    return lists[0];
   },
 
   // Delete a list by ID
   deleteList: async (listId: string): Promise<void> => {
     try {
       const lists = await storage.getLists();
+
+      // Don't allow deleting if it's the last list
+      if (lists.length <= 1) {
+        console.warn("Cannot delete the last list");
+        return;
+      }
+
       const updatedLists = lists.filter((l) => l.id !== listId);
       await storage.saveLists(updatedLists);
 

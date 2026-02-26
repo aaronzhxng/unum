@@ -56,7 +56,6 @@ export default function HomeScreen() {
   const [showEditOptions, setShowEditOptions] = useState(false);
 
   const [items, setItems] = useState<ListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   const allSelected = items.length > 0 && selectedIds.size === items.length;
 
@@ -70,6 +69,7 @@ export default function HomeScreen() {
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const [createdListName, setCreatedListName] = useState("");
 
   const [hasMoved, setHasMoved] = useState(false);
   const [originalOrder, setOriginalOrder] = useState<ListItem[]>([]);
@@ -77,14 +77,38 @@ export default function HomeScreen() {
   const [lists, setLists] = useState<Array<{ id: string; name: string }>>([]);
   const [currentList, setCurrentList] = useState<UserList | null>(null);
 
-  const refreshLists = async () => {
-    const savedLists = await storage.getLists();
-    setLists(savedLists);
+  const [currentListId, setCurrentListId] = useState<string>("");
 
-    // Set current list (e.g., based on storage)
-    const currentId = await storage.getCurrentListId();
-    const active = savedLists.find((l) => l.id === currentId);
-    setCurrentList(active ?? savedLists[0] ?? null);
+  // In the loadItems function, track which list is loaded:
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadItems = async () => {
+    setIsLoading(true); // Start loading
+
+    const lists = await storage.getLists();
+    const currentList = lists.find((l) => l.name === selectedList) || lists[0];
+
+    if (currentList) {
+      setCurrentListId(currentList.id);
+      setItems(currentList.items);
+    }
+
+    setIsLoading(false); // Done loading
+  };
+
+  // Create a refresh function:
+  const refreshLists = async () => {
+    const allLists = await storage.getLists();
+    setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
+
+    // If current list was deleted, switch to first available list
+    const listExists = allLists.some((l) => l.id === currentListId);
+    if (!listExists && allLists.length > 0) {
+      setSelectedList(allLists[0].name);
+      setCurrentListId(allLists[0].id);
+    }
+
+    await loadItems();
   };
 
   const enterEditMode = (triggerId: string) => {
@@ -148,11 +172,14 @@ export default function HomeScreen() {
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: pendingItemForNewList ? [pendingItemForNewList] : [], // Add the item!
+        items: pendingItemForNewList ? [pendingItemForNewList] : [],
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
+
+      // Track the created list name
+      setCreatedListName(newListName.trim());
 
       // For home.tsx only
       setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
@@ -166,23 +193,23 @@ export default function HomeScreen() {
     }
   };
 
-  const loadItems = async () => {
-    setIsLoading(true);
+  // const loadItems = async () => {
+  //   setIsLoading(true);
 
-    // Always initialize first
-    await storage.initializeDefaultList();
+  //   // Always initialize first
+  //   await storage.initializeDefaultList();
 
-    const lists = await storage.getLists();
-    const currentList = lists.find((l) => l.name === selectedList);
+  //   const lists = await storage.getLists();
+  //   const currentList = lists.find((l) => l.name === selectedList);
 
-    if (currentList && currentList.items.length > 0) {
-      setItems(currentList.items);
-    } else {
-      setItems([]);
-    }
+  //   if (currentList && currentList.items.length > 0) {
+  //     setItems(currentList.items);
+  //   } else {
+  //     setItems([]);
+  //   }
 
-    setIsLoading(false);
-  };
+  //   setIsLoading(false);
+  // };
 
   const navigation = useNavigation();
 
@@ -356,6 +383,8 @@ export default function HomeScreen() {
         >
           <Text>Loading...</Text>
         </View>
+      ) : items.length === 0 ? (
+        <Text>No items in this list</Text>
       ) : isEditMode ? (
         <DraggableFlatList
           data={items}
@@ -603,8 +632,8 @@ export default function HomeScreen() {
         setShowOptionsModal={setShowOptionsModal}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
-        selectedListId={currentList?.id ?? ""}
-        refreshLists={refreshLists}
+        selectedListId={currentListId} // ADD THIS
+        refreshLists={refreshLists} // ADD THIS
       />
 
       {/* List Selection Modal */}
@@ -696,10 +725,48 @@ export default function HomeScreen() {
 
             {/* Progress Text */}
             <Text
-              style={{ fontSize: 12, color: "#7B7C81", textAlign: "center" }}
+              style={{
+                fontSize: 12,
+                color: "#7B7C81",
+                textAlign: "center",
+                marginBottom: 16,
+              }}
             >
               {Math.round(newListProgress)}%
             </Text>
+
+            {/* Cancel Button - ADD THIS */}
+            <Pressable
+              onPress={async () => {
+                // Delete the newly created list
+                const allLists = await storage.getLists();
+                const newlyCreatedList = allLists.find(
+                  (l) => l.name === createdListName,
+                );
+
+                if (newlyCreatedList) {
+                  await storage.deleteList(newlyCreatedList.id);
+                }
+
+                // Close modal and reset
+                setShowNewListProgressModal(false);
+                setNewListProgress(0);
+                setCreatedListName("");
+              }}
+              style={({ pressed }) => ({
+                transform: pressed ? [{ scale: 0.96 }] : [],
+              })}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#535353",
+                  textAlign: "center",
+                }}
+              >
+                Cancel
+              </Text>
+            </Pressable>
           </View>
         </Pressable>
       </Modal>
