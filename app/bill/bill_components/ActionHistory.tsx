@@ -116,7 +116,12 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
         {actions.map((action, index) => (
           <View key={index} style={componentStyles.amendmentItem}>
             <View
-              style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}
+              style={{
+                flexDirection: "row",
+                alignItems: "flex-start",
+                justifyContent: "space-between", // ADD THIS
+                gap: 8,
+              }}
             >
               <Text style={componentStyles.detailInfo}>{action.date}</Text>
               <Text style={componentStyles.detailInfo}>{action.chamber}</Text>

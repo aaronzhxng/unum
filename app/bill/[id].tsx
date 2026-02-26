@@ -8,6 +8,7 @@ import {
 } from "lucide-react-native";
 
 import { useQuery } from "@tanstack/react-query";
+import { decode } from "html-entities";
 import { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import AddModal from "../global_components/AddModal";
@@ -610,12 +611,12 @@ export default function BillDetail() {
               {bill.summaries && bill.summaries.length > 0 ? (
                 <>
                   <Text style={componentStyles.summary}>
-                    {bill.summaries[0].text}
+                    {decode(bill.summaries[0].text.replace(/<[^>]*>/g, ""))}
                   </Text>
                   <Text
                     style={{ fontSize: 12, color: "#7B7C81", marginTop: 8 }}
                   >
-                    Last updated:{" "}
+                    {bill.summaries[0].actionDesc} • Last updated:{" "}
                     {new Date(
                       bill.summaries[0].updateDate,
                     ).toLocaleDateString()}
@@ -623,15 +624,16 @@ export default function BillDetail() {
                 </>
               ) : (
                 <Text style={componentStyles.summary}>
-                  No summary available yet. Check back later or view the full
-                  text.
+                  No summary available yet. This bill may be too new or Congress
+                  hasn't published a summary. Check back later or view the full
+                  text on Congress.gov.
                 </Text>
               )}
 
               <Pressable
                 onPress={() => {
                   const url = `https://www.congress.gov/bill/${bill.congress}th-congress/${bill.type.toLowerCase()}-bill/${bill.number}`;
-                  // Linking.openURL(url) when you're ready
+                  // Linking.openURL(url);
                 }}
                 style={{
                   flexDirection: "row",

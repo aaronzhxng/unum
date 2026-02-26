@@ -96,7 +96,7 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            gap: 14,
+            gap: 0,
             marginBottom: 12,
           }}
         >
@@ -125,7 +125,7 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
             <Text
               style={[
                 componentStyles.detailInfo,
-                { fontSize: 12, color: "#7B7C81" },
+                { fontSize: 12, color: "#7B7C81", width: 1000 },
               ]}
             >
               {`${voter.party} · ${voter.role}`}
@@ -151,7 +151,12 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
 
       {/* Progress Bars */}
       <View style={{ gap: 16 }}>
-        <View style={componentStyles.detailTitleRow}>
+        <View
+          style={[
+            componentStyles.detailTitleRow,
+            { justifyContent: "space-between" },
+          ]}
+        >
           <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
             Yea ({dummyData.votes.yea})
           </Text>
@@ -196,7 +201,12 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
           />
         </View>
 
-        <View style={componentStyles.detailTitleRow}>
+        <View
+          style={[
+            componentStyles.detailTitleRow,
+            { justifyContent: "space-between" },
+          ]}
+        >
           <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
             Nay ({dummyData.votes.nay})
           </Text>
@@ -241,7 +251,12 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
           />
         </View>
 
-        <View style={componentStyles.detailTitleRow}>
+        <View
+          style={[
+            componentStyles.detailTitleRow,
+            { justifyContent: "space-between" },
+          ]}
+        >
           <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
             Present ({dummyData.votes.present})
           </Text>
@@ -286,7 +301,12 @@ const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
           />
         </View>
 
-        <View style={componentStyles.detailTitleRow}>
+        <View
+          style={[
+            componentStyles.detailTitleRow,
+            { justifyContent: "space-between" },
+          ]}
+        >
           <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
             Not Voting ({dummyData.votes.notVoting})
           </Text>

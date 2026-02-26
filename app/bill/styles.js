@@ -112,7 +112,7 @@ export const styles = StyleSheet.create({
   detailInfo: {
     fontSize: 14,
     color: "#535353",
-    marginRight: 84,
+    // marginRight: 84,
   },
   section: {
     marginBottom: 24,
