@@ -197,3 +197,53 @@ app.get("/api/bills/:billId/actions", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch bill actions" });
   }
 });
+
+// Get bill amendments
+app.get("/api/bills/:billId/amendments", async (req, res) => {
+  try {
+    const { billId } = req.params;
+
+    const match = billId.match(/^([a-z]+)(\d+)$/i);
+    if (!match) {
+      return res.status(400).json({ error: "Invalid bill ID format" });
+    }
+
+    const billType = match[1].toLowerCase();
+    const billNumber = match[2];
+
+    // Fetch all pages of amendments
+    let allAmendments: any[] = [];
+    let offset = 0;
+    const limit = 250;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await axios.get(
+        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/amendments`,
+        {
+          headers: {
+            "X-Api-Key": process.env.CONGRESS_API_KEY,
+          },
+          params: {
+            offset,
+            limit,
+          },
+        },
+      );
+
+      const amendments = response.data.amendments || [];
+      allAmendments = allAmendments.concat(amendments);
+
+      hasMore = response.data.pagination?.next != null;
+      offset += limit;
+    }
+
+    res.json({
+      amendments: allAmendments,
+      pagination: { count: allAmendments.length },
+    });
+  } catch (error) {
+    console.error("Error fetching amendments:", error);
+    res.status(500).json({ error: "Failed to fetch bill amendments" });
+  }
+});

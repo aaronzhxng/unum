@@ -32,8 +32,11 @@ export const billsService = {
     return apiClient.get(`/bills/${billId}/summaries`);
   },
 
-  // ADD THIS:
   getActions: async (billId: string): Promise<any> => {
     return apiClient.get(`/bills/${billId}/actions`);
+  },
+
+  getAmendments: async (billId: string): Promise<any> => {
+    return apiClient.get(`/bills/${billId}/amendments`);
   },
 };

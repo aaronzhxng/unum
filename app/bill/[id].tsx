@@ -155,29 +155,26 @@ export default function BillDetail() {
       const cached = await billCache.getBill(billId);
 
       if (cached) {
-        console.log("Using cached bill data for", billId);
         return { bill: cached };
       }
 
-      console.log("Fetching bill from API:", billId);
-
       // Fetch bill details, summaries, AND actions in parallel
-      const [billResult, summariesResult, actionsResult] = await Promise.all([
-        billsService.getById(billId),
-        billsService.getSummaries(billId).catch(() => ({ summaries: [] })),
-        billsService.getActions(billId).catch(() => ({ actions: [] })),
-      ]);
+      const [billResult, summariesResult, actionsResult, amendmentsResult] =
+        await Promise.all([
+          billsService.getById(billId),
+          billsService.getSummaries(billId).catch(() => ({ summaries: [] })),
+          billsService.getActions(billId).catch(() => ({ actions: [] })),
+          billsService.getAmendments(billId).catch(() => ({ amendments: [] })),
+        ]);
 
-      console.log(
-        "Full actions response:",
-        JSON.stringify(actionsResult, null, 2),
-      );
+      console.log("Amendments result:", amendmentsResult);
 
       // Merge everything into bill data
       const enrichedBill = {
         ...billResult.bill,
         summaries: summariesResult.summaries || [],
         actions: actionsResult.actions || [],
+        amendments: amendmentsResult.amendments || [],
       };
 
       // Save enriched bill to cache
@@ -649,7 +646,7 @@ export default function BillDetail() {
 
             {/* Amendments Section */}
             <Pressable
-              style={[componentStyles.section, { marginBottom: 96 }]}
+              style={componentStyles.section}
               onPress={() => setShowAmendments(!showAmendments)}
             >
               <View
@@ -659,7 +656,9 @@ export default function BillDetail() {
                   alignItems: "center",
                 }}
               >
-                <Text style={componentStyles.detailTitle}>Amendments (0)</Text>
+                <Text style={componentStyles.detailTitle}>
+                  Amendments ({bill.amendments?.length || 0})
+                </Text>
                 {showAmendments ? (
                   <ChevronUp size={20} color="#7B7C81" />
                 ) : (
@@ -667,6 +666,54 @@ export default function BillDetail() {
                 )}
               </View>
             </Pressable>
+
+            {/* Show amendments when expanded */}
+            {showAmendments &&
+              bill.amendments &&
+              bill.amendments.length > 0 && (
+                <View style={componentStyles.section}>
+                  {bill.amendments.map((amendment: any, index: number) => (
+                    <View
+                      key={index}
+                      style={{
+                        marginBottom: 16,
+                        paddingBottom: 16,
+                        borderBottomWidth:
+                          index < bill.amendments.length - 1 ? 1 : 0,
+                        borderBottomColor: "#e0e0e0",
+                      }}
+                    >
+                      <Text
+                        style={[
+                          componentStyles.detailTitle,
+                          { marginBottom: 4 },
+                        ]}
+                      >
+                        {amendment.number}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: "#7B7C81",
+                          marginBottom: 8,
+                        }}
+                      >
+                        {amendment.type} •{" "}
+                        {new Date(
+                          amendment.latestAction?.actionDate ||
+                            amendment.updateDate,
+                        ).toLocaleDateString()}
+                      </Text>
+                      <Text style={componentStyles.summary}>
+                        {amendment.description ||
+                          amendment.purpose ||
+                          amendment.latestAction?.text ||
+                          "No description available"}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
           </>
         )}
 
@@ -822,7 +869,6 @@ export default function BillDetail() {
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
       />
-      {/* New List Progress Modal */}
       {/* New List Progress Modal */}
       <Modal
         visible={showNewListProgressModal}
