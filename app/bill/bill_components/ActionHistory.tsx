@@ -36,6 +36,7 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     <View
       style={{
         marginTop: -8,
+        marginBottom: 96,
       }}
     >
       <Pressable

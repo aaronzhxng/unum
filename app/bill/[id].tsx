@@ -24,7 +24,7 @@ import SortDropdown from "./bill_components/SortDropdown";
 import VotingCard from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
-// import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { storage } from "../utils/storage";
 
@@ -168,7 +168,10 @@ export default function BillDetail() {
         billsService.getActions(billId).catch(() => ({ actions: [] })),
       ]);
 
-      console.log("Actions result:", actionsResult);
+      console.log(
+        "Full actions response:",
+        JSON.stringify(actionsResult, null, 2),
+      );
 
       // Merge everything into bill data
       const enrichedBill = {
@@ -385,7 +388,7 @@ export default function BillDetail() {
     <View style={componentStyles.screen}>
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
-        {/* <Pressable
+        <Pressable
           onPress={async () => {
             await billCache.clearAll();
             await AsyncStorage.clear();
@@ -394,7 +397,7 @@ export default function BillDetail() {
           style={{ padding: 10, backgroundColor: "red", margin: 10 }}
         >
           <Text style={{ color: "white" }}>Clear All Cache (Debug)</Text>
-        </Pressable> */}
+        </Pressable>
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => ({
@@ -646,7 +649,7 @@ export default function BillDetail() {
 
             {/* Amendments Section */}
             <Pressable
-              style={componentStyles.section}
+              style={[componentStyles.section, { marginBottom: 96 }]}
               onPress={() => setShowAmendments(!showAmendments)}
             >
               <View
@@ -681,15 +684,26 @@ export default function BillDetail() {
         {activeTab === "actions" && (
           <ActionHistory
             actions={
-              bill.actions?.map((action: any) => ({
-                date: new Date(action.actionDate).toLocaleDateString("en-US", {
-                  month: "2-digit",
-                  day: "2-digit",
-                  year: "2-digit",
-                }),
-                chamber: action.sourceSystem?.name || "Congress",
-                description: action.text,
-              })) || []
+              Array.isArray(bill.actions)
+                ? bill.actions
+                    // Remove duplicates based on date + text combination
+                    .filter((action: any, index: number, arr: any[]) => {
+                      const key = `${action.actionDate}-${action.text}`;
+                      return (
+                        arr.findIndex(
+                          (a) => `${a.actionDate}-${a.text}` === key,
+                        ) === index
+                      );
+                    })
+                    .map((action: any) => ({
+                      date:
+                        action.actionDate.split("-").slice(1).join("/") +
+                        "/" +
+                        action.actionDate.split("-")[0].slice(2),
+                      chamber: action.sourceSystem?.name || "",
+                      description: action.text,
+                    }))
+                : []
             }
             selectedSort={selectedActionsSort}
             showSort={showActionsSort}

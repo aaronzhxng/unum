@@ -152,8 +152,6 @@ app.get("/api/bills/:billId/actions", async (req, res) => {
   try {
     const { billId } = req.params;
 
-    // billId format: "hr187" or "s2296"
-    // Extract type and number
     const match = billId.match(/^([a-z]+)(\d+)$/i);
     if (!match) {
       return res.status(400).json({ error: "Invalid bill ID format" });
@@ -162,16 +160,38 @@ app.get("/api/bills/:billId/actions", async (req, res) => {
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
-    const response = await axios.get(
-      `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/actions`,
-      {
-        headers: {
-          "X-Api-Key": process.env.CONGRESS_API_KEY,
-        },
-      },
-    );
+    // Fetch all pages of actions
+    let allActions: any[] = [];
+    let offset = 0;
+    const limit = 250; // Max allowed by API
+    let hasMore = true;
 
-    res.json(response.data);
+    while (hasMore) {
+      const response = await axios.get(
+        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/actions`,
+        {
+          headers: {
+            "X-Api-Key": process.env.CONGRESS_API_KEY,
+          },
+          params: {
+            offset,
+            limit,
+          },
+        },
+      );
+
+      const actions = response.data.actions || [];
+      allActions = allActions.concat(actions);
+
+      // Check if there are more pages
+      hasMore = response.data.pagination?.next != null;
+      offset += limit;
+    }
+
+    res.json({
+      actions: allActions,
+      pagination: { count: allActions.length },
+    });
   } catch (error) {
     console.error("Error fetching actions:", error);
     res.status(500).json({ error: "Failed to fetch bill actions" });
