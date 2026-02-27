@@ -317,6 +317,9 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       }
     }
 
+    console.log("Total actions found:", allActions.length);
+    console.log("Recorded votes found:", recordedVotes.length);
+
     if (recordedVotes.length === 0) {
       return res.json({ votes: [] });
     }
