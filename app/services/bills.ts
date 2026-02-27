@@ -50,4 +50,8 @@ export const billsService = {
   getVotes: async (billId: string): Promise<any> => {
     return apiClient.get(`/bills/${billId}/votes`);
   },
+
+  getCosponsors: async (billId: string): Promise<any> => {
+    return apiClient.get(`/bills/${billId}/cosponsors`);
+  },
 };

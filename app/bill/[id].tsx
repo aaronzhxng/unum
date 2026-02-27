@@ -24,7 +24,7 @@ import SortDropdown from "./bill_components/SortDropdown";
 import VotingCard from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { storage } from "../utils/storage";
 
@@ -388,7 +388,7 @@ export default function BillDetail() {
     <View style={componentStyles.screen}>
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
-        <Pressable
+        {/* <Pressable
           onPress={async () => {
             await billCache.clearAll();
             await AsyncStorage.clear();
@@ -397,7 +397,7 @@ export default function BillDetail() {
           style={{ padding: 10, backgroundColor: "red", margin: 10 }}
         >
           <Text style={{ color: "white" }}>Clear All Cache (Debug)</Text>
-        </Pressable>
+        </Pressable> */}
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => ({
@@ -912,7 +912,20 @@ export default function BillDetail() {
             actions={
               Array.isArray(bill.actions)
                 ? bill.actions
-                    // Remove duplicates based on date + text combination
+                    .filter((action: any) => {
+                      const source = action.sourceSystem?.name || "";
+                      const text = action.text?.toLowerCase() || "";
+                      if (!source.toLowerCase().includes("library of congress"))
+                        return true;
+                      // Keep important milestone actions even if from Library of Congress
+                      return (
+                        text.includes("signed by president") ||
+                        text.includes("presented to president") ||
+                        text.includes("became public law") ||
+                        text.includes("vetoed by president") ||
+                        text.includes("enacted")
+                      );
+                    })
                     .filter((action: any, index: number, arr: any[]) => {
                       const key = `${action.actionDate}-${action.text}`;
                       return (
@@ -921,14 +934,23 @@ export default function BillDetail() {
                         ) === index
                       );
                     })
-                    .map((action: any) => ({
-                      date:
-                        action.actionDate.split("-").slice(1).join("/") +
-                        "/" +
-                        action.actionDate.split("-")[0].slice(2),
-                      chamber: action.sourceSystem?.name || "",
-                      description: action.text,
-                    }))
+                    .map((action: any) => {
+                      const source = action.sourceSystem?.name || "";
+                      let chamber = source;
+                      if (source.toLowerCase().includes("house"))
+                        chamber = "House";
+                      else if (source.toLowerCase().includes("senate"))
+                        chamber = "Senate";
+                      else chamber = ""; // Library of Congress milestones get no chamber label
+                      return {
+                        date:
+                          action.actionDate.split("-").slice(1).join("/") +
+                          "/" +
+                          action.actionDate.split("-")[0].slice(2),
+                        chamber,
+                        description: action.text,
+                      };
+                    })
                 : []
             }
             selectedSort={selectedActionsSort}
