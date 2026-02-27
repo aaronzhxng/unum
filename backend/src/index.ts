@@ -317,9 +317,6 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       }
     }
 
-    console.log("Total actions found:", allActions.length);
-    console.log("Recorded votes found:", recordedVotes.length);
-
     if (recordedVotes.length === 0) {
       return res.json({ votes: [] });
     }
@@ -388,7 +385,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
           }
         }
 
-        result = get("vote_result");
+        result = get("vote_result").split("<")[0].trim();
         question = get("vote_question");
         title = get("vote_title") || title;
       } else {
@@ -457,9 +454,6 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
           timeout: 8000,
           responseType: "text",
         });
-        if (meta.chamber?.toLowerCase() === "senate") {
-          console.log("SENATE XML:", response.data.substring(0, 3000));
-        }
         return parseVoteXml(response.data, meta);
       }),
     );

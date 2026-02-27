@@ -38,6 +38,9 @@ const PartyBar = ({
   rep,
   ind,
   percent,
+  demCount,
+  repCount,
+  indCount,
 }: {
   label: string;
   total: number;
@@ -45,6 +48,9 @@ const PartyBar = ({
   rep: number;
   ind: number;
   percent: number;
+  demCount: number;
+  repCount: number;
+  indCount: number;
 }) => (
   <View style={{ gap: 6, marginBottom: 12 }}>
     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -92,10 +98,10 @@ const PartyBar = ({
       />
     </View>
     <View style={{ flexDirection: "row", gap: 12 }}>
-      <Text style={{ fontSize: 11, color: "#008CFF" }}>D: {dem}</Text>
-      <Text style={{ fontSize: 11, color: "#D45252" }}>R: {rep}</Text>
-      {ind > 0 && (
-        <Text style={{ fontSize: 11, color: "#9B8500" }}>I: {ind}</Text>
+      <Text style={{ fontSize: 11, color: "#008CFF" }}>D: {demCount}</Text>
+      <Text style={{ fontSize: 11, color: "#D45252" }}>R: {repCount}</Text>
+      {indCount > 0 && (
+        <Text style={{ fontSize: 11, color: "#9B8500" }}>I: {indCount}</Text>
       )}
     </View>
   </View>
@@ -163,6 +169,9 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
         rep={repYeaPct}
         ind={indYeaPct}
         percent={vote.yeaPercent}
+        demCount={vote.democratic.yea}
+        repCount={vote.republican.yea}
+        indCount={vote.independent.yea}
       />
       <PartyBar
         label="Nay"
@@ -171,6 +180,9 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
         rep={repNayPct}
         ind={indNayPct}
         percent={vote.nayPercent}
+        demCount={vote.democratic.nay}
+        repCount={vote.republican.nay}
+        indCount={vote.independent.nay}
       />
       {vote.total.present > 0 && (
         <PartyBar
@@ -180,6 +192,9 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
           rep={repPresPct}
           ind={0}
           percent={vote.presentPercent}
+          demCount={vote.democratic.present}
+          repCount={vote.republican.present}
+          indCount={vote.independent.present}
         />
       )}
       <PartyBar
@@ -189,6 +204,9 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
         rep={repNVPct}
         ind={0}
         percent={vote.notVotingPercent}
+        demCount={vote.democratic.notVoting}
+        repCount={vote.republican.notVoting}
+        indCount={vote.independent.notVoting}
       />
 
       {/* Legend */}
