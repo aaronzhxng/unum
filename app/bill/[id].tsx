@@ -47,6 +47,7 @@ export default function BillDetail() {
     useState("Most Viewed");
   const [enrichedAmendments, setEnrichedAmendments] = useState<any[]>([]);
   const [loadingAmendments, setLoadingAmendments] = useState(false);
+  const [amendmentOffset, setAmendmentOffset] = useState(0);
 
   const [isFiltered, setIsFiltered] = useState(false);
   const [showChamberModal, setShowChamberModal] = useState(false);
@@ -302,25 +303,32 @@ export default function BillDetail() {
       bill.amendments.length === 0 ||
       enrichedAmendments.length > 0
     ) {
-      return; // Already loaded or no amendments
+      return;
     }
 
     setLoadingAmendments(true);
 
     try {
-      // Fetch details for all amendments in parallel (limit to first 20 to avoid timeout)
-      const amendmentsToFetch = bill.amendments.slice(0, 20); // Limit for performance
+      // Sort by amendment number first, then take first 20
+      const sortedAmendments = [...bill.amendments].sort((a: any, b: any) => {
+        const numA = parseInt(a.number || "0");
+        const numB = parseInt(b.number || "0");
+        return numB - numA; // Descending (newest first)
+      });
 
-      const detailsPromises = amendmentsToFetch.map(
-        (amendment: any) =>
-          billsService
-            .getAmendmentDetails(amendment.type.toLowerCase(), amendment.number)
-            .catch(() => null), // Return null if fetch fails
+      const amendmentsToFetch = sortedAmendments.slice(
+        amendmentOffset,
+        amendmentOffset + 20,
+      );
+
+      const detailsPromises = amendmentsToFetch.map((amendment: any) =>
+        billsService
+          .getAmendmentDetails(amendment.type.toLowerCase(), amendment.number)
+          .catch(() => null),
       );
 
       const results = await Promise.all(detailsPromises);
 
-      // Filter out failed fetches and extract amendment data
       const enriched = results
         .filter((r) => r?.amendment)
         .map((r) => r.amendment);
@@ -331,6 +339,15 @@ export default function BillDetail() {
     } finally {
       setLoadingAmendments(false);
     }
+  };
+
+  const formatAmendmentNumber = (type: string, number: string) => {
+    // Convert SAMDT -> S.Amdt., HAMDT -> H.Amdt.
+    const formattedType = type
+      .replace("SAMDT", "S.Amdt.")
+      .replace("HAMDT", "HR.Amdt.");
+
+    return `${formattedType}${number}`;
   };
 
   // Mock related bills/officials for tabs
@@ -805,47 +822,98 @@ export default function BillDetail() {
                       Loading amendment details...
                     </Text>
                   ) : enrichedAmendments.length > 0 ? (
-                    enrichedAmendments
-                      .sort((a: any, b: any) => {
-                        const numA = parseInt(a.number || "0");
-                        const numB = parseInt(b.number || "0");
-                        return numB - numA;
-                      })
-                      .map((amendment: any, index: number) => (
-                        <View
-                          key={amendment.number || index}
-                          style={componentStyles.amendmentItem}
-                        >
+                    <>
+                      {enrichedAmendments
+                        .sort((a: any, b: any) => {
+                          const numA = parseInt(a.number || "0");
+                          const numB = parseInt(b.number || "0");
+                          return numB - numA;
+                        })
+                        .map((amendment: any, index: number) => (
                           <View
-                            style={componentStyles.amendmentTitleandSponsor}
+                            key={amendment.number || index}
+                            style={componentStyles.amendmentItem}
                           >
-                            <Text style={componentStyles.detailTitle}>
-                              {amendment.type} {amendment.number}
+                            <View
+                              style={componentStyles.amendmentTitleandSponsor}
+                            >
+                              <Text style={componentStyles.detailTitle}>
+                                {formatAmendmentNumber(
+                                  amendment.type,
+                                  amendment.number,
+                                )}
+                                {amendment.amendedAmendment && (
+                                  <Text style={{ fontWeight: "400" }}>
+                                    {" to "}
+                                    {formatAmendmentNumber(
+                                      amendment.amendedAmendment.type,
+                                      amendment.amendedAmendment.number,
+                                    )}
+                                  </Text>
+                                )}
+                              </Text>
+                              {amendment.sponsors && amendment.sponsors[0] && (
+                                <Text style={componentStyles.amendmentSponsor}>
+                                  {`${amendment.sponsors[0].firstName || ""} ${amendment.sponsors[0].lastName || ""} [${amendment.sponsors[0].party || "?"}-${amendment.sponsors[0].state || "?"}]`}
+                                </Text>
+                              )}
+                            </View>
+
+                            {/* Date and Purpose */}
+                            <Text style={componentStyles.amendmentSummary}>
+                              {amendment.submittedDate
+                                ? new Date(
+                                    amendment.submittedDate,
+                                  ).toLocaleDateString("en-US", {
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    year: "numeric",
+                                  })
+                                : "Date unavailable"}{" "}
+                              ·{" "}
+                              {amendment.purpose ||
+                                amendment.amendedAmendment?.purpose ||
+                                "Description not yet available"}
                             </Text>
-                            {amendment.sponsors && amendment.sponsors[0] && (
-                              <Text style={componentStyles.amendmentSponsor}>
-                                {`${amendment.sponsors[0].firstName || ""} ${amendment.sponsors[0].lastName || ""} [${amendment.sponsors[0].party || "?"}-${amendment.sponsors[0].state || "?"}]`}
+
+                            {/* Latest Action (bold, separate line) */}
+                            {amendment.latestAction?.text && (
+                              <Text
+                                style={[
+                                  componentStyles.amendmentSummary,
+                                  {
+                                    fontWeight: "500",
+                                    color: "#000",
+                                    marginTop: 4,
+                                  },
+                                ]}
+                              >
+                                {amendment.latestAction.text}
                               </Text>
                             )}
                           </View>
-                          <Text style={componentStyles.amendmentSummary}>
-                            {amendment.proposedDate
-                              ? new Date(
-                                  amendment.proposedDate,
-                                ).toLocaleDateString("en-US", {
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  year: "numeric",
-                                })
-                              : "Date unavailable"}{" "}
-                            ·{" "}
-                            {amendment.description ||
-                              amendment.purpose ||
-                              amendment.latestAction?.text ||
-                              "No description available"}
+                        ))}
+                      {enrichedAmendments.length < bill.amendments.length && (
+                        <Pressable
+                          onPress={() => {
+                            setAmendmentOffset((prev) => prev + 20);
+                            fetchAmendmentDetails();
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: "#008CFF",
+                              textAlign: "center",
+                              padding: 16,
+                            }}
+                          >
+                            Load More (
+                            {bill.amendments.length - enrichedAmendments.length}{" "}
+                            remaining)
                           </Text>
-                        </View>
-                      ))
+                        </Pressable>
+                      )}
+                    </>
                   ) : (
                     <Text
                       style={{
