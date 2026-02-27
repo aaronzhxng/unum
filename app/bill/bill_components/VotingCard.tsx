@@ -1,356 +1,263 @@
 import React from "react";
-import { Image, Text, View } from "react-native";
-import { styles as componentStyles } from "../styles"; // Adjust path if needed
+import { Text, View } from "react-native";
+import { styles as componentStyles } from "../styles";
 
-interface Vote {
-  name: string;
-  role: string;
-  party: string;
-  vote: "Yea" | "Nay" | "Not Voting";
-  photo: any;
+interface PartyVotes {
+  yea: number;
+  nay: number;
+  present: number;
+  notVoting: number;
+}
+
+interface VoteData {
+  chamber: string;
+  date: string;
+  question: string;
+  result: string;
+  title: string;
+  democratic: PartyVotes;
+  republican: PartyVotes;
+  independent: PartyVotes;
+  total: { yea: number; nay: number; present: number; notVoting: number };
+  yeaPercent: number;
+  nayPercent: number;
+  presentPercent: number;
+  notVotingPercent: number;
+  rollNumber?: number; // ← add this
 }
 
 interface VotingCardProps {
-  chamberDate: string;
-  votes: {
-    yea: number;
-    yeaDem: number;
-    yeaRep: number;
-    yeaInd: number;
-    nay: number;
-    nayDem: number;
-    nayRep: number;
-    nayInd: number;
-    present: number;
-    presentDem: number;
-    presentRep: number;
-    presentInd: number;
-    notVoting: number;
-    notVotingDem: number;
-    notVotingRep: number;
-    notVotingInd: number;
-    yeaPercent: number;
-    nayPercent: number;
-    presentPercent: number;
-    notVotingPercent: number;
-    voters: Vote[];
-  };
+  votes: VoteData[];
+  isLoading?: boolean;
 }
 
-const VotingCard: React.FC<VotingCardProps> = ({ chamberDate, votes }) => {
-  const dummyData = {
-    chamberDate: "US Senate - 2/27/25",
-    votes: {
-      yea: 52,
-      yeaDem: 20,
-      yeaRep: 31,
-      yeaInd: 1,
-      nay: 47,
-      nayDem: 45,
-      nayRep: 1,
-      nayInd: 1,
-      present: 0,
-      presentDem: 0,
-      presentRep: 0,
-      presentInd: 0,
-      notVoting: 1,
-      notVotingDem: 1,
-      notVotingRep: 1,
-      notVotingInd: 1,
-      yeaPercent: 50,
-      nayPercent: 47,
-      presentPercent: 0,
-      notVotingPercent: 1,
-      voters: [
-        {
-          name: "Chuck Schumer",
-          party: "D",
-          role: "Majority Leader, Senator, NY",
-          vote: "Nay" as const,
-          photo: require("../../../assets/officials_images/c_schumer.jpg"), // Add your assets
-        },
-        {
-          name: "Kirsten Gillibrand",
-          party: "D",
-          role: "Senator, New York",
-          vote: "Nay" as const,
-          photo: require("../../../assets/officials_images/k_gillibrand.webp"), // Add your assets
-        },
-      ],
-    },
-  };
+const PartyBar = ({
+  label,
+  total,
+  dem,
+  rep,
+  ind,
+  percent,
+}: {
+  label: string;
+  total: number;
+  dem: number;
+  rep: number;
+  ind: number;
+  percent: number;
+}) => (
+  <View style={{ gap: 6, marginBottom: 12 }}>
+    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <Text style={[componentStyles.detailInfo, { color: "#000" }]}>
+        {label} ({total})
+      </Text>
+      <Text style={[componentStyles.detailInfo, { color: "#7B7C81" }]}>
+        {percent}%
+      </Text>
+    </View>
+    <View
+      style={{
+        height: 24,
+        backgroundColor: "#E5E7EB",
+        borderRadius: 6,
+        overflow: "hidden",
+      }}
+    >
+      <View
+        style={{
+          height: "100%",
+          width: `${dem}%`,
+          backgroundColor: "#008CFF",
+          position: "absolute",
+          left: 0,
+        }}
+      />
+      <View
+        style={{
+          height: "100%",
+          width: `${rep}%`,
+          backgroundColor: "#D45252",
+          position: "absolute",
+          left: `${dem}%`,
+        }}
+      />
+      <View
+        style={{
+          height: "100%",
+          width: `${ind}%`,
+          backgroundColor: "#FFE627",
+          position: "absolute",
+          left: `${dem + rep}%`,
+        }}
+      />
+    </View>
+    <View style={{ flexDirection: "row", gap: 12 }}>
+      <Text style={{ fontSize: 11, color: "#008CFF" }}>D: {dem}</Text>
+      <Text style={{ fontSize: 11, color: "#D45252" }}>R: {rep}</Text>
+      {ind > 0 && (
+        <Text style={{ fontSize: 11, color: "#9B8500" }}>I: {ind}</Text>
+      )}
+    </View>
+  </View>
+);
+
+const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
+  const grandTotal =
+    vote.total.yea +
+      vote.total.nay +
+      vote.total.present +
+      vote.total.notVoting || 1;
+
+  const demYeaPct = Math.round((vote.democratic.yea / grandTotal) * 100);
+  const repYeaPct = Math.round((vote.republican.yea / grandTotal) * 100);
+  const indYeaPct = Math.round((vote.independent.yea / grandTotal) * 100);
+
+  const demNayPct = Math.round((vote.democratic.nay / grandTotal) * 100);
+  const repNayPct = Math.round((vote.republican.nay / grandTotal) * 100);
+  const indNayPct = Math.round((vote.independent.nay / grandTotal) * 100);
+
+  const demPresPct = Math.round((vote.democratic.present / grandTotal) * 100);
+  const repPresPct = Math.round((vote.republican.present / grandTotal) * 100);
+
+  const demNVPct = Math.round((vote.democratic.notVoting / grandTotal) * 100);
+  const repNVPct = Math.round((vote.republican.notVoting / grandTotal) * 100);
+
+  const resultColor =
+    vote.result?.toLowerCase().includes("pass") ||
+    vote.result?.toLowerCase().includes("agreed")
+      ? "#16a34a"
+      : vote.result?.toLowerCase().includes("fail") ||
+          vote.result?.toLowerCase().includes("rejected")
+        ? "#dc2626"
+        : "#535353";
 
   return (
-    <View style={[componentStyles.section, { marginBottom: 4, gap: 16 }]}>
+    <View style={[componentStyles.section, { marginBottom: 12, gap: 12 }]}>
       {/* Header */}
-      <Text
-        style={[componentStyles.detailTitle, { fontSize: 16, fontWeight: 600 }]}
-      >
-        {dummyData.chamberDate}
-      </Text>
+      <View style={{ gap: 4 }}>
+        <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>
+          {vote.chamber} ·{" "}
+          {new Date(vote.date).toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          })}
+        </Text>
+        {vote.question ? (
+          <Text style={{ fontSize: 13, color: "#535353" }}>
+            {vote.question}
+          </Text>
+        ) : null}
+        {vote.result ? (
+          <Text style={{ fontSize: 13, fontWeight: "600", color: resultColor }}>
+            {vote.result}
+          </Text>
+        ) : null}
+      </View>
 
-      {/* Voters List */}
-      {dummyData.votes.voters.map((voter, index) => (
-        <View
-          key={index}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 0,
-            marginBottom: 12,
-          }}
-        >
-          <Image
-            source={voter.photo}
-            style={[
-              componentStyles.avatar,
-              {
-                width: 60,
-                height: 60,
-                borderRadius: 36,
-                borderWidth: 3,
-                borderColor: "#008CFF",
-              },
-            ]}
-          />
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text
-              style={[
-                componentStyles.detailTitle,
-                { fontSize: 16, fontWeight: 600 },
-              ]}
-            >
-              {voter.name}
-            </Text>
-            <Text
-              style={[
-                componentStyles.detailInfo,
-                { fontSize: 12, color: "#7B7C81", width: 1000 },
-              ]}
-            >
-              {`${voter.party} · ${voter.role}`}
-            </Text>
-          </View>
-          <Text
-            style={[
-              componentStyles.detailTitle,
-              {
-                fontSize: 14,
-                borderWidth: 1,
-                borderColor: "#7B7C81",
-                borderRadius: 8,
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-              },
-            ]}
-          >
-            {voter.vote}
-          </Text>
-        </View>
-      ))}
+      {/* Bars */}
+      <PartyBar
+        label="Yea"
+        total={vote.total.yea}
+        dem={demYeaPct}
+        rep={repYeaPct}
+        ind={indYeaPct}
+        percent={vote.yeaPercent}
+      />
+      <PartyBar
+        label="Nay"
+        total={vote.total.nay}
+        dem={demNayPct}
+        rep={repNayPct}
+        ind={indNayPct}
+        percent={vote.nayPercent}
+      />
+      {vote.total.present > 0 && (
+        <PartyBar
+          label="Present"
+          total={vote.total.present}
+          dem={demPresPct}
+          rep={repPresPct}
+          ind={0}
+          percent={vote.presentPercent}
+        />
+      )}
+      <PartyBar
+        label="Not Voting"
+        total={vote.total.notVoting}
+        dem={demNVPct}
+        rep={repNVPct}
+        ind={0}
+        percent={vote.notVotingPercent}
+      />
 
-      {/* Progress Bars */}
-      <View style={{ gap: 16 }}>
-        <View
-          style={[
-            componentStyles.detailTitleRow,
-            { justifyContent: "space-between" },
-          ]}
-        >
-          <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
-            Yea ({dummyData.votes.yea})
-          </Text>
-          <Text style={[componentStyles.detailInfo, { color: "#7B7C81" }]}>
-            {dummyData.votes.yeaPercent}%
-          </Text>
-        </View>
-        <View
-          style={{
-            height: 24,
-            backgroundColor: "#E5E7EB",
-            borderRadius: 6,
-            overflow: "hidden",
-          }}
-        >
+      {/* Legend */}
+      <View style={{ flexDirection: "row", gap: 16, marginTop: 4 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View
             style={{
-              height: "100%",
-              width: `${dummyData.votes.yeaDem}%`,
+              width: 10,
+              height: 10,
+              borderRadius: 2,
               backgroundColor: "#008CFF",
-              position: "absolute",
-              left: 0,
             }}
           />
+          <Text style={{ fontSize: 11, color: "#535353" }}>Democrat</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View
             style={{
-              height: "100%",
-              width: `${dummyData.votes.yeaRep}%`,
+              width: 10,
+              height: 10,
+              borderRadius: 2,
               backgroundColor: "#D45252",
-              position: "absolute",
-              left: `${dummyData.votes.yeaDem}%`,
             }}
           />
+          <Text style={{ fontSize: 11, color: "#535353" }}>Republican</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View
             style={{
-              height: "100%",
-              width: `${dummyData.votes.yeaInd}%`,
+              width: 10,
+              height: 10,
+              borderRadius: 2,
               backgroundColor: "#FFE627",
-              position: "absolute",
-              left: `${dummyData.votes.yeaDem + dummyData.votes.yeaRep}%`,
             }}
           />
-        </View>
-
-        <View
-          style={[
-            componentStyles.detailTitleRow,
-            { justifyContent: "space-between" },
-          ]}
-        >
-          <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
-            Nay ({dummyData.votes.nay})
-          </Text>
-          <Text style={[componentStyles.detailInfo, { color: "#7B7C81" }]}>
-            {dummyData.votes.nayPercent}%
-          </Text>
-        </View>
-        <View
-          style={{
-            height: 24,
-            backgroundColor: "#E5E7EB",
-            borderRadius: 6,
-            overflow: "hidden",
-          }}
-        >
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.nayDem}%`,
-              backgroundColor: "#008CFF",
-              position: "absolute",
-              left: 0,
-            }}
-          />
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.nayRep}%`,
-              backgroundColor: "#D45252",
-              position: "absolute",
-              left: `${dummyData.votes.nayDem}%`,
-            }}
-          />
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.yeaInd}%`,
-              backgroundColor: "#FFE627",
-              position: "absolute",
-              left: `${dummyData.votes.nayDem + dummyData.votes.nayRep}%`,
-            }}
-          />
-        </View>
-
-        <View
-          style={[
-            componentStyles.detailTitleRow,
-            { justifyContent: "space-between" },
-          ]}
-        >
-          <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
-            Present ({dummyData.votes.present})
-          </Text>
-          <Text style={[componentStyles.detailInfo, { color: "#7B7C81" }]}>
-            {dummyData.votes.presentPercent}%
-          </Text>
-        </View>
-        <View
-          style={{
-            height: 24,
-            backgroundColor: "#E5E7EB",
-            borderRadius: 6,
-            overflow: "hidden",
-          }}
-        >
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.presentDem}%`,
-              backgroundColor: "#008CFF",
-              position: "absolute",
-              left: 0,
-            }}
-          />
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.presentRep}%`,
-              backgroundColor: "#D45252",
-              position: "absolute",
-              left: `${dummyData.votes.presentDem}%`,
-            }}
-          />
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.presentInd}%`,
-              backgroundColor: "#FFE627",
-              position: "absolute",
-              left: `${dummyData.votes.presentDem + dummyData.votes.presentRep}%`,
-            }}
-          />
-        </View>
-
-        <View
-          style={[
-            componentStyles.detailTitleRow,
-            { justifyContent: "space-between" },
-          ]}
-        >
-          <Text style={[componentStyles.detailInfo, { color: "#000000" }]}>
-            Not Voting ({dummyData.votes.notVoting})
-          </Text>
-          <Text style={[componentStyles.detailInfo, { color: "#7B7C81" }]}>
-            {dummyData.votes.notVotingPercent}%
-          </Text>
-        </View>
-        <View
-          style={{
-            height: 24,
-            backgroundColor: "#E5E7EB",
-            borderRadius: 6,
-            overflow: "hidden",
-          }}
-        >
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.notVotingDem}%`,
-              backgroundColor: "#008CFF",
-              position: "absolute",
-              left: 0,
-            }}
-          />
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.notVotingRep}%`,
-              backgroundColor: "#D45252",
-              position: "absolute",
-              left: `${dummyData.votes.notVotingDem}%`,
-            }}
-          />
-          <View
-            style={{
-              height: "100%",
-              width: `${dummyData.votes.notVotingInd}%`,
-              backgroundColor: "#FFE627",
-              position: "absolute",
-              left: `${dummyData.votes.notVotingDem + dummyData.votes.notVotingRep}%`,
-            }}
-          />
+          <Text style={{ fontSize: 11, color: "#535353" }}>Independent</Text>
         </View>
       </View>
+    </View>
+  );
+};
+
+const VotingCard: React.FC<VotingCardProps> = ({ votes, isLoading }) => {
+  if (isLoading) {
+    return (
+      <View style={{ padding: 40, alignItems: "center" }}>
+        <Text style={{ color: "#7B7C81" }}>Loading vote data...</Text>
+      </View>
+    );
+  }
+
+  if (!votes || votes.length === 0) {
+    return (
+      <View style={{ padding: 40, alignItems: "center" }}>
+        <Text style={{ color: "#7B7C81" }}>
+          No recorded votes for this bill.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View>
+      {votes.map((vote, i) => (
+        <SingleVoteCard
+          key={`${vote.chamber}-${vote.rollNumber ?? i}`}
+          vote={vote}
+        />
+      ))}
     </View>
   );
 };

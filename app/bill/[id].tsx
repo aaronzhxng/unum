@@ -235,6 +235,13 @@ export default function BillDetail() {
     retryDelay: 1000,
   });
 
+  const { data: votesData, isLoading: votesLoading } = useQuery({
+    queryKey: ["billVotes", id],
+    queryFn: () => billsService.getVotes(id as string),
+    enabled: !!id && activeTab === "voting", // only fetch when tab is active
+    retry: 1,
+  });
+
   const bill = data?.bill;
 
   const filteredOfficials = useMemo(() => {
@@ -297,29 +304,18 @@ export default function BillDetail() {
     return types[typeCode.toUpperCase()] || `${chamber} Bill`;
   };
 
-  const fetchAmendmentDetails = async () => {
-    if (
-      !bill.amendments ||
-      bill.amendments.length === 0 ||
-      enrichedAmendments.length > 0
-    ) {
-      return;
-    }
+  const fetchAmendmentDetails = async (offset = 0) => {
+    if (!bill.amendments || bill.amendments.length === 0) return;
+    if (offset === 0 && enrichedAmendments.length > 0) return; // only skip on initial load
 
     setLoadingAmendments(true);
 
     try {
-      // Sort by amendment number first, then take first 20
       const sortedAmendments = [...bill.amendments].sort((a: any, b: any) => {
-        const numA = parseInt(a.number || "0");
-        const numB = parseInt(b.number || "0");
-        return numB - numA; // Descending (newest first)
+        return parseInt(b.number || "0") - parseInt(a.number || "0");
       });
 
-      const amendmentsToFetch = sortedAmendments.slice(
-        amendmentOffset,
-        amendmentOffset + 20,
-      );
+      const amendmentsToFetch = sortedAmendments.slice(offset, offset + 20);
 
       const detailsPromises = amendmentsToFetch.map((amendment: any) =>
         billsService
@@ -328,12 +324,15 @@ export default function BillDetail() {
       );
 
       const results = await Promise.all(detailsPromises);
-
       const enriched = results
         .filter((r) => r?.amendment)
         .map((r) => r.amendment);
 
-      setEnrichedAmendments(enriched);
+      // Append instead of replace
+      setEnrichedAmendments((prev) =>
+        offset === 0 ? enriched : [...prev, ...enriched],
+      );
+      setAmendmentOffset(offset + 20);
     } catch (error) {
       console.error("Error fetching amendment details:", error);
     } finally {
@@ -704,7 +703,7 @@ export default function BillDetail() {
                 onPress={() => {
                   setShowAmendments(!showAmendments);
                   if (!showAmendments) {
-                    fetchAmendmentDetails(); // Fetch when expanding
+                    fetchAmendmentDetails(0);
                   }
                 }}
               >
@@ -811,17 +810,7 @@ export default function BillDetail() {
               {/* List with REAL amendment data */}
               {showAmendments && (
                 <View style={componentStyles.expandedAmendments}>
-                  {loadingAmendments ? (
-                    <Text
-                      style={{
-                        textAlign: "center",
-                        padding: 20,
-                        color: "#7B7C81",
-                      }}
-                    >
-                      Loading amendment details...
-                    </Text>
-                  ) : enrichedAmendments.length > 0 ? (
+                  {enrichedAmendments.length > 0 ? (
                     <>
                       {enrichedAmendments
                         .sort((a: any, b: any) => {
@@ -895,10 +884,7 @@ export default function BillDetail() {
                         ))}
                       {enrichedAmendments.length < bill.amendments.length && (
                         <Pressable
-                          onPress={() => {
-                            setAmendmentOffset((prev) => prev + 20);
-                            fetchAmendmentDetails();
-                          }}
+                          onPress={() => fetchAmendmentDetails(amendmentOffset)}
                         >
                           <Text
                             style={{
@@ -913,7 +899,28 @@ export default function BillDetail() {
                           </Text>
                         </Pressable>
                       )}
+                      {loadingAmendments && (
+                        <Text
+                          style={{
+                            textAlign: "center",
+                            padding: 12,
+                            color: "#7B7C81",
+                          }}
+                        >
+                          Loading more...
+                        </Text>
+                      )}
                     </>
+                  ) : loadingAmendments ? (
+                    <Text
+                      style={{
+                        textAlign: "center",
+                        padding: 20,
+                        color: "#7B7C81",
+                      }}
+                    >
+                      Loading amendment details...
+                    </Text>
                   ) : (
                     <Text
                       style={{
@@ -933,12 +940,7 @@ export default function BillDetail() {
 
         {/* Voting Tab */}
         {activeTab === "voting" && (
-          <View>
-            <VotingCard
-              chamberDate={voteData.chamberDate}
-              votes={voteData.votes}
-            />
-          </View>
+          <VotingCard votes={votesData?.votes ?? []} isLoading={votesLoading} />
         )}
 
         {/* Actions Tab */}

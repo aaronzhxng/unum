@@ -268,3 +268,196 @@ app.get("/api/amendments/:amendmentType/:amendmentNumber", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch amendment details" });
   }
 });
+
+// Get bill votes (parsed from recorded vote XML URLs in actions)
+app.get("/api/bills/:billId/votes", async (req, res) => {
+  try {
+    const { billId } = req.params;
+
+    const match = billId.match(/^([a-z]+)(\d+)$/i);
+    if (!match) {
+      return res.status(400).json({ error: "Invalid bill ID format" });
+    }
+
+    const billType = match[1].toLowerCase();
+    const billNumber = match[2];
+
+    // Step 1: Fetch all actions to find recordedVotes URLs
+    let allActions: any[] = [];
+    let offset = 0;
+    const limit = 250;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await axios.get(
+        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/actions`,
+        {
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { offset, limit },
+        },
+      );
+      allActions = allActions.concat(response.data.actions || []);
+      hasMore = response.data.pagination?.next != null;
+      offset += limit;
+    }
+
+    // Step 2: Extract all recordedVote entries
+    const recordedVotes: any[] = [];
+    for (const action of allActions) {
+      if (action.recordedVotes?.length) {
+        for (const vote of action.recordedVotes) {
+          recordedVotes.push({
+            url: vote.url,
+            chamber: vote.chamber,
+            date: vote.date,
+            rollNumber: vote.rollNumber,
+            actionText: action.text,
+          });
+        }
+      }
+    }
+
+    if (recordedVotes.length === 0) {
+      return res.json({ votes: [] });
+    }
+
+    // Deduplicate by rollNumber + chamber
+    const seen = new Set<string>();
+    const uniqueVotes = recordedVotes.filter((v) => {
+      const key = `${v.chamber}-${v.rollNumber}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Step 3: Fetch and parse each XML vote
+    const parseVoteXml = (xml: string, meta: any) => {
+      // Helper to extract tag content
+      const get = (tag: string) => {
+        const m = xml.match(
+          new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"),
+        );
+        return m ? m[1].trim() : "";
+      };
+      const getAttr = (tag: string, attr: string) => {
+        const m = xml.match(new RegExp(`<${tag}[^>]*${attr}="([^"]*)"`, "i"));
+        return m ? m[1] : "";
+      };
+
+      // Party vote counts — structure differs between Senate and House XML
+      const isSenate =
+        meta.chamber?.toLowerCase() === "senate" ||
+        meta.url?.includes("senate.gov");
+
+      let dem = { yea: 0, nay: 0, present: 0, notVoting: 0 };
+      let rep = { yea: 0, nay: 0, present: 0, notVoting: 0 };
+      let ind = { yea: 0, nay: 0, present: 0, notVoting: 0 };
+      let title = meta.actionText || "";
+      let result = "";
+      let question = "";
+
+      if (isSenate) {
+        // Senate XML: <count> blocks with <party> D/R/I and <yeas>/<nays>/<present>/<not_voting>
+        const countBlocks = [...xml.matchAll(/<count>([\s\S]*?)<\/count>/gi)];
+        for (const block of countBlocks) {
+          const inner = block[1];
+          const party =
+            inner.match(/<party>(.*?)<\/party>/i)?.[1]?.trim() ?? "";
+          const yea = parseInt(inner.match(/<yeas>(\d+)<\/yeas>/i)?.[1] ?? "0");
+          const nay = parseInt(inner.match(/<nays>(\d+)<\/nays>/i)?.[1] ?? "0");
+          const present = parseInt(
+            inner.match(/<present>(\d+)<\/present>/i)?.[1] ?? "0",
+          );
+          const notVoting = parseInt(
+            inner.match(/<absent>(\d+)<\/absent>/i)?.[1] ?? "0",
+          );
+
+          if (party === "D") dem = { yea, nay, present, notVoting };
+          else if (party === "R") rep = { yea, nay, present, notVoting };
+          else if (party === "I") ind = { yea, nay, present, notVoting };
+        }
+        result = get("vote_result") || get("result");
+        question = get("vote_question") || get("question");
+        title = get("vote_title") || title;
+      } else {
+        // House XML: <vote-data> with <recorded-vote> entries, party totals in <vote-totals>
+        const totalBlocks = [
+          ...xml.matchAll(/<totals-by-party>([\s\S]*?)<\/totals-by-party>/gi),
+        ];
+        for (const block of totalBlocks) {
+          const inner = block[1];
+          const party =
+            inner.match(/<party>(.*?)<\/party>/i)?.[1]?.trim() ?? "";
+          const yea = parseInt(
+            inner.match(/<yea-total>(\d+)<\/yea-total>/i)?.[1] ?? "0",
+          );
+          const nay = parseInt(
+            inner.match(/<nay-total>(\d+)<\/nay-total>/i)?.[1] ?? "0",
+          );
+          const present = parseInt(
+            inner.match(/<present-total>(\d+)<\/present-total>/i)?.[1] ?? "0",
+          );
+          const notVoting = parseInt(
+            inner.match(/<not-voting-total>(\d+)<\/not-voting-total>/i)?.[1] ??
+              "0",
+          );
+
+          if (party === "Democratic") dem = { yea, nay, present, notVoting };
+          else if (party === "Republican")
+            rep = { yea, nay, present, notVoting };
+          else if (party === "Independent")
+            ind = { yea, nay, present, notVoting };
+        }
+        result = get("vote-result") || get("ActionResult");
+        question = get("vote-question") || get("VoteQuestion");
+        title = get("legis-name") || get("vote-desc") || title;
+      }
+
+      const total = {
+        yea: dem.yea + rep.yea + ind.yea,
+        nay: dem.nay + rep.nay + ind.nay,
+        present: dem.present + rep.present + ind.present,
+        notVoting: dem.notVoting + rep.notVoting + ind.notVoting,
+      };
+      const grandTotal =
+        total.yea + total.nay + total.present + total.notVoting || 1;
+
+      return {
+        chamber: meta.chamber,
+        date: meta.date,
+        rollNumber: meta.rollNumber,
+        question,
+        result,
+        title,
+        democratic: dem,
+        republican: rep,
+        independent: ind,
+        total,
+        yeaPercent: Math.round((total.yea / grandTotal) * 100),
+        nayPercent: Math.round((total.nay / grandTotal) * 100),
+        presentPercent: Math.round((total.present / grandTotal) * 100),
+        notVotingPercent: Math.round((total.notVoting / grandTotal) * 100),
+      };
+    };
+
+    const voteResults = await Promise.allSettled(
+      uniqueVotes.map(async (meta) => {
+        const response = await axios.get(meta.url, {
+          timeout: 8000,
+          responseType: "text",
+        });
+        // console.log("VOTE XML SAMPLE:", response.data.substring(0, 2000));
+        return parseVoteXml(response.data, meta);
+      }),
+    );
+
+    const votes = voteResults
+      .filter((r) => r.status === "fulfilled")
+      .map((r) => (r as PromiseFulfilledResult<any>).value);
+
+    res.json({ votes });
+  } catch (error) {
+    console.error("Error fetching votes:", error);
+    res.status(500).json({ error: "Failed to fetch vote data" });
+  }
+});

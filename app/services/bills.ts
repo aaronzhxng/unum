@@ -46,4 +46,8 @@ export const billsService = {
   ): Promise<any> => {
     return apiClient.get(`/amendments/${amendmentType}/${amendmentNumber}`);
   },
+
+  getVotes: async (billId: string): Promise<any> => {
+    return apiClient.get(`/bills/${billId}/votes`);
+  },
 };
