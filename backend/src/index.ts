@@ -247,3 +247,24 @@ app.get("/api/bills/:billId/amendments", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch bill amendments" });
   }
 });
+
+// Get single amendment details
+app.get("/api/amendments/:amendmentType/:amendmentNumber", async (req, res) => {
+  try {
+    const { amendmentType, amendmentNumber } = req.params;
+
+    const response = await axios.get(
+      `https://api.congress.gov/v3/amendment/119/${amendmentType.toLowerCase()}/${amendmentNumber}`,
+      {
+        headers: {
+          "X-Api-Key": process.env.CONGRESS_API_KEY,
+        },
+      },
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching amendment:", error);
+    res.status(500).json({ error: "Failed to fetch amendment details" });
+  }
+});

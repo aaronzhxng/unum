@@ -45,6 +45,9 @@ export default function BillDetail() {
   const [showAmendmentsSort, setShowAmendmentsSort] = useState(false);
   const [selectedAmendmentsSort, setSelectedAmendmentsSort] =
     useState("Most Viewed");
+  const [enrichedAmendments, setEnrichedAmendments] = useState<any[]>([]);
+  const [loadingAmendments, setLoadingAmendments] = useState(false);
+
   const [isFiltered, setIsFiltered] = useState(false);
   const [showChamberModal, setShowChamberModal] = useState(false);
   const [selectedChamber, setSelectedChamber] = useState(["Bills"]);
@@ -155,70 +158,80 @@ export default function BillDetail() {
       const cached = await billCache.getBill(billId);
 
       if (cached) {
-        console.log("Using cached bill data for", billId);
+        // console.log("Using cached bill data for", billId);
         return { bill: cached };
       }
 
-      console.log("Fetching bill from API:", billId);
-      console.log("Bill amendments metadata:", bill.amendments);
+      // console.log("Fetching bill from API:", billId);
 
-      try {
-        // Fetch bill details, summaries, actions, and amendments in parallel
-        const [billResult, summariesResult, actionsResult, amendmentsResult] =
-          await Promise.all([
-            billsService.getById(billId),
-            billsService.getSummaries(billId).catch((err) => {
-              console.log("Summaries fetch error:", err.message);
-              return { summaries: [] };
-            }),
-            billsService.getActions(billId).catch((err) => {
-              console.log("Actions fetch error:", err.message);
-              return { actions: [] };
-            }),
-            billsService.getAmendments(billId).catch((err) => {
-              console.log("Amendments fetch error:", err.message);
-              return { amendments: [] };
-            }),
-          ]);
+      // CRITICAL: Fetch bill details first, THEN fetch the rest
+      const billResult = await billsService.getById(billId);
 
-        console.log("Bill fetched successfully");
-        console.log("Amendments result:", amendmentsResult);
+      if (!billResult?.bill) {
+        throw new Error("Bill not found");
+      }
 
-        // Merge everything into bill data
-        const enrichedBill = {
-          ...billResult.bill,
-          summaries: summariesResult.summaries || [],
-          actions: actionsResult.actions || [],
-          amendments: amendmentsResult.amendments || [],
-        };
+      // console.log("Bill details fetched, now fetching supplementary data...");
 
-        // Save enriched bill to cache
-        await billCache.saveBill(billId, enrichedBill);
+      // Fetch supplementary data with longer timeouts
+      const [summariesResult, actionsResult, amendmentsResult] =
+        await Promise.allSettled([
+          billsService.getSummaries(billId),
+          billsService.getActions(billId),
+          billsService.getAmendments(billId),
+        ]);
 
-        // Update stored list items with policyArea
-        const lists = await storage.getLists();
-        let updated = false;
+      // Extract results or use empty arrays
+      const summaries =
+        summariesResult.status === "fulfilled"
+          ? summariesResult.value.summaries
+          : [];
+      const actions =
+        actionsResult.status === "fulfilled" ? actionsResult.value.actions : [];
+      const amendments =
+        amendmentsResult.status === "fulfilled"
+          ? amendmentsResult.value.amendments
+          : [];
 
-        for (const list of lists) {
-          for (const item of list.items) {
-            if (item.id === billId && item.type === "bill") {
-              (item as any).policyArea = enrichedBill.policyArea?.name;
-              updated = true;
-            }
+      // console.log("Supplementary data loaded:", {
+      //   summaries: summaries.length,
+      //   actions: actions.length,
+      //   amendments: amendments.length,
+      // });
+
+      // Merge everything into bill data
+      const enrichedBill = {
+        ...billResult.bill,
+        summaries: summaries || [],
+        actions: actions || [],
+        amendments: amendments || [],
+      };
+
+      // Save enriched bill to cache
+      await billCache.saveBill(billId, enrichedBill);
+
+      // Update stored list items with policyArea
+      const lists = await storage.getLists();
+      let updated = false;
+
+      for (const list of lists) {
+        for (const item of list.items) {
+          if (item.id === billId && item.type === "bill") {
+            (item as any).policyArea = enrichedBill.policyArea?.name;
+            updated = true;
           }
         }
-
-        if (updated) {
-          await storage.saveLists(lists);
-        }
-
-        return { bill: enrichedBill };
-      } catch (error) {
-        console.error("Error in bill fetch:", error);
-        throw error;
       }
+
+      if (updated) {
+        await storage.saveLists(lists);
+      }
+
+      return { bill: enrichedBill };
     },
     enabled: !!id,
+    retry: 1, // Only retry once
+    retryDelay: 1000,
   });
 
   const bill = data?.bill;
@@ -283,45 +296,42 @@ export default function BillDetail() {
     return types[typeCode.toUpperCase()] || `${chamber} Bill`;
   };
 
-  const amendmentsList = [
-    {
-      title: "S.Amdt.327 to S.Amdt.348",
-      date: "01/14/2026",
-      sponsor: {
-        role: "Sen.",
-        name: "Ruben Gallego",
-        party: "D",
-        district: "AZ",
-      },
-      summary:
-        "To require the Secretary of Defense to establish pilot program deploying microdrones.",
-    },
-    {
-      title: "S.Amdt.326 to S.Amdt.348",
-      date: "01/14/2026",
-      sponsor: {
-        role: "Sen.",
-        name: "Jeff Merkley",
-        party: "D",
-        district: "OR",
-      },
-      summary:
-        "For other uses of Federal law enforcement officers for crowd control.",
-    },
-    {
-      title: "S.Amdt.325",
-      date: "01/14/2026",
-      sponsor: {
-        role: "Sen.",
-        name: "John Cornyn",
-        party: "R",
-        district: "TX",
-      },
-      summary:
-        "To protect the national security of the United States by imposing public notification...",
-    },
-    // Add more from screenshot...
-  ];
+  const fetchAmendmentDetails = async () => {
+    if (
+      !bill.amendments ||
+      bill.amendments.length === 0 ||
+      enrichedAmendments.length > 0
+    ) {
+      return; // Already loaded or no amendments
+    }
+
+    setLoadingAmendments(true);
+
+    try {
+      // Fetch details for all amendments in parallel (limit to first 20 to avoid timeout)
+      const amendmentsToFetch = bill.amendments.slice(0, 20); // Limit for performance
+
+      const detailsPromises = amendmentsToFetch.map(
+        (amendment: any) =>
+          billsService
+            .getAmendmentDetails(amendment.type.toLowerCase(), amendment.number)
+            .catch(() => null), // Return null if fetch fails
+      );
+
+      const results = await Promise.all(detailsPromises);
+
+      // Filter out failed fetches and extract amendment data
+      const enriched = results
+        .filter((r) => r?.amendment)
+        .map((r) => r.amendment);
+
+      setEnrichedAmendments(enriched);
+    } catch (error) {
+      console.error("Error fetching amendment details:", error);
+    } finally {
+      setLoadingAmendments(false);
+    }
+  };
 
   // Mock related bills/officials for tabs
   const mockRelatedOfficials = [
@@ -664,75 +674,192 @@ export default function BillDetail() {
             </View>
 
             {/* Amendments Section */}
-            <Pressable
-              style={[componentStyles.section, { marginBottom: 96 }]}
-              onPress={() => setShowAmendments(!showAmendments)}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+            <View style={componentStyles.amendmentsSection}>
+              <Pressable
+                style={[
+                  componentStyles.sectionHeader,
+                  {
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  },
+                ]}
+                onPress={() => {
+                  setShowAmendments(!showAmendments);
+                  if (!showAmendments) {
+                    fetchAmendmentDetails(); // Fetch when expanding
+                  }
                 }}
               >
-                <Text style={componentStyles.detailTitle}>
-                  Amendments ({bill.amendments?.length || 0})
-                </Text>
-                {showAmendments ? (
-                  <ChevronUp size={20} color="#7B7C81" />
-                ) : (
-                  <ChevronDown size={20} color="#7B7C81" />
-                )}
-              </View>
-            </Pressable>
-
-            {/* Show amendments when expanded */}
-            {showAmendments &&
-              bill.amendments &&
-              bill.amendments.length > 0 && (
-                <View style={componentStyles.section}>
-                  {bill.amendments.map((amendment: any, index: number) => (
-                    <View
-                      key={index}
-                      style={{
-                        marginBottom: 16,
-                        paddingBottom: 16,
-                        borderBottomWidth:
-                          index < bill.amendments.length - 1 ? 1 : 0,
-                        borderBottomColor: "#e0e0e0",
-                      }}
-                    >
+                {/* Left: Title/Button and filterdropdown*/}
+                <View style={{ flex: 1 }}>
+                  <View
+                    style={{
+                      alignSelf: "flex-start",
+                      height: 20,
+                    }}
+                  >
+                    {!showAmendments ? (
                       <Text
                         style={[
                           componentStyles.detailTitle,
-                          { marginBottom: 4 },
+                          { lineHeight: 20 },
                         ]}
                       >
-                        {amendment.number}
+                        Amendments ({bill.amendments?.length || 0})
                       </Text>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: "#7B7C81",
-                          marginBottom: 8,
+                    ) : (
+                      <Pressable
+                        style={({ pressed }) => [
+                          {
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 4,
+                            flex: 1,
+                            transform: [{ scale: pressed ? 0.96 : 1 }],
+                          },
+                        ]}
+                        onPress={() => {
+                          setShowChamberModal(true);
+                          setShowPartyModal(true);
                         }}
                       >
-                        {amendment.type} •{" "}
-                        {new Date(
-                          amendment.latestAction?.actionDate ||
-                            amendment.updateDate,
-                        ).toLocaleDateString()}
-                      </Text>
-                      <Text style={componentStyles.summary}>
-                        {amendment.description ||
-                          amendment.purpose ||
-                          amendment.latestAction?.text ||
-                          "No description available"}
-                      </Text>
-                    </View>
-                  ))}
+                        <Text
+                          style={[
+                            componentStyles.detailTitle,
+                            { lineHeight: 16 },
+                          ]}
+                        >
+                          Amendments ({bill.amendments?.length || 0})
+                        </Text>
+                        {showChamberModal || showPartyModal ? (
+                          <ChevronUp size={16} color="#7B7C81" />
+                        ) : (
+                          <ChevronDown size={16} color="#7B7C81" />
+                        )}
+                      </Pressable>
+                    )}
+                  </View>
+                </View>
+
+                {/* Center: Sort button (only expanded) */}
+                {showAmendments && (
+                  <Pressable
+                    style={({ pressed }) => [
+                      componentStyles.button,
+                      {
+                        transform: [{ scale: pressed ? 0.96 : 1 }],
+                      },
+                    ]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setShowAmendmentsSort(!showAmendmentsSort);
+                    }}
+                  >
+                    <Text style={componentStyles.viewAll}>
+                      {selectedAmendmentsSort}
+                    </Text>
+                    {showAmendmentsSort ? (
+                      <ChevronUp size={16} color="#7B7C81" />
+                    ) : (
+                      <ChevronDown size={16} color="#7B7C81" />
+                    )}
+                  </Pressable>
+                )}
+
+                {/* Right Chevron */}
+                <View
+                  style={{
+                    width: 24,
+                    height: 24,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  pointerEvents={showAmendments ? "auto" : "none"}
+                >
+                  {showAmendments ? (
+                    <Pressable
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      onPress={() => setShowAmendments(false)}
+                      style={{ position: "absolute" }}
+                    >
+                      <ChevronUp size={20} color="#7B7C81" />
+                    </Pressable>
+                  ) : (
+                    <ChevronDown size={20} color="#7B7C81" />
+                  )}
+                </View>
+              </Pressable>
+
+              {/* List with REAL amendment data */}
+              {showAmendments && (
+                <View style={componentStyles.expandedAmendments}>
+                  {loadingAmendments ? (
+                    <Text
+                      style={{
+                        textAlign: "center",
+                        padding: 20,
+                        color: "#7B7C81",
+                      }}
+                    >
+                      Loading amendment details...
+                    </Text>
+                  ) : enrichedAmendments.length > 0 ? (
+                    enrichedAmendments
+                      .sort((a: any, b: any) => {
+                        const numA = parseInt(a.number || "0");
+                        const numB = parseInt(b.number || "0");
+                        return numB - numA;
+                      })
+                      .map((amendment: any, index: number) => (
+                        <View
+                          key={amendment.number || index}
+                          style={componentStyles.amendmentItem}
+                        >
+                          <View
+                            style={componentStyles.amendmentTitleandSponsor}
+                          >
+                            <Text style={componentStyles.detailTitle}>
+                              {amendment.type} {amendment.number}
+                            </Text>
+                            {amendment.sponsors && amendment.sponsors[0] && (
+                              <Text style={componentStyles.amendmentSponsor}>
+                                {`${amendment.sponsors[0].firstName || ""} ${amendment.sponsors[0].lastName || ""} [${amendment.sponsors[0].party || "?"}-${amendment.sponsors[0].state || "?"}]`}
+                              </Text>
+                            )}
+                          </View>
+                          <Text style={componentStyles.amendmentSummary}>
+                            {amendment.proposedDate
+                              ? new Date(
+                                  amendment.proposedDate,
+                                ).toLocaleDateString("en-US", {
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                })
+                              : "Date unavailable"}{" "}
+                            ·{" "}
+                            {amendment.description ||
+                              amendment.purpose ||
+                              amendment.latestAction?.text ||
+                              "No description available"}
+                          </Text>
+                        </View>
+                      ))
+                  ) : (
+                    <Text
+                      style={{
+                        textAlign: "center",
+                        padding: 20,
+                        color: "#7B7C81",
+                      }}
+                    >
+                      No amendments available
+                    </Text>
+                  )}
                 </View>
               )}
+            </View>
           </>
         )}
 
