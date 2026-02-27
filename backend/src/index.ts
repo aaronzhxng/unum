@@ -331,7 +331,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
     });
 
     // Step 3: Fetch and parse each XML vote
-    const parseVoteXml = (xml: string, meta: any) => {
+    const parseVoteXml = async (xml: string, meta: any) => {
       // Helper to extract tag content
       const get = (tag: string) => {
         const m = xml.match(
@@ -356,88 +356,15 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       let result = "";
       let question = "";
 
-      if (isSenate) {
-        // Senate XML: <count> blocks with <party> D/R/I and <yeas>/<nays>/<present>/<not_voting>
-        const countBlocks = [...xml.matchAll(/<count>([\s\S]*?)<\/count>/gi)];
-        for (const block of countBlocks) {
-          const inner = block[1];
-          const party =
-            inner.match(/<party>(.*?)<\/party>/i)?.[1]?.trim() ?? "";
-          const yea = parseInt(inner.match(/<yeas>(\d+)<\/yeas>/i)?.[1] ?? "0");
-          const nay = parseInt(inner.match(/<nays>(\d+)<\/nays>/i)?.[1] ?? "0");
-          const present = parseInt(
-            inner.match(/<present>(\d+)<\/present>/i)?.[1] ?? "0",
-          );
-          const notVoting = parseInt(
-            inner.match(/<absent>(\d+)<\/absent>/i)?.[1] ?? "0",
-          );
-
-          if (party === "D") dem = { yea, nay, present, notVoting };
-          else if (party === "R") rep = { yea, nay, present, notVoting };
-          else if (party === "I") ind = { yea, nay, present, notVoting };
-        }
-        result = get("vote_result") || get("result");
-        question = get("vote_question") || get("question");
-        title = get("vote_title") || title;
-      } else {
-        // House XML: <vote-data> with <recorded-vote> entries, party totals in <vote-totals>
-        const totalBlocks = [
-          ...xml.matchAll(/<totals-by-party>([\s\S]*?)<\/totals-by-party>/gi),
-        ];
-        for (const block of totalBlocks) {
-          const inner = block[1];
-          const party =
-            inner.match(/<party>(.*?)<\/party>/i)?.[1]?.trim() ?? "";
-          const yea = parseInt(
-            inner.match(/<yea-total>(\d+)<\/yea-total>/i)?.[1] ?? "0",
-          );
-          const nay = parseInt(
-            inner.match(/<nay-total>(\d+)<\/nay-total>/i)?.[1] ?? "0",
-          );
-          const present = parseInt(
-            inner.match(/<present-total>(\d+)<\/present-total>/i)?.[1] ?? "0",
-          );
-          const notVoting = parseInt(
-            inner.match(/<not-voting-total>(\d+)<\/not-voting-total>/i)?.[1] ??
-              "0",
-          );
-
-          if (party === "Democratic") dem = { yea, nay, present, notVoting };
-          else if (party === "Republican")
-            rep = { yea, nay, present, notVoting };
-          else if (party === "Independent")
-            ind = { yea, nay, present, notVoting };
-        }
-        result = get("vote-result") || get("ActionResult");
-        question = get("vote-question") || get("VoteQuestion");
-        title = get("legis-name") || get("vote-desc") || title;
+      const response = await axios.get(meta.url, {
+        timeout: 8000,
+        responseType: "text",
+      });
+      if (meta.chamber?.toLowerCase() === "senate") {
+        console.log("SENATE XML:", response.data.substring(0, 3000));
       }
+      return parseVoteXml(response.data, meta);
 
-      const total = {
-        yea: dem.yea + rep.yea + ind.yea,
-        nay: dem.nay + rep.nay + ind.nay,
-        present: dem.present + rep.present + ind.present,
-        notVoting: dem.notVoting + rep.notVoting + ind.notVoting,
-      };
-      const grandTotal =
-        total.yea + total.nay + total.present + total.notVoting || 1;
-
-      return {
-        chamber: meta.chamber,
-        date: meta.date,
-        rollNumber: meta.rollNumber,
-        question,
-        result,
-        title,
-        democratic: dem,
-        republican: rep,
-        independent: ind,
-        total,
-        yeaPercent: Math.round((total.yea / grandTotal) * 100),
-        nayPercent: Math.round((total.nay / grandTotal) * 100),
-        presentPercent: Math.round((total.present / grandTotal) * 100),
-        notVotingPercent: Math.round((total.notVoting / grandTotal) * 100),
-      };
     };
 
     const voteResults = await Promise.allSettled(
@@ -446,7 +373,9 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
           timeout: 8000,
           responseType: "text",
         });
-        // console.log("VOTE XML SAMPLE:", response.data.substring(0, 2000));
+        if (meta.chamber?.toLowerCase() === "senate") {
+          console.log("SENATE XML:", response.data.substring(0, 3000));
+        }
         return parseVoteXml(response.data, meta);
       }),
     );

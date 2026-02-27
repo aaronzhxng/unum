@@ -364,48 +364,6 @@ export default function BillDetail() {
     setSearchQuery(query);
   };
 
-  const voteData = {
-    chamberDate: "US Senate - 2/27/25",
-    votes: {
-      yea: 52,
-      yeaDem: 20,
-      yeaRep: 31,
-      yeaInd: 1,
-      nay: 47,
-      nayDem: 45,
-      nayRep: 1,
-      nayInd: 1,
-      present: 0,
-      presentDem: 0,
-      presentRep: 0,
-      presentInd: 0,
-      notVoting: 1,
-      notVotingDem: 1,
-      notVotingRep: 1,
-      notVotingInd: 1,
-      yeaPercent: 50,
-      nayPercent: 47,
-      presentPercent: 0,
-      notVotingPercent: 1,
-      voters: [
-        {
-          name: "Chuck Schumer",
-          party: "D",
-          role: "Majority Leader, Senator, NY",
-          vote: "Nay" as const,
-          photo: require("../../assets/officials_images/c_schumer.jpg"),
-        },
-        {
-          name: "Kirsten Gillibrand",
-          party: "D",
-          role: "Senator, New York",
-          vote: "Nay" as const,
-          photo: require("../../assets/officials_images/k_gillibrand.webp"),
-        },
-      ],
-    },
-  };
-
   const cosponsors: Cosponsor[] = [
     {
       id: "1",
@@ -940,7 +898,12 @@ export default function BillDetail() {
 
         {/* Voting Tab */}
         {activeTab === "voting" && (
-          <VotingCard votes={votesData?.votes ?? []} isLoading={votesLoading} />
+          <View style={{ marginBottom: 96 }}>
+            <VotingCard
+              votes={votesData?.votes ?? []}
+              isLoading={votesLoading}
+            />
+          </View>
         )}
 
         {/* Actions Tab */}
