@@ -351,24 +351,40 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       let question = "";
 
       if (isSenate) {
-        const countBlocks = [...xml.matchAll(/<count>([\s\S]*?)<\/count>/gi)];
-        for (const block of countBlocks) {
+        // Senate has no party breakdown in <count> — must tally from individual members
+        const memberBlocks = [
+          ...xml.matchAll(/<member>([\s\S]*?)<\/member>/gi),
+        ];
+        for (const block of memberBlocks) {
           const inner = block[1];
           const party =
             inner.match(/<party>(.*?)<\/party>/i)?.[1]?.trim() ?? "";
-          const yea = parseInt(inner.match(/<yeas>(\d+)<\/yeas>/i)?.[1] ?? "0");
-          const nay = parseInt(inner.match(/<nays>(\d+)<\/nays>/i)?.[1] ?? "0");
-          const present = parseInt(
-            inner.match(/<present>(\d+)<\/present>/i)?.[1] ?? "0",
-          );
-          const notVoting = parseInt(
-            inner.match(/<absent>(\d+)<\/absent>/i)?.[1] ?? "0",
-          );
+          const voteCast =
+            inner.match(/<vote_cast>(.*?)<\/vote_cast>/i)?.[1]?.trim() ?? "";
 
-          if (party === "D") dem = { yea, nay, present, notVoting };
-          else if (party === "R") rep = { yea, nay, present, notVoting };
-          else if (party === "I") ind = { yea, nay, present, notVoting };
+          const isYea = voteCast === "Yea";
+          const isNay = voteCast === "Nay";
+          const isPresent = voteCast === "Present";
+          const isAbsent = voteCast === "Not Voting" || voteCast === "Absent";
+
+          if (party === "D") {
+            dem.yea += isYea ? 1 : 0;
+            dem.nay += isNay ? 1 : 0;
+            dem.present += isPresent ? 1 : 0;
+            dem.notVoting += isAbsent ? 1 : 0;
+          } else if (party === "R") {
+            rep.yea += isYea ? 1 : 0;
+            rep.nay += isNay ? 1 : 0;
+            rep.present += isPresent ? 1 : 0;
+            rep.notVoting += isAbsent ? 1 : 0;
+          } else if (party === "I") {
+            ind.yea += isYea ? 1 : 0;
+            ind.nay += isNay ? 1 : 0;
+            ind.present += isPresent ? 1 : 0;
+            ind.notVoting += isAbsent ? 1 : 0;
+          }
         }
+
         result = get("vote_result");
         question = get("vote_question");
         title = get("vote_title") || title;
