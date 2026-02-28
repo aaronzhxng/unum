@@ -614,12 +614,9 @@ function OfficialCard({
           <Text style={componentStyles.name}>{item.name}</Text>
           <View style={componentStyles.metaRow}>
             <Text style={componentStyles.subtitle}>
-              {item.partyName?.charAt(0) || ""}
-            </Text>
-            <Text style={componentStyles.separator}>·</Text>
-            <Text style={componentStyles.subtitle}>
+              {item.partyName?.charAt(0) || ""} ·{" "}
               {item.chamber === "House of Representatives"
-                ? `Representative, ${item.state}${item.district ? ` - District ${item.district}` : ""}`
+                ? `Representative, ${item.state}${item.district ? `, District ${item.district}` : ""}`
                 : `Senator, ${item.state}`}
             </Text>
           </View>

@@ -22,23 +22,23 @@ import SearchModal from "./official_components/SearchModal";
 import SortDropdown from "./official_components/SortDropdown";
 import { styles as componentStyles } from "./styles";
 
-function BillCard({ item }: { item: any }) {
-  return (
-    <View style={componentStyles.billCard}>
-      <Image source={item.icon} style={componentStyles.billIcon} />
-      <View style={componentStyles.billInfo}>
-        <Text style={componentStyles.billNumber}>{item.name}</Text>
-        <View style={componentStyles.billStatusRow}>
-          <Text style={componentStyles.billTitle}>{item.date}</Text>
-          <Text style={componentStyles.separator}>·</Text>
-          <Text style={componentStyles.billTitle}>{item.committee}</Text>
-          <Text style={componentStyles.separator}>·</Text>
-          <Text style={componentStyles.update}>{item.update}</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
+// function BillCard({ item }: { item: any }) {
+//   return (
+//     <View style={componentStyles.billCard}>
+//       <Image source={item.icon} style={componentStyles.billIcon} />
+//       <View style={componentStyles.billInfo}>
+//         <Text style={componentStyles.billNumber}>{item.name}</Text>
+//         <View style={componentStyles.billStatusRow}>
+//           <Text style={componentStyles.billTitle}>{item.date}</Text>
+//           <Text style={componentStyles.separator}>·</Text>
+//           <Text style={componentStyles.billTitle}>{item.committee}</Text>
+//           <Text style={componentStyles.separator}>·</Text>
+//           <Text style={componentStyles.update}>{item.update}</Text>
+//         </View>
+//       </View>
+//     </View>
+//   );
+// }
 
 // Renders a real bill from the API using existing BillCard styles
 function LegislationCard({ item }: { item: any }) {
@@ -360,8 +360,9 @@ export default function OfficialDetail() {
         <View style={componentStyles.header}>
           <Text style={componentStyles.roleTop}>
             {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
-            {official.terms?.[0]?.chamber === "House of Representatives"
-              ? `Representative, ${official.state}${official.terms?.[0]?.district ? ` - District ${official.terms[0].district}` : ""}`
+            {official.terms?.[official.terms.length - 1]?.chamber ===
+            "House of Representatives"
+              ? `Representative, ${official.state}${official.terms?.[official.terms.length - 1]?.district ? ` - District ${official.terms[official.terms.length - 1].district}` : ""}`
               : `Senator, ${official.state}`}
           </Text>
           <View style={componentStyles.centeredRow}>
@@ -497,10 +498,8 @@ export default function OfficialDetail() {
                         style={[componentStyles.term, { flex: 1 }]}
                         numberOfLines={1}
                       >
-                        {term.chamber === "Senate"
-                          ? "Senator"
-                          : "Representative"}
-                        , {official.state}
+                        {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
+                        {official.state}
                         {term.district ? ` - District ${term.district}` : ""}
                       </Text>
                       <Text

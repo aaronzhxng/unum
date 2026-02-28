@@ -187,7 +187,7 @@ export const styles = StyleSheet.create({
     color: "#000",
   },
   viewAll: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#7B7C81",
   },
   expandedAmendments: {
@@ -208,7 +208,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   amendmentSponsor: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#535353",
     marginBottom: 4,
   },

@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
     marginBottom: 2,
   },
   billTitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#7B7C81",
   },
   billStatusRow: {
@@ -168,9 +168,9 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   term: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#000",
-    fontWeight: "600",
+    fontWeight: "400",
     flex: 1,
   },
   termRole: {
@@ -216,10 +216,10 @@ export const styles = StyleSheet.create({
     minHeight: 40, // Or height: 40, reserves button space
   },
   sortText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "500",
     color: "#000",
-    maxWidth: 72,
+    maxWidth: 84,
   },
   modalOverlay: {
     flex: 1,
