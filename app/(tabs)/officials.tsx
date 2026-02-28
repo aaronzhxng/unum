@@ -563,9 +563,9 @@ function OfficialCard({
   item: any;
   onAddPress: (id: string) => void;
 }) {
+  // console.log(item.name, item.chamber);
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
-  console.log(item.name, item.district, typeof item.district);
   return (
     <Pressable
       onPress={() => router.navigate(`/official/${item.bioguideId}`)}

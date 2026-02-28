@@ -65,7 +65,7 @@ app.get("/api/officials", async (req, res) => {
       allMembers = allMembers.concat(
         members.map((m: any) => ({
           ...m,
-          chamber: m.terms?.item?.[0]?.chamber ?? null,
+          chamber: m.terms?.item?.[m.terms.item.length - 1]?.chamber ?? null,
         })),
       );
 
