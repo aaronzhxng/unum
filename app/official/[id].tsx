@@ -7,7 +7,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
@@ -40,12 +40,51 @@ function BillCard({ item }: { item: any }) {
   );
 }
 
+// Renders a real bill from the API using existing BillCard styles
+function LegislationCard({ item }: { item: any }) {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  return (
+    <View style={componentStyles.billCard}>
+      <View style={componentStyles.billInfo}>
+        <Text style={componentStyles.billNumber}>
+          {item.type}.{item.number}
+        </Text>
+        <Text style={componentStyles.billTitle} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <View style={componentStyles.billStatusRow}>
+          <Text style={componentStyles.billTitle}>
+            {formatDate(item.introducedDate)}
+          </Text>
+          {item.policyArea?.name && (
+            <>
+              <Text style={componentStyles.separator}>·</Text>
+              <Text style={componentStyles.billTitle} numberOfLines={1}>
+                {item.policyArea.name}
+              </Text>
+            </>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export default function OfficialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router: Router = useRouter();
-  const [activeTab, setActiveTab] = useState<"profile" | "legislation">(
-    "profile",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "sponsor" | "cosponsor"
+  >("profile");
+
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Most Viewed");
 
@@ -198,7 +237,47 @@ export default function OfficialDetail() {
     enabled: !!id,
   });
 
+  const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
+    queryKey: ["officialSponsored", id],
+    queryFn: () => officialsService.getSponsored(id as string),
+    enabled: !!id && (activeTab === "sponsor" || activeTab === "cosponsor"),
+    retry: 1,
+  });
+
+  const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
+    queryKey: ["officialCosponsored", id],
+    queryFn: () => officialsService.getCosponsored(id as string),
+    enabled: !!id && (activeTab === "sponsor" || activeTab === "cosponsor"),
+    retry: 1,
+  });
+
   const official = data?.member;
+
+  // Filter amendments out and expose the active list/count/loading for current toggle
+  const sponsoredBills = useMemo(
+    () =>
+      (sponsoredData?.legislation ?? []).filter(
+        (item: any) => !item.amendmentNumber && item.type,
+      ),
+    [sponsoredData],
+  );
+
+  const cosponsoredBills = useMemo(
+    () =>
+      (cosponsoredData?.legislation ?? []).filter(
+        (item: any) => !item.amendmentNumber && item.type,
+      ),
+    [cosponsoredData],
+  );
+
+  const activeBills =
+    activeTab === "sponsor" ? sponsoredBills : cosponsoredBills;
+  const activeCount =
+    activeTab === "sponsor"
+      ? (sponsoredData?.count ?? 0)
+      : (cosponsoredData?.count ?? 0);
+  const activeLoading =
+    activeTab === "sponsor" ? sponsoredLoading : cosponsoredLoading;
 
   useEffect(() => {
     if (!showNewListProgressModal) return;
@@ -275,7 +354,6 @@ export default function OfficialDetail() {
         style={componentStyles.container}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Official Header - ABOVE TABS */}
         {/* Official Header - ABOVE TABS */}
         <View style={componentStyles.header}>
           <Text style={componentStyles.roleTop}>
@@ -356,7 +434,7 @@ export default function OfficialDetail() {
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => setActiveTab("legislation")}
+              onPress={() => setActiveTab("sponsor")}
               style={({ pressed }) => ({
                 transform: [{ scale: pressed ? 0.96 : 1 }],
               })}
@@ -364,10 +442,25 @@ export default function OfficialDetail() {
               <Text
                 style={[
                   componentStyles.tab,
-                  activeTab === "legislation" && componentStyles.tabActive,
+                  activeTab === "sponsor" && componentStyles.tabActive,
                 ]}
               >
-                Legislation
+                Sponsor
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setActiveTab("cosponsor")}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+            >
+              <Text
+                style={[
+                  componentStyles.tab,
+                  activeTab === "cosponsor" && componentStyles.tabActive,
+                ]}
+              >
+                Cosponsor
               </Text>
             </Pressable>
           </View>
@@ -389,19 +482,46 @@ export default function OfficialDetail() {
             {/* Congress History */}
             <View style={componentStyles.section}>
               <View style={componentStyles.termRow}>
-                <Text style={componentStyles.sectionTitle}>Congress</Text>
                 <Text style={componentStyles.sectionTitle}>
-                  (2019 - Present)
+                  Congressional History
                 </Text>
               </View>
-              <View style={componentStyles.termRow}>
-                <Text style={componentStyles.term}>
-                  {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
-                  {official.district
-                    ? ` Representative, ${official.state} - District ${official.district}`
-                    : " Senator"}
-                </Text>
-              </View>
+              {official.terms && official.terms.length > 0 ? (
+                [...official.terms]
+                  .sort((a: any, b: any) => b.startYear - a.startYear)
+                  .map((term: any, index: number) => (
+                    <View key={index} style={componentStyles.termRow}>
+                      <Text
+                        style={[componentStyles.term, { flex: 1 }]}
+                        numberOfLines={1}
+                      >
+                        {term.chamber === "Senate"
+                          ? "Senator"
+                          : "Representative"}
+                        , {official.state}
+                        {term.district ? ` - District ${term.district}` : ""}
+                      </Text>
+                      <Text
+                        style={[
+                          componentStyles.term,
+                          { flex: 0, textAlign: "right" },
+                        ]}
+                      >
+                        {term.startYear}
+                        {term.endYear ? ` – ${term.endYear}` : " – Present"}
+                      </Text>
+                    </View>
+                  ))
+              ) : (
+                <View style={componentStyles.termRow}>
+                  <Text style={componentStyles.term}>
+                    {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
+                    {official.district
+                      ? ` Representative, ${official.state} - District ${official.district}`
+                      : " Senator"}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Map */}
@@ -412,112 +532,144 @@ export default function OfficialDetail() {
             </View>
           </>
         ) : (
-          <View>
-            {/* Legislation Tab */}
-            <View style={componentStyles.legislationHeader}>
-              <View style={componentStyles.legislationHeaderLeft}>
-                <Pressable
-                  style={({ pressed }) => [
-                    componentStyles.button,
-                    {
-                      transform: [{ scale: pressed ? 0.96 : 1 }],
-                    },
-                  ]}
-                  onPress={() => {
-                    setShowTypeModal(true);
-                    setShowPolicyModal(true);
-                  }}
-                >
-                  <Text style={componentStyles.legislationHeaderTotal}>
-                    {isFiltered ? "Filtered" : "Total"} Legislation 3,353
-                  </Text>
-                  {showTypeModal || showPolicyModal ? (
-                    <ChevronUp
-                      size={24}
-                      color="#535353"
-                      style={{ marginRight: 24 }}
-                    />
-                  ) : (
-                    <ChevronDown
-                      size={24}
-                      color="#535353"
-                      style={{ marginRight: 24 }}
-                    />
-                  )}
-                </Pressable>
-
-                {/* Sort by Dropdown */}
-                <Pressable
-                  style={({ pressed }) => [
-                    componentStyles.button,
-                    {
-                      transform: [{ scale: pressed ? 0.96 : 1 }],
-                    },
-                  ]}
-                  onPress={() => setShowSortDropdown(!showSortDropdown)}
-                >
-                  <Text style={componentStyles.sortText}>{selectedSort}</Text>
-                  <Text>
-                    {showSortDropdown ? (
-                      <ChevronUp
-                        size={24}
-                        color="#535353"
-                        style={{ marginRight: 24 }}
-                      />
-                    ) : (
-                      <ChevronDown
-                        size={24}
-                        color="#535353"
-                        style={{ marginRight: 24 }}
-                      />
-                    )}
-                  </Text>
-                </Pressable>
-              </View>
-              {/* Search Button */}
-              <Pressable
-                style={({ pressed }) => [
-                  componentStyles.button,
-                  {
-                    transform: [{ scale: pressed ? 0.75 : 1 }],
-                  },
-                ]}
-                onPress={() => setShowSearchModal(true)}
+          <View style={{ marginBottom: 96 }}>
+            {activeLoading ? (
+              <View
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingVertical: 60,
+                }}
               >
-                <Search size={24} color="#535353" />
-              </Pressable>
-            </View>
+                <LoadingSpinner />
+                <Text style={{ color: "#7B7C81", marginTop: 16, fontSize: 13 }}>
+                  Loading legislation...
+                </Text>
+              </View>
+            ) : (
+              <>
+                {/* Sponsor / Cosponsor Tab */}
+                <View style={componentStyles.legislationHeader}>
+                  <View style={componentStyles.legislationHeaderLeft}>
+                    <Pressable
+                      style={({ pressed }) => [
+                        componentStyles.button,
+                        { transform: [{ scale: pressed ? 0.96 : 1 }] },
+                      ]}
+                      onPress={() => {
+                        setShowTypeModal(true);
+                        setShowPolicyModal(true);
+                      }}
+                    >
+                      <Text style={componentStyles.legislationHeaderTotal}>
+                        {activeBills.length < activeCount
+                          ? `${activeBills.length} / ${activeCount.toLocaleString()} Shown`
+                          : ""}
+                      </Text>
+                      {showTypeModal || showPolicyModal ? (
+                        <ChevronUp
+                          size={24}
+                          color="#535353"
+                          style={{ marginRight: 24 }}
+                        />
+                      ) : (
+                        <ChevronDown
+                          size={24}
+                          color="#535353"
+                          style={{ marginRight: 24 }}
+                        />
+                      )}
+                    </Pressable>
 
-            {/* Search Modal Popup */}
-            <SearchModal
-              isVisible={showSearchModal}
-              onClose={() => setShowSearchModal(false)}
-              onSearch={setSearchQuery}
-            />
+                    {/* Sort by Dropdown */}
+                    <Pressable
+                      style={({ pressed }) => [
+                        componentStyles.button,
+                        { transform: [{ scale: pressed ? 0.96 : 1 }] },
+                      ]}
+                      onPress={() => setShowSortDropdown(!showSortDropdown)}
+                    >
+                      <Text style={componentStyles.sortText}>
+                        {selectedSort}
+                      </Text>
+                      <Text>
+                        {showSortDropdown ? (
+                          <ChevronUp
+                            size={24}
+                            color="#535353"
+                            style={{ marginRight: 24 }}
+                          />
+                        ) : (
+                          <ChevronDown
+                            size={24}
+                            color="#535353"
+                            style={{ marginRight: 24 }}
+                          />
+                        )}
+                      </Text>
+                    </Pressable>
+                  </View>
 
-            {/* Sort by Modal Popup */}
-            <SortDropdown
-              showSortDropdown={showSortDropdown}
-              setShowSortDropdown={setShowSortDropdown}
-              selectedSort={selectedSort}
-              setSelectedSort={setSelectedSort}
-            />
+                  {/* Search Button */}
+                  <Pressable
+                    style={({ pressed }) => [
+                      componentStyles.button,
+                      { transform: [{ scale: pressed ? 0.75 : 1 }] },
+                    ]}
+                    onPress={() => setShowSearchModal(true)}
+                  >
+                    <Search size={24} color="#535353" />
+                  </Pressable>
+                </View>
 
-            {/* Selected Legislation Dropdown Popup */}
-            <FilterDropdown
-              showTypeModal={showTypeModal}
-              showPolicyModal={showPolicyModal}
-              selectedTypes={selectedTypes}
-              selectedPolicies={selectedPolicies}
-              toggleType={toggleType}
-              togglePolicy={togglePolicy}
-              setShowTypeModal={setShowTypeModal}
-              setShowPolicyModal={setShowPolicyModal}
-              onCancel={handleCancel}
-              onApply={handleApply}
-              legislationTypes={legislationTypes}
-              policyAreas={policyAreas}
-            />
+                {/* Bill list */}
+                {activeBills.length === 0 ? (
+                  <View style={{ paddingVertical: 60, alignItems: "center" }}>
+                    <Text style={{ color: "#7B7C81", fontSize: 13 }}>
+                      No legislation found
+                    </Text>
+                  </View>
+                ) : (
+                  activeBills.map((item: any, index: number) => (
+                    <LegislationCard
+                      key={`${item.type}-${item.number}-${item.congress}-${index}`}
+                      item={item}
+                    />
+                  ))
+                )}
+
+                {/* Search Modal Popup */}
+                <SearchModal
+                  isVisible={showSearchModal}
+                  onClose={() => setShowSearchModal(false)}
+                  onSearch={setSearchQuery}
+                />
+
+                {/* Sort by Modal Popup */}
+                <SortDropdown
+                  showSortDropdown={showSortDropdown}
+                  setShowSortDropdown={setShowSortDropdown}
+                  selectedSort={selectedSort}
+                  setSelectedSort={setSelectedSort}
+                />
+
+                {/* Selected Legislation Dropdown Popup */}
+                <FilterDropdown
+                  showTypeModal={showTypeModal}
+                  showPolicyModal={showPolicyModal}
+                  selectedTypes={selectedTypes}
+                  selectedPolicies={selectedPolicies}
+                  toggleType={toggleType}
+                  togglePolicy={togglePolicy}
+                  setShowTypeModal={setShowTypeModal}
+                  setShowPolicyModal={setShowPolicyModal}
+                  onCancel={handleCancel}
+                  onApply={handleApply}
+                  legislationTypes={legislationTypes}
+                  policyAreas={policyAreas}
+                />
+              </>
+            )}
           </View>
         )}
       </ScrollView>
@@ -535,8 +687,8 @@ export default function OfficialDetail() {
         currentItem={{
           id: official.bioguideId,
           type: "official",
-          name: official.directOrderName, // Changed from official.name
-          party: official.partyHistory?.[0]?.partyName?.charAt(0) || "", // Changed from official.partyName
+          name: official.directOrderName,
+          party: official.partyHistory?.[0]?.partyName?.charAt(0) || "",
           role: official.district
             ? `Representative, ${official.state} - District ${official.district}`
             : `Senator, ${official.state}`,
@@ -633,10 +785,9 @@ export default function OfficialDetail() {
               {Math.round(newListProgress)}%
             </Text>
 
-            {/* Cancel Button - ADD THIS */}
+            {/* Cancel Button */}
             <Pressable
               onPress={async () => {
-                // Delete the newly created list
                 const allLists = await storage.getLists();
                 const newlyCreatedList = allLists.find(
                   (l) => l.name === createdListName,
@@ -646,7 +797,6 @@ export default function OfficialDetail() {
                   await storage.deleteList(newlyCreatedList.id);
                 }
 
-                // Close modal and reset
                 setShowNewListProgressModal(false);
                 setNewListProgress(0);
                 setCreatedListName("");

@@ -19,8 +19,15 @@ export const officialsService = {
     return apiClient.get<OfficialsResponse>("/officials");
   },
 
-  // Add this:
   getById: async (bioguideId: string): Promise<any> => {
     return apiClient.get(`/officials/${bioguideId}`);
+  },
+
+  getSponsored: async (bioguideId: string): Promise<any> => {
+    return apiClient.get(`/officials/${bioguideId}/sponsored`);
+  },
+
+  getCosponsored: async (bioguideId: string): Promise<any> => {
+    return apiClient.get(`/officials/${bioguideId}/cosponsored`);
   },
 };

@@ -44,19 +44,33 @@ app.listen(PORT, () => {
 // Get officials from Congress.gov
 app.get("/api/officials", async (req, res) => {
   try {
-    const response = await axios.get("https://api.congress.gov/v3/member", {
-      headers: {
-        "X-Api-Key": process.env.CONGRESS_API_KEY,
-      },
-      params: {
-        limit: 100,
-        currentMember: true,
-      },
-    });
+    let allMembers: any[] = [];
+    let offset = 0;
+    const limit = 250;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await axios.get("https://api.congress.gov/v3/member", {
+        headers: {
+          "X-Api-Key": process.env.CONGRESS_API_KEY,
+        },
+        params: {
+          limit,
+          offset,
+          currentMember: true,
+        },
+      });
+
+      const members = response.data.members || [];
+      allMembers = allMembers.concat(members);
+
+      hasMore = response.data.pagination?.next != null;
+      offset += limit;
+    }
 
     res.json({
-      officials: response.data.members,
-      count: response.data.members.length,
+      officials: allMembers,
+      count: allMembers.length,
     });
   } catch (error) {
     console.error("Error fetching officials:", error);

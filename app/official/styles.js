@@ -28,6 +28,7 @@ export const styles = StyleSheet.create({
   },
   billInfo: {
     flex: 1,
+    gap: 8,
   },
   billNumber: {
     fontSize: 15,
@@ -159,7 +160,7 @@ export const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
-    marginBottom: -12,
+    marginBottom: -4,
   },
   termRow: {
     flexDirection: "row",
