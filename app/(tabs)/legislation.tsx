@@ -13,6 +13,7 @@ import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
 import SortDropdown from "../global_components/LegislationSortDropdown";
+import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
@@ -317,6 +318,27 @@ export default function LegislationScreen() {
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LoadingSpinner />
+        <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+          Loading bills...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "#7B7C81" }}>
+          Something went wrong. Please try again.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={componentStyles.container}>
       {/* Header */}
@@ -420,9 +442,6 @@ export default function LegislationScreen() {
           </Pressable>
         </View>
       </View>
-
-      {isLoading && <Text>Loading...</Text>}
-      {error && <Text>Error loading bills</Text>}
 
       <FlatList
         data={bills}

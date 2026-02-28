@@ -12,15 +12,15 @@ import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
 import AddModal from "../global_components/AddModal";
+import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { officialsService } from "../services/officials";
+import { storage } from "../utils/storage";
 import FilterDropdown from "./official_components/FilterDropdown";
 import OptionsModal from "./official_components/OptionsModal";
 import SearchModal from "./official_components/SearchModal";
 import SortDropdown from "./official_components/SortDropdown";
 import { styles as componentStyles } from "./styles";
-
-import { storage } from "../utils/storage";
 
 function BillCard({ item }: { item: any }) {
   return (
@@ -200,15 +200,6 @@ export default function OfficialDetail() {
 
   const official = data?.member;
 
-  // const filteredBills = useMemo(() => {
-  //   if (!searchQuery.trim()) return mockBills;
-  //   return mockBills.filter(
-  //     (bill) =>
-  //       bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //       bill.committee.toLowerCase().includes(searchQuery.toLowerCase()),
-  //   );
-  // }, [searchQuery]);
-
   useEffect(() => {
     if (!showNewListProgressModal) return;
 
@@ -232,7 +223,10 @@ export default function OfficialDetail() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Loading...</Text>
+        <LoadingSpinner />
+        <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+          Loading official...
+        </Text>
       </View>
     );
   }
@@ -302,7 +296,7 @@ export default function OfficialDetail() {
                         ? "#008CFF"
                         : official.partyHistory?.[0]?.partyName ===
                             "Independent"
-                          ? "#FFE627"
+                          ? "#FAEA70"
                           : "#008CFF", // default
                 },
               ]}

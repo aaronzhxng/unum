@@ -26,6 +26,8 @@ import { styles as componentStyles } from "../global_styles/styles";
 import { useQuery } from "@tanstack/react-query";
 import { officialsService } from "../services/officials";
 
+import LoadingSpinner from "../global_components/LoadingSpinner";
+
 import { storage } from "../utils/storage";
 
 type Official = {
@@ -247,6 +249,27 @@ export default function OfficialsScreen() {
 
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LoadingSpinner />
+        <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+          Loading officials...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "#7B7C81" }}>
+          Something went wrong. Please try again.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={componentStyles.container}>

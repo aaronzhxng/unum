@@ -13,6 +13,7 @@ import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import EditOptionsModal from "../global_components/EditOptionsModal";
 import ListSelection from "../global_components/ListSelection";
+import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
@@ -200,24 +201,6 @@ export default function HomeScreen() {
     }
   };
 
-  // const loadItems = async () => {
-  //   setIsLoading(true);
-
-  //   // Always initialize first
-  //   await storage.initializeDefaultList();
-
-  //   const lists = await storage.getLists();
-  //   const currentList = lists.find((l) => l.name === selectedList);
-
-  //   if (currentList && currentList.items.length > 0) {
-  //     setItems(currentList.items);
-  //   } else {
-  //     setItems([]);
-  //   }
-
-  //   setIsLoading(false);
-  // };
-
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -267,6 +250,14 @@ export default function HomeScreen() {
       loadItems(); // This should reload items each time you navigate back
     }, [selectedList]), // Make sure selectedList is in dependencies
   );
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LoadingSpinner />
+      </View>
+    );
+  }
 
   return (
     <View style={componentStyles.container}>
@@ -384,13 +375,7 @@ export default function HomeScreen() {
       </View>
 
       {/* List Content */}
-      {isLoading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text>Loading...</Text>
-        </View>
-      ) : items.length === 0 ? (
+      {items.length === 0 ? (
         <Text>No items in this list</Text>
       ) : isEditMode ? (
         <DraggableFlatList
@@ -405,10 +390,10 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={[
             componentStyles.listContent,
-            { paddingBottom: 220 }, // Extra padding for bottom bar + drag space
+            { paddingBottom: 220 },
           ]}
           activationDistance={10}
-          autoscrollThreshold={80} // Start auto-scroll when near edges
+          autoscrollThreshold={80}
           autoscrollSpeed={100}
           renderItem={({ item, drag }) => (
             <Card

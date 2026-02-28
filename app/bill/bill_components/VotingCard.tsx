@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
+import LoadingSpinner from "../../global_components/LoadingSpinner";
 import { styles as componentStyles } from "../styles";
 
 interface PartyVotes {
@@ -91,7 +92,7 @@ const PartyBar = ({
         style={{
           height: "100%",
           width: `${ind}%`,
-          backgroundColor: "#FFE627",
+          backgroundColor: "#FAEA70",
           position: "absolute",
           left: `${dem + rep}%`,
         }}
@@ -239,7 +240,7 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
               width: 10,
               height: 10,
               borderRadius: 2,
-              backgroundColor: "#FFE627",
+              backgroundColor: "#FAEA70",
             }}
           />
           <Text style={{ fontSize: 11, color: "#535353" }}>Independent</Text>
@@ -253,7 +254,10 @@ const VotingCard: React.FC<VotingCardProps> = ({ votes, isLoading }) => {
   if (isLoading) {
     return (
       <View style={{ padding: 40, alignItems: "center" }}>
-        <Text style={{ color: "#7B7C81" }}>Loading vote data...</Text>
+        <LoadingSpinner />
+        <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+          Loading vote data...
+        </Text>
       </View>
     );
   }

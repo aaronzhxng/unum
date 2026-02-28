@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
+import LoadingSpinner from "../../global_components/LoadingSpinner";
 import { styles as componentStyles } from "../styles"; // adjust path if needed
 import FilterDropdown from "./FilterDropdown"; // Adjust path
 
@@ -10,13 +11,15 @@ export interface Cosponsor {
   id: string;
   name: string;
   party: Party;
-  role: string; // e.g., "Senator, Louisiana"
-  avatar: any; // require(...) as in home.tsx
-  update?: string; // optional tag like "Original cosponsor"
+  role: string;
+  photoUrl?: string; // ← URI string instead of avatar
+  avatar?: any; // ← keep for backwards compatibility
+  update?: string;
 }
 
 interface CosponsorsProps {
   cosponsors: Cosponsor[];
+  isLoading?: boolean; // ← add this
   showCosponsorFilter: boolean;
   setShowCosponsorFilter: (show: boolean) => void;
   showCosponsorSort: boolean;
@@ -43,6 +46,7 @@ interface FilterOption {
 
 const Cosponsors: React.FC<CosponsorsProps> = ({
   cosponsors,
+  isLoading,
   showCosponsorFilter,
   setShowCosponsorFilter,
   showCosponsorSort,
@@ -111,25 +115,73 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
     );
   };
 
-  const renderItem = ({ item }: { item: Cosponsor }) => (
-    <View style={componentStyles.officialCard}>
-      <Image source={item.avatar} style={componentStyles.avatar} />
-      <View style={componentStyles.cardText}>
-        <Text style={componentStyles.name}>{item.name}</Text>
-        <View style={componentStyles.metaRow}>
-          <Text style={componentStyles.subtitle}>{item.party}</Text>
-          <Text style={componentStyles.separator1}>•</Text>
-          <Text style={componentStyles.subtitle}>{item.role}</Text>
-          {item.update ? (
-            <>
-              <Text style={componentStyles.separator1}>•</Text>
-              <Text style={componentStyles.update}>{item.update}</Text>
-            </>
-          ) : null}
+  const CosponsorCard = ({ item }: { item: Cosponsor }) => {
+    const [imageError, setImageError] = useState(false);
+
+    return (
+      <View style={componentStyles.officialCard}>
+        <View style={componentStyles.avatar}>
+          {item.photoUrl && !imageError ? (
+            <Image
+              source={{ uri: item.photoUrl }}
+              style={{ width: "100%", height: "120%" }}
+              resizeMode="cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <View
+              style={{
+                width: "100%",
+                height: "100%",
+                backgroundColor: "#BFBFBF",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+              >
+                {item.name?.charAt(0) || "?"}
+              </Text>
+            </View>
+          )}
+        </View>
+        <View style={componentStyles.cardText}>
+          <Text style={componentStyles.name}>{item.name}</Text>
+          <View style={componentStyles.metaRow}>
+            <Text style={componentStyles.subtitle}>{item.party}</Text>
+            <Text style={componentStyles.separator1}>•</Text>
+            <Text style={componentStyles.subtitle}>{item.role}</Text>
+            {item.update ? (
+              <>
+                <Text style={componentStyles.separator1}>•</Text>
+                <Text style={componentStyles.update}>{item.update}</Text>
+              </>
+            ) : null}
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <View style={{ padding: 40, alignItems: "center" }}>
+        <LoadingSpinner />
+        <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+          Loading cosponsor data...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!cosponsors || cosponsors.length === 0) {
+    return (
+      <View style={{ padding: 40, alignItems: "center" }}>
+        <Text style={{ color: "#7B7C81" }}>No cosponsors for this bill.</Text>
+      </View>
+    );
+  }
 
   return (
     <View>
@@ -239,7 +291,7 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
       <FlatList
         data={filteredCosponsors}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
+        renderItem={({ item }) => <CosponsorCard item={item} />}
         contentContainerStyle={componentStyles.legislationContainer}
         scrollEnabled={false}
         showsVerticalScrollIndicator={false}

@@ -12,12 +12,13 @@ import { decode } from "html-entities";
 import { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import AddModal from "../global_components/AddModal";
+import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { getBillIcon } from "../utils/billIcons";
 import ActionHistory from "./bill_components/ActionHistory";
-import Cosponsors, { Cosponsor } from "./bill_components/Cosponsors";
+import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
@@ -242,6 +243,66 @@ export default function BillDetail() {
     retry: 1,
   });
 
+  const { data: cosponsorsData, isLoading: cosponsorsLoading } = useQuery({
+    queryKey: ["billCosponsors", id],
+    queryFn: () => billsService.getCosponsors(id as string),
+    enabled: !!id && activeTab === "cosponsors",
+    retry: 1,
+  });
+
+  const STATE_NAMES: { [key: string]: string } = {
+    AL: "Alabama",
+    AK: "Alaska",
+    AZ: "Arizona",
+    AR: "Arkansas",
+    CA: "California",
+    CO: "Colorado",
+    CT: "Connecticut",
+    DE: "Delaware",
+    FL: "Florida",
+    GA: "Georgia",
+    HI: "Hawaii",
+    ID: "Idaho",
+    IL: "Illinois",
+    IN: "Indiana",
+    IA: "Iowa",
+    KS: "Kansas",
+    KY: "Kentucky",
+    LA: "Louisiana",
+    ME: "Maine",
+    MD: "Maryland",
+    MA: "Massachusetts",
+    MI: "Michigan",
+    MN: "Minnesota",
+    MS: "Mississippi",
+    MO: "Missouri",
+    MT: "Montana",
+    NE: "Nebraska",
+    NV: "Nevada",
+    NH: "New Hampshire",
+    NJ: "New Jersey",
+    NM: "New Mexico",
+    NY: "New York",
+    NC: "North Carolina",
+    ND: "North Dakota",
+    OH: "Ohio",
+    OK: "Oklahoma",
+    OR: "Oregon",
+    PA: "Pennsylvania",
+    RI: "Rhode Island",
+    SC: "South Carolina",
+    SD: "South Dakota",
+    TN: "Tennessee",
+    TX: "Texas",
+    UT: "Utah",
+    VT: "Vermont",
+    VA: "Virginia",
+    WA: "Washington",
+    WV: "West Virginia",
+    WI: "Wisconsin",
+    WY: "Wyoming",
+  };
+
   const bill = data?.bill;
 
   const filteredOfficials = useMemo(() => {
@@ -274,7 +335,10 @@ export default function BillDetail() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Loading...</Text>
+        <LoadingSpinner />
+        <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+          {`Loading ${(id as string).toUpperCase()}...`}{" "}
+        </Text>
       </View>
     );
   }
@@ -363,26 +427,6 @@ export default function BillDetail() {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
-
-  const cosponsors: Cosponsor[] = [
-    {
-      id: "1",
-      name: "Alexandria Ocasio-Cortez",
-      party: "D",
-      role: "Rep, NY 14th District",
-      avatar: require("../../assets/officials_images/aoc.webp"),
-      update: "Original cosponsor",
-    },
-    {
-      id: "2",
-      name: "John Kennedy",
-      party: "R",
-      role: "Sen, Louisiana",
-      avatar: require("../../assets/officials_images/jKennedy.jpg"),
-      update: "Joined 02/10/2025",
-    },
-    // add more…
-  ];
 
   return (
     <View style={componentStyles.screen}>
@@ -606,7 +650,12 @@ export default function BillDetail() {
               {bill.summaries && bill.summaries.length > 0 ? (
                 <>
                   <Text style={componentStyles.summary}>
-                    {decode(bill.summaries[0].text.replace(/<[^>]*>/g, ""))}
+                    {decode(
+                      bill.summaries[0].text.replace(/<[^>]*>/g, ""),
+                    ).replace(
+                      /([A-Z][^.!?]*(?:Act|Resolution|Bill)(?: of \d{4})?)\s*(This|The|A |An )/,
+                      "$1\n\n$2",
+                    )}
                   </Text>
                   <Text
                     style={{ fontSize: 12, color: "#7B7C81", marginTop: 8 }}
@@ -967,25 +1016,41 @@ export default function BillDetail() {
 
         {/* Cosponsors Tab */}
         {activeTab === "cosponsors" && (
-          <Cosponsors
-            cosponsors={cosponsors}
-            showCosponsorFilter={showCosponsorFilter}
-            setShowCosponsorFilter={setShowCosponsorFilter}
-            showCosponsorSort={showCosponsorSort}
-            setShowCosponsorSort={setShowCosponsorSort}
-            selectedCosponsorSort={selectedCosponsorSort}
-            showChamberModal={showChamberModal}
-            showPartyModal={showPartyModal}
-            setShowChamberModal={setShowChamberModal}
-            setShowPartyModal={setShowPartyModal}
-            showCosponsorChamberModal={showCosponsorChamberModal}
-            showCosponsorPartyModal={showCosponsorPartyModal}
-            setShowCosponsorChamberModal={setShowCosponsorChamberModal}
-            setShowCosponsorPartyModal={setShowCosponsorPartyModal}
-            selectedRole={selectedRole}
-            setSelectedRole={setSelectedRole}
-            showOnlyChamber={true}
-          />
+          <View style={{ marginBottom: 96 }}>
+            <Cosponsors
+              cosponsors={
+                cosponsorsData?.cosponsors?.map((c: any) => ({
+                  id: c.bioguideId,
+                  name: c.name,
+                  party: c.party,
+                  role: c.district
+                    ? `Rep, ${STATE_NAMES[c.state] || c.state} - ${c.district}`
+                    : `Senator, ${STATE_NAMES[c.state] || c.state}`,
+                  photoUrl: c.photoUrl,
+                  update: c.isOriginalCosponsor
+                    ? "Original cosponsor"
+                    : `Joined ${new Date(c.sponsorshipDate).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}`,
+                })) ?? []
+              }
+              isLoading={cosponsorsLoading}
+              showCosponsorFilter={showCosponsorFilter}
+              setShowCosponsorFilter={setShowCosponsorFilter}
+              showCosponsorSort={showCosponsorSort}
+              setShowCosponsorSort={setShowCosponsorSort}
+              selectedCosponsorSort={selectedCosponsorSort}
+              showChamberModal={showChamberModal}
+              showPartyModal={showPartyModal}
+              setShowChamberModal={setShowChamberModal}
+              setShowPartyModal={setShowPartyModal}
+              showCosponsorChamberModal={showCosponsorChamberModal}
+              showCosponsorPartyModal={showCosponsorPartyModal}
+              setShowCosponsorChamberModal={setShowCosponsorChamberModal}
+              setShowCosponsorPartyModal={setShowCosponsorPartyModal}
+              selectedRole={selectedRole}
+              setSelectedRole={setSelectedRole}
+              showOnlyChamber={true}
+            />
+          </View>
         )}
       </ScrollView>
 
