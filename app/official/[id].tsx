@@ -317,7 +317,9 @@ export default function OfficialDetail() {
       </View>
     );
   }
-  console.log(official);
+  // console.log(official);
+  // console.log(official.terms?.[0]?.chamber);
+
   return (
     <View style={componentStyles.screen}>
       {/* Header Bar */}
@@ -690,8 +692,8 @@ export default function OfficialDetail() {
           name: official.directOrderName,
           party: official.partyHistory?.[0]?.partyName?.charAt(0) || "",
           role:
-            official.chamber === "House of Representatives"
-              ? `Representative, ${official.state}${official.district ? ` - District ${official.district}` : ""}`
+            official.terms?.[0]?.chamber === "House of Representatives"
+              ? `Representative, ${official.state}${official.terms?.[0]?.district ? ` - District ${official.terms[0].district}` : ""}`
               : `Senator, ${official.state}`,
           photoUrl: official.depiction?.imageUrl,
         }}

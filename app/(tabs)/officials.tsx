@@ -135,6 +135,7 @@ export default function OfficialsScreen() {
     "North Carolina",
     "North Dakota",
     "Ohio",
+    "Oklahoma",
     "Oregon",
     "Pennsylvania",
     "Rhode Island",
@@ -564,7 +565,7 @@ function OfficialCard({
 }) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
-
+  console.log(item.name, item.district, typeof item.district);
   return (
     <Pressable
       onPress={() => router.navigate(`/official/${item.bioguideId}`)}

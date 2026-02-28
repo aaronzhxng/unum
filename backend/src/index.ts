@@ -62,7 +62,12 @@ app.get("/api/officials", async (req, res) => {
       });
 
       const members = response.data.members || [];
-      allMembers = allMembers.concat(members);
+      allMembers = allMembers.concat(
+        members.map((m: any) => ({
+          ...m,
+          chamber: m.terms?.item?.[0]?.chamber ?? null,
+        })),
+      );
 
       hasMore = response.data.pagination?.next != null;
       offset += limit;
