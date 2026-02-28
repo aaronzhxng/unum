@@ -523,3 +523,51 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch cosponsors" });
   }
 });
+
+// Get sponsored legislation
+app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
+  try {
+    const { bioguideId } = req.params;
+
+    const response = await axios.get(
+      `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { limit: 250 },
+      },
+    );
+
+    const allLegislation = response.data.sponsoredLegislation || [];
+    res.json({
+      legislation: allLegislation,
+      count: response.data.pagination?.count || allLegislation.length,
+    });
+  } catch (error) {
+    console.error("Error fetching sponsored legislation:", error);
+    res.status(500).json({ error: "Failed to fetch sponsored legislation" });
+  }
+});
+
+// Get cosponsored legislation
+app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
+  try {
+    const { bioguideId } = req.params;
+
+    const response = await axios.get(
+      `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { limit: 250 },
+      },
+    );
+
+    const allLegislation = response.data.cosponsoredLegislation || [];
+    res.json({
+      legislation: allLegislation,
+      count: response.data.pagination?.count || allLegislation.length,
+    });
+  } catch (error) {
+    console.error("Error fetching cosponsored legislation:", error);
+    res.status(500).json({ error: "Failed to fetch cosponsored legislation" });
+  }
+});
