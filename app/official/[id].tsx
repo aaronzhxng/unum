@@ -317,7 +317,7 @@ export default function OfficialDetail() {
       </View>
     );
   }
-
+  console.log(official);
   return (
     <View style={componentStyles.screen}>
       {/* Header Bar */}
@@ -358,9 +358,9 @@ export default function OfficialDetail() {
         <View style={componentStyles.header}>
           <Text style={componentStyles.roleTop}>
             {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
-            {official.district
-              ? ` Representative, ${official.state} - District ${official.district}`
-              : ` Senator, ${official.state}`}
+            {official.terms?.[0]?.chamber === "House of Representatives"
+              ? `Representative, ${official.state}${official.terms?.[0]?.district ? ` - District ${official.terms[0].district}` : ""}`
+              : `Senator, ${official.state}`}
           </Text>
           <View style={componentStyles.centeredRow}>
             <View
@@ -516,9 +516,9 @@ export default function OfficialDetail() {
                 <View style={componentStyles.termRow}>
                   <Text style={componentStyles.term}>
                     {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
-                    {official.district
-                      ? ` Representative, ${official.state} - District ${official.district}`
-                      : " Senator"}
+                    {official.terms?.[0]?.chamber === "House of Representatives"
+                      ? `Representative, ${official.state}${official.terms?.[0]?.district ? ` - District ${official.terms[0].district}` : ""}`
+                      : `Senator, ${official.state}`}
                   </Text>
                 </View>
               )}
@@ -689,9 +689,10 @@ export default function OfficialDetail() {
           type: "official",
           name: official.directOrderName,
           party: official.partyHistory?.[0]?.partyName?.charAt(0) || "",
-          role: official.district
-            ? `Representative, ${official.state} - District ${official.district}`
-            : `Senator, ${official.state}`,
+          role:
+            official.chamber === "House of Representatives"
+              ? `Representative, ${official.state}${official.district ? ` - District ${official.district}` : ""}`
+              : `Senator, ${official.state}`,
           photoUrl: official.depiction?.imageUrl,
         }}
       />

@@ -349,21 +349,22 @@ export default function OfficialsScreen() {
           setPendingItemForNewList(item);
           setShowNewListModal(true);
         }}
-        currentItem={
-          currentOfficial
-            ? {
-                id: currentOfficial.bioguideId,
-                type: "official",
-                name: currentOfficial.name,
-                party: currentOfficial.partyName?.charAt(0) || "",
-                role: currentOfficial.district
-                  ? `Representative, ${currentOfficial.state} - District ${currentOfficial.district}`
-                  : `Senator, ${currentOfficial.state}`,
-                photoUrl:
-                  (currentOfficial as any).depiction?.imageUrl || undefined,
-              }
-            : undefined
-        }
+        currentItem={(() => {
+          const official = allOfficials.find(
+            (o) => o.bioguideId === currentOfficialId,
+          );
+          if (!official) return undefined;
+          return {
+            id: official.bioguideId,
+            type: "official",
+            name: official.name,
+            party: official.partyName?.charAt(0) || "",
+            role: official.district
+              ? `Representative, ${official.state} - District ${official.district}`
+              : `Senator, ${official.state}`,
+            photoUrl: (official as any).depiction?.imageUrl || undefined,
+          };
+        })()}
       />
 
       {/* Search Modal */}
@@ -616,8 +617,8 @@ function OfficialCard({
             </Text>
             <Text style={componentStyles.separator}>·</Text>
             <Text style={componentStyles.subtitle}>
-              {item.district
-                ? `Representative, ${item.state} - District ${item.district}`
+              {item.chamber === "House of Representatives"
+                ? `Representative, ${item.state}${item.district ? ` - District ${item.district}` : ""}`
                 : `Senator, ${item.state}`}
             </Text>
           </View>
