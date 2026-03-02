@@ -47,8 +47,7 @@ export default function LegislationScreen() {
 
   // Sort dropdown (Most Viewed)
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [selectedSort, setSelectedSort] = useState("Most Viewed");
-
+  const [selectedSort, setSelectedSort] = useState("Recent Action");
   // New List Modal
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -264,12 +263,26 @@ export default function LegislationScreen() {
       );
     }
 
-    return filtered;
+    // Sort
+    let sorted = [...filtered];
+    if (selectedSort === "Recent Action" || selectedSort === "Most Viewed") {
+      sorted.sort(
+        (a, b) =>
+          new Date((b as any).latestAction.actionDate).getTime() -
+          new Date((a as any).latestAction.actionDate).getTime(),
+      );
+    } else if (selectedSort === "Newest First") {
+      sorted.sort((a, b) => (b as any).number - (a as any).number);
+    } else if (selectedSort === "Oldest First") {
+      sorted.sort((a, b) => (a as any).number - (b as any).number);
+    }
+    return sorted;
   }, [
     allBills,
     selectedChambers,
     selectedPolicyAreas,
     selectedLegislationTypes,
+    selectedSort,
   ]);
 
   useEffect(() => {
@@ -536,7 +549,9 @@ export default function LegislationScreen() {
                 type: "bill",
                 name: `${currentBill.type}.${currentBill.number} - ${currentBill.title}`,
                 date: currentBill.latestAction.actionDate,
-                committee: currentBill.latestAction.text,
+                latestAction: currentBill.latestAction.text,
+                policyArea:
+                  enrichedBills[currentBillId ?? ""]?.policyArea?.name,
               }
             : undefined
         }
@@ -695,13 +710,9 @@ function BillCard({
         </View>
 
         {/* Bill Info */}
-        <View style={{ flex: 1 }}>
-          <Text style={componentStyles.name} numberOfLines={2}>
-            {item.type}.{item.number} - {item.title}
-          </Text>
-
-          <View style={componentStyles.metaRow}>
-            <Text style={componentStyles.subtitle}>
+        <View style={{ flex: 1, gap: 4 }}>
+          <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+            <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
               {new Date(item.latestAction.actionDate).toLocaleDateString(
                 "en-US",
                 {
@@ -711,11 +722,23 @@ function BillCard({
                 },
               )}
             </Text>
-            <Text style={componentStyles.separator}>·</Text>
-            <Text
-              style={[componentStyles.subtitle, { maxWidth: 148 }]}
-              numberOfLines={1}
-            >
+            {(enrichedData?.policyArea?.name || item.policyArea?.name) && (
+              <>
+                <Text style={componentStyles.separator}>·</Text>
+                <Text
+                  style={[componentStyles.subtitle, { flexShrink: 1 }]}
+                  numberOfLines={1}
+                >
+                  {enrichedData?.policyArea?.name || item.policyArea?.name}
+                </Text>
+              </>
+            )}
+          </View>
+          <Text style={componentStyles.name} numberOfLines={2}>
+            {item.type}.{item.number} - {item.title}
+          </Text>
+          <View style={componentStyles.metaRow}>
+            <Text style={componentStyles.subtitle} numberOfLines={1}>
               {item.latestAction.text}
             </Text>
           </View>

@@ -504,20 +504,33 @@ export default function BillDetail() {
               </Text>
             )}
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={componentStyles.billNumber}>
+
+          <View style={{ flex: 1, gap: 8 }}>
+            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+              <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
+                {new Date(bill.latestAction.actionDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric",
+                  },
+                )}
+              </Text>
+              {bill.policyArea?.name && (
+                <>
+                  <Text style={componentStyles.separator}>·</Text>
+                  <Text
+                    style={[componentStyles.subtitle, { flexShrink: 1 }]}
+                    numberOfLines={1}
+                  >
+                    {bill.policyArea.name}
+                  </Text>
+                </>
+              )}
+            </View>
+            <Text style={componentStyles.billNumber} numberOfLines={2}>
               {bill.type}.{bill.number} - {bill.title}
-            </Text>
-            <Text style={componentStyles.billDate} numberOfLines={1}>
-              {new Date(bill.latestAction.actionDate).toLocaleDateString(
-                "en-US",
-                {
-                  month: "2-digit",
-                  day: "2-digit",
-                  year: "numeric",
-                },
-              )}{" "}
-              · {bill.latestAction.text}
             </Text>
           </View>
         </View>
@@ -633,7 +646,7 @@ export default function BillDetail() {
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Sponsor: </Text>
               <Text style={componentStyles.detailInfo}>
-                Not available from current API
+                {data?.bill?.sponsors?.[0]?.fullName ?? "Not available"}
               </Text>
             </View>
 
@@ -1112,7 +1125,8 @@ export default function BillDetail() {
                 type: "bill",
                 name: `${bill.type}.${bill.number} - ${bill.title}`,
                 date: bill.latestAction?.actionDate,
-                committee: bill.latestAction?.text,
+                latestAction: bill.latestAction?.text,
+                policyArea: bill.policyArea?.name,
               }
             : undefined
         }

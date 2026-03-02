@@ -15,7 +15,8 @@ interface Props {
     party?: string;
     role?: string;
     date?: string;
-    committee?: string;
+    latestAction?: string;
+    policyArea?: string;
     photoUrl?: string;
   };
 }
@@ -77,6 +78,7 @@ export default function AddModal({
     Array<{ id: string; label: string }>
   >([]);
   const [activeListLabels, setActiveListLabels] = useState<string[]>([]);
+  const [pendingNewList, setPendingNewList] = useState(false);
 
   // Load available lists from storage
   useEffect(() => {
@@ -162,7 +164,6 @@ export default function AddModal({
     if (currentItem) {
       const lists = await storage.getLists();
 
-      // Remove from lists
       for (const listId of listsToRemove) {
         const list = lists.find((l) => l.id === listId);
         if (list) {
@@ -170,7 +171,6 @@ export default function AddModal({
         }
       }
 
-      // Add to lists
       for (const listId of listsToAdd) {
         const list = lists.find((l) => l.id === listId);
         if (list) {
@@ -183,7 +183,8 @@ export default function AddModal({
               party: currentItem.party,
               role: currentItem.role,
               date: currentItem.date,
-              committee: currentItem.committee,
+              latestAction: currentItem.latestAction,
+              policyArea: currentItem.policyArea,
               update: "",
               photoUrl: currentItem.photoUrl,
             };
@@ -195,9 +196,10 @@ export default function AddModal({
       await storage.saveLists(lists);
     }
 
+    setPendingNewList(hasNewList);
+
     closeModal();
 
-    // Show progress
     if (hasRemovals && removedListLabels.length > 0) {
       setActiveListLabels(removedListLabels);
       setIsRemoving(true);
@@ -210,6 +212,8 @@ export default function AddModal({
       setShowConfirmModal(true);
       setProgress(0);
       setCurrentListIndex(0);
+    } else if (hasNewList) {
+      setTimeout(() => onNewListPress(currentItem), 200);
     }
   };
 
@@ -251,8 +255,9 @@ export default function AddModal({
             setCurrentListIndex(0);
             setIsRemoving(false);
 
-            if (selectedLists.includes("new-list")) {
-              setTimeout(() => onNewListPress(currentItem), 200); // Pass currentItem
+            if (pendingNewList) {
+              setPendingNewList(false);
+              setTimeout(() => onNewListPress(currentItem), 200);
             }
           }, 300);
         }
@@ -286,7 +291,9 @@ export default function AddModal({
               nestedScrollEnabled
               showsVerticalScrollIndicator={false}
             >
-              <Text style={modalStyles.dropdownItemTextLabel}>Add to List</Text>
+              <Text style={modalStyles.dropdownItemTextLabel}>
+                Add or Remove from Lists
+              </Text>
               {availableLists.map((option) => (
                 <Pressable
                   key={option.id}
@@ -476,7 +483,8 @@ export default function AddModal({
                           party: currentItem.party,
                           role: currentItem.role,
                           date: currentItem.date,
-                          committee: currentItem.committee,
+                          latestAction: currentItem.latestAction,
+                          policyArea: currentItem.policyArea,
                           update: "",
                           photoUrl: currentItem.photoUrl,
                         };

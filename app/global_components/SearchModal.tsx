@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { styles as componentStyles } from "../global_styles/styles";
+import { getBillIcon } from "../utils/billIcons";
 import AddModal from "./AddModal";
 
 interface SearchModalProps {
@@ -22,7 +23,7 @@ interface SearchModalProps {
   searchContext?: string; // e.g., "My List", "Swing States"
   items?: any[]; // The items to search through
   onItemPress?: (item: any) => void; // Handle item selection
-  onNewListPress: () => void; // Handle New List creation
+  onNewListPress: (item?: any) => void;
 }
 
 export default function SearchModal({
@@ -71,17 +72,30 @@ export default function SearchModal({
 
     const lowercaseQuery = searchQuery.toLowerCase();
     const filtered = items.filter((item) => {
-      // Search in name (always present)
+      // Search in name (for stored list items)
       if (item.name?.toLowerCase().includes(lowercaseQuery)) return true;
 
       // Search in role (for officials)
       if (item.role?.toLowerCase().includes(lowercaseQuery)) return true;
 
-      // Search in committee (for bills)
-      if (item.committee?.toLowerCase().includes(lowercaseQuery)) return true;
-
       // Search in party
       if (item.party?.toLowerCase().includes(lowercaseQuery)) return true;
+
+      // Search in latestAction (for stored list items)
+      const latestActionText =
+        typeof item.latestAction === "string"
+          ? item.latestAction
+          : item.latestAction?.text;
+      if (latestActionText?.toLowerCase().includes(lowercaseQuery)) return true;
+
+      // Search in bill title (for legislation.tsx API bills)
+      if (item.title?.toLowerCase().includes(lowercaseQuery)) return true;
+
+      // Search in bill type + number (e.g. "HR 1234")
+      if (`${item.type} ${item.number}`.toLowerCase().includes(lowercaseQuery))
+        return true;
+      if (`${item.type}.${item.number}`.toLowerCase().includes(lowercaseQuery))
+        return true;
 
       return false;
     });
@@ -92,7 +106,6 @@ export default function SearchModal({
 
   const handleSubmit = () => {
     Keyboard.dismiss();
-    onSearch(searchQuery);
   };
 
   const handleItemPress = (item: any) => {
@@ -208,7 +221,14 @@ export default function SearchModal({
               </Text>
               <FlatList
                 data={filteredItems}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) =>
+                  item.id ||
+                  item.bioguideId ||
+                  (item.type && item.number
+                    ? `${item.type}${item.number}`
+                    : null) ||
+                  index.toString()
+                }
                 contentContainerStyle={componentStyles.listContent}
                 keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => (
@@ -219,69 +239,158 @@ export default function SearchModal({
                     })}
                   >
                     <View style={componentStyles.officialCard}>
-                      <Image
-                        source={item.avatar}
-                        style={componentStyles.avatar}
-                      />
-
-                      <View style={{ flex: 1, marginRight: 8 }}>
-                        <Text style={componentStyles.name} numberOfLines={1}>
-                          {item.name}
-                        </Text>
-
-                        <View style={componentStyles.metaRow}>
-                          {item.party && (
-                            <>
-                              <Text style={componentStyles.subtitle}>
-                                {item.party}
-                              </Text>
-                              <Text style={componentStyles.separator}>·</Text>
-                            </>
-                          )}
-                          {item.role && (
+                      {/* Avatar */}
+                      {item.title ? (
+                        // Bill icon
+                        <View
+                          style={[
+                            componentStyles.avatar,
+                            {
+                              backgroundColor: "#eee",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            },
+                          ]}
+                        >
+                          {item.policyArea?.name ? (
+                            <Image
+                              source={getBillIcon(item.policyArea.name)}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                borderRadius: 6,
+                              }}
+                              resizeMode="contain"
+                            />
+                          ) : (
                             <Text
-                              style={componentStyles.subtitle}
-                              numberOfLines={1}
+                              style={{
+                                fontSize: 16,
+                                fontWeight: "bold",
+                                color: "#535353",
+                              }}
                             >
-                              {item.role}
+                              {item.type}
                             </Text>
-                          )}
-                          {item.date && (
-                            <>
-                              <Text style={componentStyles.subtitle}>
-                                {item.date}
-                              </Text>
-                              <Text style={componentStyles.separator}>·</Text>
-                            </>
-                          )}
-                          {item.committee && (
-                            <Text
-                              style={componentStyles.subtitle}
-                              numberOfLines={1}
-                            >
-                              {item.committee}
-                            </Text>
-                          )}
-                          {item.update && (
-                            <>
-                              <Text style={componentStyles.separator}>·</Text>
-                              <Text style={componentStyles.update}>
-                                {item.update}
-                              </Text>
-                            </>
                           )}
                         </View>
-                      </View>
+                      ) : item.depiction?.imageUrl ? (
+                        // Official with depiction
+                        <View style={componentStyles.avatar}>
+                          <Image
+                            source={{ uri: item.depiction.imageUrl }}
+                            style={{ width: "100%", height: "120%" }}
+                            resizeMode="cover"
+                          />
+                        </View>
+                      ) : item.photoUrl ? (
+                        // Official with photoUrl (stored item)
+                        <View style={componentStyles.avatar}>
+                          <Image
+                            source={{ uri: item.photoUrl }}
+                            style={{ width: "100%", height: "120%" }}
+                            resizeMode="cover"
+                          />
+                        </View>
+                      ) : (
+                        // Fallback initials
+                        <View style={componentStyles.avatar}>
+                          <View
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              backgroundColor: "#BFBFBF",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: "white",
+                                fontSize: 24,
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {item.name?.split(",")[0]?.charAt(0) || "?"}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Content */}
+                      {item.title ? (
+                        // Bill info
+                        <View style={{ flex: 1, gap: 4 }}>
+                          <View
+                            style={[
+                              componentStyles.metaRow,
+                              { flexWrap: "nowrap" },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                componentStyles.subtitle,
+                                { flexShrink: 0 },
+                              ]}
+                            >
+                              {item.latestAction?.actionDate
+                                ? new Date(
+                                    item.latestAction.actionDate,
+                                  ).toLocaleDateString("en-US", {
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    year: "numeric",
+                                  })
+                                : item.date}
+                            </Text>
+                            {item.policyArea?.name && (
+                              <>
+                                <Text style={componentStyles.separator}>·</Text>
+                                <Text
+                                  style={[
+                                    componentStyles.subtitle,
+                                    { flexShrink: 1 },
+                                  ]}
+                                  numberOfLines={1}
+                                >
+                                  {item.policyArea.name}
+                                </Text>
+                              </>
+                            )}
+                          </View>
+                          <Text style={componentStyles.name} numberOfLines={2}>
+                            {item.type}.{item.number} - {item.title}
+                          </Text>
+                          <Text
+                            style={componentStyles.subtitle}
+                            numberOfLines={1}
+                          >
+                            {typeof item.latestAction === "string"
+                              ? item.latestAction
+                              : item.latestAction?.text}
+                          </Text>
+                        </View>
+                      ) : (
+                        // Official info
+                        <View style={{ flex: 1 }}>
+                          <Text style={componentStyles.name}>{item.name}</Text>
+                          <View style={componentStyles.metaRow}>
+                            <Text style={componentStyles.subtitle}>
+                              {item.partyName?.charAt(0) || item.party || ""}
+                              {(item.partyName || item.party) && " · "}
+                              {item.chamber === "House of Representatives"
+                                ? `Representative, ${item.state}${item.district ? `, District ${item.district}` : ""}`
+                                : item.role || `Senator, ${item.state}`}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
 
                       {/* Add Button */}
                       <Pressable
                         onPress={(e) => handleAddPress(item, e)}
                         style={({ pressed }) => ({
-                          width: 32,
-                          height: 32,
-                          borderRadius: 16,
-                          justifyContent: "center",
-                          alignItems: "center",
+                          padding: 8,
                           transform: [{ scale: pressed ? 0.75 : 1 }],
                         })}
                       >
@@ -302,17 +411,20 @@ export default function SearchModal({
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
         setSelectedLists={setSelectedLists}
-        onNewListPress={onNewListPress}
+        onNewListPress={(item) => {
+          onNewListPress(item);
+        }}
         currentItem={
           selectedAddItem
             ? {
                 id: selectedAddItem.id,
-                type: selectedAddItem.type || "official", // Determine based on your data structure
+                type: selectedAddItem.type || "official",
                 name: selectedAddItem.name,
                 party: selectedAddItem.party,
                 role: selectedAddItem.role,
                 date: selectedAddItem.date,
-                committee: selectedAddItem.committee,
+                latestAction: selectedAddItem.latestAction,
+                policyArea: selectedAddItem.policyArea,
                 photoUrl: selectedAddItem.photoUrl,
               }
             : undefined

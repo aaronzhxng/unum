@@ -7,7 +7,8 @@ export interface ListItem {
   party?: string;
   role?: string;
   date?: string;
-  committee?: string;
+  latestAction?: string;
+  policyArea?: string;
   update?: string;
   avatar?: any;
   photoUrl?: string;

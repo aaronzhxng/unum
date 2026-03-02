@@ -611,10 +611,11 @@ export default function HomeScreen() {
             router.navigate(`/bill/${item.id}`);
           }
         }}
-        onNewListPress={() => {
+        onNewListPress={(item) => {
+          setPendingItemForNewList(item); // store it
           setNewListContext("search");
-          setShowSearchModal(false); // Close SearchModal first
-          setTimeout(() => setShowNewListModal(true), 300); // Then open after animation
+          setShowSearchModal(false);
+          setTimeout(() => setShowNewListModal(true), 300);
         }}
       />
 
@@ -624,8 +625,9 @@ export default function HomeScreen() {
         setShowOptionsModal={setShowOptionsModal}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
-        selectedListId={currentListId} // ADD THIS
-        refreshLists={refreshLists} // ADD THIS
+        selectedListId={currentListId}
+        refreshLists={refreshLists}
+        setSelectedList={setSelectedList} // ADD THIS
       />
 
       {/* List Selection Modal */}
@@ -910,22 +912,35 @@ function Card({
             </View>
           </View>
         ) : (
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+              <Text
+                style={[componentStyles.subtitle, { flexShrink: 0 }]}
+                numberOfLines={1}
+              >
+                {formatDate(item.date)}
+              </Text>
+              {item.policyArea && (
+                <>
+                  <Text style={componentStyles.separator}>·</Text>
+                  <Text
+                    style={[componentStyles.subtitle, { flexShrink: 1 }]}
+                    numberOfLines={1}
+                  >
+                    {item.policyArea}
+                  </Text>
+                </>
+              )}
+            </View>
             <Text style={componentStyles.name} numberOfLines={2}>
               {item.name}
             </Text>
-            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
-              <Text style={componentStyles.subtitle} numberOfLines={1}>
-                {formatDate(item.date)}
-              </Text>
-              <Text style={componentStyles.separator}>·</Text>
-              <Text
-                style={[componentStyles.subtitle, { flex: 1 }]}
-                numberOfLines={1}
-              >
-                {item.committee}
-              </Text>
-            </View>
+            <Text
+              style={[componentStyles.subtitle, { flexShrink: 1 }]}
+              numberOfLines={1}
+            >
+              {item.latestAction}
+            </Text>
           </View>
         )}
       </View>

@@ -37,6 +37,10 @@ type Official = {
   role: string;
   update?: string;
   avatar?: any;
+  chamber?: string;
+  district?: number;
+  state?: string;
+  bioguideId?: string;
 };
 
 export default function OfficialsScreen() {
@@ -102,14 +106,17 @@ export default function OfficialsScreen() {
     "Federal",
     "Alabama",
     "Alaska",
+    "American Samoa",
     "Arizona",
     "Arkansas",
     "California",
     "Colorado",
     "Connecticut",
     "Delaware",
+    "District of Columbia",
     "Florida",
     "Georgia",
+    "Guam",
     "Hawaii",
     "Idaho",
     "Illinois",
@@ -134,10 +141,12 @@ export default function OfficialsScreen() {
     "New York",
     "North Carolina",
     "North Dakota",
+    "Northern Mariana Islands",
     "Ohio",
     "Oklahoma",
     "Oregon",
     "Pennsylvania",
+    "Puerto Rico",
     "Rhode Island",
     "South Carolina",
     "South Dakota",
@@ -145,6 +154,7 @@ export default function OfficialsScreen() {
     "Texas",
     "Utah",
     "Vermont",
+    "Virgin Islands",
     "Virginia",
     "Washington",
     "West Virginia",
@@ -159,72 +169,27 @@ export default function OfficialsScreen() {
 
   const allOfficials = data?.officials || [];
 
-  // Add state name to code mapping
-  const STATE_CODES: { [key: string]: string } = {
-    Alabama: "AL",
-    Alaska: "AK",
-    Arizona: "AZ",
-    Arkansas: "AR",
-    California: "CA",
-    Colorado: "CO",
-    Connecticut: "CT",
-    Delaware: "DE",
-    Florida: "FL",
-    Georgia: "GA",
-    Hawaii: "HI",
-    Idaho: "ID",
-    Illinois: "IL",
-    Indiana: "IN",
-    Iowa: "IA",
-    Kansas: "KS",
-    Kentucky: "KY",
-    Louisiana: "LA",
-    Maine: "ME",
-    Maryland: "MD",
-    Massachusetts: "MA",
-    Michigan: "MI",
-    Minnesota: "MN",
-    Mississippi: "MS",
-    Missouri: "MO",
-    Montana: "MT",
-    Nebraska: "NE",
-    Nevada: "NV",
-    "New Hampshire": "NH",
-    "New Jersey": "NJ",
-    "New Mexico": "NM",
-    "New York": "NY",
-    "North Carolina": "NC",
-    "North Dakota": "ND",
-    Ohio: "OH",
-    Oklahoma: "OK",
-    Oregon: "OR",
-    Pennsylvania: "PA",
-    "Rhode Island": "RI",
-    "South Carolina": "SC",
-    "South Dakota": "SD",
-    Tennessee: "TN",
-    Texas: "TX",
-    Utah: "UT",
-    Vermont: "VT",
-    Virginia: "VA",
-    Washington: "WA",
-    "West Virginia": "WV",
-    Wisconsin: "WI",
-    Wyoming: "WY",
-  };
-
   // Filter officials based on selected state
   const officials = useMemo(() => {
-    if (selectedList === "Federal") {
-      return allOfficials;
-    }
+    const filtered =
+      selectedList === "Federal"
+        ? allOfficials
+        : allOfficials.filter((official) => official.state === selectedList);
 
-    // Direct comparison - API returns full state names
-    const filtered = allOfficials.filter(
-      (official) => official.state === selectedList,
-    );
+    return [...filtered].sort((a: any, b: any) => {
+      // Sort by state alphabetically
+      if (a.state < b.state) return -1;
+      if (a.state > b.state) return 1;
 
-    return filtered;
+      // Within same state: senators first
+      const aIsSenator = a.chamber !== "House of Representatives";
+      const bIsSenator = b.chamber !== "House of Representatives";
+      if (aIsSenator && !bIsSenator) return -1;
+      if (!aIsSenator && bIsSenator) return 1;
+
+      // Both reps: sort by district number
+      return (a.district ?? 0) - (b.district ?? 0);
+    });
   }, [allOfficials, selectedList]);
 
   const currentOfficial = allOfficials.find(
@@ -361,7 +326,7 @@ export default function OfficialsScreen() {
             name: official.name,
             party: official.partyName?.charAt(0) || "",
             role: official.district
-              ? `Representative, ${official.state} - District ${official.district}`
+              ? `Representative, ${official.state}, District ${official.district}`
               : `Senator, ${official.state}`,
             photoUrl: (official as any).depiction?.imageUrl || undefined,
           };

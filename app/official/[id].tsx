@@ -12,33 +12,15 @@ import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
 import AddModal from "../global_components/AddModal";
+import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { officialsService } from "../services/officials";
 import { storage } from "../utils/storage";
-import FilterDropdown from "./official_components/FilterDropdown";
 import OptionsModal from "./official_components/OptionsModal";
 import SearchModal from "./official_components/SearchModal";
 import SortDropdown from "./official_components/SortDropdown";
 import { styles as componentStyles } from "./styles";
-
-// function BillCard({ item }: { item: any }) {
-//   return (
-//     <View style={componentStyles.billCard}>
-//       <Image source={item.icon} style={componentStyles.billIcon} />
-//       <View style={componentStyles.billInfo}>
-//         <Text style={componentStyles.billNumber}>{item.name}</Text>
-//         <View style={componentStyles.billStatusRow}>
-//           <Text style={componentStyles.billTitle}>{item.date}</Text>
-//           <Text style={componentStyles.separator}>·</Text>
-//           <Text style={componentStyles.billTitle}>{item.committee}</Text>
-//           <Text style={componentStyles.separator}>·</Text>
-//           <Text style={componentStyles.update}>{item.update}</Text>
-//         </View>
-//       </View>
-//     </View>
-//   );
-// }
 
 // Renders a real bill from the API using existing BillCard styles
 function LegislationCard({ item }: { item: any }) {
@@ -54,11 +36,8 @@ function LegislationCard({ item }: { item: any }) {
   return (
     <View style={componentStyles.billCard}>
       <View style={componentStyles.billInfo}>
-        <Text style={componentStyles.billNumber}>
-          {item.type}.{item.number}
-        </Text>
-        <Text style={componentStyles.billTitle} numberOfLines={2}>
-          {item.title}
+        <Text style={componentStyles.billNumber} numberOfLines={2}>
+          {item.type}.{item.number} - {item.title}
         </Text>
         <View style={componentStyles.billStatusRow}>
           <Text style={componentStyles.billTitle}>
@@ -88,12 +67,12 @@ export default function OfficialDetail() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Most Viewed");
 
-  const [isFiltered, setIsFiltered] = useState(false);
-  const [showTypeModal, setShowTypeModal] = useState(false);
-  const [selectedTypes, setSelectedTypes] = useState(["Bills"]);
-
-  const [showPolicyModal, setShowPolicyModal] = useState(false);
-  const [selectedPolicies, setSelectedPolicies] = useState(["Congress"]);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedChambers, setSelectedChambers] = useState<string[]>([]);
+  const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
+  const [selectedLegislationTypes, setSelectedLegislationTypes] = useState<
+    string[]
+  >([]);
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -203,32 +182,33 @@ export default function OfficialDetail() {
     { id: "animals", label: "Animals" },
   ];
 
-  const toggleType = (type: string) => {
-    setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+  const toggleChamber = (id: string) => {
+    setSelectedChambers((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
-  const togglePolicy = (policy: string) => {
-    setSelectedPolicies((prev) =>
-      prev.includes(policy)
-        ? prev.filter((p) => p !== policy)
-        : [...prev, policy],
+  const togglePolicyArea = (id: string) => {
+    setSelectedPolicyAreas((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
+  const toggleLegislationType = (id: string) => {
+    setSelectedLegislationTypes((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
   const handleCancel = () => {
-    setSelectedTypes(["Bills"]);
-    setSelectedPolicies(["Congress"]);
-    setShowTypeModal(false);
-    setShowPolicyModal(false);
+    setSelectedChambers([]);
+    setSelectedPolicyAreas([]);
+    setSelectedLegislationTypes([]);
+    setShowFilterModal(false);
   };
 
   const handleApply = () => {
-    const hasFilters = selectedTypes.length > 1 || selectedPolicies.length > 1;
-    setIsFiltered(hasFilters);
-    setShowTypeModal(false);
-    setShowPolicyModal(false);
+    setShowFilterModal(false);
   };
 
   const { data, isLoading, error } = useQuery({
@@ -279,6 +259,56 @@ export default function OfficialDetail() {
   const activeLoading =
     activeTab === "sponsor" ? sponsoredLoading : cosponsoredLoading;
 
+  const filteredBills = useMemo(() => {
+    let filtered = activeBills;
+
+    if (selectedChambers.length > 0) {
+      const houseTypes = ["HR", "HRES", "HJRES", "HCONRES", "HAMDT"];
+      const senateTypes = [
+        "S",
+        "SRES",
+        "SJRES",
+        "SCONRES",
+        "SAMDT",
+        "PN",
+        "TREATY",
+      ];
+
+      filtered = filtered.filter((bill: any) => {
+        if (
+          selectedChambers.includes("house") &&
+          houseTypes.includes(bill.type)
+        )
+          return true;
+        if (
+          selectedChambers.includes("senate") &&
+          senateTypes.includes(bill.type)
+        )
+          return true;
+        return false;
+      });
+    }
+    if (selectedLegislationTypes.length > 0) {
+      const typeMap: { [key: string]: string[] } = {
+        bill: ["HR", "S"],
+        joint_resolution: ["HJRES", "SJRES"],
+        concurrent_resolution: ["HCONRES", "SCONRES"],
+        resolution: ["HRES", "SRES"],
+        amendment: ["HAMDT", "SAMDT"],
+        nomination: ["PN"],
+        treaty: ["TREATY"],
+      };
+
+      const apiTypes = selectedLegislationTypes.flatMap(
+        (id) => typeMap[id] || [],
+      );
+
+      filtered = filtered.filter((bill: any) => apiTypes.includes(bill.type));
+    }
+
+    return filtered;
+  }, [activeBills, selectedLegislationTypes, selectedChambers]);
+
   useEffect(() => {
     if (!showNewListProgressModal) return;
 
@@ -317,8 +347,6 @@ export default function OfficialDetail() {
       </View>
     );
   }
-  // console.log(official);
-  // console.log(official.terms?.[0]?.chamber);
 
   return (
     <View style={componentStyles.screen}>
@@ -500,7 +528,7 @@ export default function OfficialDetail() {
                       >
                         {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
                         {official.state}
-                        {term.district ? ` - District ${term.district}` : ""}
+                        {term.district ? `, District ${term.district}` : ""}
                       </Text>
                       <Text
                         style={[
@@ -557,17 +585,14 @@ export default function OfficialDetail() {
                         componentStyles.button,
                         { transform: [{ scale: pressed ? 0.96 : 1 }] },
                       ]}
-                      onPress={() => {
-                        setShowTypeModal(true);
-                        setShowPolicyModal(true);
-                      }}
+                      onPress={() => setShowFilterModal(true)}
                     >
                       <Text style={componentStyles.legislationHeaderTotal}>
-                        {activeBills.length < activeCount
-                          ? `${activeBills.length} / ${activeCount.toLocaleString()} Shown`
+                        {filteredBills.length < activeCount
+                          ? `${filteredBills.length} / ${activeCount.toLocaleString()} Shown`
                           : ""}
                       </Text>
-                      {showTypeModal || showPolicyModal ? (
+                      {showFilterModal ? (
                         <ChevronUp
                           size={24}
                           color="#535353"
@@ -624,14 +649,14 @@ export default function OfficialDetail() {
                 </View>
 
                 {/* Bill list */}
-                {activeBills.length === 0 ? (
+                {filteredBills.length === 0 ? (
                   <View style={{ paddingVertical: 60, alignItems: "center" }}>
                     <Text style={{ color: "#7B7C81", fontSize: 13 }}>
                       No legislation found
                     </Text>
                   </View>
                 ) : (
-                  activeBills.map((item: any, index: number) => (
+                  filteredBills.map((item: any, index: number) => (
                     <LegislationCard
                       key={`${item.type}-${item.number}-${item.congress}-${index}`}
                       item={item}
@@ -655,19 +680,21 @@ export default function OfficialDetail() {
                 />
 
                 {/* Selected Legislation Dropdown Popup */}
-                <FilterDropdown
-                  showTypeModal={showTypeModal}
-                  showPolicyModal={showPolicyModal}
-                  selectedTypes={selectedTypes}
-                  selectedPolicies={selectedPolicies}
-                  toggleType={toggleType}
-                  togglePolicy={togglePolicy}
-                  setShowTypeModal={setShowTypeModal}
-                  setShowPolicyModal={setShowPolicyModal}
+                <LegislationFilterModal
+                  visible={showFilterModal}
+                  onClose={() => setShowFilterModal(false)}
+                  selectedChambers={selectedChambers}
+                  selectedPolicyAreas={selectedPolicyAreas}
+                  selectedLegislationTypes={selectedLegislationTypes}
+                  toggleChamber={toggleChamber}
+                  togglePolicyArea={togglePolicyArea}
+                  toggleLegislationType={toggleLegislationType}
                   onCancel={handleCancel}
                   onApply={handleApply}
-                  legislationTypes={legislationTypes}
-                  policyAreas={policyAreas}
+                  setSelectedChambers={setSelectedChambers}
+                  setSelectedPolicyAreas={setSelectedPolicyAreas}
+                  setSelectedLegislationTypes={setSelectedLegislationTypes}
+                  resultCount={filteredBills.length}
                 />
               </>
             )}

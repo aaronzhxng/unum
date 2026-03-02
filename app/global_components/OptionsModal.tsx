@@ -16,8 +16,9 @@ interface Props {
   setShowOptionsModal: React.Dispatch<React.SetStateAction<boolean>>;
   selectedNotifications: string;
   setSelectedNotifications: React.Dispatch<React.SetStateAction<string>>;
-  selectedListId: string; // <-- add this
+  selectedListId: string;
   refreshLists: () => Promise<void>;
+  setSelectedList: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function OptionsModal({
@@ -27,6 +28,7 @@ export default function OptionsModal({
   setSelectedNotifications,
   selectedListId,
   refreshLists,
+  setSelectedList,
 }: Props) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
@@ -38,9 +40,17 @@ export default function OptionsModal({
     setSelectedNotifications("Notifications for this List");
   };
 
-  const handleRenameConfirm = () => {
-    setSelectedNotifications(renameValue);
+  const handleRenameConfirm = async () => {
+    if (!selectedListId || !renameValue.trim()) return;
+
+    const allLists = await storage.getLists();
+    const updatedLists = allLists.map((list) =>
+      list.id === selectedListId ? { ...list, name: renameValue.trim() } : list,
+    );
+    await storage.saveLists(updatedLists);
+    setSelectedList(renameValue.trim()); // ADD THIS
     setShowRenameModal(false);
+    await refreshLists();
   };
 
   const handleDeleteConfirm = async () => {

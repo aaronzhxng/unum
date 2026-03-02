@@ -39,7 +39,6 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#000000",
-    marginBottom: 4,
   },
   billTitle: {
     fontSize: 20,
@@ -350,7 +349,7 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: "#7B7C81",
   },
-  separator1: {
+  separator: {
     fontSize: 12,
     color: "#000000",
     marginHorizontal: 4,
