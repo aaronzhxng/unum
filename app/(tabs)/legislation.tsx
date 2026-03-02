@@ -265,12 +265,15 @@ export default function LegislationScreen() {
 
     // Sort
     let sorted = [...filtered];
-    if (selectedSort === "Recent Action" || selectedSort === "Most Viewed") {
+    if (selectedSort === "Recent Action") {
       sorted.sort(
         (a, b) =>
           new Date((b as any).latestAction.actionDate).getTime() -
           new Date((a as any).latestAction.actionDate).getTime(),
       );
+    } else if (selectedSort === "Most Viewed") {
+      // Keep original API order — Congress.gov returns by relevance by default
+      // No sort applied
     } else if (selectedSort === "Newest First") {
       sorted.sort((a, b) => (b as any).number - (a as any).number);
     } else if (selectedSort === "Oldest First") {

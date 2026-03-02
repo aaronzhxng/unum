@@ -11,15 +11,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
+import SortDropdown from "../bill/bill_components/SortDropdown";
 import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
+import { getBillIcon } from "../utils/billIcons";
 import { storage } from "../utils/storage";
 import OptionsModal from "./official_components/OptionsModal";
-import SortDropdown from "./official_components/SortDropdown";
 import { styles as componentStyles } from "./styles";
 
 // Renders a real bill from the API using existing BillCard styles
@@ -35,23 +36,49 @@ function LegislationCard({ item }: { item: any }) {
 
   return (
     <View style={componentStyles.billCard}>
+      <View
+        style={[
+          componentStyles.avatar,
+          {
+            justifyContent: "center",
+            alignItems: "center",
+            width: 50,
+            height: 50,
+            borderRadius: 32,
+            marginRight: 12,
+            backgroundColor: "#eee",
+            overflow: "hidden",
+            borderWidth: 0,
+          },
+        ]}
+      >
+        {item.policyArea?.name ? (
+          <Image
+            source={getBillIcon(item.policyArea.name)}
+            style={{ width: "100%", height: "100%", borderRadius: 6 }}
+            resizeMode="contain"
+          />
+        ) : (
+          <Text style={{ fontSize: 14, fontWeight: "bold", color: "#535353" }}>
+            {item.type}
+          </Text>
+        )}
+      </View>
       <View style={componentStyles.billInfo}>
         <View style={componentStyles.billStatusRow}>
-          <Text style={componentStyles.billTitle}>
+          <Text style={componentStyles.billTitle} numberOfLines={1}>
             {formatDate(item.introducedDate)}
+            {item.policyArea?.name ? ` · ${item.policyArea.name}` : ""}
           </Text>
-          {item.policyArea?.name && (
-            <>
-              <Text style={componentStyles.separator}>·</Text>
-              <Text style={componentStyles.billTitle} numberOfLines={1}>
-                {item.policyArea.name}
-              </Text>
-            </>
-          )}
         </View>
         <Text style={componentStyles.billNumber} numberOfLines={2}>
           {item.type}.{item.number} - {item.title}
         </Text>
+        {item.latestAction?.text && (
+          <Text style={componentStyles.billTitle} numberOfLines={1}>
+            {item.latestAction.text}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -288,6 +315,7 @@ export default function OfficialDetail() {
         return false;
       });
     }
+
     if (selectedLegislationTypes.length > 0) {
       const typeMap: { [key: string]: string[] } = {
         bill: ["HR", "S"],
@@ -298,36 +326,52 @@ export default function OfficialDetail() {
         nomination: ["PN"],
         treaty: ["TREATY"],
       };
-
       const apiTypes = selectedLegislationTypes.flatMap(
         (id) => typeMap[id] || [],
       );
-
       filtered = filtered.filter((bill: any) => apiTypes.includes(bill.type));
     }
 
-    return filtered;
-  }, [activeBills, selectedLegislationTypes, selectedChambers]);
+    // Apply sort
+    const sorted = [...filtered];
+    switch (selectedSort) {
+      case "Most Recent Action":
+        return sorted.sort(
+          (a, b) =>
+            new Date(
+              b.latestAction?.actionDate ?? b.introducedDate ?? 0,
+            ).getTime() -
+            new Date(
+              a.latestAction?.actionDate ?? a.introducedDate ?? 0,
+            ).getTime(),
+        );
+      case "Newest First":
+        return sorted.sort(
+          (a, b) =>
+            new Date(b.introducedDate ?? 0).getTime() -
+            new Date(a.introducedDate ?? 0).getTime(),
+        );
+      case "Oldest First":
+        return sorted.sort(
+          (a, b) =>
+            new Date(a.introducedDate ?? 0).getTime() -
+            new Date(b.introducedDate ?? 0).getTime(),
+        );
+      case "Most Viewed":
+      default:
+        return sorted; // API order is already by relevance/views
+    }
+  }, [activeBills, selectedLegislationTypes, selectedChambers, selectedSort]);
 
-  useEffect(() => {
-    if (!showNewListProgressModal) return;
-
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += 5;
-      setNewListProgress(currentProgress);
-
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setShowNewListProgressModal(false);
-          setNewListProgress(0);
-        }, 300);
-      }
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, [showNewListProgressModal]);
+  const searchableBills = filteredBills.map((item: any) => ({
+    ...item,
+    type: "bill",
+    billType: item.type,
+    name: `${item.type}.${item.number} - ${item.title}`,
+    title: undefined, // ← forces SearchModal to use item.name instead
+    date: item.introducedDate,
+    policyArea: item.policyArea?.name ?? item.policyArea ?? null,
+  }));
 
   if (isLoading) {
     return (
@@ -672,10 +716,10 @@ export default function OfficialDetail() {
                   searchContext={
                     activeTab === "sponsor" ? "Sponsored" : "Cosponsored"
                   }
-                  items={filteredBills}
+                  items={searchableBills}
                   onItemPress={(item) => {
                     router.navigate(
-                      `/bill/${item.type.toLowerCase()}${item.number}`,
+                      `/bill/${item.billType.toLowerCase()}${item.number}`,
                     );
                     setShowSearchModal(false);
                   }}
@@ -688,6 +732,7 @@ export default function OfficialDetail() {
                   setShowSortDropdown={setShowSortDropdown}
                   selectedSort={selectedSort}
                   setSelectedSort={setSelectedSort}
+                  dropdownType="sponsored"
                 />
 
                 {/* Selected Legislation Dropdown Popup */}

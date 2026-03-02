@@ -99,12 +99,6 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   };
 
   const filteredCosponsors = sortedCosponsors.filter((cosponsor) => {
-    console.log(
-      "cosponsor.party:",
-      cosponsor.party,
-      "selectedParty:",
-      selectedParty,
-    );
     const roleMatch =
       !selectedRole?.length ||
       selectedRole.some((role) => cosponsor.role?.toLowerCase().includes(role));

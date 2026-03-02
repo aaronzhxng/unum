@@ -24,6 +24,7 @@ interface FilterDropdownProps {
   onFilterClose?: () => void;
   chamberLabelOverride?: string;
   marginTopOverride?: number;
+  showMilestoneNote?: boolean;
 }
 
 const FilterDropdown: React.FC<FilterDropdownProps> = ({
@@ -43,6 +44,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
   chamberLabelOverride,
   onFilterClose,
   marginTopOverride,
+  showMilestoneNote,
 }) => {
   const modalMarginTop =
     marginTopOverride !== undefined
@@ -140,13 +142,14 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
               </ScrollView>
             </View>
             {/* After the chamber ScrollView, inside the chamber View */}
-            {chamberLabelOverride === "Chamber of Origin" && (
+            {showMilestoneNote && (
               <Text
                 style={{
                   fontSize: 11,
                   color: "#7B7C81",
+                  marginVertical: 12,
                   marginTop: 6,
-                  paddingHorizontal: 4,
+                  paddingHorizontal: 32,
                 }}
               >
                 Milestone actions (e.g. signed by President) always appear
@@ -212,7 +215,6 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 </ScrollView>
               </View>
             )}
-
             {/* Buttons */}
             <View style={{ flexDirection: "row", gap: 12 }}>
               <Pressable

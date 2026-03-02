@@ -7,7 +7,7 @@ interface Props {
   setShowSortDropdown: React.Dispatch<React.SetStateAction<boolean>>;
   selectedSort: string;
   setSelectedSort: React.Dispatch<React.SetStateAction<string>>;
-  dropdownType?: "amendments" | "actions" | "cosponsors"; // NEW: Controls options
+  dropdownType?: "amendments" | "actions" | "cosponsors" | "sponsored";
 }
 
 export default function SortDropdown({
@@ -19,14 +19,15 @@ export default function SortDropdown({
 }: Props) {
   // NEW: Dynamic options per type
   const options = {
-    amendments: [
+    amendments: ["Newest First", "Oldest First"],
+    actions: ["Newest First", "Oldest First"],
+    cosponsors: ["Oldest First", "Newest First", "A-Z", "Z-A"],
+    sponsored: [
       "Most Viewed",
       "Most Recent Action",
       "Newest First",
       "Oldest First",
     ],
-    actions: ["Most Recent Action", "Oldest First"],
-    cosponsors: ["A-Z", "Z-A", "Newest First", "Oldest First"], // Only these for cosponsors
   };
 
   return (

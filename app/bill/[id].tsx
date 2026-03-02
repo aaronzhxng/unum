@@ -45,10 +45,19 @@ export default function BillDetail() {
   const [showAmendments, setShowAmendments] = useState(false);
   const [showAmendmentsSort, setShowAmendmentsSort] = useState(false);
   const [selectedAmendmentsSort, setSelectedAmendmentsSort] =
-    useState("Most Viewed");
+    useState("Newest First");
   const [enrichedAmendments, setEnrichedAmendments] = useState<any[]>([]);
   const [loadingAmendments, setLoadingAmendments] = useState(false);
   const [amendmentOffset, setAmendmentOffset] = useState(0);
+  const [selectedAmendmentChamber, setSelectedAmendmentChamber] = useState<
+    string[]
+  >([]);
+  const [selectedAmendmentParty, setSelectedAmendmentParty] = useState<
+    string[]
+  >([]);
+  const [showAmendmentChamberModal, setShowAmendmentChamberModal] =
+    useState(false);
+  const [showAmendmentPartyModal, setShowAmendmentPartyModal] = useState(false);
 
   const [isFiltered, setIsFiltered] = useState(false);
   const [showChamberModal, setShowChamberModal] = useState(false);
@@ -58,11 +67,13 @@ export default function BillDetail() {
   const [selectedPolicies, setSelectedPolicies] = useState(["Congress"]);
 
   const [showActionsSort, setShowActionsSort] = useState(false);
-  const [selectedActionsSort, setSelectedActionsSort] = useState("Most Recent");
+  const [selectedActionsSort, setSelectedActionsSort] =
+    useState("Newest First");
 
   const [showCosponsorFilter, setShowCosponsorFilter] = useState(false);
   const [showCosponsorSort, setShowCosponsorSort] = useState(false);
-  const [selectedCosponsorSort, setSelectedCosponsorSort] = useState("A-Z");
+  const [selectedCosponsorSort, setSelectedCosponsorSort] =
+    useState("Oldest First");
   const [selectedRole, setSelectedRole] = useState<string[]>([]);
   const [showCosponsorChamberModal, setShowCosponsorChamberModal] =
     useState(false);
@@ -163,6 +174,18 @@ export default function BillDetail() {
     );
   };
 
+  const toggleAmendmentChamber = (id: string) => {
+    setSelectedAmendmentChamber((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+    );
+  };
+
+  const toggleAmendmentParty = (id: string) => {
+    setSelectedAmendmentParty((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
+    );
+  };
+
   const handleCancel = () => {
     setSelectedChamber(["Bills"]);
     setSelectedPolicies(["Congress"]);
@@ -186,11 +209,8 @@ export default function BillDetail() {
       const cached = await billCache.getBill(billId);
 
       if (cached) {
-        // console.log("Using cached bill data for", billId);
         return { bill: cached };
       }
-
-      // console.log("Fetching bill from API:", billId);
 
       // CRITICAL: Fetch bill details first, THEN fetch the rest
       const billResult = await billsService.getById(billId);
@@ -198,8 +218,6 @@ export default function BillDetail() {
       if (!billResult?.bill) {
         throw new Error("Bill not found");
       }
-
-      // console.log("Bill details fetched, now fetching supplementary data...");
 
       // Fetch supplementary data with longer timeouts
       const [summariesResult, actionsResult, amendmentsResult] =
@@ -220,12 +238,6 @@ export default function BillDetail() {
         amendmentsResult.status === "fulfilled"
           ? amendmentsResult.value.amendments
           : [];
-
-      // console.log("Supplementary data loaded:", {
-      //   summaries: summaries.length,
-      //   actions: actions.length,
-      //   amendments: amendments.length,
-      // });
 
       // Merge everything into bill data
       const enrichedBill = {
@@ -559,18 +571,31 @@ export default function BillDetail() {
     }
   });
 
-  // const filteredCosponsors = sortedCosponsors.filter((c) => {
-  //   const roleMatch =
-  //     selectedRole.length === 0 ||
-  //     (selectedRole.includes("representative") && c.role.startsWith("Rep")) ||
-  //     (selectedRole.includes("senator") && c.role.startsWith("Senator"));
+  const displayedAmendments = enrichedAmendments
+    .filter((a: any) => {
+      const chamberMatch =
+        selectedAmendmentChamber.length === 0 ||
+        (selectedAmendmentChamber.includes("house") &&
+          a.type?.startsWith("H")) ||
+        (selectedAmendmentChamber.includes("senate") &&
+          a.type?.startsWith("S"));
 
-  //   const partyMatch =
-  //     selectedCosponsorParty.length === 0 ||
-  //     selectedCosponsorParty.includes(c.party);
+      const partyMatch =
+        selectedAmendmentParty.length === 0 ||
+        (a.sponsors?.[0]?.party &&
+          selectedAmendmentParty
+            .map((p) => p.charAt(0).toUpperCase())
+            .includes(a.sponsors[0].party));
 
-  //   return roleMatch && partyMatch;
-  // });
+      return chamberMatch && partyMatch;
+    })
+    .sort((a: any, b: any) => {
+      const numA = parseInt(a.number || "0");
+      const numB = parseInt(b.number || "0");
+      return selectedAmendmentsSort === "Oldest First"
+        ? numA - numB
+        : numB - numA;
+    });
 
   return (
     <View style={componentStyles.screen}>
@@ -900,8 +925,8 @@ export default function BillDetail() {
                           },
                         ]}
                         onPress={() => {
-                          setShowChamberModal(true);
-                          setShowPartyModal(true);
+                          setShowAmendmentChamberModal(true);
+                          setShowAmendmentPartyModal(false);
                         }}
                       >
                         <Text
@@ -910,9 +935,9 @@ export default function BillDetail() {
                             { lineHeight: 16 },
                           ]}
                         >
-                          Amendments ({bill.amendments?.length || 0})
+                          Amendments ({displayedAmendments.length})
                         </Text>
-                        {showChamberModal || showPartyModal ? (
+                        {showAmendmentChamberModal ? (
                           <ChevronUp size={16} color="#7B7C81" />
                         ) : (
                           <ChevronDown size={16} color="#7B7C81" />
@@ -976,13 +1001,8 @@ export default function BillDetail() {
                 <View style={componentStyles.expandedAmendments}>
                   {enrichedAmendments.length > 0 ? (
                     <>
-                      {enrichedAmendments
-                        .sort((a: any, b: any) => {
-                          const numA = parseInt(a.number || "0");
-                          const numB = parseInt(b.number || "0");
-                          return numB - numA;
-                        })
-                        .map((amendment: any, index: number) => (
+                      {displayedAmendments.map(
+                        (amendment: any, index: number) => (
                           <View
                             key={amendment.number || index}
                             style={componentStyles.amendmentItem}
@@ -1045,7 +1065,8 @@ export default function BillDetail() {
                               </Text>
                             )}
                           </View>
-                        ))}
+                        ),
+                      )}
                       {enrichedAmendments.length < bill.amendments.length && (
                         <Pressable
                           onPress={() => fetchAmendmentDetails(amendmentOffset)}
@@ -1161,6 +1182,36 @@ export default function BillDetail() {
       />
 
       <FilterDropdown
+        showChamberModal={showAmendmentChamberModal}
+        showPartyModal={showAmendmentPartyModal}
+        selectedChamber={selectedAmendmentChamber}
+        selectedPolicies={selectedAmendmentParty}
+        toggleChamber={toggleAmendmentChamber}
+        toggleParty={toggleAmendmentParty}
+        setShowChamberModal={setShowAmendmentChamberModal}
+        setShowPartyModal={setShowAmendmentPartyModal}
+        chamber={chamber}
+        party={party}
+        showOnlyChamber={false} // ← changed to show party section
+        chamberLabelOverride="Chamber of Origin"
+        showMilestoneNote={false}
+        onCancel={() => {
+          setSelectedAmendmentChamber([]);
+          setSelectedAmendmentParty([]);
+          setShowAmendmentChamberModal(false);
+        }}
+        onApply={() => {
+          setShowAmendmentChamberModal(false);
+        }}
+      />
+      <SortDropdown
+        showSortDropdown={showActionsSort}
+        setShowSortDropdown={setShowActionsSort}
+        selectedSort={selectedActionsSort}
+        setSelectedSort={setSelectedActionsSort}
+        dropdownType="actions"
+      />
+      <FilterDropdown
         showChamberModal={showChamberModal}
         showPartyModal={showPartyModal}
         selectedChamber={selectedChamber}
@@ -1175,13 +1226,7 @@ export default function BillDetail() {
         party={party}
         showOnlyChamber={true}
         chamberLabelOverride="Chamber of Origin"
-      />
-      <SortDropdown
-        showSortDropdown={showActionsSort}
-        setShowSortDropdown={setShowActionsSort}
-        selectedSort={selectedActionsSort}
-        setSelectedSort={setSelectedActionsSort}
-        dropdownType="actions"
+        showMilestoneNote={true}
       />
       <SortDropdown
         showSortDropdown={showCosponsorSort}
