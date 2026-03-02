@@ -15,10 +15,10 @@ import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
+import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
 import { storage } from "../utils/storage";
 import OptionsModal from "./official_components/OptionsModal";
-import SearchModal from "./official_components/SearchModal";
 import SortDropdown from "./official_components/SortDropdown";
 import { styles as componentStyles } from "./styles";
 
@@ -36,9 +36,6 @@ function LegislationCard({ item }: { item: any }) {
   return (
     <View style={componentStyles.billCard}>
       <View style={componentStyles.billInfo}>
-        <Text style={componentStyles.billNumber} numberOfLines={2}>
-          {item.type}.{item.number} - {item.title}
-        </Text>
         <View style={componentStyles.billStatusRow}>
           <Text style={componentStyles.billTitle}>
             {formatDate(item.introducedDate)}
@@ -52,6 +49,9 @@ function LegislationCard({ item }: { item: any }) {
             </>
           )}
         </View>
+        <Text style={componentStyles.billNumber} numberOfLines={2}>
+          {item.type}.{item.number} - {item.title}
+        </Text>
       </View>
     </View>
   );
@@ -669,6 +669,17 @@ export default function OfficialDetail() {
                   isVisible={showSearchModal}
                   onClose={() => setShowSearchModal(false)}
                   onSearch={setSearchQuery}
+                  searchContext={
+                    activeTab === "sponsor" ? "Sponsored" : "Cosponsored"
+                  }
+                  items={filteredBills}
+                  onItemPress={(item) => {
+                    router.navigate(
+                      `/bill/${item.type.toLowerCase()}${item.number}`,
+                    );
+                    setShowSearchModal(false);
+                  }}
+                  onNewListPress={() => setShowNewListModal(true)}
                 />
 
                 {/* Sort by Modal Popup */}

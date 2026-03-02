@@ -139,7 +139,20 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 ))}
               </ScrollView>
             </View>
-
+            {/* After the chamber ScrollView, inside the chamber View */}
+            {chamberLabelOverride === "Chamber of Origin" && (
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: "#7B7C81",
+                  marginTop: 6,
+                  paddingHorizontal: 4,
+                }}
+              >
+                Milestone actions (e.g. signed by President) always appear
+                regardless of filter.
+              </Text>
+            )}
             {/* Party Section: Hidden for Cosponsors */}
             {showOnlyChamber !== true && (
               <View style={[styles.dropdownMulti, { marginTop: 12 }]}>

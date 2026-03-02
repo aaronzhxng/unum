@@ -25,7 +25,7 @@ export default function SortDropdown({
       "Newest First",
       "Oldest First",
     ],
-    actions: ["Most Recent Action", "Newest First", "Oldest First"],
+    actions: ["Most Recent Action", "Oldest First"],
     cosponsors: ["A-Z", "Z-A", "Newest First", "Oldest First"], // Only these for cosponsors
   };
 

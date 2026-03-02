@@ -150,16 +150,29 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
             year: "numeric",
           })}
         </Text>
-        {vote.question ? (
-          <Text style={{ fontSize: 13, color: "#535353" }}>
-            {vote.question}
-          </Text>
-        ) : null}
-        {vote.result ? (
-          <Text style={{ fontSize: 13, fontWeight: "600", color: resultColor }}>
-            {vote.result}
-          </Text>
-        ) : null}
+        {vote.question || vote.result
+          ? (() => {
+              const embeddedMatch = vote.result?.match(/\(([^)]+)\)/);
+              const resultText = vote.result
+                ?.replace(/\s*\([^)]+\)/, "")
+                .trim();
+              const voteCount = embeddedMatch
+                ? embeddedMatch[1]
+                : `${vote.total.yea}-${vote.total.nay}`;
+              const displayResult = `${resultText} (${voteCount})`;
+              return (
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: resultColor,
+                  }}
+                >
+                  {[vote.question, displayResult].filter(Boolean).join(" · ")}
+                </Text>
+              );
+            })()
+          : null}
       </View>
 
       {/* Bars */}

@@ -25,18 +25,14 @@ interface CosponsorsProps {
   showCosponsorSort: boolean;
   setShowCosponsorSort: (show: boolean) => void;
   selectedCosponsorSort: string;
-  showChamberModal: boolean;
-  showPartyModal: boolean;
-  setShowChamberModal: (show: boolean) => void;
-  setShowPartyModal: (show: boolean) => void;
   selectedRole: string[];
   setSelectedRole: React.Dispatch<React.SetStateAction<string[]>>;
   showCosponsorChamberModal: boolean;
   showCosponsorPartyModal: boolean;
   setShowCosponsorChamberModal: (show: boolean) => void;
   setShowCosponsorPartyModal: (show: boolean) => void;
-  showOnlyChamber?: boolean;
-  chamberLabelOverride?: string;
+  selectedParty: string[];
+  setSelectedParty: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 interface FilterOption {
@@ -58,6 +54,8 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   setShowCosponsorPartyModal,
   selectedRole,
   setSelectedRole,
+  selectedParty,
+  setSelectedParty,
 }) => {
   const roleOptions: FilterOption[] = [
     { id: "representative", label: "Representative" },
@@ -101,19 +99,30 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   };
 
   const filteredCosponsors = sortedCosponsors.filter((cosponsor) => {
-    if (selectedRole.length === 0) return true;
-    return selectedRole.some((role) =>
-      cosponsor.role.toLowerCase().includes(role),
+    console.log(
+      "cosponsor.party:",
+      cosponsor.party,
+      "selectedParty:",
+      selectedParty,
     );
-  });
+    const roleMatch =
+      !selectedRole?.length ||
+      selectedRole.some((role) => cosponsor.role?.toLowerCase().includes(role));
 
-  const [selectedParty, setSelectedParty] = useState<string[]>([]);
+    const partyMatch =
+      !selectedParty?.length ||
+      (cosponsor.party && selectedParty.includes(cosponsor.party));
+
+    return roleMatch && partyMatch;
+  });
 
   const togglePartyFilter = (id: string) => {
     setSelectedParty((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
     );
   };
+
+  // const [selectedParty, setSelectedParty] = useState<string[]>([]);
 
   const CosponsorCard = ({ item }: { item: Cosponsor }) => {
     const [imageError, setImageError] = useState(false);
@@ -150,11 +159,11 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
           <Text style={componentStyles.name}>{item.name}</Text>
           <View style={componentStyles.metaRow}>
             <Text style={componentStyles.subtitle}>{item.party}</Text>
-            <Text style={componentStyles.separator1}>•</Text>
+            <Text style={componentStyles.separator}>•</Text>
             <Text style={componentStyles.subtitle}>{item.role}</Text>
             {item.update ? (
               <>
-                <Text style={componentStyles.separator1}>•</Text>
+                <Text style={componentStyles.separator}>•</Text>
                 <Text style={componentStyles.update}>{item.update}</Text>
               </>
             ) : null}

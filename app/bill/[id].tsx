@@ -9,7 +9,7 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import { decode } from "html-entities";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import AddModal from "../global_components/AddModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
@@ -62,11 +62,24 @@ export default function BillDetail() {
 
   const [showCosponsorFilter, setShowCosponsorFilter] = useState(false);
   const [showCosponsorSort, setShowCosponsorSort] = useState(false);
-  const [selectedCosponsorSort, setSelectedCosponsorSort] = useState("A–Z");
+  const [selectedCosponsorSort, setSelectedCosponsorSort] = useState("A-Z");
   const [selectedRole, setSelectedRole] = useState<string[]>([]);
   const [showCosponsorChamberModal, setShowCosponsorChamberModal] =
     useState(false);
   const [showCosponsorPartyModal, setShowCosponsorPartyModal] = useState(false);
+  const [selectedCosponsorParty, setSelectedCosponsorParty] = useState<
+    string[]
+  >([]);
+
+  const cosponsorRoles: FilterOption[] = [
+    { id: "representative", label: "Representative" },
+    { id: "senator", label: "Senator" },
+  ];
+  const cosponsorParties: FilterOption[] = [
+    { id: "D", label: "Democrat" },
+    { id: "R", label: "Republican" },
+    { id: "I", label: "Independent" },
+  ];
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
@@ -138,6 +151,18 @@ export default function BillDetail() {
     );
   };
 
+  const toggleCosponsorRole = (role: string) => {
+    setSelectedRole((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
+    );
+  };
+
+  const toggleCosponsorParty = (party: string) => {
+    setSelectedCosponsorParty((prev) =>
+      prev.includes(party) ? prev.filter((p) => p !== party) : [...prev, party],
+    );
+  };
+
   const handleCancel = () => {
     setSelectedChamber(["Bills"]);
     setSelectedPolicies(["Congress"]);
@@ -147,7 +172,8 @@ export default function BillDetail() {
 
   const handleApply = () => {
     const hasFilters =
-      selectedChamber.length > 1 || selectedPolicies.length > 1;
+      selectedChamber.some((f) => f !== "Bills") ||
+      selectedPolicies.some((p) => p !== "Congress");
     setIsFiltered(hasFilters);
     setShowChamberModal(false);
     setShowPartyModal(false);
@@ -305,13 +331,6 @@ export default function BillDetail() {
 
   const bill = data?.bill;
 
-  const filteredOfficials = useMemo(() => {
-    if (!searchQuery.trim()) return mockRelatedOfficials;
-    return mockRelatedOfficials.filter((official) =>
-      official.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }, [searchQuery]);
-
   useEffect(() => {
     if (!showNewListProgressModal) return;
 
@@ -413,20 +432,145 @@ export default function BillDetail() {
     return `${formattedType}${number}`;
   };
 
-  // Mock related bills/officials for tabs
-  const mockRelatedOfficials = [
-    {
-      id: "1",
-      name: "Alexandria Ocasio-Cortez",
-      party: "D",
-      role: "Co-Sponsor",
-    },
-    { id: "2", name: "Ritchie Torres", party: "D", role: "Sponsor" },
-  ];
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
+
+  // Derive the processed actions list (same logic as before)
+  const processedActions = Array.isArray(bill?.actions)
+    ? bill.actions
+        .filter((action: any) => {
+          const source = action.sourceSystem?.name || "";
+          const text = action.text?.toLowerCase() || "";
+          if (!source.toLowerCase().includes("library of congress"))
+            return true;
+          return (
+            text.includes("signed by president") ||
+            text.includes("presented to president") ||
+            text.includes("became public law") ||
+            text.includes("vetoed by president") ||
+            text.includes("enacted")
+          );
+        })
+        .filter((action: any, index: number, arr: any[]) => {
+          const key = `${action.actionDate}-${action.text}`;
+          return (
+            arr.findIndex((a) => `${a.actionDate}-${a.text}` === key) === index
+          );
+        })
+        .map((action: any) => {
+          const source = action.sourceSystem?.name || "";
+          let chamber = source;
+          if (source.toLowerCase().includes("house")) chamber = "House";
+          else if (source.toLowerCase().includes("senate")) chamber = "Senate";
+          else chamber = "";
+          return {
+            date:
+              action.actionDate.split("-").slice(1).join("/") +
+              "/" +
+              action.actionDate.split("-")[0].slice(2),
+            chamber,
+            description: action.text,
+          };
+        })
+    : [];
+
+  // Apply chamber filter — actions with no chamber (milestones) always show
+  const activeFilters = selectedChamber.filter(
+    (f) => f !== "Bills", // "Bills" is the default/reset value
+  );
+
+  const filteredActions =
+    activeFilters.length === 0
+      ? processedActions
+      : processedActions.filter(
+          (action: { chamber: string; date: string; description: string }) =>
+            action.chamber === "" ||
+            activeFilters.some(
+              (f) => action.chamber.toLowerCase() === f.toLowerCase(),
+            ),
+        );
+
+  // Update sortedActions
+  const sortedActions = [...filteredActions].sort((a, b) => {
+    const parseDate = (dateStr: string) => {
+      const [month, day, year] = dateStr.split("/");
+      return new Date(
+        parseInt("20" + year),
+        parseInt(month) - 1,
+        parseInt(day),
+      ).getTime();
+    };
+
+    const dateA = parseDate(a.date);
+    const dateB = parseDate(b.date);
+
+    return selectedActionsSort === "Oldest First"
+      ? dateA - dateB
+      : dateB - dateA; // "Most Recent" default
+  });
+
+  const parseAPIDate = (dateStr: string) => {
+    // Avoids timezone shift by parsing YYYY-MM-DD parts directly
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day).getTime();
+  };
+
+  const mappedCosponsors = (cosponsorsData?.cosponsors ?? []).map((c: any) => ({
+    id: c.bioguideId,
+    name: c.name,
+    party: c.party,
+    role: c.district
+      ? `Rep, ${STATE_NAMES[c.state] || c.state} - ${c.district}`
+      : `Senator, ${STATE_NAMES[c.state] || c.state}`,
+    photoUrl: c.photoUrl,
+    update: c.isOriginalCosponsor
+      ? "Original cosponsor"
+      : `Joined ${new Date(parseAPIDate(c.sponsorshipDate)).toLocaleDateString(
+          "en-US",
+          {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          },
+        )}`,
+    sponsorshipDate: parseAPIDate(c.sponsorshipDate),
+    isOriginal: c.isOriginalCosponsor ?? false,
+  }));
+
+  const sortedCosponsors = [...mappedCosponsors].sort((a, b) => {
+    switch (selectedCosponsorSort) {
+      case "A-Z":
+        return a.name.localeCompare(b.name);
+      case "Z-A":
+        return b.name.localeCompare(a.name);
+      case "Newest First":
+        if (a.sponsorshipDate !== b.sponsorshipDate)
+          return b.sponsorshipDate - a.sponsorshipDate;
+        // Same date: original cosponsors go last
+        return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? 1 : -1;
+      case "Oldest First":
+        if (a.sponsorshipDate !== b.sponsorshipDate)
+          return a.sponsorshipDate - b.sponsorshipDate;
+        // Same date: original cosponsors go first
+        return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? -1 : 1;
+      default:
+        return 0;
+    }
+  });
+
+  // const filteredCosponsors = sortedCosponsors.filter((c) => {
+  //   const roleMatch =
+  //     selectedRole.length === 0 ||
+  //     (selectedRole.includes("representative") && c.role.startsWith("Rep")) ||
+  //     (selectedRole.includes("senator") && c.role.startsWith("Senator"));
+
+  //   const partyMatch =
+  //     selectedCosponsorParty.length === 0 ||
+  //     selectedCosponsorParty.includes(c.party);
+
+  //   return roleMatch && partyMatch;
+  // });
 
   return (
     <View style={componentStyles.screen}>
@@ -971,50 +1115,7 @@ export default function BillDetail() {
         {/* Actions Tab */}
         {activeTab === "actions" && (
           <ActionHistory
-            actions={
-              Array.isArray(bill.actions)
-                ? bill.actions
-                    .filter((action: any) => {
-                      const source = action.sourceSystem?.name || "";
-                      const text = action.text?.toLowerCase() || "";
-                      if (!source.toLowerCase().includes("library of congress"))
-                        return true;
-                      // Keep important milestone actions even if from Library of Congress
-                      return (
-                        text.includes("signed by president") ||
-                        text.includes("presented to president") ||
-                        text.includes("became public law") ||
-                        text.includes("vetoed by president") ||
-                        text.includes("enacted")
-                      );
-                    })
-                    .filter((action: any, index: number, arr: any[]) => {
-                      const key = `${action.actionDate}-${action.text}`;
-                      return (
-                        arr.findIndex(
-                          (a) => `${a.actionDate}-${a.text}` === key,
-                        ) === index
-                      );
-                    })
-                    .map((action: any) => {
-                      const source = action.sourceSystem?.name || "";
-                      let chamber = source;
-                      if (source.toLowerCase().includes("house"))
-                        chamber = "House";
-                      else if (source.toLowerCase().includes("senate"))
-                        chamber = "Senate";
-                      else chamber = ""; // Library of Congress milestones get no chamber label
-                      return {
-                        date:
-                          action.actionDate.split("-").slice(1).join("/") +
-                          "/" +
-                          action.actionDate.split("-")[0].slice(2),
-                        chamber,
-                        description: action.text,
-                      };
-                    })
-                : []
-            }
+            actions={sortedActions} // <-- replace the big inline expression
             selectedSort={selectedActionsSort}
             showSort={showActionsSort}
             setShowSort={setShowActionsSort}
@@ -1031,37 +1132,21 @@ export default function BillDetail() {
         {activeTab === "cosponsors" && (
           <View style={{ marginBottom: 96 }}>
             <Cosponsors
-              cosponsors={
-                cosponsorsData?.cosponsors?.map((c: any) => ({
-                  id: c.bioguideId,
-                  name: c.name,
-                  party: c.party,
-                  role: c.district
-                    ? `Rep, ${STATE_NAMES[c.state] || c.state} - ${c.district}`
-                    : `Senator, ${STATE_NAMES[c.state] || c.state}`,
-                  photoUrl: c.photoUrl,
-                  update: c.isOriginalCosponsor
-                    ? "Original cosponsor"
-                    : `Joined ${new Date(c.sponsorshipDate).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}`,
-                })) ?? []
-              }
+              cosponsors={sortedCosponsors}
               isLoading={cosponsorsLoading}
               showCosponsorFilter={showCosponsorFilter}
               setShowCosponsorFilter={setShowCosponsorFilter}
               showCosponsorSort={showCosponsorSort}
               setShowCosponsorSort={setShowCosponsorSort}
               selectedCosponsorSort={selectedCosponsorSort}
-              showChamberModal={showChamberModal}
-              showPartyModal={showPartyModal}
-              setShowChamberModal={setShowChamberModal}
-              setShowPartyModal={setShowPartyModal}
               showCosponsorChamberModal={showCosponsorChamberModal}
               showCosponsorPartyModal={showCosponsorPartyModal}
               setShowCosponsorChamberModal={setShowCosponsorChamberModal}
               setShowCosponsorPartyModal={setShowCosponsorPartyModal}
               selectedRole={selectedRole}
               setSelectedRole={setSelectedRole}
-              showOnlyChamber={true}
+              selectedParty={selectedCosponsorParty}
+              setSelectedParty={setSelectedCosponsorParty}
             />
           </View>
         )}
@@ -1074,6 +1159,7 @@ export default function BillDetail() {
         setSelectedSort={setSelectedAmendmentsSort}
         dropdownType="amendments"
       />
+
       <FilterDropdown
         showChamberModal={showChamberModal}
         showPartyModal={showPartyModal}
@@ -1087,12 +1173,8 @@ export default function BillDetail() {
         onApply={handleApply}
         chamber={chamber}
         party={party}
-        showOnlyChamber={activeTab === "actions" || activeTab === "cosponsors"}
-        chamberLabelOverride={
-          activeTab === "actions" ? "Chamber of Origin" : undefined
-        }
-        onFilterClose={() => setShowCosponsorFilter(false)}
-        // marginTopOverride={0}
+        showOnlyChamber={true}
+        chamberLabelOverride="Chamber of Origin"
       />
       <SortDropdown
         showSortDropdown={showActionsSort}

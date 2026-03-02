@@ -240,7 +240,7 @@ export default function SearchModal({
                   >
                     <View style={componentStyles.officialCard}>
                       {/* Avatar */}
-                      {item.title ? (
+                      {item.type === "bill" ? (
                         // Bill icon
                         <View
                           style={[
@@ -252,9 +252,11 @@ export default function SearchModal({
                             },
                           ]}
                         >
-                          {item.policyArea?.name ? (
+                          {item.policyArea?.name || item.policyArea ? (
                             <Image
-                              source={getBillIcon(item.policyArea.name)}
+                              source={getBillIcon(
+                                item.policyArea?.name || item.policyArea,
+                              )}
                               style={{
                                 width: "100%",
                                 height: "100%",
@@ -318,8 +320,7 @@ export default function SearchModal({
                       )}
 
                       {/* Content */}
-                      {item.title ? (
-                        // Bill info
+                      {item.type === "bill" ? (
                         <View style={{ flex: 1, gap: 4 }}>
                           <View
                             style={[
@@ -343,7 +344,7 @@ export default function SearchModal({
                                   })
                                 : item.date}
                             </Text>
-                            {item.policyArea?.name && (
+                            {(item.policyArea?.name || item.policyArea) && (
                               <>
                                 <Text style={componentStyles.separator}>·</Text>
                                 <Text
@@ -353,13 +354,15 @@ export default function SearchModal({
                                   ]}
                                   numberOfLines={1}
                                 >
-                                  {item.policyArea.name}
+                                  {item.policyArea?.name || item.policyArea}
                                 </Text>
                               </>
                             )}
                           </View>
                           <Text style={componentStyles.name} numberOfLines={2}>
-                            {item.type}.{item.number} - {item.title}
+                            {item.title
+                              ? `${item.type}.${item.number} - ${item.title}`
+                              : item.name}
                           </Text>
                           <Text
                             style={componentStyles.subtitle}
