@@ -387,7 +387,7 @@ export default function HomeScreen() {
             setItems(data);
             setHasMoved(true);
           }}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => item.id || index.toString()}
           contentContainerStyle={[
             componentStyles.listContent,
             { paddingBottom: 220 },
@@ -408,7 +408,7 @@ export default function HomeScreen() {
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => item.id || index.toString()}
           contentContainerStyle={componentStyles.listContent}
           renderItem={({ item }) => (
             <Card
@@ -693,7 +693,7 @@ export default function HomeScreen() {
                 textAlign: "center",
               }}
             >
-              Creating {newListName || "new list"}...
+              Creating and adding to {newListName || "new list"}...
             </Text>
 
             {/* Progress Bar */}
@@ -939,7 +939,9 @@ function Card({
               style={[componentStyles.subtitle, { flexShrink: 1 }]}
               numberOfLines={1}
             >
-              {item.latestAction}
+              {typeof item.latestAction === "string"
+                ? item.latestAction
+                : ((item.latestAction as any)?.text ?? "")}
             </Text>
           </View>
         )}

@@ -120,8 +120,11 @@ export default function SearchModal({
     Keyboard.dismiss();
 
     // Determine type based on item properties
-    const itemType = item.type || (item.role ? "official" : "bill");
-
+    const itemType = item.billType
+      ? "bill"
+      : item.bioguideId || item.depiction || item.terms
+        ? "official"
+        : item.type || "bill";
     setSelectedAddItem({
       ...item,
       type: itemType,
@@ -224,6 +227,9 @@ export default function SearchModal({
                 keyExtractor={(item, index) =>
                   item.id ||
                   item.bioguideId ||
+                  (item.billType && item.number
+                    ? `${item.billType}${item.number}`
+                    : null) ||
                   (item.type && item.number
                     ? `${item.type}${item.number}`
                     : null) ||
@@ -272,7 +278,7 @@ export default function SearchModal({
                                 color: "#535353",
                               }}
                             >
-                              {item.type}
+                              {item.billType || item.type}
                             </Text>
                           )}
                         </View>
@@ -420,15 +426,37 @@ export default function SearchModal({
         currentItem={
           selectedAddItem
             ? {
-                id: selectedAddItem.id,
-                type: selectedAddItem.type || "official",
+                id:
+                  selectedAddItem.id ??
+                  selectedAddItem.bioguideId ??
+                  (selectedAddItem.billType && selectedAddItem.number
+                    ? `${selectedAddItem.billType.toLowerCase()}${selectedAddItem.number}`
+                    : ""),
+                type:
+                  selectedAddItem.bioguideId ||
+                  selectedAddItem.depiction ||
+                  selectedAddItem.terms
+                    ? "official"
+                    : "bill",
                 name: selectedAddItem.name,
-                party: selectedAddItem.party,
-                role: selectedAddItem.role,
+                party:
+                  selectedAddItem.party ?? selectedAddItem.partyName?.charAt(0),
+                role:
+                  selectedAddItem.role ??
+                  (selectedAddItem.chamber === "House of Representatives"
+                    ? `Representative, ${selectedAddItem.state}${selectedAddItem.district ? `, District ${selectedAddItem.district}` : ""}`
+                    : `Senator, ${selectedAddItem.state}`),
                 date: selectedAddItem.date,
-                latestAction: selectedAddItem.latestAction,
-                policyArea: selectedAddItem.policyArea,
-                photoUrl: selectedAddItem.photoUrl,
+                latestAction:
+                  typeof selectedAddItem.latestAction === "string"
+                    ? selectedAddItem.latestAction
+                    : (selectedAddItem.latestAction as any)?.text,
+                policyArea:
+                  selectedAddItem.policyArea?.name ??
+                  selectedAddItem.policyArea,
+                photoUrl:
+                  selectedAddItem.photoUrl ??
+                  selectedAddItem.depiction?.imageUrl,
               }
             : undefined
         }

@@ -120,15 +120,14 @@ export default function BillDetail() {
       allLists.push(newList);
       await storage.saveLists(allLists);
 
-      // Track the created list name
       setCreatedListName(newListName.trim());
-
-      // Show progress modal
-      setShowNewListProgressModal(true);
-
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
+
+      // Reset progress first, then show modal on next tick
+      setNewListProgress(0);
+      setTimeout(() => setShowNewListProgressModal(true), 50);
     }
   };
 
@@ -1310,7 +1309,7 @@ export default function BillDetail() {
                 textAlign: "center",
               }}
             >
-              Creating {newListName || "new list"}...
+              Creating and adding to {newListName || "new list"}...
             </Text>
 
             {/* Progress Bar */}

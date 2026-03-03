@@ -74,21 +74,50 @@ export default function OfficialsScreen() {
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
       const allLists = await storage.getLists();
+
+      const itemToSave = pendingItemForNewList
+        ? {
+            id: pendingItemForNewList.id ?? pendingItemForNewList.bioguideId,
+            type:
+              pendingItemForNewList.type === "official" ||
+              pendingItemForNewList.bioguideId ||
+              pendingItemForNewList.depiction
+                ? ("official" as const)
+                : ("bill" as const),
+            name: pendingItemForNewList.name,
+            party:
+              pendingItemForNewList.party ??
+              pendingItemForNewList.partyName?.charAt(0),
+            role:
+              pendingItemForNewList.role ??
+              (pendingItemForNewList.chamber === "House of Representatives"
+                ? `Representative, ${pendingItemForNewList.state}${pendingItemForNewList.district ? `, District ${pendingItemForNewList.district}` : ""}`
+                : `Senator, ${pendingItemForNewList.state}`),
+            date: pendingItemForNewList.date,
+            latestAction:
+              typeof pendingItemForNewList.latestAction === "string"
+                ? pendingItemForNewList.latestAction
+                : pendingItemForNewList.latestAction?.text,
+            policyArea:
+              pendingItemForNewList.policyArea?.name ??
+              pendingItemForNewList.policyArea,
+            photoUrl:
+              pendingItemForNewList.photoUrl ??
+              pendingItemForNewList.depiction?.imageUrl,
+            update: "",
+          }
+        : null;
+
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: pendingItemForNewList ? [pendingItemForNewList] : [],
+        items: itemToSave ? [itemToSave] : [],
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
-
-      // Track the created list name
       setCreatedListName(newListName.trim());
-
-      // Show progress modal
       setShowNewListProgressModal(true);
-
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
@@ -341,9 +370,12 @@ export default function OfficialsScreen() {
         searchContext={selectedList}
         items={officials}
         onItemPress={(item) => {
-          router.navigate(`/official/${item.number}`);
+          router.navigate(`/official/${item.bioguideId}`);
         }}
-        onNewListPress={() => setShowNewListModal(true)}
+        onNewListPress={(item) => {
+          setPendingItemForNewList(item);
+          setShowNewListModal(true);
+        }}
       />
 
       {/* Official Options Modal */}
@@ -446,7 +478,7 @@ export default function OfficialsScreen() {
                 textAlign: "center",
               }}
             >
-              Creating {newListName || "new list"}...
+              Creating and adding to {newListName || "new list"}...
             </Text>
 
             {/* Progress Bar */}

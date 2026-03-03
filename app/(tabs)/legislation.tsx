@@ -69,21 +69,42 @@ export default function LegislationScreen() {
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
       const allLists = await storage.getLists();
+
+      const itemToSave = pendingItemForNewList
+        ? {
+            id:
+              pendingItemForNewList.id ??
+              (pendingItemForNewList.billType && pendingItemForNewList.number
+                ? `${pendingItemForNewList.billType.toLowerCase()}${pendingItemForNewList.number}`
+                : `${pendingItemForNewList.type?.toLowerCase()}${pendingItemForNewList.number}`),
+            type: "bill" as const,
+            name:
+              pendingItemForNewList.name ??
+              `${pendingItemForNewList.billType ?? pendingItemForNewList.type}.${pendingItemForNewList.number} - ${pendingItemForNewList.title}`,
+            date:
+              pendingItemForNewList.date ??
+              pendingItemForNewList.latestAction?.actionDate,
+            latestAction:
+              typeof pendingItemForNewList.latestAction === "string"
+                ? pendingItemForNewList.latestAction
+                : pendingItemForNewList.latestAction?.text,
+            policyArea:
+              pendingItemForNewList.policyArea?.name ??
+              pendingItemForNewList.policyArea,
+            update: "",
+          }
+        : null;
+
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: pendingItemForNewList ? [pendingItemForNewList] : [],
+        items: itemToSave ? [itemToSave] : [],
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
-
-      // Track the created list name
       setCreatedListName(newListName.trim());
-
-      // Show progress modal
       setShowNewListProgressModal(true);
-
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
@@ -484,11 +505,27 @@ export default function LegislationScreen() {
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
         searchContext={selectedFilter}
-        items={bills}
+        items={bills.map((item: any) => ({
+          ...item,
+          type: "bill",
+          billType: item.type,
+          name: `${item.type}.${item.number} - ${item.title}`,
+          title: undefined,
+          date: item.latestAction?.actionDate,
+          policyArea:
+            enrichedBills[`${item.type.toLowerCase()}${item.number}`]
+              ?.policyArea?.name ??
+            item.policyArea?.name ??
+            null,
+          latestAction: (item.latestAction as any)?.text ?? item.latestAction,
+        }))}
         onItemPress={(item) => {
-          router.navigate(`/bill/${item.nnumber}`);
+          router.navigate(`/bill/${item.billType.toLowerCase()}${item.number}`);
         }}
-        onNewListPress={() => setShowNewListModal(true)}
+        onNewListPress={(item) => {
+          setPendingItemForNewList(item);
+          setShowNewListModal(true);
+        }}
       />
 
       {/* Legislation Options Modal */}
@@ -595,7 +632,7 @@ export default function LegislationScreen() {
                 textAlign: "center",
               }}
             >
-              Creating {newListName || "new list"}...
+              Creating and adding to {newListName || "new list"}...
             </Text>
 
             {/* Progress Bar */}

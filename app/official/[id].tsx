@@ -834,7 +834,7 @@ export default function OfficialDetail() {
                 textAlign: "center",
               }}
             >
-              Creating {newListName || "new list"}...
+              Creating and adding to {newListName || "new list"}...
             </Text>
 
             {/* Progress Bar */}
