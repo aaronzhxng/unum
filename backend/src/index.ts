@@ -590,3 +590,38 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch cosponsored legislation" });
   }
 });
+
+// Get official committee assignments
+app.get("/api/officials/:bioguideId/committees", async (req, res) => {
+  try {
+    const { bioguideId } = req.params;
+
+    const response = await axios.get(
+      `https://api.congress.gov/v3/member/${bioguideId}/committee-assignments`,
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { limit: 250 },
+      },
+    );
+
+    const committees = response.data.committees || [];
+
+    // Deduplicate by committee name since members can appear multiple times
+    // (e.g. full committee + subcommittee assignments)
+    const seen = new Set<string>();
+    const deduplicated = committees.filter((c: any) => {
+      const key = c.name;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    res.json({
+      committees: deduplicated,
+      count: deduplicated.length,
+    });
+  } catch (error) {
+    console.error("Error fetching committee assignments:", error);
+    res.status(500).json({ error: "Failed to fetch committee assignments" });
+  }
+});

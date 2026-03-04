@@ -8,7 +8,15 @@ import {
   Search,
 } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
-import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Image,
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 import { useQuery } from "@tanstack/react-query";
 import SortDropdown from "../bill/bill_components/SortDropdown";
@@ -123,8 +131,25 @@ export default function OfficialDetail() {
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    setImageError(false);
-  }, [id]);
+    if (!showNewListProgressModal) return;
+
+    setNewListProgress(0);
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setNewListProgress(currentProgress);
+
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowNewListProgressModal(false);
+          setNewListProgress(0);
+        }, 300);
+      }
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [showNewListProgressModal]);
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
@@ -138,15 +163,11 @@ export default function OfficialDetail() {
       allLists.push(newList);
       await storage.saveLists(allLists);
 
-      // Track the created list name
       setCreatedListName(newListName.trim());
-
-      // Show progress modal
-      setShowNewListProgressModal(true);
-
-      setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
+      setShowNewListProgressModal(true);
+      setNewListName("");
     }
   };
 
@@ -255,6 +276,13 @@ export default function OfficialDetail() {
     queryKey: ["officialCosponsored", id],
     queryFn: () => officialsService.getCosponsored(id as string),
     enabled: !!id && (activeTab === "sponsor" || activeTab === "cosponsor"),
+    retry: 1,
+  });
+
+  const { data: committeesData } = useQuery({
+    queryKey: ["officialCommittees", id],
+    queryFn: () => officialsService.getCommittees(id as string),
+    enabled: !!id,
     retry: 1,
   });
 
@@ -372,6 +400,18 @@ export default function OfficialDetail() {
     date: item.introducedDate,
     policyArea: item.policyArea?.name ?? item.policyArea ?? null,
   }));
+
+  const topPolicyAreas = useMemo(() => {
+    const counts: { [key: string]: number } = {};
+    [...sponsoredBills, ...cosponsoredBills].forEach((bill: any) => {
+      const area = bill.policyArea?.name;
+      if (area) counts[area] = (counts[area] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+  }, [sponsoredBills, cosponsoredBills]);
 
   if (isLoading) {
     return (
@@ -545,13 +585,85 @@ export default function OfficialDetail() {
         {activeTab === "profile" ? (
           <>
             {/* Bio placeholder */}
-            <View>
-              <Text style={componentStyles.bio}>
-                Bio not available from Congress.gov API
-              </Text>
+            {/* Policy Areas */}
+            <View style={componentStyles.section}>
+              <View style={componentStyles.termRow}>
+                <Text style={componentStyles.sectionTitle}>
+                  Top Policy Areas
+                </Text>
+              </View>
+              {topPolicyAreas.length > 0 ? (
+                topPolicyAreas.map((area, index) => (
+                  <View key={index} style={componentStyles.termRow}>
+                    <Text style={[componentStyles.term, { flex: 1 }]}>
+                      {area.name}
+                    </Text>
+                    <Text
+                      style={[
+                        componentStyles.term,
+                        { flex: 0, textAlign: "right" },
+                      ]}
+                    >
+                      {area.count} bill{area.count !== 1 ? "s" : ""}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={componentStyles.term}>
+                  Loading policy areas...
+                </Text>
+              )}
+            </View>
+
+            {/* Website */}
+            <Pressable
+              onPress={() => {
+                if (official.officialWebsiteUrl) {
+                  Linking.openURL(official.officialWebsiteUrl);
+                }
+              }}
+              style={{ paddingHorizontal: 16, paddingVertical: 8 }}
+            >
               <Text style={componentStyles.website}>
                 {official.officialWebsiteUrl || "No website available"}
               </Text>
+            </Pressable>
+
+            {/* Committees */}
+            <View style={componentStyles.section}>
+              <View style={componentStyles.termRow}>
+                <Text style={componentStyles.sectionTitle}>
+                  Committee Assignments
+                </Text>
+              </View>
+              {committeesData?.committees?.length > 0 ? (
+                committeesData.committees.map(
+                  (committee: any, index: number) => (
+                    <View key={index} style={componentStyles.termRow}>
+                      <Text
+                        style={[componentStyles.term, { flex: 1 }]}
+                        numberOfLines={2}
+                      >
+                        {committee.name}
+                      </Text>
+                      <Text
+                        style={[
+                          componentStyles.term,
+                          { flex: 0, textAlign: "right" },
+                        ]}
+                      >
+                        {committee.chamber === "House of Representatives"
+                          ? "House"
+                          : "Senate"}
+                      </Text>
+                    </View>
+                  ),
+                )
+              ) : (
+                <Text style={componentStyles.term}>
+                  No committee data available
+                </Text>
+              )}
             </View>
 
             {/* Congress History */}
