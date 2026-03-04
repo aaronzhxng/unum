@@ -603,29 +603,14 @@ app.get("/api/officials/:bioguideId/committees", async (req, res) => {
         params: { limit: 250 },
       },
     );
-    console.log(
-      "Raw committee response:",
-      JSON.stringify(response.data, null, 2),
-    );
 
+    console.log("Raw response:", JSON.stringify(response.data, null, 2));
     const committees = response.data.committees || [];
-
-    // Deduplicate by committee name since members can appear multiple times
-    // (e.g. full committee + subcommittee assignments)
-    const seen = new Set<string>();
-    const deduplicated = committees.filter((c: any) => {
-      const key = c.name;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    res.json({
-      committees: deduplicated,
-      count: deduplicated.length,
-    });
-  } catch (error) {
-    console.error("Error fetching committee assignments:", error);
+    res.json({ committees, count: committees.length });
+  } catch (error: any) {
+    console.error("Committee error status:", error.response?.status);
+    console.error("Committee error data:", error.response?.data);
+    console.error("Committee error message:", error.message);
     res.status(500).json({ error: "Failed to fetch committee assignments" });
   }
 });

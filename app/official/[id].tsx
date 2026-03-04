@@ -279,15 +279,12 @@ export default function OfficialDetail() {
     retry: 1,
   });
 
-  const { data: committeesData } = useQuery({
+  const { data: committeesData, error: committeesError } = useQuery({
     queryKey: ["officialCommittees", id],
     queryFn: () => officialsService.getCommittees(id as string),
     enabled: !!id,
     retry: 1,
   });
-
-  // Temporarily add this to debug:
-  console.log("committees:", committeesData);
 
   const official = data?.member;
 
