@@ -603,6 +603,10 @@ app.get("/api/officials/:bioguideId/committees", async (req, res) => {
         params: { limit: 250 },
       },
     );
+    console.log(
+      "Raw committee response:",
+      JSON.stringify(response.data, null, 2),
+    );
 
     const committees = response.data.committees || [];
 

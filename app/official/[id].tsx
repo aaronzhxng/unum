@@ -268,14 +268,14 @@ export default function OfficialDetail() {
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
     queryFn: () => officialsService.getSponsored(id as string),
-    enabled: !!id && (activeTab === "sponsor" || activeTab === "cosponsor"),
+    enabled: !!id, // ← remove the activeTab condition
     retry: 1,
   });
 
   const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
     queryKey: ["officialCosponsored", id],
     queryFn: () => officialsService.getCosponsored(id as string),
-    enabled: !!id && (activeTab === "sponsor" || activeTab === "cosponsor"),
+    enabled: !!id, // ← remove the activeTab condition
     retry: 1,
   });
 
@@ -285,6 +285,9 @@ export default function OfficialDetail() {
     enabled: !!id,
     retry: 1,
   });
+
+  // Temporarily add this to debug:
+  console.log("committees:", committeesData);
 
   const official = data?.member;
 
