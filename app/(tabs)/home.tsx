@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   Check,
   ChevronDown,
@@ -11,6 +11,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
+import { useTabBar } from "../context/TabBarContext";
 import EditOptionsModal from "../global_components/EditOptionsModal";
 import ListSelection from "../global_components/ListSelection";
 import LoadingSpinner from "../global_components/LoadingSpinner";
@@ -18,17 +19,17 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
+import { useTabSwipe } from "../hooks/useTabSwipe";
 import { getBillIcon } from "../utils/billIcons";
-
-import { storage, UserList } from "../utils/storage";
+import { ListItem, storage, UserList } from "../utils/storage";
 
 type ItemType = "official" | "bill";
-
-import { ListItem } from "../utils/storage";
 
 type Item = ListItem;
 
 export default function HomeScreen() {
+  const panResponder = useTabSwipe("home");
+
   const router = useRouter();
 
   // Normal mode state
@@ -201,16 +202,14 @@ export default function HomeScreen() {
     }
   };
 
-  const navigation = useNavigation();
+  const { setTabBarHidden } = useTabBar();
 
   useEffect(() => {
     refreshLists();
   }, []);
 
   useEffect(() => {
-    navigation.setOptions({
-      tabBarStyle: isEditMode ? { display: "none" } : { height: 100 },
-    });
+    setTabBarHidden(isEditMode);
   }, [isEditMode]);
 
   useEffect(() => {
@@ -260,7 +259,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={componentStyles.container}>
+    <View style={componentStyles.container} {...panResponder.panHandlers}>
       {/* Header */}
       <View style={componentStyles.headerBar}>
         {isEditMode ? (
@@ -404,6 +403,7 @@ export default function HomeScreen() {
               onPress={() => toggleSelect(item.id)}
             />
           )}
+          directionalLockEnabled={true}
         />
       ) : (
         <FlatList
@@ -419,6 +419,7 @@ export default function HomeScreen() {
               onPress={() => toggleSelect(item.id)}
             />
           )}
+          directionalLockEnabled={true}
         />
       )}
 

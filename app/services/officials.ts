@@ -30,8 +30,4 @@ export const officialsService = {
   getCosponsored: async (bioguideId: string): Promise<any> => {
     return apiClient.get(`/officials/${bioguideId}/cosponsored`);
   },
-
-  getCommittees: async (bioguideId: string): Promise<any> => {
-    return apiClient.get(`/officials/${bioguideId}/committees`);
-  },
 };

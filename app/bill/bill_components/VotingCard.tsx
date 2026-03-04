@@ -139,7 +139,7 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
         : "#535353";
 
   return (
-    <View style={[componentStyles.section, { marginBottom: 12, gap: 12 }]}>
+    <View style={[componentStyles.section, { gap: 12 }]}>
       {/* Header */}
       <View style={{ gap: 4 }}>
         <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>

@@ -28,6 +28,8 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     gap: 16,
     marginBottom: 16,
+    marginHorizontal: 16,
+    marginTop: 24,
   },
   avatarBill: {
     width: 72,
@@ -66,7 +68,7 @@ export const styles = StyleSheet.create({
     marginRight: 48,
   },
   tabsNegative: {
-    marginHorizontal: -16,
+    marginHorizontal: 0,
     marginBottom: 24,
   },
   tabs: {
@@ -95,7 +97,8 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginBottom: 16,
+    marginBottom: 24,
+    marginHorizontal: 20,
   },
   detailTitleRow: {
     flexDirection: "row",
@@ -115,6 +118,7 @@ export const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
+    marginHorizontal: 16,
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 24,
@@ -167,6 +171,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
     marginBottom: 96,
+    marginHorizontal: 16,
   },
   sectionHeader: {
     flexDirection: "row",

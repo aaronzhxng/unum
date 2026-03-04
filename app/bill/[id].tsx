@@ -9,8 +9,17 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import { decode } from "html-entities";
-import { useEffect, useState } from "react";
-import { Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  Image,
+  Modal,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import PagerView from "react-native-pager-view";
 import AddModal from "../global_components/AddModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
@@ -25,23 +34,42 @@ import SortDropdown from "./bill_components/SortDropdown";
 import VotingCard from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { storage } from "../utils/storage";
 
+const TABS = ["details", "voting", "actions", "cosponsors"] as const;
+type TabName = (typeof TABS)[number];
+
 export default function BillDetail() {
+  const pagerRef = useRef<PagerView>(null);
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter() as Router;
 
-  // Tabs
-  const [activeTab, setActiveTab] = useState<
-    "details" | "voting" | "actions" | "cosponsors"
-  >("details");
+  const [activeTab, setActiveTab] = useState<TabName>("details");
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  // Modals/Search (same as official)
+  // Lazy load tracking
+  const [votingVisited, setVotingVisited] = useState(false);
+  const [cosponsorsVisited, setCosponsorsVisited] = useState(false);
+
+  // Back swipe on first page
+  const backSwipePanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          gestureState.dx > 20 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
+        );
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
+          router.back();
+        }
+      },
+    }),
+  ).current;
+
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // const [isFiltered, setIsFiltered] = useState(false);
   const [showAmendments, setShowAmendments] = useState(false);
   const [showAmendmentsSort, setShowAmendmentsSort] = useState(false);
   const [selectedAmendmentsSort, setSelectedAmendmentsSort] =
@@ -62,7 +90,6 @@ export default function BillDetail() {
   const [isFiltered, setIsFiltered] = useState(false);
   const [showChamberModal, setShowChamberModal] = useState(false);
   const [selectedChamber, setSelectedChamber] = useState(["Bills"]);
-
   const [showPartyModal, setShowPartyModal] = useState(false);
   const [selectedPolicies, setSelectedPolicies] = useState(["Congress"]);
 
@@ -82,19 +109,8 @@ export default function BillDetail() {
     string[]
   >([]);
 
-  const cosponsorRoles: FilterOption[] = [
-    { id: "representative", label: "Representative" },
-    { id: "senator", label: "Senator" },
-  ];
-  const cosponsorParties: FilterOption[] = [
-    { id: "D", label: "Democrat" },
-    { id: "R", label: "Republican" },
-    { id: "I", label: "Independent" },
-  ];
-
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
-
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
     [],
@@ -116,16 +132,12 @@ export default function BillDetail() {
         name: newListName.trim(),
         items: pendingItemForNewList ? [pendingItemForNewList] : [],
       };
-
       allLists.push(newList);
       await storage.saveLists(allLists);
-
       setCreatedListName(newListName.trim());
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
-
-      // Reset progress first, then show modal on next tick
       setNewListProgress(0);
       setTimeout(() => setShowNewListProgressModal(true), 50);
     }
@@ -145,6 +157,12 @@ export default function BillDetail() {
     { id: "democrat", label: "Democrat" },
     { id: "republican", label: "Republican" },
     { id: "independent", label: "Independent" },
+  ];
+
+  const cosponsorParties: FilterOption[] = [
+    { id: "D", label: "Democrat" },
+    { id: "R", label: "Republican" },
+    { id: "I", label: "Independent" },
   ];
 
   const toggleChamber = (type: string) => {
@@ -206,19 +224,11 @@ export default function BillDetail() {
     queryFn: async () => {
       const billId = id as string;
       const cached = await billCache.getBill(billId);
+      if (cached) return { bill: cached };
 
-      if (cached) {
-        return { bill: cached };
-      }
-
-      // CRITICAL: Fetch bill details first, THEN fetch the rest
       const billResult = await billsService.getById(billId);
+      if (!billResult?.bill) throw new Error("Bill not found");
 
-      if (!billResult?.bill) {
-        throw new Error("Bill not found");
-      }
-
-      // Fetch supplementary data with longer timeouts
       const [summariesResult, actionsResult, amendmentsResult] =
         await Promise.allSettled([
           billsService.getSummaries(billId),
@@ -226,7 +236,6 @@ export default function BillDetail() {
           billsService.getAmendments(billId),
         ]);
 
-      // Extract results or use empty arrays
       const summaries =
         summariesResult.status === "fulfilled"
           ? summariesResult.value.summaries
@@ -238,7 +247,6 @@ export default function BillDetail() {
           ? amendmentsResult.value.amendments
           : [];
 
-      // Merge everything into bill data
       const enrichedBill = {
         ...billResult.bill,
         summaries: summaries || [],
@@ -246,13 +254,10 @@ export default function BillDetail() {
         amendments: amendments || [],
       };
 
-      // Save enriched bill to cache
       await billCache.saveBill(billId, enrichedBill);
 
-      // Update stored list items with policyArea
       const lists = await storage.getLists();
       let updated = false;
-
       for (const list of lists) {
         for (const item of list.items) {
           if (item.id === billId && item.type === "bill") {
@@ -261,29 +266,26 @@ export default function BillDetail() {
           }
         }
       }
-
-      if (updated) {
-        await storage.saveLists(lists);
-      }
+      if (updated) await storage.saveLists(lists);
 
       return { bill: enrichedBill };
     },
     enabled: !!id,
-    retry: 1, // Only retry once
+    retry: 1,
     retryDelay: 1000,
   });
 
   const { data: votesData, isLoading: votesLoading } = useQuery({
     queryKey: ["billVotes", id],
     queryFn: () => billsService.getVotes(id as string),
-    enabled: !!id && activeTab === "voting", // only fetch when tab is active
+    enabled: !!id && votingVisited,
     retry: 1,
   });
 
   const { data: cosponsorsData, isLoading: cosponsorsLoading } = useQuery({
     queryKey: ["billCosponsors", id],
     queryFn: () => billsService.getCosponsors(id as string),
-    enabled: !!id && activeTab === "cosponsors",
+    enabled: !!id && cosponsorsVisited,
     retry: 1,
   });
 
@@ -344,12 +346,10 @@ export default function BillDetail() {
 
   useEffect(() => {
     if (!showNewListProgressModal) return;
-
     let currentProgress = 0;
     const interval = setInterval(() => {
       currentProgress += 5;
       setNewListProgress(currentProgress);
-
       if (currentProgress >= 100) {
         clearInterval(interval);
         setTimeout(() => {
@@ -358,7 +358,6 @@ export default function BillDetail() {
         }, 300);
       }
     }, 30);
-
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
 
@@ -367,7 +366,7 @@ export default function BillDetail() {
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <LoadingSpinner />
         <Text style={{ color: "#7B7C81", marginTop: 24 }}>
-          {`Loading ${(id as string).toUpperCase()}...`}{" "}
+          {`Loading ${(id as string).toUpperCase()}...`}
         </Text>
       </View>
     );
@@ -394,35 +393,27 @@ export default function BillDetail() {
       PN: "Nomination",
       TREATY: "Treaty Document",
     };
-
     return types[typeCode.toUpperCase()] || `${chamber} Bill`;
   };
 
   const fetchAmendmentDetails = async (offset = 0) => {
     if (!bill.amendments || bill.amendments.length === 0) return;
-    if (offset === 0 && enrichedAmendments.length > 0) return; // only skip on initial load
-
+    if (offset === 0 && enrichedAmendments.length > 0) return;
     setLoadingAmendments(true);
-
     try {
       const sortedAmendments = [...bill.amendments].sort((a: any, b: any) => {
         return parseInt(b.number || "0") - parseInt(a.number || "0");
       });
-
       const amendmentsToFetch = sortedAmendments.slice(offset, offset + 20);
-
       const detailsPromises = amendmentsToFetch.map((amendment: any) =>
         billsService
           .getAmendmentDetails(amendment.type.toLowerCase(), amendment.number)
           .catch(() => null),
       );
-
       const results = await Promise.all(detailsPromises);
       const enriched = results
         .filter((r) => r?.amendment)
         .map((r) => r.amendment);
-
-      // Append instead of replace
       setEnrichedAmendments((prev) =>
         offset === 0 ? enriched : [...prev, ...enriched],
       );
@@ -435,19 +426,12 @@ export default function BillDetail() {
   };
 
   const formatAmendmentNumber = (type: string, number: string) => {
-    // Convert SAMDT -> S.Amdt., HAMDT -> H.Amdt.
     const formattedType = type
       .replace("SAMDT", "S.Amdt.")
       .replace("HAMDT", "HR.Amdt.");
-
     return `${formattedType}${number}`;
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
-
-  // Derive the processed actions list (same logic as before)
   const processedActions = Array.isArray(bill?.actions)
     ? bill.actions
         .filter((action: any) => {
@@ -486,11 +470,7 @@ export default function BillDetail() {
         })
     : [];
 
-  // Apply chamber filter — actions with no chamber (milestones) always show
-  const activeFilters = selectedChamber.filter(
-    (f) => f !== "Bills", // "Bills" is the default/reset value
-  );
-
+  const activeFilters = selectedChamber.filter((f) => f !== "Bills");
   const filteredActions =
     activeFilters.length === 0
       ? processedActions
@@ -502,7 +482,6 @@ export default function BillDetail() {
             ),
         );
 
-  // Update sortedActions
   const sortedActions = [...filteredActions].sort((a, b) => {
     const parseDate = (dateStr: string) => {
       const [month, day, year] = dateStr.split("/");
@@ -512,17 +491,12 @@ export default function BillDetail() {
         parseInt(day),
       ).getTime();
     };
-
-    const dateA = parseDate(a.date);
-    const dateB = parseDate(b.date);
-
     return selectedActionsSort === "Oldest First"
-      ? dateA - dateB
-      : dateB - dateA; // "Most Recent" default
+      ? parseDate(a.date) - parseDate(b.date)
+      : parseDate(b.date) - parseDate(a.date);
   });
 
   const parseAPIDate = (dateStr: string) => {
-    // Avoids timezone shift by parsing YYYY-MM-DD parts directly
     const [year, month, day] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day).getTime();
   };
@@ -558,12 +532,10 @@ export default function BillDetail() {
       case "Newest First":
         if (a.sponsorshipDate !== b.sponsorshipDate)
           return b.sponsorshipDate - a.sponsorshipDate;
-        // Same date: original cosponsors go last
         return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? 1 : -1;
       case "Oldest First":
         if (a.sponsorshipDate !== b.sponsorshipDate)
           return a.sponsorshipDate - b.sponsorshipDate;
-        // Same date: original cosponsors go first
         return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? -1 : 1;
       default:
         return 0;
@@ -578,14 +550,12 @@ export default function BillDetail() {
           a.type?.startsWith("H")) ||
         (selectedAmendmentChamber.includes("senate") &&
           a.type?.startsWith("S"));
-
       const partyMatch =
         selectedAmendmentParty.length === 0 ||
         (a.sponsors?.[0]?.party &&
           selectedAmendmentParty
             .map((p) => p.charAt(0).toUpperCase())
             .includes(a.sponsors[0].party));
-
       return chamberMatch && partyMatch;
     })
     .sort((a: any, b: any) => {
@@ -600,16 +570,6 @@ export default function BillDetail() {
     <View style={componentStyles.screen}>
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
-        {/* <Pressable
-          onPress={async () => {
-            await billCache.clearAll();
-            await AsyncStorage.clear();
-            alert("Cache cleared! Restart app.");
-          }}
-          style={{ padding: 10, backgroundColor: "red", margin: 10 }}
-        >
-          <Text style={{ color: "white" }}>Clear All Cache (Debug)</Text>
-        </Pressable> */}
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => ({
@@ -620,9 +580,7 @@ export default function BillDetail() {
         </Pressable>
         <View style={componentStyles.headerRight}>
           <Pressable
-            onPress={() => {
-              setShowAddModal(true);
-            }}
+            onPress={() => setShowAddModal(true)}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
@@ -630,9 +588,7 @@ export default function BillDetail() {
             <Plus size={24} color="#535353" />
           </Pressable>
           <Pressable
-            onPress={() => {
-              setShowOptionsModal(true);
-            }}
+            onPress={() => setShowOptionsModal(true)}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
@@ -642,136 +598,122 @@ export default function BillDetail() {
         </View>
       </View>
 
-      <ScrollView
-        style={componentStyles.container}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Bill Header - ABOVE TABS */}
-        <View style={componentStyles.centeredRow}>
-          <View
-            style={[
-              componentStyles.avatarBill,
-              {
-                backgroundColor: "#eee",
-                justifyContent: "center",
-                alignItems: "center",
-              },
-            ]}
-          >
-            {bill.policyArea?.name ? (
-              <Image
-                source={getBillIcon(bill.policyArea.name)}
-                style={{ width: "100%", height: "100%", borderRadius: 6 }}
-                resizeMode="contain"
-              />
-            ) : (
-              <Text
-                style={{ fontSize: 20, fontWeight: "bold", color: "#535353" }}
-              >
-                {bill.type}
-              </Text>
+      {/* Bill Header - fixed above tabs */}
+      <View style={componentStyles.centeredRow}>
+        <View
+          style={[
+            componentStyles.avatarBill,
+            {
+              backgroundColor: "#eee",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          ]}
+        >
+          {bill.policyArea?.name ? (
+            <Image
+              source={getBillIcon(bill.policyArea.name)}
+              style={{ width: "100%", height: "100%", borderRadius: 6 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text
+              style={{ fontSize: 20, fontWeight: "bold", color: "#535353" }}
+            >
+              {bill.type}
+            </Text>
+          )}
+        </View>
+        <View style={{ flex: 1, gap: 8 }}>
+          <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+            <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
+              {new Date(bill.latestAction.actionDate).toLocaleDateString(
+                "en-US",
+                {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "numeric",
+                },
+              )}
+            </Text>
+            {bill.policyArea?.name && (
+              <>
+                <Text style={componentStyles.separator}>·</Text>
+                <Text
+                  style={[componentStyles.subtitle, { flexShrink: 1 }]}
+                  numberOfLines={1}
+                >
+                  {bill.policyArea.name}
+                </Text>
+              </>
             )}
           </View>
-
-          <View style={{ flex: 1, gap: 8 }}>
-            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
-              <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
-                {new Date(bill.latestAction.actionDate).toLocaleDateString(
-                  "en-US",
-                  {
-                    month: "2-digit",
-                    day: "2-digit",
-                    year: "numeric",
-                  },
-                )}
-              </Text>
-              {bill.policyArea?.name && (
-                <>
-                  <Text style={componentStyles.separator}>·</Text>
-                  <Text
-                    style={[componentStyles.subtitle, { flexShrink: 1 }]}
-                    numberOfLines={1}
-                  >
-                    {bill.policyArea.name}
-                  </Text>
-                </>
-              )}
-            </View>
-            <Text style={componentStyles.billNumber} numberOfLines={2}>
-              {bill.type}.{bill.number} - {bill.title}
-            </Text>
-          </View>
+          <Text style={componentStyles.billNumber} numberOfLines={2}>
+            {bill.type}.{bill.number} - {bill.title}
+          </Text>
         </View>
+      </View>
 
-        {/* Tabs */}
-        <View style={componentStyles.tabsNegative}>
-          <View style={componentStyles.tabs}>
-            <Pressable
-              onPress={() => setActiveTab("details")}
-              style={({ pressed }) => ({
-                transform: [{ scale: pressed ? 0.96 : 1 }],
-              })}
-            >
-              <Text
-                style={[
-                  componentStyles.tab,
-                  activeTab === "details" && componentStyles.tabActive,
-                ]}
+      {/* Tab Bar - fixed */}
+      <View style={componentStyles.tabsNegative}>
+        <View style={componentStyles.tabs}>
+          {(["Details", "Voting", "Actions", "Cosponsors"] as const).map(
+            (label, index) => (
+              <Pressable
+                key={label}
+                onPress={() => {
+                  setActiveIndex(index);
+                  setActiveTab(TABS[index]);
+                  pagerRef.current?.setPage(index);
+                  if (index === 1) setVotingVisited(true);
+                  if (index === 3) setCosponsorsVisited(true);
+                }}
+                style={({ pressed }) => ({
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                })}
               >
-                Details
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setActiveTab("voting")}
-              style={({ pressed }) => ({
-                transform: [{ scale: pressed ? 0.96 : 1 }],
-              })}
-            >
-              <Text
-                style={[
-                  componentStyles.tab,
-                  activeTab === "voting" && componentStyles.tabActive,
-                ]}
-              >
-                Voting
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setActiveTab("actions")}
-              style={({ pressed }) => ({
-                transform: [{ scale: pressed ? 0.96 : 1 }],
-              })}
-            >
-              <Text
-                style={[
-                  componentStyles.tab,
-                  activeTab === "actions" && componentStyles.tabActive,
-                ]}
-              >
-                Actions
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setActiveTab("cosponsors")}
-              style={({ pressed }) => ({
-                transform: [{ scale: pressed ? 0.96 : 1 }],
-              })}
-            >
-              <Text
-                style={[
-                  componentStyles.tab,
-                  activeTab === "cosponsors" && componentStyles.tabActive,
-                ]}
-              >
-                Cosponsors
-              </Text>
-            </Pressable>
-          </View>
+                <Text
+                  style={[
+                    componentStyles.tab,
+                    activeIndex === index && componentStyles.tabActive,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            ),
+          )}
         </View>
+      </View>
 
-        {/* Details Tab */}
-        {activeTab === "details" && (
-          <>
+      {/* PagerView */}
+      <PagerView
+        ref={pagerRef}
+        style={{ flex: 1 }}
+        initialPage={0}
+        onPageSelected={(e) => {
+          const index = e.nativeEvent.position;
+          setActiveIndex(index);
+          setActiveTab(TABS[index]);
+          if (index === 1) setVotingVisited(true);
+          if (index === 3) setCosponsorsVisited(true);
+        }}
+      >
+        {/* Page 0: Details */}
+        <View key="0" style={{ flex: 1 }}>
+          {/* Edge swipe strip for back navigation */}
+          <View
+            {...backSwipePanResponder.panHandlers}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 20,
+              zIndex: 10,
+            }}
+          />
+          <ScrollView keyboardShouldPersistTaps="handled">
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Status: </Text>
               <Text style={componentStyles.status}>
@@ -825,7 +767,7 @@ export default function BillDetail() {
               </Text>
             </View>
 
-            {/* Summary Section */}
+            {/* Summary */}
             <View style={componentStyles.section}>
               <Text style={componentStyles.detailTitle}>Summary</Text>
               {bill.summaries && bill.summaries.length > 0 ? (
@@ -854,12 +796,8 @@ export default function BillDetail() {
                   text on Congress.gov.
                 </Text>
               )}
-
               <Pressable
-                onPress={() => {
-                  const url = `https://www.congress.gov/bill/${bill.congress}th-congress/${bill.type.toLowerCase()}-bill/${bill.number}`;
-                  // Linking.openURL(url);
-                }}
+                onPress={() => {}}
                 style={{
                   flexDirection: "row",
                   gap: 4,
@@ -877,8 +815,10 @@ export default function BillDetail() {
               </Pressable>
             </View>
 
-            {/* Amendments Section */}
-            <View style={componentStyles.amendmentsSection}>
+            {/* Amendments */}
+            <View
+              style={[componentStyles.amendmentsSection, { marginBottom: 96 }]}
+            >
               <Pressable
                 style={[
                   componentStyles.sectionHeader,
@@ -890,19 +830,11 @@ export default function BillDetail() {
                 ]}
                 onPress={() => {
                   setShowAmendments(!showAmendments);
-                  if (!showAmendments) {
-                    fetchAmendmentDetails(0);
-                  }
+                  if (!showAmendments) fetchAmendmentDetails(0);
                 }}
               >
-                {/* Left: Title/Button and filterdropdown*/}
                 <View style={{ flex: 1 }}>
-                  <View
-                    style={{
-                      alignSelf: "flex-start",
-                      height: 20,
-                    }}
-                  >
+                  <View style={{ alignSelf: "flex-start", height: 20 }}>
                     {!showAmendments ? (
                       <Text
                         style={[
@@ -946,14 +878,11 @@ export default function BillDetail() {
                   </View>
                 </View>
 
-                {/* Center: Sort button (only expanded) */}
                 {showAmendments && (
                   <Pressable
                     style={({ pressed }) => [
                       componentStyles.button,
-                      {
-                        transform: [{ scale: pressed ? 0.96 : 1 }],
-                      },
+                      { transform: [{ scale: pressed ? 0.96 : 1 }] },
                     ]}
                     onPress={(e) => {
                       e.stopPropagation();
@@ -971,7 +900,6 @@ export default function BillDetail() {
                   </Pressable>
                 )}
 
-                {/* Right Chevron */}
                 <View
                   style={{
                     width: 24,
@@ -995,7 +923,6 @@ export default function BillDetail() {
                 </View>
               </Pressable>
 
-              {/* List with REAL amendment data */}
               {showAmendments && (
                 <View style={componentStyles.expandedAmendments}>
                   {enrichedAmendments.length > 0 ? (
@@ -1030,8 +957,6 @@ export default function BillDetail() {
                                 </Text>
                               )}
                             </View>
-
-                            {/* Date and Purpose */}
                             <Text style={componentStyles.amendmentSummary}>
                               {amendment.submittedDate
                                 ? new Date(
@@ -1047,8 +972,6 @@ export default function BillDetail() {
                                 amendment.amendedAmendment?.purpose ||
                                 "Description not yet available"}
                             </Text>
-
-                            {/* Latest Action (bold, separate line) */}
                             {amendment.latestAction?.text && (
                               <Text
                                 style={[
@@ -1119,59 +1042,69 @@ export default function BillDetail() {
                 </View>
               )}
             </View>
-          </>
-        )}
+          </ScrollView>
+        </View>
 
-        {/* Voting Tab */}
-        {activeTab === "voting" && (
-          <View style={{ marginBottom: 96 }}>
-            <VotingCard
-              votes={votesData?.votes ?? []}
-              isLoading={votesLoading}
+        {/* Page 1: Voting */}
+        <View key="1" style={{ flex: 1 }}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingTop: 1 }}
+          >
+            <View style={{ marginBottom: 96 }}>
+              <VotingCard
+                votes={votesData?.votes ?? []}
+                isLoading={votesLoading}
+              />
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* Page 2: Actions */}
+        <View key="2" style={{ flex: 1 }}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <ActionHistory
+              actions={sortedActions}
+              selectedSort={selectedActionsSort}
+              showSort={showActionsSort}
+              setShowSort={setShowActionsSort}
+              showChamberModal={showChamberModal}
+              showPartyModal={showPartyModal}
+              setShowChamberModal={setShowChamberModal}
+              setShowPartyModal={setShowPartyModal}
+              showOnlyChamber={true}
+              chamberLabelOverride="Chamber of Origin"
             />
-          </View>
-        )}
+          </ScrollView>
+        </View>
 
-        {/* Actions Tab */}
-        {activeTab === "actions" && (
-          <ActionHistory
-            actions={sortedActions} // <-- replace the big inline expression
-            selectedSort={selectedActionsSort}
-            showSort={showActionsSort}
-            setShowSort={setShowActionsSort}
-            showChamberModal={showChamberModal}
-            showPartyModal={showPartyModal}
-            setShowChamberModal={setShowChamberModal}
-            setShowPartyModal={setShowPartyModal}
-            showOnlyChamber={true}
-            chamberLabelOverride="Chamber of Origin"
-          />
-        )}
+        {/* Page 3: Cosponsors */}
+        <View key="3" style={{ flex: 1 }}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <View style={{ marginBottom: 96, marginHorizontal: 16 }}>
+              <Cosponsors
+                cosponsors={sortedCosponsors}
+                isLoading={cosponsorsLoading}
+                showCosponsorFilter={showCosponsorFilter}
+                setShowCosponsorFilter={setShowCosponsorFilter}
+                showCosponsorSort={showCosponsorSort}
+                setShowCosponsorSort={setShowCosponsorSort}
+                selectedCosponsorSort={selectedCosponsorSort}
+                showCosponsorChamberModal={showCosponsorChamberModal}
+                showCosponsorPartyModal={showCosponsorPartyModal}
+                setShowCosponsorChamberModal={setShowCosponsorChamberModal}
+                setShowCosponsorPartyModal={setShowCosponsorPartyModal}
+                selectedRole={selectedRole}
+                setSelectedRole={setSelectedRole}
+                selectedParty={selectedCosponsorParty}
+                setSelectedParty={setSelectedCosponsorParty}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      </PagerView>
 
-        {/* Cosponsors Tab */}
-        {activeTab === "cosponsors" && (
-          <View style={{ marginBottom: 96 }}>
-            <Cosponsors
-              cosponsors={sortedCosponsors}
-              isLoading={cosponsorsLoading}
-              showCosponsorFilter={showCosponsorFilter}
-              setShowCosponsorFilter={setShowCosponsorFilter}
-              showCosponsorSort={showCosponsorSort}
-              setShowCosponsorSort={setShowCosponsorSort}
-              selectedCosponsorSort={selectedCosponsorSort}
-              showCosponsorChamberModal={showCosponsorChamberModal}
-              showCosponsorPartyModal={showCosponsorPartyModal}
-              setShowCosponsorChamberModal={setShowCosponsorChamberModal}
-              setShowCosponsorPartyModal={setShowCosponsorPartyModal}
-              selectedRole={selectedRole}
-              setSelectedRole={setSelectedRole}
-              selectedParty={selectedCosponsorParty}
-              setSelectedParty={setSelectedCosponsorParty}
-            />
-          </View>
-        )}
-      </ScrollView>
-
+      {/* Modals - outside PagerView */}
       <SortDropdown
         showSortDropdown={showAmendmentsSort}
         setShowSortDropdown={setShowAmendmentsSort}
@@ -1179,7 +1112,6 @@ export default function BillDetail() {
         setSelectedSort={setSelectedAmendmentsSort}
         dropdownType="amendments"
       />
-
       <FilterDropdown
         showChamberModal={showAmendmentChamberModal}
         showPartyModal={showAmendmentPartyModal}
@@ -1191,7 +1123,7 @@ export default function BillDetail() {
         setShowPartyModal={setShowAmendmentPartyModal}
         chamber={chamber}
         party={party}
-        showOnlyChamber={false} // ← changed to show party section
+        showOnlyChamber={false}
         chamberLabelOverride="Chamber of Origin"
         showMilestoneNote={false}
         onCancel={() => {
@@ -1199,9 +1131,7 @@ export default function BillDetail() {
           setSelectedAmendmentParty([]);
           setShowAmendmentChamberModal(false);
         }}
-        onApply={() => {
-          setShowAmendmentChamberModal(false);
-        }}
+        onApply={() => setShowAmendmentChamberModal(false)}
       />
       <SortDropdown
         showSortDropdown={showActionsSort}
@@ -1234,7 +1164,6 @@ export default function BillDetail() {
         setSelectedSort={setSelectedCosponsorSort}
         dropdownType="cosponsors"
       />
-      {/* Add Modal Popup */}
       <AddModal
         showAddModal={showAddModal}
         setShowAddModal={setShowAddModal}
@@ -1257,7 +1186,6 @@ export default function BillDetail() {
             : undefined
         }
       />
-      {/* New list name Modal Popup */}
       <NewListNameModal
         visible={showNewListModal}
         onClose={() => {
@@ -1268,14 +1196,12 @@ export default function BillDetail() {
         value={newListName}
         onChangeText={setNewListName}
       />
-      {/* Options Modal Popup */}
       <OptionsModal
         showOptionsModal={showOptionsModal}
         setShowOptionsModal={setShowOptionsModal}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
       />
-      {/* New List Progress Modal */}
       <Modal
         visible={showNewListProgressModal}
         transparent
@@ -1309,10 +1235,8 @@ export default function BillDetail() {
                 textAlign: "center",
               }}
             >
-              Creating and adding to {newListName || "new list"}...
+              Creating and adding to {createdListName || "new list"}...
             </Text>
-
-            {/* Progress Bar */}
             <View
               style={{
                 width: "100%",
@@ -1332,8 +1256,6 @@ export default function BillDetail() {
                 }}
               />
             </View>
-
-            {/* Progress Text */}
             <Text
               style={{
                 fontSize: 12,
@@ -1344,21 +1266,14 @@ export default function BillDetail() {
             >
               {Math.round(newListProgress)}%
             </Text>
-
-            {/* Cancel Button - ADD THIS */}
             <Pressable
               onPress={async () => {
-                // Delete the newly created list
                 const allLists = await storage.getLists();
                 const newlyCreatedList = allLists.find(
                   (l) => l.name === createdListName,
                 );
-
-                if (newlyCreatedList) {
+                if (newlyCreatedList)
                   await storage.deleteList(newlyCreatedList.id);
-                }
-
-                // Close modal and reset
                 setShowNewListProgressModal(false);
                 setNewListProgress(0);
                 setCreatedListName("");
@@ -1368,11 +1283,7 @@ export default function BillDetail() {
               })}
             >
               <Text
-                style={{
-                  fontSize: 14,
-                  color: "#535353",
-                  textAlign: "center",
-                }}
+                style={{ fontSize: 14, color: "#535353", textAlign: "center" }}
               >
                 Cancel
               </Text>

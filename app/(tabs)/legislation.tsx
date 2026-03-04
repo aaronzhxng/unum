@@ -20,7 +20,6 @@ import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { getBillIcon } from "../utils/billIcons";
-
 import { storage } from "../utils/storage";
 
 interface FilterOption {
@@ -497,6 +496,7 @@ export default function LegislationScreen() {
             />
           );
         }}
+        directionalLockEnabled={true}
       />
 
       {/* Search Modal */}

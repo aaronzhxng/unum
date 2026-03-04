@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
   Check,
@@ -18,16 +19,12 @@ import {
   View,
 } from "react-native";
 import AddModal from "../global_components/AddModal";
+import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
-
-import { useQuery } from "@tanstack/react-query";
 import { officialsService } from "../services/officials";
-
-import LoadingSpinner from "../global_components/LoadingSpinner";
-
 import { storage } from "../utils/storage";
 
 type Official = {
@@ -332,6 +329,7 @@ export default function OfficialsScreen() {
             }}
           />
         )}
+        directionalLockEnabled={true}
       />
 
       {/* Add Modal */}

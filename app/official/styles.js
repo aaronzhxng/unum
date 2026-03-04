@@ -80,6 +80,8 @@ export const styles = StyleSheet.create({
   },
   header: {
     paddingBottom: 16,
+    marginHorizontal: 16,
+    marginTop: 24,
   },
   roleTop: {
     fontSize: 16,
@@ -108,7 +110,7 @@ export const styles = StyleSheet.create({
     flexShrink: 1,
   },
   tabsNegative: {
-    marginHorizontal: -16,
+    marginHorizontal: 0,
     marginBottom: 24,
   },
   tabs: {
@@ -146,6 +148,7 @@ export const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
+    marginHorizontal: 16,
     flexDirection: "column",
     paddingVertical: 0,
     paddingHorizontal: 16,
@@ -193,7 +196,7 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   legislationHeader: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 16,
     paddingBottom: 16,
     flexDirection: "row",
     justifyContent: "space-between",

@@ -1,62 +1,86 @@
-// app/(tabs)/_layout.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { useRef, useState } from "react";
+import { Pressable, View } from "react-native";
+import PagerView from "react-native-pager-view";
+import { useTabBar } from "../context/TabBarContext";
+import HomeScreen from "./home";
+import LegislationScreen from "./legislation";
+import OfficialsScreen from "./officials";
+
+const TABS = [
+  { name: "home", activeIcon: "home", inactiveIcon: "home-outline", size: 28 },
+  {
+    name: "officials",
+    activeIcon: "people",
+    inactiveIcon: "people-outline",
+    size: 30,
+  },
+  {
+    name: "legislation",
+    activeIcon: "document-text",
+    inactiveIcon: "document-text-outline",
+    size: 28,
+  },
+];
 
 export default function TabsLayout() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const pagerRef = useRef<PagerView>(null);
+  const { tabBarHidden } = useTabBar();
+
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: "black",
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarItemStyle: {
-          marginVertical: 12,
-        },
-        tabBarStyle: {
-          height: 100,
-        },
-      }}
-    >
-      <Tabs.Screen name="(tabs)" options={{ href: null }} />
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "home" : "home-outline"}
-              size={28}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="officials"
-        options={{
-          title: "Officials",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "people" : "people-outline"}
-              size={30}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="legislation"
-        options={{
-          title: "Legislation",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "document-text" : "document-text-outline"}
-              size={28}
-              color={color}
-            />
-          ),
-        }}
-      />
-    </Tabs>
+    <View style={{ flex: 1 }}>
+      <PagerView
+        ref={pagerRef}
+        style={{ flex: 1 }}
+        initialPage={0}
+        onPageSelected={(e) => setActiveIndex(e.nativeEvent.position)}
+      >
+        <View key="0" style={{ flex: 1 }}>
+          <HomeScreen />
+        </View>
+        <View key="1" style={{ flex: 1 }}>
+          <OfficialsScreen />
+        </View>
+        <View key="2" style={{ flex: 1 }}>
+          <LegislationScreen />
+        </View>
+      </PagerView>
+
+      {!tabBarHidden && (
+        <View
+          style={{
+            height: 100,
+            flexDirection: "row",
+            borderTopWidth: 1,
+            borderTopColor: "#e0e0e0",
+            backgroundColor: "#ffffff",
+            paddingBottom: 28,
+          }}
+        >
+          {TABS.map((tab, index) => (
+            <Pressable
+              key={tab.name}
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => pagerRef.current?.setPage(index)}
+            >
+              <Ionicons
+                name={
+                  (activeIndex === index
+                    ? tab.activeIcon
+                    : tab.inactiveIcon) as any
+                }
+                size={tab.size}
+                color={activeIndex === index ? "black" : "#8e8e93"}
+              />
+            </Pressable>
+          ))}
+        </View>
+      )}
+    </View>
   );
 }
