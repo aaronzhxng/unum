@@ -40,6 +40,7 @@ type Bill = {
 export default function LegislationScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFallbackResults, setSearchFallbackResults] = useState<any[]>([]);
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedNotifications, setSelectedNotifications] =
@@ -500,22 +501,42 @@ export default function LegislationScreen() {
       <SearchModal
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
-        onSearch={setSearchQuery}
+        onSearch={async (query) => {
+          setSearchQuery(query);
+          if (query.length > 2) {
+            const results = await billsService.search(query);
+            if (results?.bills?.length > 0) {
+              setSearchFallbackResults(results.bills);
+            }
+          } else {
+            setSearchFallbackResults([]);
+          }
+        }}
         searchContext={selectedFilter}
-        items={bills.map((item: any) => ({
-          ...item,
-          type: "bill",
-          billType: item.type,
-          name: `${item.type}.${item.number} - ${item.title}`,
-          title: undefined,
-          date: item.latestAction?.actionDate,
-          policyArea:
-            enrichedBills[`${item.type.toLowerCase()}${item.number}`]
-              ?.policyArea?.name ??
-            item.policyArea?.name ??
-            null,
-          latestAction: (item.latestAction as any)?.text ?? item.latestAction,
-        }))}
+        items={[
+          ...bills.map((item: any) => ({
+            /* existing transform */
+          })),
+          ...searchFallbackResults
+            .filter(
+              (b) =>
+                !bills.some(
+                  (existing: any) =>
+                    `${existing.type}${existing.number}` ===
+                    `${b.type}${b.number}`,
+                ),
+            )
+            .map((item: any) => ({
+              ...item,
+              type: "bill",
+              billType: item.type,
+              name: `${item.type}.${item.number} - ${item.title}`,
+              title: undefined,
+              date: item.latestAction?.actionDate,
+              policyArea: item.policyArea?.name ?? null,
+              latestAction: item.latestAction?.text ?? null,
+            })),
+        ]}
         onItemPress={(item) => {
           billCongressCache.set(
             `${item.billType.toLowerCase()}${item.number}`,

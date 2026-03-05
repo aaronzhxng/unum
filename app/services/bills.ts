@@ -66,4 +66,7 @@ export const billsService = {
       `/bills/${billId}/cosponsors${congressParam(congress)}`,
     );
   },
+  search: async (query: string): Promise<any> => {
+    return apiClient.get(`/bills/search?q=${encodeURIComponent(query)}`);
+  },
 };

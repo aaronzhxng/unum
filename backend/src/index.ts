@@ -24,12 +24,12 @@ app.get("/api/bills", async (req, res) => {
   }
 
   try {
-    const fetchBills = async (sort: string, maxBills: number) => {
+    const fetchBills = async (sort: string) => {
       let bills: any[] = [];
       let offset = 0;
       const limit = 250;
 
-      while (bills.length < maxBills) {
+      while (true) {
         const response = await axios.get(
           "https://api.congress.gov/v3/bill/119",
           {
@@ -45,19 +45,17 @@ app.get("/api/bills", async (req, res) => {
         offset += limit;
       }
 
-      return bills.slice(0, maxBills);
+      return bills;
     };
 
-    const [recentlyUpdated, recentlyIntroduced, earlySession] =
-      await Promise.all([
-        fetchBills("updateDate+desc", 2500),
-        fetchBills("introducedDate+desc", 2500),
-        fetchBills("introducedDate+asc", 500),
-      ]);
+    // Fetch all bills sorted both ways to maximize coverage
+    // Run sequentially to avoid hammering the API
+    const byUpdateDate = await fetchBills("updateDate+desc");
+    const byIntroducedDate = await fetchBills("introducedDate+desc");
 
     const seen = new Set<string>();
-    const merged = [...recentlyUpdated, ...recentlyIntroduced, ...earlySession]
-      .filter((bill) => bill.congress === 119) // exclude non-119 bills
+    const merged = [...byUpdateDate, ...byIntroducedDate]
+      .filter((bill) => bill.congress === 119)
       .filter((bill) => {
         const key = `${bill.type}${bill.number}`;
         if (seen.has(key)) return false;
@@ -71,11 +69,54 @@ app.get("/api/bills", async (req, res) => {
     };
 
     billsCache = { data: responseData, timestamp: Date.now() };
-
     res.json(responseData);
   } catch (error) {
     console.error("Error fetching bills:", error);
     res.status(500).json({ error: "Failed to fetch bills" });
+  }
+});
+
+app.get("/api/bills/search", async (req, res) => {
+  try {
+    const query = (req.query.q as string)?.trim();
+    if (!query) return res.status(400).json({ error: "Query required" });
+
+    // Check if it looks like a bill number e.g. "hr4405", "s2503", "hres353"
+    const billIdMatch = query.match(/^([a-z]+)(\d+)$/i);
+
+    if (billIdMatch) {
+      // Direct bill lookup by type+number
+      const billType = billIdMatch[1].toLowerCase();
+      const billNumber = billIdMatch[2];
+
+      const response = await axios.get(
+        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}`,
+        { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+      );
+
+      if (response.data?.bill) {
+        return res.json({ bills: [response.data.bill], count: 1 });
+      }
+      return res.json({ bills: [], count: 0 });
+    }
+
+    // Keyword search — search by title
+    const response = await axios.get("https://api.congress.gov/v3/bill/119", {
+      headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+      params: {
+        limit: 50,
+        query,
+      },
+    });
+
+    const bills = (response.data.bills || []).filter(
+      (b: any) => b.congress === 119,
+    );
+
+    res.json({ bills, count: bills.length });
+  } catch (error) {
+    console.error("Error searching bills:", error);
+    res.status(500).json({ error: "Failed to search bills" });
   }
 });
 
@@ -551,4 +592,19 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Backend running on http://localhost:${PORT}`);
+});
+
+const prewarmCache = async () => {
+  try {
+    console.log("🔄 Pre-warming bills cache...");
+    await axios.get(`http://localhost:${PORT}/api/bills`);
+    console.log("✅ Bills cache warmed");
+  } catch (error) {
+    console.error("Cache pre-warm failed:", error);
+  }
+};
+
+app.listen(PORT, () => {
+  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  prewarmCache();
 });
