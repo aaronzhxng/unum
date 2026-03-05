@@ -15,15 +15,66 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+let billsCache: { data: any; timestamp: number } | null = null;
+const BILLS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
 app.get("/api/bills", async (req, res) => {
-  const response = await axios.get("https://api.congress.gov/v3/bill/119", {
-    headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-    params: { limit: 250, sort: "updateDate+desc" },
-  });
-  res.json({
-    bills: response.data.bills || [],
-    pagination: { count: response.data.bills?.length || 0 },
-  });
+  if (billsCache && Date.now() - billsCache.timestamp < BILLS_CACHE_TTL) {
+    return res.json(billsCache.data);
+  }
+
+  try {
+    const fetchBills = async (sort: string, maxBills: number) => {
+      let bills: any[] = [];
+      let offset = 0;
+      const limit = 250;
+
+      while (bills.length < maxBills) {
+        const response = await axios.get(
+          "https://api.congress.gov/v3/bill/119",
+          {
+            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+            params: { limit, offset, sort },
+          },
+        );
+
+        const page = response.data.bills || [];
+        bills = bills.concat(page);
+
+        if (!response.data.pagination?.next || page.length < limit) break;
+        offset += limit;
+      }
+
+      return bills.slice(0, maxBills);
+    };
+
+    const [recentlyUpdated, recentlyIntroduced] = await Promise.all([
+      fetchBills("updateDate+desc", 1000),
+      fetchBills("introducedDate+desc", 500),
+    ]);
+
+    const seen = new Set<string>();
+    const merged = [...recentlyUpdated, ...recentlyIntroduced].filter(
+      (bill) => {
+        const key = `${bill.type}${bill.number}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      },
+    );
+
+    const responseData = {
+      bills: merged,
+      pagination: { count: merged.length },
+    };
+
+    billsCache = { data: responseData, timestamp: Date.now() };
+
+    res.json(responseData);
+  } catch (error) {
+    console.error("Error fetching bills:", error);
+    res.status(500).json({ error: "Failed to fetch bills" });
+  }
 });
 
 // Get single bill by ID
