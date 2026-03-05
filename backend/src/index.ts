@@ -50,9 +50,9 @@ app.get("/api/bills", async (req, res) => {
 
     const [recentlyUpdated, recentlyIntroduced, earlySession] =
       await Promise.all([
-        fetchBills("updateDate+desc", 1000),
-        fetchBills("introducedDate+desc", 500),
-        fetchBills("introducedDate+asc", 250),
+        fetchBills("updateDate+desc", 2500),
+        fetchBills("introducedDate+desc", 2500),
+        fetchBills("introducedDate+asc", 500),
       ]);
 
     const seen = new Set<string>();
