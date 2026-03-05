@@ -289,8 +289,8 @@ export default function LegislationScreen() {
     if (selectedSort === "Recent Action") {
       sorted.sort(
         (a, b) =>
-          new Date((b as any).latestAction.actionDate).getTime() -
-          new Date((a as any).latestAction.actionDate).getTime(),
+          new Date((b as any).latestAction?.actionDate ?? 0).getTime() -
+          new Date((a as any).latestAction?.actionDate ?? 0).getTime(),
       );
     } else if (selectedSort === "Newest First") {
       sorted.sort((a, b) => (b as any).number - (a as any).number);
@@ -589,8 +589,8 @@ export default function LegislationScreen() {
                 id: `${currentBill.type.toLowerCase()}${currentBill.number}`,
                 type: "bill",
                 name: `${currentBill.type}.${currentBill.number} - ${currentBill.title}`,
-                date: currentBill.latestAction.actionDate,
-                latestAction: currentBill.latestAction.text,
+                date: currentBill.latestAction?.actionDate,
+                latestAction: currentBill.latestAction?.text,
                 policyArea:
                   enrichedBills[currentBillId ?? ""]?.policyArea?.name,
               }
@@ -759,14 +759,13 @@ function BillCard({
         <View style={{ flex: 1, gap: 4 }}>
           <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
             <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
-              {new Date(item.latestAction.actionDate).toLocaleDateString(
-                "en-US",
-                {
-                  month: "2-digit",
-                  day: "2-digit",
-                  year: "numeric",
-                },
-              )}
+              {new Date(
+                item.latestAction?.actionDate ?? item.introducedDate ?? 0,
+              ).toLocaleDateString("en-US", {
+                month: "2-digit",
+                day: "2-digit",
+                year: "numeric",
+              })}
             </Text>
             {(enrichedData?.policyArea?.name || item.policyArea?.name) && (
               <>
@@ -785,7 +784,7 @@ function BillCard({
           </Text>
           <View style={componentStyles.metaRow}>
             <Text style={componentStyles.subtitle} numberOfLines={1}>
-              {item.latestAction.text}
+              {item.latestAction?.text ?? "No action yet"}
             </Text>
           </View>
         </View>
