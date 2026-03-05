@@ -5,78 +5,75 @@ import { styles as componentStyles } from "../global_styles/styles";
 interface EditOptionsModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (action: "copy" | "move", lists: string[]) => void;
-  onNewListPress: () => void;
+  onConfirm: (action: "copy" | "move", listIds: string[]) => void;
+  onNewListPress: (action: "copy" | "move") => void; // ← add action param
+  availableLists: Array<{ id: string; name: string }>;
 }
-
-const AVAILABLE_LISTS = [
-  "My List",
-  "Tri State Area",
-  "Swing States",
-  "New List",
-];
 
 export default function EditOptionsModal({
   visible,
   onClose,
   onConfirm,
   onNewListPress,
+  availableLists,
 }: EditOptionsModalProps) {
   const [selectedAction, setSelectedAction] = useState<"copy" | "move" | null>(
     null,
   );
-  const [selectedLists, setSelectedLists] = useState<string[]>([]);
+  const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentListIndex, setCurrentListIndex] = useState(0);
 
+  // Reset state when modal opens
+  useEffect(() => {
+    if (visible) {
+      setSelectedAction(null);
+      setSelectedListIds([]);
+    }
+  }, [visible]);
+
   const isListSectionEnabled = selectedAction !== null;
 
-  // Filter out "New List" for progress display
-  const progressLists = selectedLists.filter((list) => list !== "New List");
+  // The real lists selected (excludes "new list" placeholder)
+  const selectedRealListIds = selectedListIds.filter((id) => id !== "__new__");
+  const hasNewList = selectedListIds.includes("__new__");
 
-  const toggleList = (list: string) => {
+  const toggleList = (id: string) => {
     if (!isListSectionEnabled) return;
-
-    // Just toggle - don't open modal immediately
-    setSelectedLists((prev) =>
-      prev.includes(list) ? prev.filter((l) => l !== list) : [...prev, list],
+    setSelectedListIds((prev) =>
+      prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id],
     );
   };
 
   const handleCancel = () => {
     setSelectedAction(null);
-    setSelectedLists([]);
+    setSelectedListIds([]);
     onClose();
   };
 
   const handleConfirm = () => {
-    if (!selectedAction || selectedLists.length === 0) return;
+    if (!selectedAction || selectedListIds.length === 0) return;
 
-    const hasNewList = selectedLists.includes("New List");
-    const hasOtherLists = progressLists.length > 0;
-
-    // If ONLY "New List" is selected, open modal immediately
-    if (hasNewList && !hasOtherLists) {
+    if (hasNewList && selectedRealListIds.length === 0) {
       onClose();
+      const action = selectedAction;
       setSelectedAction(null);
-      setSelectedLists([]);
-      setTimeout(() => onNewListPress(), 200);
+      setSelectedListIds([]);
+      setTimeout(() => onNewListPress(action), 200);
       return;
     }
 
-    // Otherwise show progress for other lists first
     onClose();
     setShowProgressModal(true);
     setProgress(0);
     setCurrentListIndex(0);
   };
 
-  // Animate progress bar
   useEffect(() => {
     if (!showProgressModal) return;
 
-    const totalLists = progressLists.length;
+    const totalLists = selectedRealListIds.length;
     let currentProgress = 0;
 
     const interval = setInterval(() => {
@@ -95,31 +92,33 @@ export default function EditOptionsModal({
           setProgress(0);
           setCurrentListIndex(0);
 
-          // Call onConfirm with only the regular lists (not "New List")
           if (selectedAction) {
-            onConfirm(selectedAction, progressLists);
+            onConfirm(selectedAction, selectedRealListIds);
           }
 
-          const hasNewList = selectedLists.includes("New List");
+          const shouldOpenNewList = hasNewList;
+          const savedAction = selectedAction; // capture before clearing
           setSelectedAction(null);
-          setSelectedLists([]);
+          setSelectedListIds([]);
 
-          // If "New List" was selected, open the name modal now
-          if (hasNewList) {
-            setTimeout(() => onNewListPress(), 200);
+          if (shouldOpenNewList) {
+            setTimeout(() => onNewListPress(savedAction!), 200);
           }
         }, 300);
       }
     }, 30);
 
     return () => clearInterval(interval);
-  }, [showProgressModal, progressLists.length]);
+  }, [showProgressModal]);
 
-  const canConfirm = selectedAction !== null && selectedLists.length > 0;
+  const canConfirm = selectedAction !== null && selectedListIds.length > 0;
+
+  const currentListName =
+    availableLists.find((l) => l.id === selectedRealListIds[currentListIndex])
+      ?.name ?? "";
 
   return (
     <>
-      {/* Main Selection Modal */}
       <Modal
         visible={visible}
         transparent
@@ -132,9 +131,8 @@ export default function EditOptionsModal({
             onPress={() => {}}
             style={{ flex: 1, justifyContent: "center" }}
           >
-            {/* Section 1: Action Radio Buttons */}
+            {/* Action Radio Buttons */}
             <View style={[componentStyles.dropdownMulti, { marginTop: 0 }]}>
-              {/* Copy to List */}
               <Pressable
                 style={[
                   componentStyles.dropdownItem,
@@ -174,7 +172,6 @@ export default function EditOptionsModal({
                 </View>
               </Pressable>
 
-              {/* Move to List */}
               <Pressable
                 style={[
                   componentStyles.dropdownItem,
@@ -215,14 +212,11 @@ export default function EditOptionsModal({
               </Pressable>
             </View>
 
-            {/* Section 2: List Checkboxes */}
+            {/* List Checkboxes */}
             <View
               style={[
                 componentStyles.dropdownMulti,
-                {
-                  marginTop: 12,
-                  opacity: isListSectionEnabled ? 1 : 0.6,
-                },
+                { marginTop: 12, opacity: isListSectionEnabled ? 1 : 0.6 },
               ]}
             >
               <ScrollView
@@ -230,9 +224,9 @@ export default function EditOptionsModal({
                 nestedScrollEnabled
                 showsVerticalScrollIndicator={false}
               >
-                {AVAILABLE_LISTS.map((list) => (
+                {availableLists.map((list) => (
                   <Pressable
-                    key={list}
+                    key={list.id}
                     style={[
                       componentStyles.dropdownItem,
                       {
@@ -241,15 +235,10 @@ export default function EditOptionsModal({
                         alignItems: "center",
                       },
                     ]}
-                    onPress={() => toggleList(list)}
+                    onPress={() => toggleList(list.id)}
                   >
-                    <Text
-                      style={[
-                        componentStyles.dropdownItemText,
-                        list === "New List" && { color: "#7B7C81" },
-                      ]}
-                    >
-                      {list}
+                    <Text style={componentStyles.dropdownItemText}>
+                      {list.name}
                     </Text>
                     <View
                       style={{
@@ -257,19 +246,77 @@ export default function EditOptionsModal({
                         height: 20,
                         borderWidth: 2,
                         borderColor:
-                          isListSectionEnabled && selectedLists.includes(list)
+                          isListSectionEnabled &&
+                          selectedListIds.includes(list.id)
                             ? "#008CFF"
                             : "#7B7C81",
                         borderRadius: 4,
                         backgroundColor:
-                          isListSectionEnabled && selectedLists.includes(list)
+                          isListSectionEnabled &&
+                          selectedListIds.includes(list.id)
                             ? "#008CFF"
                             : "transparent",
                         justifyContent: "center",
                         alignItems: "center",
                       }}
                     >
-                      {isListSectionEnabled && selectedLists.includes(list) && (
+                      {isListSectionEnabled &&
+                        selectedListIds.includes(list.id) && (
+                          <View
+                            style={{
+                              width: 12,
+                              height: 12,
+                              backgroundColor: "#008CFF",
+                              borderRadius: 2,
+                            }}
+                          />
+                        )}
+                    </View>
+                  </Pressable>
+                ))}
+
+                {/* New List option */}
+                <Pressable
+                  style={[
+                    componentStyles.dropdownItem,
+                    {
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    },
+                  ]}
+                  onPress={() => toggleList("__new__")}
+                >
+                  <Text
+                    style={[
+                      componentStyles.dropdownItemText,
+                      { color: "#7B7C81" },
+                    ]}
+                  >
+                    New List
+                  </Text>
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderWidth: 2,
+                      borderColor:
+                        isListSectionEnabled &&
+                        selectedListIds.includes("__new__")
+                          ? "#008CFF"
+                          : "#7B7C81",
+                      borderRadius: 4,
+                      backgroundColor:
+                        isListSectionEnabled &&
+                        selectedListIds.includes("__new__")
+                          ? "#008CFF"
+                          : "transparent",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {isListSectionEnabled &&
+                      selectedListIds.includes("__new__") && (
                         <View
                           style={{
                             width: 12,
@@ -279,13 +326,12 @@ export default function EditOptionsModal({
                           }}
                         />
                       )}
-                    </View>
-                  </Pressable>
-                ))}
+                  </View>
+                </Pressable>
               </ScrollView>
             </View>
 
-            {/* Cancel / Confirm Buttons */}
+            {/* Cancel / Confirm */}
             <View
               style={{
                 flexDirection: "row",
@@ -367,10 +413,8 @@ export default function EditOptionsModal({
               }}
             >
               {selectedAction === "copy" ? "Copying to" : "Moving to"}{" "}
-              {progressLists[currentListIndex]}
+              {currentListName}
             </Text>
-
-            {/* Progress Bar Background */}
             <View
               style={{
                 width: "100%",
@@ -381,7 +425,6 @@ export default function EditOptionsModal({
                 overflow: "hidden",
               }}
             >
-              {/* Progress Bar Fill */}
               <View
                 style={{
                   width: `${progress}%`,
@@ -391,24 +434,20 @@ export default function EditOptionsModal({
                 }}
               />
             </View>
-
-            {/* Progress Text */}
             <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                marginBottom: 0,
+                marginBottom: 16,
               }}
             >
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/{progressLists.length}
+                {currentListIndex + 1}/{selectedRealListIds.length}
               </Text>
               <Text style={{ fontSize: 12, color: "#7B7C81" }}>
                 {Math.round(progress)}%
               </Text>
             </View>
-
-            {/* Cancel Button */}
             <Pressable
               onPress={() => {
                 setShowProgressModal(false);
@@ -416,11 +455,7 @@ export default function EditOptionsModal({
               }}
             >
               <Text
-                style={{
-                  fontSize: 14,
-                  color: "#535353",
-                  textAlign: "center",
-                }}
+                style={{ fontSize: 14, color: "#535353", textAlign: "center" }}
               >
                 Cancel
               </Text>

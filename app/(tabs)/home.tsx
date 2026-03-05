@@ -19,7 +19,6 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
-import { useTabSwipe } from "../hooks/useTabSwipe";
 import { getBillIcon } from "../utils/billIcons";
 import { ListItem, storage, UserList } from "../utils/storage";
 
@@ -28,8 +27,6 @@ type ItemType = "official" | "bill";
 type Item = ListItem;
 
 export default function HomeScreen() {
-  const panResponder = useTabSwipe("home");
-
   const router = useRouter();
 
   // Normal mode state
@@ -57,6 +54,9 @@ export default function HomeScreen() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showEditOptions, setShowEditOptions] = useState(false);
+  const [pendingEditAction, setPendingEditAction] = useState<
+    "copy" | "move" | null
+  >(null);
 
   const [items, setItems] = useState<ListItem[]>([]);
 
@@ -161,16 +161,38 @@ export default function HomeScreen() {
     exitEditMode();
   };
 
-  const handleEditConfirm = (action: "copy" | "move", lists: string[]) => {
-    // If moving, remove the selected items from current list
+  const handleEditConfirm = async (
+    action: "copy" | "move",
+    listIds: string[],
+  ) => {
+    const selectedItems = items.filter((item) => selectedIds.has(item.id));
+    const allLists = await storage.getLists();
+
+    for (const listId of listIds) {
+      const targetList = allLists.find((l) => l.id === listId);
+      if (!targetList) continue;
+
+      // Add items that aren't already in the target list
+      for (const item of selectedItems) {
+        const alreadyExists = targetList.items.some((i) => i.id === item.id);
+        if (!alreadyExists) {
+          targetList.items.push(item);
+        }
+      }
+    }
+
+    // If moving, remove from current list
     if (action === "move") {
+      const currentList = allLists.find((l) => l.id === currentListId);
+      if (currentList) {
+        currentList.items = currentList.items.filter(
+          (item) => !selectedIds.has(item.id),
+        );
+      }
       setItems((prev) => prev.filter((item) => !selectedIds.has(item.id)));
     }
 
-    // Navigate to the first selected list
-    setSelectedList(lists[0]);
-
-    // Exit edit mode and close modal
+    await storage.saveLists(allLists);
     setShowEditOptions(false);
     exitEditMode();
   };
@@ -178,27 +200,47 @@ export default function HomeScreen() {
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
       const allLists = await storage.getLists();
+
+      let itemsForNewList: ListItem[] = [];
+      if (Array.isArray(pendingItemForNewList)) {
+        // Edit mode: multiple selected items
+        itemsForNewList = pendingItemForNewList;
+      } else if (pendingItemForNewList) {
+        // Single item from search modal or detail screen
+        itemsForNewList = [pendingItemForNewList];
+      }
+
       const newList = {
         id: Date.now().toString(),
         name: newListName.trim(),
-        items: pendingItemForNewList ? [pendingItemForNewList] : [],
+        items: itemsForNewList,
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
 
-      // Track the created list name
+      // If move, remove from current list
+      if (newListContext === "main" && pendingEditAction === "move") {
+        const movedIds = new Set(itemsForNewList.map((i) => i.id));
+        const updatedLists = await storage.getLists();
+        const currentList = updatedLists.find((l) => l.id === currentListId);
+        if (currentList) {
+          currentList.items = currentList.items.filter(
+            (item) => !movedIds.has(item.id),
+          );
+          await storage.saveLists(updatedLists);
+          setItems((prev) => prev.filter((item) => !movedIds.has(item.id)));
+        }
+        exitEditMode();
+      }
+
       setCreatedListName(newListName.trim());
-
-      // For home.tsx only
       setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
-
-      // Show progress modal
       setShowNewListProgressModal(true);
-
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
+      setPendingEditAction(null);
     }
   };
 
@@ -259,7 +301,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={componentStyles.container} {...panResponder.panHandlers}>
+    <View style={componentStyles.container}>
       {/* Header */}
       <View style={componentStyles.headerBar}>
         {isEditMode ? (
@@ -645,10 +687,15 @@ export default function HomeScreen() {
         visible={showEditOptions}
         onClose={() => setShowEditOptions(false)}
         onConfirm={handleEditConfirm}
-        onNewListPress={() => {
+        onNewListPress={(action) => {
+          setPendingEditAction(action);
+          setPendingItemForNewList(
+            items.filter((item) => selectedIds.has(item.id)),
+          );
           setNewListContext("main");
           setShowNewListModal(true);
         }}
+        availableLists={lists.filter((l) => l.id !== currentListId)}
       />
       <NewListNameModal
         visible={showNewListModal}

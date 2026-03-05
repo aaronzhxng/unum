@@ -8,78 +8,38 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Health check
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Test endpoint - get bills from Congress.gov
+// Get bills across last ~10 years of congresses
 app.get("/api/bills", async (req, res) => {
   try {
-    const response = await axios.get("https://api.congress.gov/v3/bill/119", {
-      headers: {
-        "X-Api-Key": process.env.CONGRESS_API_KEY,
-      },
-      params: {
-        limit: 250, // Change from 20 to 250 (max allowed)
-      },
-    });
+    const congresses = [119, 118, 117, 116, 115, 114, 113];
 
-    res.json(response.data);
+    const allBillsResults = await Promise.allSettled(
+      congresses.map((congress) =>
+        axios.get(`https://api.congress.gov/v3/bill/${congress}`, {
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { limit: 250, sort: "updateDate+desc" },
+        }),
+      ),
+    );
+
+    const allBills = allBillsResults
+      .filter((r) => r.status === "fulfilled")
+      .flatMap((r: any) => r.value.data.bills || []);
+
+    res.json({
+      bills: allBills,
+      pagination: { count: allBills.length },
+    });
   } catch (error) {
     console.error("Error fetching bills:", error);
     res.status(500).json({ error: "Failed to fetch bills" });
-  }
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`);
-});
-
-// Get officials from Congress.gov
-app.get("/api/officials", async (req, res) => {
-  try {
-    let allMembers: any[] = [];
-    let offset = 0;
-    const limit = 250;
-    let hasMore = true;
-
-    while (hasMore) {
-      const response = await axios.get("https://api.congress.gov/v3/member", {
-        headers: {
-          "X-Api-Key": process.env.CONGRESS_API_KEY,
-        },
-        params: {
-          limit,
-          offset,
-          currentMember: true,
-        },
-      });
-
-      const members = response.data.members || [];
-      allMembers = allMembers.concat(
-        members.map((m: any) => ({
-          ...m,
-          chamber: m.terms?.item?.[m.terms.item.length - 1]?.chamber ?? null,
-        })),
-      );
-
-      hasMore = response.data.pagination?.next != null;
-      offset += limit;
-    }
-
-    res.json({
-      officials: allMembers,
-      count: allMembers.length,
-    });
-  } catch (error) {
-    console.error("Error fetching officials:", error);
-    res.status(500).json({ error: "Failed to fetch officials" });
   }
 });
 
@@ -87,24 +47,17 @@ app.get("/api/officials", async (req, res) => {
 app.get("/api/bills/:billId", async (req, res) => {
   try {
     const { billId } = req.params;
-
-    // billId format: "hr187" or "s2296"
-    // Extract type and number
+    const congress = (req.query.congress as string) || "119";
     const match = billId.match(/^([a-z]+)(\d+)$/i);
-    if (!match) {
+    if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-    }
 
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
     const response = await axios.get(
-      `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}`,
-      {
-        headers: {
-          "X-Api-Key": process.env.CONGRESS_API_KEY,
-        },
-      },
+      `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}`,
+      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
     );
 
     res.json(response.data);
@@ -118,24 +71,17 @@ app.get("/api/bills/:billId", async (req, res) => {
 app.get("/api/bills/:billId/summaries", async (req, res) => {
   try {
     const { billId } = req.params;
-
-    // billId format: "hr187" or "s2296"
-    // Extract type and number
+    const congress = (req.query.congress as string) || "119";
     const match = billId.match(/^([a-z]+)(\d+)$/i);
-    if (!match) {
+    if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-    }
 
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
     const response = await axios.get(
-      `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/summaries`,
-      {
-        headers: {
-          "X-Api-Key": process.env.CONGRESS_API_KEY,
-        },
-      },
+      `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/summaries`,
+      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
     );
 
     res.json(response.data);
@@ -145,72 +91,37 @@ app.get("/api/bills/:billId/summaries", async (req, res) => {
   }
 });
 
-// Get single official by bioguide ID
-app.get("/api/officials/:bioguideId", async (req, res) => {
-  try {
-    const { bioguideId } = req.params;
-
-    const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}`,
-      {
-        headers: {
-          "X-Api-Key": process.env.CONGRESS_API_KEY,
-        },
-      },
-    );
-
-    res.json(response.data);
-  } catch (error) {
-    console.error("Error fetching official:", error);
-    res.status(500).json({ error: "Failed to fetch official details" });
-  }
-});
-
 // Get bill actions
 app.get("/api/bills/:billId/actions", async (req, res) => {
   try {
     const { billId } = req.params;
-
+    const congress = (req.query.congress as string) || "119";
     const match = billId.match(/^([a-z]+)(\d+)$/i);
-    if (!match) {
+    if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-    }
 
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
-    // Fetch all pages of actions
     let allActions: any[] = [];
     let offset = 0;
-    const limit = 250; // Max allowed by API
+    const limit = 250;
     let hasMore = true;
 
     while (hasMore) {
       const response = await axios.get(
-        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/actions`,
+        `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
         {
-          headers: {
-            "X-Api-Key": process.env.CONGRESS_API_KEY,
-          },
-          params: {
-            offset,
-            limit,
-          },
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { offset, limit },
         },
       );
-
-      const actions = response.data.actions || [];
-      allActions = allActions.concat(actions);
-
-      // Check if there are more pages
+      allActions = allActions.concat(response.data.actions || []);
       hasMore = response.data.pagination?.next != null;
       offset += limit;
     }
 
-    res.json({
-      actions: allActions,
-      pagination: { count: allActions.length },
-    });
+    res.json({ actions: allActions, pagination: { count: allActions.length } });
   } catch (error) {
     console.error("Error fetching actions:", error);
     res.status(500).json({ error: "Failed to fetch bill actions" });
@@ -221,16 +132,14 @@ app.get("/api/bills/:billId/actions", async (req, res) => {
 app.get("/api/bills/:billId/amendments", async (req, res) => {
   try {
     const { billId } = req.params;
-
+    const congress = (req.query.congress as string) || "119";
     const match = billId.match(/^([a-z]+)(\d+)$/i);
-    if (!match) {
+    if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-    }
 
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
-    // Fetch all pages of amendments
     let allAmendments: any[] = [];
     let offset = 0;
     const limit = 250;
@@ -238,21 +147,13 @@ app.get("/api/bills/:billId/amendments", async (req, res) => {
 
     while (hasMore) {
       const response = await axios.get(
-        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/amendments`,
+        `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/amendments`,
         {
-          headers: {
-            "X-Api-Key": process.env.CONGRESS_API_KEY,
-          },
-          params: {
-            offset,
-            limit,
-          },
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { offset, limit },
         },
       );
-
-      const amendments = response.data.amendments || [];
-      allAmendments = allAmendments.concat(amendments);
-
+      allAmendments = allAmendments.concat(response.data.amendments || []);
       hasMore = response.data.pagination?.next != null;
       offset += limit;
     }
@@ -271,14 +172,11 @@ app.get("/api/bills/:billId/amendments", async (req, res) => {
 app.get("/api/amendments/:amendmentType/:amendmentNumber", async (req, res) => {
   try {
     const { amendmentType, amendmentNumber } = req.params;
+    const congress = (req.query.congress as string) || "119";
 
     const response = await axios.get(
-      `https://api.congress.gov/v3/amendment/119/${amendmentType.toLowerCase()}/${amendmentNumber}`,
-      {
-        headers: {
-          "X-Api-Key": process.env.CONGRESS_API_KEY,
-        },
-      },
+      `https://api.congress.gov/v3/amendment/${congress}/${amendmentType.toLowerCase()}/${amendmentNumber}`,
+      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
     );
 
     res.json(response.data);
@@ -288,20 +186,18 @@ app.get("/api/amendments/:amendmentType/:amendmentNumber", async (req, res) => {
   }
 });
 
-// Get bill votes (parsed from recorded vote XML URLs in actions)
+// Get bill votes
 app.get("/api/bills/:billId/votes", async (req, res) => {
   try {
     const { billId } = req.params;
-
+    const congress = (req.query.congress as string) || "119";
     const match = billId.match(/^([a-z]+)(\d+)$/i);
-    if (!match) {
+    if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-    }
 
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
-    // Step 1: Fetch all actions to find recordedVotes URLs
     let allActions: any[] = [];
     let offset = 0;
     const limit = 250;
@@ -309,7 +205,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
 
     while (hasMore) {
       const response = await axios.get(
-        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/actions`,
+        `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
           params: { offset, limit },
@@ -320,7 +216,6 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       offset += limit;
     }
 
-    // Step 2: Extract all recordedVote entries
     const recordedVotes: any[] = [];
     for (const action of allActions) {
       if (action.recordedVotes?.length) {
@@ -336,11 +231,8 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       }
     }
 
-    if (recordedVotes.length === 0) {
-      return res.json({ votes: [] });
-    }
+    if (recordedVotes.length === 0) return res.json({ votes: [] });
 
-    // Deduplicate by rollNumber + chamber
     const seen = new Set<string>();
     const uniqueVotes = recordedVotes.filter((v) => {
       const key = `${v.chamber}-${v.rollNumber}`;
@@ -349,7 +241,6 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       return true;
     });
 
-    // Step 3: Parse XML
     const parseVoteXml = (xml: string, meta: any) => {
       const get = (tag: string) => {
         const m = xml.match(
@@ -370,7 +261,6 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       let question = "";
 
       if (isSenate) {
-        // Senate has no party breakdown in <count> — must tally from individual members
         const memberBlocks = [
           ...xml.matchAll(/<member>([\s\S]*?)<\/member>/gi),
         ];
@@ -380,12 +270,10 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
             inner.match(/<party>(.*?)<\/party>/i)?.[1]?.trim() ?? "";
           const voteCast =
             inner.match(/<vote_cast>(.*?)<\/vote_cast>/i)?.[1]?.trim() ?? "";
-
           const isYea = voteCast === "Yea";
           const isNay = voteCast === "Nay";
           const isPresent = voteCast === "Present";
           const isAbsent = voteCast === "Not Voting" || voteCast === "Absent";
-
           if (party === "D") {
             dem.yea += isYea ? 1 : 0;
             dem.nay += isNay ? 1 : 0;
@@ -403,7 +291,6 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
             ind.notVoting += isAbsent ? 1 : 0;
           }
         }
-
         result = get("vote_result").split("<")[0].trim();
         question = get("vote_question");
         title = get("vote_title") || title;
@@ -428,7 +315,6 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
             inner.match(/<not-voting-total>(\d+)<\/not-voting-total>/i)?.[1] ??
               "0",
           );
-
           if (party === "Democratic") dem = { yea, nay, present, notVoting };
           else if (party === "Republican")
             rep = { yea, nay, present, notVoting };
@@ -492,16 +378,14 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
 app.get("/api/bills/:billId/cosponsors", async (req, res) => {
   try {
     const { billId } = req.params;
-
+    const congress = (req.query.congress as string) || "119";
     const match = billId.match(/^([a-z]+)(\d+)$/i);
-    if (!match) {
+    if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-    }
 
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
-    // Fetch all pages of cosponsors
     let allCosponsors: any[] = [];
     let offset = 0;
     const limit = 250;
@@ -509,21 +393,17 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
 
     while (hasMore) {
       const response = await axios.get(
-        `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/cosponsors`,
+        `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/cosponsors`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
           params: { offset, limit },
         },
       );
-
-      const cosponsors = response.data.cosponsors || [];
-      allCosponsors = allCosponsors.concat(cosponsors);
-
+      allCosponsors = allCosponsors.concat(response.data.cosponsors || []);
       hasMore = response.data.pagination?.next != null;
       offset += limit;
     }
 
-    // Enrich each cosponsor with photo URL using bioguideId
     const enriched = allCosponsors.map((c: any) => ({
       bioguideId: c.bioguideId,
       name: `${c.firstName} ${c.lastName}`,
@@ -543,11 +423,56 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
   }
 });
 
+// Get officials
+app.get("/api/officials", async (req, res) => {
+  try {
+    let allMembers: any[] = [];
+    let offset = 0;
+    const limit = 250;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await axios.get("https://api.congress.gov/v3/member", {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { limit, offset, currentMember: true },
+      });
+      const members = response.data.members || [];
+      allMembers = allMembers.concat(
+        members.map((m: any) => ({
+          ...m,
+          chamber: m.terms?.item?.[m.terms.item.length - 1]?.chamber ?? null,
+        })),
+      );
+      hasMore = response.data.pagination?.next != null;
+      offset += limit;
+    }
+
+    res.json({ officials: allMembers, count: allMembers.length });
+  } catch (error) {
+    console.error("Error fetching officials:", error);
+    res.status(500).json({ error: "Failed to fetch officials" });
+  }
+});
+
+// Get single official
+app.get("/api/officials/:bioguideId", async (req, res) => {
+  try {
+    const { bioguideId } = req.params;
+    const response = await axios.get(
+      `https://api.congress.gov/v3/member/${bioguideId}`,
+      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching official:", error);
+    res.status(500).json({ error: "Failed to fetch official details" });
+  }
+});
+
 // Get sponsored legislation
 app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
   try {
     const { bioguideId } = req.params;
-
     const response = await axios.get(
       `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
       {
@@ -555,7 +480,6 @@ app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
         params: { limit: 250 },
       },
     );
-
     const allLegislation = response.data.sponsoredLegislation || [];
     res.json({
       legislation: allLegislation,
@@ -571,7 +495,6 @@ app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
 app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
   try {
     const { bioguideId } = req.params;
-
     const response = await axios.get(
       `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
       {
@@ -579,7 +502,6 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
         params: { limit: 250 },
       },
     );
-
     const allLegislation = response.data.cosponsoredLegislation || [];
     res.json({
       legislation: allLegislation,
@@ -589,4 +511,8 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
     console.error("Error fetching cosponsored legislation:", error);
     res.status(500).json({ error: "Failed to fetch cosponsored legislation" });
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Backend running on http://localhost:${PORT}`);
 });

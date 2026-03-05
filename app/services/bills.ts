@@ -19,39 +19,51 @@ interface BillsResponse {
   };
 }
 
+const congressParam = (congress?: number) =>
+  congress ? `?congress=${congress}` : "";
+
 export const billsService = {
   getAll: async (): Promise<BillsResponse> => {
     return apiClient.get<BillsResponse>("/bills");
   },
 
-  getById: async (billId: string): Promise<any> => {
-    return apiClient.get(`/bills/${billId}`);
+  getById: async (billId: string, congress?: number): Promise<any> => {
+    return apiClient.get(`/bills/${billId}${congressParam(congress)}`);
   },
 
-  getSummaries: async (billId: string): Promise<any> => {
-    return apiClient.get(`/bills/${billId}/summaries`);
+  getSummaries: async (billId: string, congress?: number): Promise<any> => {
+    return apiClient.get(
+      `/bills/${billId}/summaries${congressParam(congress)}`,
+    );
   },
 
-  getActions: async (billId: string): Promise<any> => {
-    return apiClient.get(`/bills/${billId}/actions`);
+  getActions: async (billId: string, congress?: number): Promise<any> => {
+    return apiClient.get(`/bills/${billId}/actions${congressParam(congress)}`);
   },
 
-  getAmendments: async (billId: string): Promise<any> => {
-    return apiClient.get(`/bills/${billId}/amendments`);
+  getAmendments: async (billId: string, congress?: number): Promise<any> => {
+    return apiClient.get(
+      `/bills/${billId}/amendments${congressParam(congress)}`,
+    );
   },
 
   getAmendmentDetails: async (
     amendmentType: string,
     amendmentNumber: string,
+    congress?: number,
   ): Promise<any> => {
-    return apiClient.get(`/amendments/${amendmentType}/${amendmentNumber}`);
+    return apiClient.get(
+      `/amendments/${amendmentType}/${amendmentNumber}${congressParam(congress)}`,
+    );
   },
 
-  getVotes: async (billId: string): Promise<any> => {
-    return apiClient.get(`/bills/${billId}/votes`);
+  getVotes: async (billId: string, congress?: number): Promise<any> => {
+    return apiClient.get(`/bills/${billId}/votes${congressParam(congress)}`);
   },
 
-  getCosponsors: async (billId: string): Promise<any> => {
-    return apiClient.get(`/bills/${billId}/cosponsors`);
+  getCosponsors: async (billId: string, congress?: number): Promise<any> => {
+    return apiClient.get(
+      `/bills/${billId}/cosponsors${congressParam(congress)}`,
+    );
   },
 };

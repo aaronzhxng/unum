@@ -25,6 +25,7 @@ import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
+import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import ActionHistory from "./bill_components/ActionHistory";
 import Cosponsors from "./bill_components/Cosponsors";
@@ -42,6 +43,7 @@ type TabName = (typeof TABS)[number];
 export default function BillDetail() {
   const pagerRef = useRef<PagerView>(null);
   const { id } = useLocalSearchParams<{ id: string }>();
+  const congress = billCongressCache.get(id as string);
   const router = useRouter() as Router;
 
   const [activeTab, setActiveTab] = useState<TabName>("details");
@@ -223,17 +225,18 @@ export default function BillDetail() {
     queryKey: ["bill", id],
     queryFn: async () => {
       const billId = id as string;
-      const cached = await billCache.getBill(billId);
+      const cacheKey = `${congress}-${billId}`;
+      const cached = await billCache.getBill(cacheKey);
       if (cached) return { bill: cached };
 
-      const billResult = await billsService.getById(billId);
+      const billResult = await billsService.getById(billId, congress);
       if (!billResult?.bill) throw new Error("Bill not found");
 
       const [summariesResult, actionsResult, amendmentsResult] =
         await Promise.allSettled([
-          billsService.getSummaries(billId),
-          billsService.getActions(billId),
-          billsService.getAmendments(billId),
+          billsService.getSummaries(billId, congress),
+          billsService.getActions(billId, congress),
+          billsService.getAmendments(billId, congress),
         ]);
 
       const summaries =
@@ -254,7 +257,7 @@ export default function BillDetail() {
         amendments: amendments || [],
       };
 
-      await billCache.saveBill(billId, enrichedBill);
+      await billCache.saveBill(cacheKey, enrichedBill);
 
       const lists = await storage.getLists();
       let updated = false;
@@ -277,14 +280,14 @@ export default function BillDetail() {
 
   const { data: votesData, isLoading: votesLoading } = useQuery({
     queryKey: ["billVotes", id],
-    queryFn: () => billsService.getVotes(id as string),
+    queryFn: () => billsService.getVotes(id as string, congress),
     enabled: !!id && votingVisited,
     retry: 1,
   });
 
   const { data: cosponsorsData, isLoading: cosponsorsLoading } = useQuery({
     queryKey: ["billCosponsors", id],
-    queryFn: () => billsService.getCosponsors(id as string),
+    queryFn: () => billsService.getCosponsors(id as string, congress),
     enabled: !!id && cosponsorsVisited,
     retry: 1,
   });

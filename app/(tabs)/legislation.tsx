@@ -19,6 +19,7 @@ import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
+import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { storage } from "../utils/storage";
 
@@ -313,8 +314,9 @@ export default function LegislationScreen() {
       const enriched: { [key: string]: any } = {};
 
       for (const bill of bills) {
-        const billId = `${bill.type.toLowerCase()}${bill.number}`;
-        const cached = await billCache.getBill(billId);
+        const billId = `${(bill as any).type.toLowerCase()}${(bill as any).number}`;
+        const cacheKey = `${(bill as any).congress}-${billId}`;
+        const cached = await billCache.getBill(cacheKey);
 
         if (cached?.policyArea) {
           enriched[billId] = cached;
@@ -520,6 +522,10 @@ export default function LegislationScreen() {
           latestAction: (item.latestAction as any)?.text ?? item.latestAction,
         }))}
         onItemPress={(item) => {
+          billCongressCache.set(
+            `${item.billType.toLowerCase()}${item.number}`,
+            item.congress,
+          );
           router.navigate(`/bill/${item.billType.toLowerCase()}${item.number}`);
         }}
         onNewListPress={(item) => {
@@ -722,7 +728,13 @@ function BillCard({
     enrichedData?.policyArea?.name || (item as any).policyArea?.name;
 
   return (
-    <Pressable onPress={() => router.navigate(`/bill/${billId}`)}>
+    <Pressable
+      onPress={() => {
+        billCongressCache.set(billId, item.congress);
+        router.navigate(`/bill/${billId}`);
+      }}
+    >
+      {" "}
       <View style={componentStyles.officialCard}>
         <View
           style={[
