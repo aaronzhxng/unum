@@ -292,9 +292,6 @@ export default function LegislationScreen() {
           new Date((b as any).latestAction.actionDate).getTime() -
           new Date((a as any).latestAction.actionDate).getTime(),
       );
-    } else if (selectedSort === "Most Viewed") {
-      // Keep original API order — Congress.gov returns by relevance by default
-      // No sort applied
     } else if (selectedSort === "Newest First") {
       sorted.sort((a, b) => (b as any).number - (a as any).number);
     } else if (selectedSort === "Oldest First") {
@@ -315,9 +312,7 @@ export default function LegislationScreen() {
 
       for (const bill of bills) {
         const billId = `${(bill as any).type.toLowerCase()}${(bill as any).number}`;
-        const cacheKey = `${(bill as any).congress}-${billId}`;
-        const cached = await billCache.getBill(cacheKey);
-
+        const cached = await billCache.getBill(billId);
         if (cached?.policyArea) {
           enriched[billId] = cached;
         }
@@ -734,7 +729,6 @@ function BillCard({
         router.navigate(`/bill/${billId}`);
       }}
     >
-      {" "}
       <View style={componentStyles.officialCard}>
         <View
           style={[

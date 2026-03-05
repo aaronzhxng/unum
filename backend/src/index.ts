@@ -15,32 +15,15 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Get bills across last ~10 years of congresses
 app.get("/api/bills", async (req, res) => {
-  try {
-    const congresses = [119, 118, 117, 116, 115, 114, 113];
-
-    const allBillsResults = await Promise.allSettled(
-      congresses.map((congress) =>
-        axios.get(`https://api.congress.gov/v3/bill/${congress}`, {
-          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { limit: 250, sort: "updateDate+desc" },
-        }),
-      ),
-    );
-
-    const allBills = allBillsResults
-      .filter((r) => r.status === "fulfilled")
-      .flatMap((r: any) => r.value.data.bills || []);
-
-    res.json({
-      bills: allBills,
-      pagination: { count: allBills.length },
-    });
-  } catch (error) {
-    console.error("Error fetching bills:", error);
-    res.status(500).json({ error: "Failed to fetch bills" });
-  }
+  const response = await axios.get("https://api.congress.gov/v3/bill/119", {
+    headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+    params: { limit: 250, sort: "updateDate+desc" },
+  });
+  res.json({
+    bills: response.data.bills || [],
+    pagination: { count: response.data.bills?.length || 0 },
+  });
 });
 
 // Get single bill by ID
