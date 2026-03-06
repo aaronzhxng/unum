@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import {
   ChevronDown,
   ChevronUp,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
+import { useTabBar } from "../context/TabBarContext";
 import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
@@ -21,6 +22,7 @@ import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
+import { legislationListCache } from "../utils/legislationListCache";
 import { storage } from "../utils/storage";
 
 interface FilterOption {
@@ -38,6 +40,9 @@ type Bill = {
 };
 
 export default function LegislationScreen() {
+  const navigation = useNavigation();
+  const { setTabBarHidden } = useTabBar();
+
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFallbackResults, setSearchFallbackResults] = useState<any[]>([]);
@@ -208,13 +213,24 @@ export default function LegislationScreen() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["bills"],
-    queryFn: billsService.getAll,
+    queryFn: async () => {
+      const cached = await legislationListCache.get();
+      if (cached) return cached;
+      const result = await billsService.getAll();
+      console.log(
+        "Bills payload size:",
+        JSON.stringify(result).length / 1024,
+        "KB",
+      );
+      await legislationListCache.save(result);
+      return result;
+    },
   });
 
-  const allBills = data?.bills || []; // Rename to allBills
+  const allBills: any[] = data?.bills || [];
 
   const bills = useMemo(() => {
-    let filtered = allBills;
+    let filtered: any[] = allBills;
 
     // if (filtered.length > 0) {
     //   console.log("First bill data:", filtered[0]);
@@ -327,6 +343,26 @@ export default function LegislationScreen() {
     }
   }, [bills]);
 
+  useEffect(() => {
+    if (searchQuery.length < 3) {
+      setSearchFallbackResults([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        const results = await billsService.search(searchQuery);
+        if (results?.bills?.length > 0) {
+          setSearchFallbackResults(results.bills);
+        }
+      } catch (e) {
+        // silently fail
+      }
+    }, 400); // debounce
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
   // Then use 'bills' in your FlatList (which you already do)
   const currentBill = bills.find(
     (b) => `${b.type.toLowerCase()}${b.number}` === currentBillId,
@@ -351,6 +387,10 @@ export default function LegislationScreen() {
 
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
+
+  useEffect(() => {
+    setTabBarHidden(showSearchModal);
+  }, [showSearchModal]);
 
   if (isLoading) {
     return (
@@ -501,41 +541,53 @@ export default function LegislationScreen() {
       <SearchModal
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
-        onSearch={async (query) => {
-          setSearchQuery(query);
-          if (query.length > 2) {
-            const results = await billsService.search(query);
-            if (results?.bills?.length > 0) {
-              setSearchFallbackResults(results.bills);
-            }
-          } else {
-            setSearchFallbackResults([]);
-          }
-        }}
+        onSearch={setSearchQuery}
         searchContext={selectedFilter}
         items={[
           ...bills.map((item: any) => ({
-            /* existing transform */
+            ...item,
+            type: "bill",
+            billType: item.type,
+            name: `${item.type}.${item.number} - ${item.title}`,
+            title: undefined,
+            date: item.latestAction?.actionDate,
+            policyArea:
+              enrichedBills[`${item.type.toLowerCase()}${item.number}`]
+                ?.policyArea?.name ??
+              item.policyArea?.name ??
+              null,
+            latestAction: (item.latestAction as any)?.text ?? item.latestAction,
           })),
           ...searchFallbackResults
             .filter(
-              (b) =>
+              (b: any) =>
                 !bills.some(
                   (existing: any) =>
                     `${existing.type}${existing.number}` ===
                     `${b.type}${b.number}`,
                 ),
             )
-            .map((item: any) => ({
-              ...item,
-              type: "bill",
-              billType: item.type,
-              name: `${item.type}.${item.number} - ${item.title}`,
-              title: undefined,
-              date: item.latestAction?.actionDate,
-              policyArea: item.policyArea?.name ?? null,
-              latestAction: item.latestAction?.text ?? null,
-            })),
+            .map((item: any) => {
+              const billType = item.type ?? item.billType;
+              const billNumber = item.number;
+              const billTitle = item.title;
+              const actionDate = item.latestAction?.actionDate;
+              const actionText = item.latestAction?.text;
+              const policyArea =
+                item.policyArea?.name ?? item.policyArea ?? null;
+
+              return {
+                ...item,
+                type: "bill",
+                billType,
+                name: `${billType}.${billNumber} - ${billTitle}`,
+                title: undefined,
+                date: actionDate,
+                policyArea,
+                latestAction: actionText ?? null,
+                congress: item.congress ?? 119,
+              };
+            }),
         ]}
         onItemPress={(item) => {
           billCongressCache.set(

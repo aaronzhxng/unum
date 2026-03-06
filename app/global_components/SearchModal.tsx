@@ -140,15 +140,17 @@ export default function SearchModal({
       onBackdropPress={handleClose}
       onBackButtonPress={handleClose}
       style={{ margin: 0 }}
-      backdropOpacity={0}
+      backdropOpacity={1}
+      backdropColor="#fff"
       animationIn="slideInRight"
       animationOut="slideOutRight"
       animationInTiming={250}
       animationOutTiming={200}
       statusBarTranslucent
       useNativeDriver
+      coverScreen={true}
     >
-      <View style={componentStyles.container}>
+      <View style={[componentStyles.container, { marginBottom: 96 }]}>
         {/* Search Header */}
         <View style={componentStyles.headerBar}>
           <TouchableOpacity

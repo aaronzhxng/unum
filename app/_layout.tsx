@@ -5,7 +5,15 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { TabBarProvider } from "./context/TabBarContext";
 import { storage } from "./utils/storage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // data stays fresh for 5 minutes
+      retry: 1,
+      retryDelay: 1000,
+    },
+  },
+});
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);

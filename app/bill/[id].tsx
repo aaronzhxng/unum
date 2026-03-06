@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
+import JargonFootnotes from "../../components/JargonFootnotes";
 import AddModal from "../global_components/AddModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
@@ -718,10 +719,19 @@ export default function BillDetail() {
           />
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Status: </Text>
-              <Text style={componentStyles.status}>
-                {bill.latestAction?.text || "Introduced"}
-              </Text>
+              <View style={{ flex: 1, flexDirection: "column" }}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  <Text style={componentStyles.detailTitle}>Status: </Text>
+                  <Text style={componentStyles.status}>
+                    {bill.latestAction?.text || "Introduced"}
+                  </Text>
+                </View>
+                <View style={{ marginLeft: 8 }}>
+                  <JargonFootnotes text={bill.latestAction?.text} />
+                </View>
+              </View>
             </View>
 
             <View style={componentStyles.details}>
@@ -791,6 +801,9 @@ export default function BillDetail() {
                       bill.summaries[0].updateDate,
                     ).toLocaleDateString()}
                   </Text>
+                  <JargonFootnotes
+                    text={bill.summaries?.[0]?.text?.replace(/<[^>]*>/g, "")}
+                  />
                 </>
               ) : (
                 <Text style={componentStyles.summary}>

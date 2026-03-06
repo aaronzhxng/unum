@@ -29,6 +29,7 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
 import { getBillIcon } from "../utils/billIcons";
+import { officialBillsCache } from "../utils/officialBillsCache";
 import { storage } from "../utils/storage";
 import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
@@ -229,14 +230,26 @@ export default function OfficialDetail() {
 
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
-    queryFn: () => officialsService.getSponsored(id as string),
+    queryFn: async () => {
+      const cached = await officialBillsCache.get(`sponsored_${id}`);
+      if (cached) return cached;
+      const result = await officialsService.getSponsored(id as string);
+      await officialBillsCache.save(`sponsored_${id}`, result);
+      return result;
+    },
     enabled: !!id,
     retry: 1,
   });
 
   const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
     queryKey: ["officialCosponsored", id],
-    queryFn: () => officialsService.getCosponsored(id as string),
+    queryFn: async () => {
+      const cached = await officialBillsCache.get(`cosponsored_${id}`);
+      if (cached) return cached;
+      const result = await officialsService.getCosponsored(id as string);
+      await officialBillsCache.save(`cosponsored_${id}`, result);
+      return result;
+    },
     enabled: !!id,
     retry: 1,
   });
