@@ -217,13 +217,25 @@ export default function LegislationScreen() {
       const cached = await legislationListCache.get();
       if (cached) return cached;
       const result = await billsService.getAll();
-      console.log(
-        "Bills payload size:",
-        JSON.stringify(result).length / 1024,
-        "KB",
-      );
-      await legislationListCache.save(result);
-      return result;
+
+      // Only keep fields the list screen uses
+      const slim = {
+        ...result,
+        bills: result.bills.map((bill: any) => ({
+          number: bill.number,
+          type: bill.type,
+          title: bill.title,
+          congress: bill.congress,
+          originChamber: bill.originChamber,
+          introducedDate: bill.introducedDate,
+          policyArea: bill.policyArea,
+          latestAction: bill.latestAction,
+        })),
+      };
+      console.log("Slim size:", JSON.stringify(slim).length / 1024, "KB");
+
+      await legislationListCache.save(slim);
+      return slim;
     },
   });
 
