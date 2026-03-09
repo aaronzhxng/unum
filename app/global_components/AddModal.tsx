@@ -8,7 +8,8 @@ interface Props {
   setShowAddModal: React.Dispatch<React.SetStateAction<boolean>>;
   selectedLists: string[];
   setSelectedLists: React.Dispatch<React.SetStateAction<string[]>>;
-  onNewListPress: (item?: any) => void; // Add item parameter
+  onNewListPress: (item?: any) => void;
+  listsVersion?: number;
   currentItem?: {
     id: string;
     type: "official" | "bill";
@@ -68,6 +69,7 @@ export default function AddModal({
   selectedLists,
   setSelectedLists,
   onNewListPress,
+  listsVersion,
   currentItem,
 }: Props) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -84,6 +86,7 @@ export default function AddModal({
   // Load available lists from storage
   useEffect(() => {
     const loadLists = async () => {
+      console.log("loadLists called", showAddModal, listsVersion);
       const lists = await storage.getLists();
       const listOptions = lists.map((list) => ({
         id: list.id,
@@ -91,12 +94,18 @@ export default function AddModal({
       }));
       listOptions.push({ id: "new-list", label: "New List" });
       setAvailableLists(listOptions);
+
+      if (showAddModal && currentItem) {
+        const memberListIds = lists
+          .filter((list) => list.items.some((i) => i.id === currentItem.id))
+          .map((list) => list.id);
+        setSelectedLists(memberListIds);
+        setInitialSelections(memberListIds);
+      }
     };
 
-    if (showAddModal) {
-      loadLists();
-    }
-  }, [showAddModal]);
+    loadLists();
+  }, [showAddModal, listsVersion]);
 
   const selectedListLabels = availableLists
     .filter((opt) => selectedLists.includes(opt.id) && opt.id !== "new-list")
@@ -108,13 +117,6 @@ export default function AddModal({
         initialSelections.includes(opt.id) && !selectedLists.includes(opt.id),
     )
     .map((opt) => opt.label);
-
-  // Track initial selections when modal opens
-  useEffect(() => {
-    if (showAddModal) {
-      setInitialSelections([...selectedLists]);
-    }
-  }, [showAddModal]);
 
   const closeModal = () => {
     setShowAddModal(false);
@@ -189,7 +191,7 @@ export default function AddModal({
               update: "",
               photoUrl: currentItem.photoUrl,
             };
-            list.items.push(listItem);
+            list.items.unshift(listItem);
           }
         }
       }

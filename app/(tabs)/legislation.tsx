@@ -76,9 +76,10 @@ export default function LegislationScreen() {
 
   const handleReportError = () => {};
 
-  const handleNewListCreate = async () => {
-    if (newListName.trim()) {
-      const allLists = await storage.getLists();
+  const handleNewListCreate = async (listName?: string) => {
+    const name = listName ?? newListName;
+    if (name.trim()) {
+      const allLists = storage.getLists();
 
       const itemToSave = pendingItemForNewList
         ? {
@@ -107,14 +108,14 @@ export default function LegislationScreen() {
 
       const newList = {
         id: Date.now().toString(),
-        name: newListName.trim(),
+        name: name.trim(),
         items: itemToSave ? [itemToSave] : [],
       };
 
       allLists.push(newList);
-      await storage.saveLists(allLists);
+      storage.saveLists(allLists);
       listEvents.emit(LIST_UPDATED);
-      setCreatedListName(newListName.trim());
+      setCreatedListName(name.trim());
       setShowNewListProgressModal(true);
       setNewListName("");
       setShowNewListModal(false);
@@ -133,6 +134,7 @@ export default function LegislationScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
   const [currentBillId, setCurrentBillId] = useState<string | null>(null);
+  const [listsVersion, setListsVersion] = useState(0);
 
   const getFilterLabel = () => {
     if (selectedChambers.length === 1) {
@@ -400,6 +402,14 @@ export default function LegislationScreen() {
     setTabBarHidden(showSearchModal);
   }, [showSearchModal]);
 
+  useEffect(() => {
+    const handler = () => setListsVersion((v) => v + 1);
+    listEvents.on(LIST_UPDATED, handler);
+    return () => {
+      listEvents.removeListener(LIST_UPDATED, handler);
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -648,6 +658,7 @@ export default function LegislationScreen() {
       />
 
       <AddModal
+        listsVersion={listsVersion}
         showAddModal={showAddModal}
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
@@ -704,7 +715,7 @@ export default function LegislationScreen() {
                 textAlign: "center",
               }}
             >
-              Creating and adding to {newListName || "new list"}...
+              Creating and adding to {createdListName || "new list"}...
             </Text>
 
             <View

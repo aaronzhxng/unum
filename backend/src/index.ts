@@ -653,20 +653,20 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  // console.log(`🚀 Backend running on http://localhost:${PORT}`);
 });
 
 const prewarmCache = async () => {
   try {
-    console.log("🔄 Pre-warming bills cache...");
+    // console.log("🔄 Pre-warming bills cache...");
     await axios.get(`http://localhost:${PORT}/api/bills`);
-    console.log("✅ Bills cache warmed");
+    // console.log("✅ Bills cache warmed");
   } catch (error) {
     console.error("Cache pre-warm failed:", error);
   }
 };
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  // console.log(`🚀 Backend running on http://localhost:${PORT}`);
   prewarmCache();
 });

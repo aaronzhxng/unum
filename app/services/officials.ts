@@ -57,14 +57,14 @@ const refreshOfficialsInBackground = async (): Promise<void> => {
   backgroundRefreshInProgress = true;
 
   try {
-    console.log(
-      "🔄 Background refresh: fetching fresh officials from Railway...",
-    );
+    // console.log(
+    //   "🔄 Background refresh: fetching fresh officials from Railway...",
+    // );
     const fresh = await apiClient.get<OfficialsResponse>("/officials");
     saveOfficialsListCache(fresh);
-    console.log(
-      `✅ Background refresh complete — ${fresh.officials.length} officials cached`,
-    );
+    // console.log(
+    //   `✅ Background refresh complete — ${fresh.officials.length} officials cached`,
+    // );
   } catch (error) {
     console.warn("Background officials refresh failed (silent):", error);
   } finally {
@@ -86,9 +86,9 @@ export const officialsService = {
       return cached.data;
     }
 
-    console.log(
-      "📡 No officials cache found — fetching from Railway (first launch)...",
-    );
+    // console.log(
+    //   "📡 No officials cache found — fetching from Railway (first launch)...",
+    // );
     const fresh = await apiClient.get<OfficialsResponse>("/officials");
     saveOfficialsListCache(fresh);
     return fresh;

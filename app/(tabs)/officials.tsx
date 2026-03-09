@@ -69,19 +69,19 @@ export default function OfficialsScreen() {
     // TODO: Navigate to error reporting form or open modal
   };
 
-  const handleNewListCreate = async () => {
-    if (newListName.trim()) {
+  const handleNewListCreate = async (listName?: string) => {
+    const name = listName ?? newListName;
+    if (name.trim()) {
       const allLists = await storage.getLists();
 
       const itemToSave = pendingItemForNewList
         ? {
             id: pendingItemForNewList.id ?? pendingItemForNewList.bioguideId,
-            type:
-              pendingItemForNewList.type === "official" ||
-              pendingItemForNewList.bioguideId ||
-              pendingItemForNewList.depiction
-                ? ("official" as const)
-                : ("bill" as const),
+            type: (pendingItemForNewList.type === "official" ||
+            pendingItemForNewList.bioguideId ||
+            pendingItemForNewList.depiction
+              ? "official"
+              : "bill") as "official" | "bill",
             name: pendingItemForNewList.name,
             party:
               pendingItemForNewList.party ??
@@ -108,15 +108,14 @@ export default function OfficialsScreen() {
 
       const newList = {
         id: Date.now().toString(),
-        name: newListName.trim(),
+        name: name.trim(),
         items: itemToSave ? [itemToSave] : [],
       };
 
       allLists.push(newList);
       await storage.saveLists(allLists);
-      console.log("🔔 LIST_UPDATED emitted");
       listEvents.emit(LIST_UPDATED);
-      setCreatedListName(newListName.trim());
+      setCreatedListName(name.trim());
       setShowNewListProgressModal(true);
       setNewListName("");
       setShowNewListModal(false);
@@ -129,6 +128,8 @@ export default function OfficialsScreen() {
   const [currentOfficialId, setCurrentOfficialId] = useState<string | null>(
     null,
   );
+  const [listsVersion, setListsVersion] = useState(0);
+
   const router = useRouter();
 
   const LOCATION_OPTIONS = [
@@ -245,6 +246,14 @@ export default function OfficialsScreen() {
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
 
+  useEffect(() => {
+    const handler = () => setListsVersion((v) => v + 1);
+    listEvents.on(LIST_UPDATED, handler);
+    return () => {
+      listEvents.removeListener(LIST_UPDATED, handler);
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -337,6 +346,7 @@ export default function OfficialsScreen() {
 
       {/* Add Modal */}
       <AddModal
+        listsVersion={listsVersion}
         showAddModal={showAddModal}
         setShowAddModal={setShowAddModal}
         selectedLists={selectedLists}
@@ -352,7 +362,7 @@ export default function OfficialsScreen() {
           if (!official) return undefined;
           return {
             id: official.bioguideId,
-            type: "official",
+            type: "official" as const,
             name: official.name,
             party: official.partyName?.charAt(0) || "",
             role: official.district
@@ -479,7 +489,7 @@ export default function OfficialsScreen() {
                 textAlign: "center",
               }}
             >
-              Creating and adding to {newListName || "new list"}...
+              Creating and adding to {createdListName || "new list"}...
             </Text>
 
             {/* Progress Bar */}

@@ -123,7 +123,7 @@ const migrateFromAsyncStorage = async (
     );
     if (existing) return;
 
-    console.log("🔄 Migrating data from AsyncStorage to SQLite...");
+    // console.log("🔄 Migrating data from AsyncStorage to SQLite...");
 
     // ── Migrate lists and list items ────────────────────────────────────────
     const listsRaw = await AsyncStorage.getItem("user_lists");
@@ -163,7 +163,7 @@ const migrateFromAsyncStorage = async (
         }
       }
 
-      console.log(`✅ Migrated ${lists.length} lists`);
+      // console.log(`✅ Migrated ${lists.length} lists`);
     }
 
     // ── Migrate bill cache ───────────────────────────────────────────────────
@@ -180,8 +180,8 @@ const migrateFromAsyncStorage = async (
         [billId, JSON.stringify(parsed.data), parsed.timestamp],
       );
     }
-    if (billKeys.length > 0)
-      console.log(`✅ Migrated ${billKeys.length} cached bills`);
+    // if (billKeys.length > 0)
+    //   console.log(`✅ Migrated ${billKeys.length} cached bills`);
 
     // ── Migrate official bills cache ─────────────────────────────────────────
     const officialKeys = allKeys.filter((k) =>
@@ -197,8 +197,8 @@ const migrateFromAsyncStorage = async (
         [cacheKey, JSON.stringify(parsed.data), parsed.timestamp],
       );
     }
-    if (officialKeys.length > 0)
-      console.log(`✅ Migrated ${officialKeys.length} official bill caches`);
+    // if (officialKeys.length > 0)
+    //   console.log(`✅ Migrated ${officialKeys.length} official bill caches`);
 
     // ── Clean up AsyncStorage ────────────────────────────────────────────────
     const keysToRemove = [
@@ -208,7 +208,7 @@ const migrateFromAsyncStorage = async (
       ...officialKeys,
     ];
     await AsyncStorage.multiRemove(keysToRemove);
-    console.log("🧹 Cleared AsyncStorage after migration");
+    // console.log("🧹 Cleared AsyncStorage after migration");
 
     // ── Mark migration complete ──────────────────────────────────────────────
     database.runSync(`INSERT INTO meta (key, value) VALUES (?, ?)`, [
@@ -216,7 +216,7 @@ const migrateFromAsyncStorage = async (
       "true",
     ]);
 
-    console.log("✅ Migration complete");
+    // console.log("✅ Migration complete");
   } catch (error) {
     console.error("Migration error:", error);
     // Don't crash the app — if migration fails, the app still works,

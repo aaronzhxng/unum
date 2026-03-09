@@ -654,7 +654,7 @@ export default function BillDetail() {
               </>
             )}
           </View>
-          <Text style={componentStyles.billNumber} numberOfLines={2}>
+          <Text style={componentStyles.billNumber}>
             {bill.type}.{bill.number} - {bill.title}
           </Text>
         </View>

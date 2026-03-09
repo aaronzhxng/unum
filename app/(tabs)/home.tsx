@@ -285,7 +285,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const reload = () => {
       console.log("🏠 reload triggered");
-      loadItems();
+      refreshLists(); // was loadItems()
     };
     listEvents.on(LIST_UPDATED, reload);
     return () => {

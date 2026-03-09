@@ -69,14 +69,14 @@ const refreshBillsInBackground = async (): Promise<void> => {
   backgroundRefreshInProgress = true;
 
   try {
-    console.log("🔄 Background refresh: fetching fresh bills from Railway...");
+    // console.log("🔄 Background refresh: fetching fresh bills from Railway...");
     const fresh = await apiClient.get<BillsResponse>("/bills");
     saveBillsListCache(fresh);
-    console.log(
-      `✅ Background refresh complete — ${fresh.bills.length} bills cached`,
-    );
+    // console.log(
+    //   `✅ Background refresh complete — ${fresh.bills.length} bills cached`,
+    // );
   } catch (error) {
-    console.warn("Background bills refresh failed (silent):", error);
+    // console.warn("Background bills refresh failed (silent):", error);
   } finally {
     backgroundRefreshInProgress = false;
   }
@@ -101,9 +101,9 @@ export const billsService = {
     }
 
     // No cache at all — first launch, must wait for Railway
-    console.log(
-      "📡 No bills cache found — fetching from Railway (first launch)...",
-    );
+    // console.log(
+    //   "📡 No bills cache found — fetching from Railway (first launch)...",
+    // );
     const fresh = await apiClient.get<BillsResponse>("/bills");
     saveBillsListCache(fresh);
     return fresh;
