@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { TabBarProvider } from "./context/TabBarContext";
-import { legislationListCache } from "./utils/legislationListCache";
+import { initializeDatabase } from "./utils/database";
 import { storage } from "./utils/storage";
 
 const queryClient = new QueryClient({
@@ -21,8 +21,10 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      await legislationListCache.clear(); // temporary, remove after testing
-      await storage.initializeDefaultList();
+      // Initialize SQLite (creates tables + migrates from AsyncStorage)
+      await initializeDatabase();
+      // Then initialize default list as before
+      storage.initializeDefaultList();
       setIsReady(true);
     };
     init();

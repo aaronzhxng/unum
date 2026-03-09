@@ -254,6 +254,19 @@ export default function OfficialDetail() {
     retry: 1,
   });
 
+  const { data: policyAreasData, isLoading: policyAreasLoading } = useQuery({
+    queryKey: ["officialPolicyAreas", id],
+    queryFn: async () => {
+      const cached = await officialBillsCache.get(`policy_areas_${id}`);
+      if (cached) return cached;
+      const result = await officialsService.getPolicyAreas(id as string);
+      await officialBillsCache.save(`policy_areas_${id}`, result);
+      return result;
+    },
+    enabled: !!id,
+    retry: 1,
+  });
+
   const official = data?.member;
 
   const sponsoredBills = useMemo(
@@ -371,17 +384,8 @@ export default function OfficialDetail() {
       policyArea: item.policyArea?.name ?? item.policyArea ?? null,
     }));
 
-  const topPolicyAreas = useMemo(() => {
-    const counts: { [key: string]: number } = {};
-    [...sponsoredBills, ...cosponsoredBills].forEach((bill: any) => {
-      const area = bill.policyArea?.name;
-      if (area) counts[area] = (counts[area] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({ name, count }));
-  }, [sponsoredBills, cosponsoredBills]);
+  const topPolicyAreas: { name: string; count: number }[] =
+    policyAreasData?.policyAreas ?? [];
 
   if (isLoading) {
     return (
@@ -574,7 +578,7 @@ export default function OfficialDetail() {
                     </Text>
                   </View>
                 ))
-              ) : sponsoredLoading || cosponsoredLoading ? (
+              ) : policyAreasLoading ? (
                 <Text style={[componentStyles.term, { paddingBottom: 12 }]}>
                   Loading policy areas...
                 </Text>

@@ -7,7 +7,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import { useTabBar } from "../context/TabBarContext";
 import AddModal from "../global_components/AddModal";
@@ -22,7 +22,6 @@ import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
-import { legislationListCache } from "../utils/legislationListCache";
 import { storage } from "../utils/storage";
 
 interface FilterOption {
@@ -51,10 +50,9 @@ export default function LegislationScreen() {
   const [selectedNotifications, setSelectedNotifications] =
     useState("Congress");
 
-  // Sort dropdown (Most Viewed)
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Recent Action");
-  // New List Modal
+
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
@@ -67,10 +65,15 @@ export default function LegislationScreen() {
     {},
   );
 
-  const handleReportError = () => {
-    // console.log("Report error for legislation");
-    // TODO: Navigate to error reporting form or open modal
-  };
+  // Tracks which bill IDs have already been fetched this session
+  // so we never fire duplicate requests as the user scrolls back up
+  const fetchedIds = useRef<Set<string>>(new Set());
+
+  // Queue of bill IDs visible on screen waiting to be fetched
+  const fetchQueue = useRef<string[]>([]);
+  const isFetching = useRef(false);
+
+  const handleReportError = () => {};
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
@@ -201,42 +204,14 @@ export default function LegislationScreen() {
     );
   };
 
-  const handleFilterCancel = () => {
-    setShowFilterModal(false);
-  };
-
-  const handleFilterApply = () => {
-    setShowFilterModal(false);
-  };
+  const handleFilterCancel = () => setShowFilterModal(false);
+  const handleFilterApply = () => setShowFilterModal(false);
 
   const router = useRouter();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["bills"],
-    queryFn: async () => {
-      const cached = await legislationListCache.get();
-      if (cached) return cached;
-      const result = await billsService.getAll();
-
-      // Only keep fields the list screen uses
-      const slim = {
-        ...result,
-        bills: result.bills.map((bill: any) => ({
-          number: bill.number,
-          type: bill.type,
-          title: bill.title,
-          congress: bill.congress,
-          originChamber: bill.originChamber,
-          introducedDate: bill.introducedDate,
-          policyArea: bill.policyArea,
-          latestAction: bill.latestAction,
-        })),
-      };
-      console.log("Slim size:", JSON.stringify(slim).length / 1024, "KB");
-
-      await legislationListCache.save(slim);
-      return slim;
-    },
+    queryFn: billsService.getAll,
   });
 
   const allBills: any[] = data?.bills || [];
@@ -244,12 +219,6 @@ export default function LegislationScreen() {
   const bills = useMemo(() => {
     let filtered: any[] = allBills;
 
-    // if (filtered.length > 0) {
-    //   console.log("First bill data:", filtered[0]);
-    //   console.log("Policy area:", (filtered[0] as any).policyArea);
-    // }
-
-    // Filter by chamber
     if (selectedChambers.length > 0) {
       filtered = filtered.filter((bill) =>
         selectedChambers.some((chamber) => {
@@ -262,34 +231,6 @@ export default function LegislationScreen() {
       );
     }
 
-    // Filter by policy area
-    // if (
-    //   selectedPolicyAreas.length > 0 &&
-    //   !selectedPolicyAreas.includes("all")
-    // ) {
-    //   // Map IDs to labels for comparison
-    //   const policyLabels = selectedPolicyAreas
-    //     .map((id) => POLICY_AREA_OPTIONS.find((opt) => opt.id === id)?.label)
-    //     .filter(Boolean); // Remove undefined values
-
-    //   console.log("Selected policy labels:", policyLabels);
-    //   console.log(
-    //     "Sample bill policy areas:",
-    //     allBills.slice(0, 3).map((b) => (b as any).policyArea?.name),
-    //   );
-
-    //   filtered = filtered.filter((bill) => {
-    //     const matches = policyLabels.includes((bill as any).policyArea?.name);
-    //     if (matches) console.log("Matched:", (bill as any).policyArea?.name);
-    //     return matches;
-    //   });
-
-    //   console.log("After policy filter:", filtered.length);
-    //   console.log("Full bill sample:", JSON.stringify(allBills[0], null, 2));
-    // }
-
-    // Filter by legislation type
-    // Filter by legislation type
     if (
       selectedLegislationTypes.length > 0 &&
       !selectedLegislationTypes.includes("all")
@@ -313,7 +254,6 @@ export default function LegislationScreen() {
       );
     }
 
-    // Sort
     let sorted = [...filtered];
     if (selectedSort === "Recent Action") {
       sorted.sort(
@@ -335,25 +275,80 @@ export default function LegislationScreen() {
     selectedSort,
   ]);
 
+  // ─── On mount: load SQLite cache for all bills instantly ──────────────────
   useEffect(() => {
-    const enrichBillsFromCache = async () => {
-      const enriched: { [key: string]: any } = {};
+    if (bills.length === 0) return;
 
-      for (const bill of bills) {
-        const billId = `${(bill as any).type.toLowerCase()}${(bill as any).number}`;
-        const cached = await billCache.getBill(billId);
-        if (cached?.policyArea) {
-          enriched[billId] = cached;
+    const enriched: { [key: string]: any } = {};
+    for (const bill of bills) {
+      const billId = `${bill.type.toLowerCase()}${bill.number}`;
+      const cached = billCache.getBill(billId);
+      if (cached?.policyArea) {
+        enriched[billId] = cached;
+        fetchedIds.current.add(billId); // mark as already known
+      }
+    }
+    setEnrichedBills(enriched);
+  }, [bills]);
+
+  // ─── Fetch queue processor ────────────────────────────────────────────────
+  // Drains the queue of visible bill IDs that need fetching, one at a time.
+  const processFetchQueue = useCallback(async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+
+    while (fetchQueue.current.length > 0) {
+      const billId = fetchQueue.current.shift()!;
+
+      // Double-check it hasn't been fetched while waiting in queue
+      if (fetchedIds.current.has(billId)) continue;
+      fetchedIds.current.add(billId);
+
+      // Find the bill to get its congress number
+      const bill = bills.find(
+        (b) => `${b.type.toLowerCase()}${b.number}` === billId,
+      );
+      if (!bill) continue;
+
+      try {
+        const detail = await billsService.getById(billId, bill.congress);
+        const billData = detail?.bill ?? detail;
+
+        if (billData?.policyArea) {
+          billCache.saveBill(billId, billData);
+          setEnrichedBills((prev) => ({ ...prev, [billId]: billData }));
         }
+      } catch {
+        // Silent fail — icon stays as letter placeholder
       }
 
-      setEnrichedBills(enriched);
-    };
-
-    if (bills.length > 0) {
-      enrichBillsFromCache();
+      // Small pause between fetches to be polite to the API
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
+
+    isFetching.current = false;
   }, [bills]);
+
+  // ─── viewabilityConfig: item must be 50% visible to count ────────────────
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 });
+
+  // ─── onViewableItemsChanged: fires as user scrolls ───────────────────────
+  const onViewableItemsChangedRef = useRef(
+    ({ viewableItems }: { viewableItems: any[] }) => {
+      let added = false;
+      for (const { item } of viewableItems) {
+        const billId = `${item.type.toLowerCase()}${item.number}`;
+        if (
+          fetchedIds.current.has(billId) ||
+          fetchQueue.current.includes(billId)
+        )
+          continue;
+        fetchQueue.current.push(billId);
+        added = true;
+      }
+      if (added) processFetchQueue();
+    },
+  );
 
   useEffect(() => {
     if (searchQuery.length < 3) {
@@ -370,12 +365,11 @@ export default function LegislationScreen() {
       } catch (e) {
         // silently fail
       }
-    }, 400); // debounce
+    }, 400);
 
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
-  // Then use 'bills' in your FlatList (which you already do)
   const currentBill = bills.find(
     (b) => `${b.type.toLowerCase()}${b.number}` === currentBillId,
   );
@@ -430,7 +424,6 @@ export default function LegislationScreen() {
       {/* Header */}
       <View style={componentStyles.headerBar}>
         <View style={componentStyles.headerLeft}>
-          {/* Congress Filter Dropdown */}
           <Pressable
             onPress={() => {
               setShowSortDropdown(false);
@@ -462,7 +455,6 @@ export default function LegislationScreen() {
             </View>
           </Pressable>
 
-          {/* Most Viewed Sort Dropdown */}
           <Pressable
             onPress={() => {
               setShowFilterModal(false);
@@ -483,10 +475,7 @@ export default function LegislationScreen() {
               <Text
                 style={[
                   componentStyles.header,
-                  {
-                    fontSize: 16,
-                    fontWeight: 500,
-                  },
+                  { fontSize: 16, fontWeight: 500 },
                 ]}
               >
                 {selectedSort}
@@ -508,7 +497,6 @@ export default function LegislationScreen() {
           </Pressable>
         </View>
 
-        {/* Right Icons */}
         <View style={componentStyles.headerRight}>
           <Pressable
             onPress={() => setShowSearchModal(true)}
@@ -546,6 +534,8 @@ export default function LegislationScreen() {
             />
           );
         }}
+        onViewableItemsChanged={onViewableItemsChangedRef.current}
+        viewabilityConfig={viewabilityConfig.current}
         directionalLockEnabled={true}
       />
 
@@ -614,14 +604,12 @@ export default function LegislationScreen() {
         }}
       />
 
-      {/* Legislation Options Modal */}
       <LegislationOptionsModal
         showOptionsModal={showOptionsModal}
         setShowOptionsModal={setShowOptionsModal}
         onReportError={handleReportError}
       />
 
-      {/* Legislation Filter Modal */}
       <LegislationFilterModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
@@ -633,13 +621,12 @@ export default function LegislationScreen() {
         toggleLegislationType={toggleLegislationType}
         onCancel={handleFilterCancel}
         onApply={handleFilterApply}
-        setSelectedChambers={setSelectedChambers} // ADD THIS
-        setSelectedPolicyAreas={setSelectedPolicyAreas} // ADD THIS
-        setSelectedLegislationTypes={setSelectedLegislationTypes} // ADD THIS
-        resultCount={bills.length} // ADD THIS
+        setSelectedChambers={setSelectedChambers}
+        setSelectedPolicyAreas={setSelectedPolicyAreas}
+        setSelectedLegislationTypes={setSelectedLegislationTypes}
+        resultCount={bills.length}
       />
 
-      {/* Legislation Sort Dropdown */}
       <SortDropdown
         showSortDropdown={showSortDropdown}
         setShowSortDropdown={setShowSortDropdown}
@@ -647,7 +634,6 @@ export default function LegislationScreen() {
         setSelectedSort={setSelectedSort}
       />
 
-      {/* New List Name Modal */}
       <NewListNameModal
         visible={showNewListModal}
         onClose={() => {
@@ -683,8 +669,6 @@ export default function LegislationScreen() {
         }
       />
 
-      {/* New List Progress Modal */}
-      {/* New List Progress Modal */}
       <Modal
         visible={showNewListProgressModal}
         transparent
@@ -721,7 +705,6 @@ export default function LegislationScreen() {
               Creating and adding to {newListName || "new list"}...
             </Text>
 
-            {/* Progress Bar */}
             <View
               style={{
                 width: "100%",
@@ -742,7 +725,6 @@ export default function LegislationScreen() {
               />
             </View>
 
-            {/* Progress Text */}
             <Text
               style={{
                 fontSize: 12,
@@ -754,20 +736,15 @@ export default function LegislationScreen() {
               {Math.round(newListProgress)}%
             </Text>
 
-            {/* Cancel Button - ADD THIS */}
             <Pressable
               onPress={async () => {
-                // Delete the newly created list
                 const allLists = await storage.getLists();
                 const newlyCreatedList = allLists.find(
                   (l) => l.name === createdListName,
                 );
-
                 if (newlyCreatedList) {
                   await storage.deleteList(newlyCreatedList.id);
                 }
-
-                // Close modal and reset
                 setShowNewListProgressModal(false);
                 setNewListProgress(0);
                 setCreatedListName("");
@@ -840,7 +817,6 @@ function BillCard({
           )}
         </View>
 
-        {/* Bill Info */}
         <View style={{ flex: 1, gap: 4 }}>
           <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
             <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
@@ -874,7 +850,6 @@ function BillCard({
           </View>
         </View>
 
-        {/* Plus Button */}
         <Pressable
           onPress={(e) => {
             e.stopPropagation();

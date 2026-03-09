@@ -1,60 +1,57 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// Replaces the AsyncStorage-backed officialBillsCache.ts
+// API surface is IDENTICAL — no screen changes needed.
 
-const OFFICIAL_BILLS_CACHE_PREFIX = "official_bills_cache_";
-const CACHE_EXPIRY_DAYS = 7;
+import { getDb } from "./database";
 
-interface CachedOfficialBills {
-  data: any;
-  timestamp: number;
-}
+const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export const officialBillsCache = {
-  save: async (key: string, data: any): Promise<void> => {
+  // Save to cache
+  save: (key: string, data: any): void => {
     try {
-      const cached: CachedOfficialBills = {
-        data,
-        timestamp: Date.now(),
-      };
-      await AsyncStorage.setItem(
-        `${OFFICIAL_BILLS_CACHE_PREFIX}${key}`,
-        JSON.stringify(cached),
+      const db = getDb();
+      db.runSync(
+        `INSERT INTO official_bills_cache (cache_key, data, fetched_at) VALUES (?, ?, ?)
+         ON CONFLICT(cache_key) DO UPDATE SET
+           data = excluded.data,
+           fetched_at = excluded.fetched_at`,
+        [key, JSON.stringify(data), Date.now()],
       );
     } catch (error) {
       console.error("Error saving official bills to cache:", error);
     }
   },
 
-  get: async (key: string): Promise<any | null> => {
+  // Get from cache (returns null if missing or expired)
+  get: (key: string): any | null => {
     try {
-      const cached = await AsyncStorage.getItem(
-        `${OFFICIAL_BILLS_CACHE_PREFIX}${key}`,
+      const db = getDb();
+      const row = db.getFirstSync<{ data: string; fetched_at: number }>(
+        `SELECT data, fetched_at FROM official_bills_cache WHERE cache_key = ?`,
+        [key],
       );
-      if (!cached) return null;
 
-      const parsed: CachedOfficialBills = JSON.parse(cached);
+      if (!row) return null;
 
-      const now = Date.now();
-      const expiryTime = CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
-
-      if (now - parsed.timestamp > expiryTime) {
-        await AsyncStorage.removeItem(`${OFFICIAL_BILLS_CACHE_PREFIX}${key}`);
+      if (Date.now() - row.fetched_at > CACHE_EXPIRY_MS) {
+        db.runSync(`DELETE FROM official_bills_cache WHERE cache_key = ?`, [
+          key,
+        ]);
         return null;
       }
 
-      return parsed.data;
+      return JSON.parse(row.data);
     } catch (error) {
       console.error("Error reading official bills from cache:", error);
       return null;
     }
   },
 
-  clearAll: async (): Promise<void> => {
+  // Clear all cached official bills
+  clearAll: (): void => {
     try {
-      const keys = await AsyncStorage.getAllKeys();
-      const officialKeys = keys.filter((key) =>
-        key.startsWith(OFFICIAL_BILLS_CACHE_PREFIX),
-      );
-      await AsyncStorage.multiRemove(officialKeys);
+      const db = getDb();
+      db.runSync(`DELETE FROM official_bills_cache`);
     } catch (error) {
       console.error("Error clearing official bills cache:", error);
     }
