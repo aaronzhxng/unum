@@ -4,10 +4,11 @@
 import { getDb } from "./database";
 
 const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const POLICY_AREAS_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export const officialBillsCache = {
   // Save to cache
-  save: (key: string, data: any): void => {
+  save: (key: string, data: any, expiryMs?: number): void => {
     try {
       const db = getDb();
       db.runSync(
@@ -23,7 +24,7 @@ export const officialBillsCache = {
   },
 
   // Get from cache (returns null if missing or expired)
-  get: (key: string): any | null => {
+  get: (key: string, expiryMs?: number): any | null => {
     try {
       const db = getDb();
       const row = db.getFirstSync<{ data: string; fetched_at: number }>(

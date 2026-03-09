@@ -643,7 +643,8 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
 
     res.json({
       policyAreas,
-      totalBills: sponsored.length + cosponsored.length,
+      totalSponsored: sponsored.length,
+      totalCosponsored: cosponsored.length,
     });
   } catch (error) {
     console.error("Error fetching policy areas:", error);

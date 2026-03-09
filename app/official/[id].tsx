@@ -257,10 +257,17 @@ export default function OfficialDetail() {
   const { data: policyAreasData, isLoading: policyAreasLoading } = useQuery({
     queryKey: ["officialPolicyAreas", id],
     queryFn: async () => {
-      const cached = await officialBillsCache.get(`policy_areas_${id}`);
+      const cached = await officialBillsCache.get(
+        `policy_areas_v3_${id}`,
+        30 * 24 * 60 * 60 * 1000,
+      );
       if (cached) return cached;
       const result = await officialsService.getPolicyAreas(id as string);
-      await officialBillsCache.save(`policy_areas_${id}`, result);
+      await officialBillsCache.save(
+        `policy_areas_v3_${id}`,
+        result,
+        30 * 24 * 60 * 60 * 1000,
+      );
       return result;
     },
     enabled: !!id,
@@ -579,9 +586,18 @@ export default function OfficialDetail() {
                   </View>
                 ))
               ) : policyAreasLoading ? (
-                <Text style={[componentStyles.term, { paddingBottom: 12 }]}>
-                  Loading policy areas...
-                </Text>
+                <View
+                  style={{
+                    paddingTop: 12,
+                    paddingBottom: 36,
+                    alignItems: "center",
+                  }}
+                >
+                  <LoadingSpinner />
+                  <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+                    Loading top policy areas...
+                  </Text>
+                </View>
               ) : (
                 <Text style={[componentStyles.term, { paddingBottom: 12 }]}>
                   Top policy areas unavailable. This might be because this
@@ -666,10 +682,7 @@ export default function OfficialDetail() {
                         onPress={() => setShowFilterModal(true)}
                       >
                         <Text style={componentStyles.legislationHeaderTotal}>
-                          {filteredSponsored.length <
-                          (sponsoredData?.count ?? 0)
-                            ? `${filteredSponsored.length} / ${(sponsoredData?.count ?? 0).toLocaleString()} Shown`
-                            : ""}
+                          {`${filteredSponsored.length.toLocaleString()} / ${(policyAreasData?.totalSponsored ?? sponsoredData?.count ?? 0).toLocaleString()} all-time`}{" "}
                         </Text>
                         {showFilterModal ? (
                           <ChevronUp
@@ -772,10 +785,7 @@ export default function OfficialDetail() {
                         onPress={() => setShowFilterModal(true)}
                       >
                         <Text style={componentStyles.legislationHeaderTotal}>
-                          {filteredCosponsored.length <
-                          (cosponsoredData?.count ?? 0)
-                            ? `${filteredCosponsored.length} / ${(cosponsoredData?.count ?? 0).toLocaleString()} Shown`
-                            : ""}
+                          {`${filteredCosponsored.length.toLocaleString()} / ${(policyAreasData?.totalCosponsored ?? cosponsoredData?.count ?? 0).toLocaleString()} all-time`}{" "}
                         </Text>
                         {showFilterModal ? (
                           <ChevronUp
