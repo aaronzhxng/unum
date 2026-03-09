@@ -249,7 +249,6 @@ export default function SearchModal({
                     <View style={componentStyles.officialCard}>
                       {/* Avatar */}
                       {item.type === "bill" ? (
-                        // Bill icon
                         <View
                           style={[
                             componentStyles.avatar,
@@ -284,47 +283,8 @@ export default function SearchModal({
                             </Text>
                           )}
                         </View>
-                      ) : item.depiction?.imageUrl ? (
-                        // Official with depiction
-                        <View style={componentStyles.avatar}>
-                          <Image
-                            source={{ uri: item.depiction.imageUrl }}
-                            style={{ width: "100%", height: "120%" }}
-                            resizeMode="cover"
-                          />
-                        </View>
-                      ) : item.photoUrl ? (
-                        // Official with photoUrl (stored item)
-                        <View style={componentStyles.avatar}>
-                          <Image
-                            source={{ uri: item.photoUrl }}
-                            style={{ width: "100%", height: "120%" }}
-                            resizeMode="cover"
-                          />
-                        </View>
                       ) : (
-                        // Fallback initials
-                        <View style={componentStyles.avatar}>
-                          <View
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              backgroundColor: "#BFBFBF",
-                              justifyContent: "center",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: "white",
-                                fontSize: 24,
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {item.name?.split(",")[0]?.charAt(0) || "?"}
-                            </Text>
-                          </View>
-                        </View>
+                        <OfficialAvatar item={item} />
                       )}
 
                       {/* Content */}
@@ -393,7 +353,15 @@ export default function SearchModal({
                       ) : (
                         // Official info
                         <View style={{ flex: 1 }}>
-                          <Text style={componentStyles.name}>{item.name}</Text>
+                          <Text style={componentStyles.name}>
+                            {item.name?.includes(",")
+                              ? item.name
+                                  .split(",")
+                                  .reverse()
+                                  .map((s: string) => s.trim())
+                                  .join(" ")
+                              : item.name}
+                          </Text>
                           <View style={componentStyles.metaRow}>
                             <Text style={componentStyles.subtitle}>
                               {item.partyName?.charAt(0) || item.party || ""}
@@ -473,5 +441,37 @@ export default function SearchModal({
         }
       />
     </Modal>
+  );
+}
+
+function OfficialAvatar({ item }: { item: any }) {
+  const [imageError, setImageError] = useState(false);
+  const imageUrl = item.depiction?.imageUrl || item.photoUrl || null;
+
+  return (
+    <View style={componentStyles.avatar}>
+      {imageUrl && !imageError ? (
+        <Image
+          source={{ uri: imageUrl }}
+          style={{ width: "100%", height: "120%" }}
+          resizeMode="cover"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundColor: "#BFBFBF",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+            {item.name?.split(",")[0]?.charAt(0) || "?"}
+          </Text>
+        </View>
+      )}
+    </View>
   );
 }

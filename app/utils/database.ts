@@ -62,6 +62,7 @@ export const initializeDatabase = async (): Promise<void> => {
       policy_area TEXT,
       update_text TEXT,
       photo_url TEXT,
+order_index INTEGER NOT NULL DEFAULT 0,
       added_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
       FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE
     );
@@ -95,6 +96,11 @@ export const initializeDatabase = async (): Promise<void> => {
       value TEXT NOT NULL
     );
   `);
+  try {
+    database.execSync(
+      `ALTER TABLE list_items ADD COLUMN order_index INTEGER NOT NULL DEFAULT 0`,
+    );
+  } catch {}
 
   // Run migration from AsyncStorage on first launch
   await migrateFromAsyncStorage(database);

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   ChevronDown,
   ChevronUp,
@@ -22,6 +22,7 @@ import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
+import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { storage } from "../utils/storage";
 
 interface FilterOption {
@@ -39,7 +40,7 @@ type Bill = {
 };
 
 export default function LegislationScreen() {
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   const { setTabBarHidden } = useTabBar();
 
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -112,6 +113,7 @@ export default function LegislationScreen() {
 
       allLists.push(newList);
       await storage.saveLists(allLists);
+      listEvents.emit(LIST_UPDATED);
       setCreatedListName(newListName.trim());
       setShowNewListProgressModal(true);
       setNewListName("");
@@ -141,50 +143,50 @@ export default function LegislationScreen() {
     return "Congress";
   };
 
-  const POLICY_AREA_OPTIONS: FilterOption[] = [
-    { id: "all", label: "All" },
-    { id: "agriculture", label: "Agriculture and Food" },
-    { id: "animals", label: "Animals" },
-    { id: "armed-forces", label: "Armed Forces and National Security" },
-    { id: "arts", label: "Arts, Culture, Religion" },
-    {
-      id: "civil-rights",
-      label: "Civil Rights and Liberties, Minority Issues",
-    },
-    { id: "commerce", label: "Commerce" },
-    { id: "congress", label: "Congress" },
-    { id: "crime", label: "Crime and Law Enforcement" },
-    { id: "economics", label: "Economics and Public Finance" },
-    { id: "education", label: "Education" },
-    { id: "emergency", label: "Emergency Management" },
-    { id: "energy", label: "Energy" },
-    { id: "environmental", label: "Environmental Protection" },
-    { id: "families", label: "Families" },
-    { id: "finance", label: "Finance and Financial Sector" },
-    { id: "foreign-trade", label: "Foreign Trade and International Finance" },
-    { id: "government", label: "Government Operations and Politics" },
-    { id: "health", label: "Health" },
-    { id: "housing", label: "Housing and Community Development" },
-    { id: "immigration", label: "Immigration" },
-    { id: "international", label: "International Affairs" },
-    { id: "labor", label: "Labor and Employment" },
-    { id: "law", label: "Law" },
-    { id: "native-americans", label: "Native Americans" },
-    { id: "public-lands", label: "Public Lands and Natural Resources" },
-    { id: "science", label: "Science, Technology, Communications" },
-    { id: "social-welfare", label: "Social Welfare" },
-    { id: "sports", label: "Sports and Recreation" },
-    { id: "taxation", label: "Taxation" },
-    { id: "transportation", label: "Transportation and Public Works" },
-    { id: "water", label: "Water Resources Development" },
-  ];
+  // const POLICY_AREA_OPTIONS: FilterOption[] = [
+  //   { id: "all", label: "All" },
+  //   { id: "agriculture", label: "Agriculture and Food" },
+  //   { id: "animals", label: "Animals" },
+  //   { id: "armed-forces", label: "Armed Forces and National Security" },
+  //   { id: "arts", label: "Arts, Culture, Religion" },
+  //   {
+  //     id: "civil-rights",
+  //     label: "Civil Rights and Liberties, Minority Issues",
+  //   },
+  //   { id: "commerce", label: "Commerce" },
+  //   { id: "congress", label: "Congress" },
+  //   { id: "crime", label: "Crime and Law Enforcement" },
+  //   { id: "economics", label: "Economics and Public Finance" },
+  //   { id: "education", label: "Education" },
+  //   { id: "emergency", label: "Emergency Management" },
+  //   { id: "energy", label: "Energy" },
+  //   { id: "environmental", label: "Environmental Protection" },
+  //   { id: "families", label: "Families" },
+  //   { id: "finance", label: "Finance and Financial Sector" },
+  //   { id: "foreign-trade", label: "Foreign Trade and International Finance" },
+  //   { id: "government", label: "Government Operations and Politics" },
+  //   { id: "health", label: "Health" },
+  //   { id: "housing", label: "Housing and Community Development" },
+  //   { id: "immigration", label: "Immigration" },
+  //   { id: "international", label: "International Affairs" },
+  //   { id: "labor", label: "Labor and Employment" },
+  //   { id: "law", label: "Law" },
+  //   { id: "native-americans", label: "Native Americans" },
+  //   { id: "public-lands", label: "Public Lands and Natural Resources" },
+  //   { id: "science", label: "Science, Technology, Communications" },
+  //   { id: "social-welfare", label: "Social Welfare" },
+  //   { id: "sports", label: "Sports and Recreation" },
+  //   { id: "taxation", label: "Taxation" },
+  //   { id: "transportation", label: "Transportation and Public Works" },
+  //   { id: "water", label: "Water Resources Development" },
+  // ];
 
-  const SORT_OPTIONS = [
-    "Most Viewed",
-    "Recent Action",
-    "Newest First",
-    "Oldest First",
-  ];
+  // const SORT_OPTIONS = [
+  //   "Most Viewed",
+  //   "Recent Action",
+  //   "Newest First",
+  //   "Oldest First",
+  // ];
 
   const toggleChamber = (id: string) => {
     setSelectedChambers((prev) =>

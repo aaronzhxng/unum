@@ -18,7 +18,7 @@ export const storage = {
 
       return lists.map((list) => {
         const items = db.getAllSync<any>(
-          `SELECT * FROM list_items WHERE list_id = ? ORDER BY added_at ASC`,
+          `SELECT * FROM list_items WHERE list_id = ? ORDER BY order_index ASC, added_at ASC`,
           [list.id],
         );
 
@@ -76,9 +76,9 @@ export const storage = {
         }
 
         // Upsert each item
-        for (const item of list.items || []) {
-          upsertListItem(db, list.id, item);
-        }
+        (list.items || []).forEach((item, index) => {
+          upsertListItem(db, list.id, item, index);
+        });
       }
     } catch (error) {
       console.error("Error saving lists:", error);
@@ -170,13 +170,18 @@ export const storage = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const upsertListItem = (db: any, listId: string, item: ListItem): void => {
+const upsertListItem = (
+  db: any,
+  listId: string,
+  item: ListItem,
+  orderIndex: number,
+): void => {
   const rowId = `${listId}__${item.id}`;
   db.runSync(
     `INSERT INTO list_items
       (id, list_id, item_id, item_type, name, party, role, date,
-       latest_action, policy_area, update_text, photo_url)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       latest_action, policy_area, update_text, photo_url, order_index)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        name = excluded.name,
        party = excluded.party,
@@ -185,7 +190,8 @@ const upsertListItem = (db: any, listId: string, item: ListItem): void => {
        latest_action = excluded.latest_action,
        policy_area = excluded.policy_area,
        update_text = excluded.update_text,
-       photo_url = excluded.photo_url`,
+       photo_url = excluded.photo_url,
+       order_index = excluded.order_index`,
     [
       rowId,
       listId,
@@ -199,6 +205,7 @@ const upsertListItem = (db: any, listId: string, item: ListItem): void => {
       item.policyArea ?? null,
       item.update ?? null,
       item.photoUrl ?? null,
+      orderIndex,
     ],
   );
 };

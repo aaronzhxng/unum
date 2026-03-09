@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { ListItem, storage } from "../utils/storage";
 
 interface Props {
@@ -194,6 +195,7 @@ export default function AddModal({
       }
 
       await storage.saveLists(lists);
+      listEvents.emit(LIST_UPDATED);
     }
 
     setPendingNewList(hasNewList);
@@ -504,6 +506,7 @@ export default function AddModal({
                   }
 
                   await storage.saveLists(lists);
+                  listEvents.emit(LIST_UPDATED);
                 }
 
                 setShowConfirmModal(false);

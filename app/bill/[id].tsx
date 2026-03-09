@@ -28,6 +28,7 @@ import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
+import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import ActionHistory from "./bill_components/ActionHistory";
 import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
@@ -40,6 +41,59 @@ import { storage } from "../utils/storage";
 
 const TABS = ["details", "voting", "actions", "cosponsors"] as const;
 type TabName = (typeof TABS)[number];
+
+const STATE_NAMES: { [key: string]: string } = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+};
 
 export default function BillDetail() {
   const pagerRef = useRef<PagerView>(null);
@@ -71,8 +125,8 @@ export default function BillDetail() {
     }),
   ).current;
 
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [showSearchModal, setShowSearchModal] = useState(false);
+  // const [searchQuery, setSearchQuery] = useState("");
   const [showAmendments, setShowAmendments] = useState(false);
   const [showAmendmentsSort, setShowAmendmentsSort] = useState(false);
   const [selectedAmendmentsSort, setSelectedAmendmentsSort] =
@@ -137,6 +191,7 @@ export default function BillDetail() {
       };
       allLists.push(newList);
       await storage.saveLists(allLists);
+      listEvents.emit(LIST_UPDATED);
       setCreatedListName(newListName.trim());
       setNewListName("");
       setShowNewListModal(false);
@@ -162,11 +217,11 @@ export default function BillDetail() {
     { id: "independent", label: "Independent" },
   ];
 
-  const cosponsorParties: FilterOption[] = [
-    { id: "D", label: "Democrat" },
-    { id: "R", label: "Republican" },
-    { id: "I", label: "Independent" },
-  ];
+  // const cosponsorParties: FilterOption[] = [
+  //   { id: "D", label: "Democrat" },
+  //   { id: "R", label: "Republican" },
+  //   { id: "I", label: "Independent" },
+  // ];
 
   const toggleChamber = (type: string) => {
     setSelectedChamber((prev) =>
@@ -292,59 +347,6 @@ export default function BillDetail() {
     enabled: !!id && cosponsorsVisited,
     retry: 1,
   });
-
-  const STATE_NAMES: { [key: string]: string } = {
-    AL: "Alabama",
-    AK: "Alaska",
-    AZ: "Arizona",
-    AR: "Arkansas",
-    CA: "California",
-    CO: "Colorado",
-    CT: "Connecticut",
-    DE: "Delaware",
-    FL: "Florida",
-    GA: "Georgia",
-    HI: "Hawaii",
-    ID: "Idaho",
-    IL: "Illinois",
-    IN: "Indiana",
-    IA: "Iowa",
-    KS: "Kansas",
-    KY: "Kentucky",
-    LA: "Louisiana",
-    ME: "Maine",
-    MD: "Maryland",
-    MA: "Massachusetts",
-    MI: "Michigan",
-    MN: "Minnesota",
-    MS: "Mississippi",
-    MO: "Missouri",
-    MT: "Montana",
-    NE: "Nebraska",
-    NV: "Nevada",
-    NH: "New Hampshire",
-    NJ: "New Jersey",
-    NM: "New Mexico",
-    NY: "New York",
-    NC: "North Carolina",
-    ND: "North Dakota",
-    OH: "Ohio",
-    OK: "Oklahoma",
-    OR: "Oregon",
-    PA: "Pennsylvania",
-    RI: "Rhode Island",
-    SC: "South Carolina",
-    SD: "South Dakota",
-    TN: "Tennessee",
-    TX: "Texas",
-    UT: "Utah",
-    VT: "Vermont",
-    VA: "Virginia",
-    WA: "Washington",
-    WV: "West Virginia",
-    WI: "Wisconsin",
-    WY: "Wyoming",
-  };
 
   const bill = data?.bill;
 
@@ -767,17 +769,29 @@ export default function BillDetail() {
             </View>
 
             <View style={componentStyles.details}>
-              <Text style={componentStyles.detailTitle}>Sponsor: </Text>
-              <Text style={componentStyles.detailInfo}>
-                {data?.bill?.sponsors?.[0]?.fullName ?? "Not available"}
-              </Text>
-            </View>
-
-            <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Type: </Text>
               <Text style={componentStyles.detailInfo}>
                 {getBillTypeName(bill.type, bill.originChamber)}
               </Text>
+            </View>
+
+            {/* Sponsor Card */}
+            <View style={{ marginBottom: 8 }}>
+              <Text
+                style={[
+                  componentStyles.detailTitle,
+                  { marginBottom: 8, marginHorizontal: 20 },
+                ]}
+              >
+                Sponsor:
+              </Text>
+              {data?.bill?.sponsors?.[0] ? (
+                <SponsorCard sponsor={data.bill.sponsors[0]} />
+              ) : (
+                <View style={componentStyles.details}>
+                  <Text style={componentStyles.detailInfo}>Not available</Text>
+                </View>
+              )}
             </View>
 
             {/* Summary */}
@@ -1309,4 +1323,69 @@ export default function BillDetail() {
       </Modal>
     </View>
   );
+
+  function SponsorCard({ sponsor }: { sponsor: any }) {
+    const [imageError, setImageError] = useState(false);
+    const router = useRouter();
+
+    const photoUrl = sponsor.bioguideId
+      ? `https://bioguide.congress.gov/bioguide/photo/${sponsor.bioguideId[0]}/${sponsor.bioguideId}.jpg`
+      : null;
+
+    const role = sponsor.district
+      ? `Representative, ${STATE_NAMES[sponsor.state] ?? sponsor.state}, District ${sponsor.district}`
+      : `Senator, ${STATE_NAMES[sponsor.state] ?? sponsor.state}`;
+
+    return (
+      <Pressable
+        onPress={() =>
+          sponsor.bioguideId &&
+          router.navigate(`/official/${sponsor.bioguideId}`)
+        }
+        style={({ pressed }) => ({
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        })}
+      >
+        <View style={[componentStyles.officialCard, { marginHorizontal: 16 }]}>
+          <View style={componentStyles.avatar}>
+            {photoUrl && !imageError ? (
+              <Image
+                source={{ uri: photoUrl }}
+                style={{ width: "100%", height: "120%" }}
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "#BFBFBF",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                >
+                  {sponsor.fullName?.charAt(0) || "?"}
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={componentStyles.name}>
+              {sponsor.firstName} {sponsor.lastName}
+            </Text>
+            <View style={componentStyles.metaRow}>
+              <Text style={componentStyles.subtitle}>
+                {sponsor.party ? `${sponsor.party} · ` : ""}
+                {role}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Pressable>
+    );
+  }
 }

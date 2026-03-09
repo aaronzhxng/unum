@@ -25,6 +25,7 @@ import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { officialsService } from "../services/officials";
+import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { storage } from "../utils/storage";
 
 type Official = {
@@ -47,7 +48,7 @@ export default function OfficialsScreen() {
   const [selectedNotifications, setSelectedNotifications] =
     useState("New York");
   const [showListSelection, setShowListSelection] = useState(false);
-  const [selectedList, setSelectedList] = useState("Federal");
+  const [selectedList, setSelectedList] = useState("All States");
 
   // New List Modal
   const [showNewListModal, setShowNewListModal] = useState(false);
@@ -113,6 +114,8 @@ export default function OfficialsScreen() {
 
       allLists.push(newList);
       await storage.saveLists(allLists);
+      console.log("🔔 LIST_UPDATED emitted");
+      listEvents.emit(LIST_UPDATED);
       setCreatedListName(newListName.trim());
       setShowNewListProgressModal(true);
       setNewListName("");
@@ -129,7 +132,7 @@ export default function OfficialsScreen() {
   const router = useRouter();
 
   const LOCATION_OPTIONS = [
-    "Federal",
+    "All States",
     "Alabama",
     "Alaska",
     "American Samoa",
@@ -198,7 +201,7 @@ export default function OfficialsScreen() {
   // Filter officials based on selected state
   const officials = useMemo(() => {
     const filtered =
-      selectedList === "Federal"
+      selectedList === "All States"
         ? allOfficials
         : allOfficials.filter((official) => official.state === selectedList);
 
@@ -558,7 +561,6 @@ function OfficialCard({
   item: any;
   onAddPress: (id: string) => void;
 }) {
-  // console.log(item.name, item.chamber);
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
   return (
@@ -601,12 +603,22 @@ function OfficialCard({
             )}
           </View>
         ) : (
-          <View style={[componentStyles.avatar, { backgroundColor: "#eee" }]} />
+          <View
+            style={[componentStyles.avatar, { backgroundColor: "#eee" }]}
+          ></View>
         )}
 
         {/* Official Info */}
         <View style={{ flex: 1 }}>
-          <Text style={componentStyles.name}>{item.name}</Text>
+          <Text style={componentStyles.name}>
+            {item.name?.includes(",")
+              ? item.name
+                  .split(",")
+                  .reverse()
+                  .map((s: string) => s.trim())
+                  .join(" ")
+              : item.name}
+          </Text>
           <View style={componentStyles.metaRow}>
             <Text style={componentStyles.subtitle}>
               {item.partyName?.charAt(0) || ""} ·{" "}

@@ -20,9 +20,10 @@ import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { getBillIcon } from "../utils/billIcons";
-import { ListItem, storage, UserList } from "../utils/storage";
+import { LIST_UPDATED, listEvents } from "../utils/listEvents";
+import { ListItem, storage } from "../utils/storage";
 
-type ItemType = "official" | "bill";
+// type ItemType = "official" | "bill";
 
 type Item = ListItem;
 
@@ -71,14 +72,14 @@ export default function HomeScreen() {
   const [showNewListProgressModal, setShowNewListProgressModal] =
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
-  const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  // const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [createdListName, setCreatedListName] = useState("");
 
   const [hasMoved, setHasMoved] = useState(false);
   const [originalOrder, setOriginalOrder] = useState<ListItem[]>([]);
 
   const [lists, setLists] = useState<Array<{ id: string; name: string }>>([]);
-  const [currentList, setCurrentList] = useState<UserList | null>(null);
+  // const [currentList, setCurrentList] = useState<UserList | null>(null);
 
   const [currentListId, setCurrentListId] = useState<string>("");
 
@@ -254,12 +255,12 @@ export default function HomeScreen() {
     setTabBarHidden(isEditMode);
   }, [isEditMode]);
 
-  useEffect(() => {
-    const debugStorage = async () => {
-      const lists = await storage.getLists();
-    };
-    debugStorage();
-  }, []);
+  // useEffect(() => {
+  //   const debugStorage = async () => {
+  //     const lists = await storage.getLists();
+  //   };
+  //   debugStorage();
+  // }, []);
 
   useEffect(() => {
     if (!showNewListProgressModal) return;
@@ -281,15 +282,33 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
 
+  useEffect(() => {
+    const reload = () => {
+      console.log("🏠 reload triggered");
+      loadItems();
+    };
+    listEvents.on(LIST_UPDATED, reload);
+    return () => {
+      listEvents.off(LIST_UPDATED, reload);
+    };
+  }, [selectedList]);
+
   useFocusEffect(
     React.useCallback(() => {
       const loadAllLists = async () => {
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
+
+        const currentList =
+          allLists.find((l) => l.name === selectedList) || allLists[0];
+        if (currentList) {
+          setCurrentListId(currentList.id);
+          setItems(currentList.items);
+        }
+        setIsLoading(false);
       };
       loadAllLists();
-      loadItems(); // This should reload items each time you navigate back
-    }, [selectedList]), // Make sure selectedList is in dependencies
+    }, [selectedList]),
   );
 
   if (isLoading) {
@@ -943,7 +962,13 @@ function Card({
         {isOfficial ? (
           <View style={{ flex: 1 }}>
             <Text style={componentStyles.name} numberOfLines={1}>
-              {item.name}
+              {item.name?.includes(",")
+                ? item.name
+                    .split(",")
+                    .reverse()
+                    .map((s: string) => s.trim())
+                    .join(" ")
+                : item.name}
             </Text>
             <View style={componentStyles.metaRow}>
               <Text style={componentStyles.subtitle}>{item.party}</Text>

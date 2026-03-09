@@ -29,6 +29,7 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
 import { getBillIcon } from "../utils/billIcons";
+import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { officialBillsCache } from "../utils/officialBillsCache";
 import { storage } from "../utils/storage";
 import OptionsModal from "./official_components/OptionsModal";
@@ -180,6 +181,8 @@ export default function OfficialDetail() {
       };
       allLists.push(newList);
       await storage.saveLists(allLists);
+      console.log("🔔 LIST_UPDATED emitted");
+      listEvents.emit(LIST_UPDATED);
       setCreatedListName(newListName.trim());
       setShowNewListModal(false);
       setPendingItemForNewList(null);
