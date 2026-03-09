@@ -60,6 +60,7 @@ export default function HomeScreen() {
   >(null);
 
   const [items, setItems] = useState<ListItem[]>([]);
+  const [newItemIds, setNewItemIds] = useState<Set<string>>(new Set());
 
   const allSelected = items.length > 0 && selectedIds.size === items.length;
 
@@ -285,20 +286,33 @@ export default function HomeScreen() {
   useEffect(() => {
     const reload = () => {
       console.log("🏠 reload triggered");
-      refreshLists(); // was loadItems()
+      const beforeIds = new Set(items.map((i) => i.id));
+      refreshLists().then(() => {
+        const allLists = storage.getLists();
+        const currentList =
+          allLists.find((l) => l.name === selectedList) || allLists[0];
+        if (currentList) {
+          const added = currentList.items
+            .filter((i) => !beforeIds.has(i.id))
+            .map((i) => i.id);
+          if (added.length > 0) {
+            setNewItemIds(new Set(added));
+            setTimeout(() => setNewItemIds(new Set()), 10000);
+          }
+        }
+      });
     };
     listEvents.on(LIST_UPDATED, reload);
     return () => {
       listEvents.off(LIST_UPDATED, reload);
     };
-  }, [selectedList]);
+  }, [selectedList, items]);
 
   useFocusEffect(
     React.useCallback(() => {
       const loadAllLists = async () => {
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
-
         const currentList =
           allLists.find((l) => l.name === selectedList) || allLists[0];
         if (currentList) {
@@ -308,6 +322,10 @@ export default function HomeScreen() {
         setIsLoading(false);
       };
       loadAllLists();
+
+      return () => {
+        setNewItemIds(new Set()); // clear on blur
+      };
     }, [selectedList]),
   );
 
@@ -460,6 +478,7 @@ export default function HomeScreen() {
               item={item}
               isEditMode={isEditMode}
               isSelected={selectedIds.has(item.id)}
+              isNew={newItemIds.has(item.id)}
               onLongPress={drag}
               onPress={() => toggleSelect(item.id)}
             />
@@ -476,6 +495,7 @@ export default function HomeScreen() {
               item={item}
               isEditMode={isEditMode}
               isSelected={selectedIds.has(item.id)}
+              isNew={newItemIds.has(item.id)}
               onLongPress={() => enterEditMode(item.id)}
               onPress={() => toggleSelect(item.id)}
             />
@@ -839,12 +859,14 @@ function Card({
   item,
   isEditMode,
   isSelected,
+  isNew,
   onLongPress,
   onPress,
 }: {
   item: ListItem;
   isEditMode: boolean;
   isSelected: boolean;
+  isNew?: boolean;
   onLongPress: () => void;
   onPress: () => void;
 }) {
@@ -880,6 +902,14 @@ function Card({
       delayLongPress={400}
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.96 : 1 }],
+        borderRadius: 24,
+        ...(isNew && {
+          shadowColor: "#008CFF",
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.6,
+          shadowRadius: 10,
+          elevation: 8,
+        }),
       })}
     >
       <View style={componentStyles.officialCard}>
