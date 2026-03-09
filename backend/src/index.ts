@@ -590,42 +590,48 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
   }
 });
 
-// ─── NEW ENDPOINT — add this to backend/src/index.ts ─────────────────────────
-// Place it after the /api/officials/:bioguideId/cosponsored endpoint.
-//
-// Fetches ALL sponsored legislation across ALL congresses for an official,
-// counts policy areas, and returns the top results.
-// This is separate from the sponsored/cosponsored tab endpoints which are
-// Congress 119 only.
+// ─── UPDATED policy-areas endpoint ───────────────────────────────────────────
+// Replace the existing /api/officials/:bioguideId/policy-areas endpoint
+// in backend/src/index.ts with this version.
 
 app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
   try {
     const { bioguideId } = req.params;
 
-    let allLegislation: any[] = [];
-    let offset = 0;
-    const limit = 250;
-    let hasMore = true;
+    // Helper to paginate through all legislation for a given endpoint
+    const fetchAll = async (path: string, key: string): Promise<any[]> => {
+      let all: any[] = [];
+      let offset = 0;
+      const limit = 250;
+      let hasMore = true;
 
-    // Paginate through ALL sponsored legislation across all congresses
-    while (hasMore) {
-      const response = await axios.get(
-        `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
-        {
-          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { limit, offset },
-        },
-      );
+      while (hasMore) {
+        const response = await axios.get(
+          `https://api.congress.gov/v3/member/${bioguideId}/${path}`,
+          {
+            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+            params: { limit, offset },
+          },
+        );
+        const page = response.data[key] || [];
+        all = all.concat(page);
+        hasMore =
+          response.data.pagination?.next != null && page.length === limit;
+        offset += limit;
+      }
 
-      const page = response.data.sponsoredLegislation || [];
-      allLegislation = allLegislation.concat(page);
-      hasMore = response.data.pagination?.next != null && page.length === limit;
-      offset += limit;
-    }
+      return all;
+    };
 
-    // Count policy areas across full career
+    // Fetch both in parallel
+    const [sponsored, cosponsored] = await Promise.all([
+      fetchAll("sponsored-legislation", "sponsoredLegislation"),
+      fetchAll("cosponsored-legislation", "cosponsoredLegislation"),
+    ]);
+
+    // Count policy areas across full career, both directions
     const counts: { [key: string]: number } = {};
-    for (const bill of allLegislation) {
+    for (const bill of [...sponsored, ...cosponsored]) {
       const area = bill.policyArea?.name;
       if (area) counts[area] = (counts[area] || 0) + 1;
     }
@@ -637,7 +643,7 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
 
     res.json({
       policyAreas,
-      totalBills: allLegislation.length,
+      totalBills: sponsored.length + cosponsored.length,
     });
   } catch (error) {
     console.error("Error fetching policy areas:", error);
