@@ -166,6 +166,32 @@ export const storage = {
       console.error("Error deleting list:", error);
     }
   },
+
+  getPriorityState: (): string | null => {
+    try {
+      const db = getDb();
+      const row = db.getFirstSync<{ value: string }>(
+        `SELECT value FROM meta WHERE key = 'priority_state'`,
+      );
+      return row?.value ?? null;
+    } catch (error) {
+      console.error("Error loading priority state:", error);
+      return null;
+    }
+  },
+
+  setPriorityState: (state: string): void => {
+    try {
+      const db = getDb();
+      db.runSync(
+        `INSERT INTO meta (key, value) VALUES ('priority_state', ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+        [state],
+      );
+    } catch (error) {
+      console.error("Error saving priority state:", error);
+    }
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

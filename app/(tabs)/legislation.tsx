@@ -16,6 +16,7 @@ import React, {
   useState,
 } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
+import { usePolicyAreas } from "../context/PolicyAreasContext";
 import { useTabBar } from "../context/TabBarContext";
 import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
@@ -72,6 +73,7 @@ export default function LegislationScreen() {
   const [enrichedBills, setEnrichedBills] = useState<{ [key: string]: any }>(
     {},
   );
+  const policyAreas = usePolicyAreas();
 
   // Tracks which bill IDs have already been fetched this session
   // so we never fire duplicate requests as the user scrolls back up
@@ -837,8 +839,10 @@ function BillCard({
 }) {
   const router = useRouter();
   const billId = `${item.type.toLowerCase()}${item.number}`;
+  const policyAreas = usePolicyAreas();
   const policyArea =
-    enrichedData?.policyArea?.name || (item as any).policyArea?.name;
+    policyAreas[`${item.type.toLowerCase()}${item.number}`] ||
+    enrichedData?.policyArea?.nam;
   return (
     <Pressable
       onPress={() => {

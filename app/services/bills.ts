@@ -152,4 +152,8 @@ export const billsService = {
   search: async (query: string): Promise<any> => {
     return apiClient.get(`/bills/search?q=${encodeURIComponent(query)}`);
   },
+
+  getPolicyAreas: async (): Promise<Record<string, string>> => {
+    return apiClient.get<Record<string, string>>("/bills/policy-areas");
+  },
 };

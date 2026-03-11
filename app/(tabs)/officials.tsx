@@ -59,10 +59,7 @@ export default function OfficialsScreen() {
   const [newListProgress, setNewListProgress] = useState(0);
   const [createdListName, setCreatedListName] = useState("");
 
-  const handleSetPriority = () => {
-    // console.log("Set as priority:", selectedList);
-    // TODO: Backend call to mark this state as priority
-  };
+  const [priorityState, setPriorityStateLocal] = useState<string | null>(null);
 
   const handleReportError = () => {
     // console.log("Report error for:", selectedList);
@@ -254,6 +251,20 @@ export default function OfficialsScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    const saved = storage.getPriorityState();
+    if (saved) {
+      setPriorityStateLocal(saved);
+      setSelectedList(saved); // default to priority state
+    }
+  }, []);
+
+  const handleSetPriority = () => {
+    if (selectedList === "All States") return; // can't set "All States" as priority
+    storage.setPriorityState(selectedList);
+    setPriorityStateLocal(selectedList);
+  };
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -412,7 +423,14 @@ export default function OfficialsScreen() {
           <ScrollView
             style={[componentStyles.dropdown, { marginVertical: 96 }]}
           >
-            {LOCATION_OPTIONS.map((option) => (
+            {[
+              // Priority state first if set
+              ...(priorityState && priorityState !== "All States"
+                ? [priorityState]
+                : []),
+              // Then all other options, excluding the priority state to avoid duplicate
+              ...LOCATION_OPTIONS.filter((o) => o !== priorityState),
+            ].map((option) => (
               <Pressable
                 key={option}
                 style={({ pressed }) =>
@@ -432,7 +450,10 @@ export default function OfficialsScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={componentStyles.dropdownItemText}>{option}</Text>
+                  <Text style={componentStyles.dropdownItemText}>
+                    {option}
+                    {option === priorityState ? " (Priority State)" : ""}
+                  </Text>
                   {selectedList === option && (
                     <Check size={20} color="#008CFF" strokeWidth={4} />
                   )}
