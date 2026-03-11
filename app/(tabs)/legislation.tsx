@@ -351,18 +351,17 @@ export default function LegislationScreen() {
   // ─── onViewableItemsChanged: fires as user scrolls ───────────────────────
   const onViewableItemsChangedRef = useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
-      let added = false;
+      // Prioritize visible items by putting them at the FRONT of the queue
       for (const { item } of viewableItems) {
         const billId = `${item.type.toLowerCase()}${item.number}`;
-        if (
-          fetchedIds.current.has(billId) ||
-          fetchQueue.current.includes(billId)
-        )
-          continue;
-        fetchQueue.current.push(billId);
-        added = true;
+        if (fetchedIds.current.has(billId)) continue;
+        if (fetchQueue.current.includes(billId)) {
+          // Move to front if already queued
+          fetchQueue.current = fetchQueue.current.filter((id) => id !== billId);
+        }
+        fetchQueue.current.unshift(billId); // front of queue
       }
-      if (added) processFetchQueueRef.current();
+      processFetchQueueRef.current();
     },
   );
 
