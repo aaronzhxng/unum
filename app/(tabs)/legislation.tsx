@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -7,7 +8,13 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import { useTabBar } from "../context/TabBarContext";
 import AddModal from "../global_components/AddModal";
@@ -333,6 +340,11 @@ export default function LegislationScreen() {
     isFetching.current = false;
   }, [bills]);
 
+  const processFetchQueueRef = useRef(processFetchQueue);
+  useEffect(() => {
+    processFetchQueueRef.current = processFetchQueue;
+  }, [processFetchQueue]);
+
   // ─── viewabilityConfig: item must be 50% visible to count ────────────────
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 });
 
@@ -350,7 +362,7 @@ export default function LegislationScreen() {
         fetchQueue.current.push(billId);
         added = true;
       }
-      if (added) processFetchQueue();
+      if (added) processFetchQueueRef.current();
     },
   );
 
@@ -409,6 +421,38 @@ export default function LegislationScreen() {
       listEvents.removeListener(LIST_UPDATED, handler);
     };
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (bills.length === 0) return;
+
+      const enriched: { [key: string]: any } = {};
+      for (const bill of bills) {
+        const billId = `${bill.type.toLowerCase()}${bill.number}`;
+        const cached = billCache.getBill(billId);
+        if (cached?.policyArea) {
+          enriched[billId] = cached;
+          fetchedIds.current.add(billId);
+        }
+      }
+
+      // Merge with existing enriched data rather than replacing it
+      setEnrichedBills((prev) => ({ ...prev, ...enriched }));
+    }, [bills]),
+  );
+
+  useEffect(() => {
+    if (bills.length === 0) return;
+
+    for (const bill of bills.slice(0, 10)) {
+      const billId = `${bill.type.toLowerCase()}${bill.number}`;
+      if (fetchedIds.current.has(billId) || fetchQueue.current.includes(billId))
+        continue;
+      fetchQueue.current.push(billId);
+    }
+    fetchQueue.current = ["hr4403"];
+    processFetchQueue();
+  }, [bills]);
 
   if (isLoading) {
     return (
@@ -796,7 +840,6 @@ function BillCard({
   const billId = `${item.type.toLowerCase()}${item.number}`;
   const policyArea =
     enrichedData?.policyArea?.name || (item as any).policyArea?.name;
-
   return (
     <Pressable
       onPress={() => {

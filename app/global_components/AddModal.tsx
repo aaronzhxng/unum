@@ -86,7 +86,7 @@ export default function AddModal({
   // Load available lists from storage
   useEffect(() => {
     const loadLists = async () => {
-      console.log("loadLists called", showAddModal, listsVersion);
+      // console.log("loadLists called", showAddModal, listsVersion);
       const lists = await storage.getLists();
       const listOptions = lists.map((list) => ({
         id: list.id,
