@@ -13,8 +13,16 @@ export const PolicyAreasProvider = ({
   useEffect(() => {
     billsService
       .getPolicyAreas()
-      .then(setPolicyAreas)
-      .catch(() => {}); // silent fail — policy areas are non-critical
+      .then((data) => {
+        console.log(
+          "Policy areas fetch success, count:",
+          Object.keys(data).length,
+        );
+        setPolicyAreas(data);
+      })
+      .catch((err) => {
+        console.log("Policy areas fetch FAILED:", err.message);
+      });
   }, []);
 
   return (

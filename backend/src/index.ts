@@ -120,63 +120,13 @@ app.get("/api/bills/search", async (req, res) => {
   }
 });
 
-let policyAreaCache: { data: any; timestamp: number } | null = null;
-const POLICY_AREA_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const POLICY_AREAS_STATIC: Record<
+  string,
+  string
+> = require("./policyAreas.json");
 
-app.get("/api/bills/policy-areas", async (req, res) => {
-  if (
-    policyAreaCache &&
-    Date.now() - policyAreaCache.timestamp < POLICY_AREA_CACHE_TTL
-  ) {
-    return res.json(policyAreaCache.data);
-  }
-
-  try {
-    // If bills cache isn't ready, fetch it first
-    let allBills = billsCache?.data?.bills ?? [];
-    if (allBills.length === 0) {
-      const response = await axios.get(`http://localhost:${PORT}/api/bills`);
-      allBills = response.data?.bills ?? [];
-    }
-
-    if (allBills.length === 0) {
-      return res.status(503).json({ error: "Bills cache not ready yet" });
-    }
-
-    const policyAreas: { [key: string]: string } = {};
-
-    // Fetch in parallel batches of 20
-    const batchSize = 20;
-    for (let i = 0; i < allBills.length; i += batchSize) {
-      const batch = allBills.slice(i, i + batchSize);
-      await Promise.allSettled(
-        batch.map(async (bill: any) => {
-          const billType = bill.type.toLowerCase();
-          const billId = `${billType}${bill.number}`;
-          try {
-            const response = await axios.get(
-              `https://api.congress.gov/v3/bill/${bill.congress}/${billType}/${bill.number}`,
-              { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
-            );
-            const area = response.data?.bill?.policyArea?.name;
-            if (area) policyAreas[billId] = area;
-          } catch {
-            // skip
-          }
-        }),
-      );
-    }
-
-    const responseData = {
-      policyAreas,
-      count: Object.keys(policyAreas).length,
-    };
-    policyAreaCache = { data: responseData, timestamp: Date.now() };
-    res.json(responseData);
-  } catch (error) {
-    console.error("Error fetching policy areas:", error);
-    res.status(500).json({ error: "Failed to fetch policy areas" });
-  }
+app.get("/api/bills/policy-areas", (req, res) => {
+  res.json(POLICY_AREAS_STATIC);
 });
 
 // Get single bill by ID
@@ -711,9 +661,9 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  // console.log(`🚀 Backend running on http://localhost:${PORT}`);
-});
+// app.listen(PORT, () => {
+//   // console.log(`🚀 Backend running on http://localhost:${PORT}`);
+// });
 
 const prewarmCache = async () => {
   try {

@@ -843,6 +843,12 @@ function BillCard({
   const policyArea =
     policyAreas[`${item.type.toLowerCase()}${item.number}`] ||
     enrichedData?.policyArea?.nam;
+  if (item.number === "144") {
+    console.log("policyAreas loaded:", Object.keys(policyAreas).length);
+    console.log("lookup key:", `${item.type.toLowerCase()}${item.number}`);
+    console.log("result:", policyArea);
+    console.log("sample keys:", Object.keys(policyAreas).slice(0, 3));
+  }
   return (
     <Pressable
       onPress={() => {
