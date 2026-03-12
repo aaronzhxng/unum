@@ -33,37 +33,62 @@ const CHAMBER_OPTIONS: FilterOption[] = [
 
 const POLICY_AREA_OPTIONS: FilterOption[] = [
   { id: "all", label: "All" },
-  { id: "agriculture", label: "Agriculture and Food" },
-  { id: "animals", label: "Animals" },
-  { id: "armed-forces", label: "Armed Forces and National Security" },
-  { id: "arts", label: "Arts, Culture, Religion" },
-  { id: "civil-rights", label: "Civil Rights and Liberties, Minority Issues" },
-  { id: "commerce", label: "Commerce" },
-  { id: "congress", label: "Congress" },
-  { id: "crime", label: "Crime and Law Enforcement" },
-  { id: "economics", label: "Economics and Public Finance" },
-  { id: "education", label: "Education" },
-  { id: "emergency", label: "Emergency Management" },
-  { id: "energy", label: "Energy" },
-  { id: "environmental", label: "Environmental Protection" },
-  { id: "families", label: "Families" },
-  { id: "finance", label: "Finance and Financial Sector" },
-  { id: "foreign-trade", label: "Foreign Trade and International Finance" },
-  { id: "government", label: "Government Operations and Politics" },
-  { id: "health", label: "Health" },
-  { id: "housing", label: "Housing and Community Development" },
-  { id: "immigration", label: "Immigration" },
-  { id: "international", label: "International Affairs" },
-  { id: "labor", label: "Labor and Employment" },
-  { id: "law", label: "Law" },
-  { id: "native-americans", label: "Native Americans" },
-  { id: "public-lands", label: "Public Lands and Natural Resources" },
-  { id: "science", label: "Science, Technology, Communications" },
-  { id: "social-welfare", label: "Social Welfare" },
-  { id: "sports", label: "Sports and Recreation" },
-  { id: "taxation", label: "Taxation" },
-  { id: "transportation", label: "Transportation and Public Works" },
-  { id: "water", label: "Water Resources Development" },
+  { id: "none", label: "No Policy Area" },
+  { id: "Agriculture and Food", label: "Agriculture and Food" },
+  { id: "Animals", label: "Animals" },
+  {
+    id: "Armed Forces and National Security",
+    label: "Armed Forces and National Security",
+  },
+  { id: "Arts, Culture, Religion", label: "Arts, Culture, Religion" },
+  {
+    id: "Civil Rights and Liberties, Minority Issues",
+    label: "Civil Rights and Liberties, Minority Issues",
+  },
+  { id: "Commerce", label: "Commerce" },
+  { id: "Congress", label: "Congress" },
+  { id: "Crime and Law Enforcement", label: "Crime and Law Enforcement" },
+  { id: "Economics and Public Finance", label: "Economics and Public Finance" },
+  { id: "Education", label: "Education" },
+  { id: "Emergency Management", label: "Emergency Management" },
+  { id: "Energy", label: "Energy" },
+  { id: "Environmental Protection", label: "Environmental Protection" },
+  { id: "Families", label: "Families" },
+  { id: "Finance and Financial Sector", label: "Finance and Financial Sector" },
+  {
+    id: "Foreign Trade and International Finance",
+    label: "Foreign Trade and International Finance",
+  },
+  {
+    id: "Government Operations and Politics",
+    label: "Government Operations and Politics",
+  },
+  { id: "Health", label: "Health" },
+  {
+    id: "Housing and Community Development",
+    label: "Housing and Community Development",
+  },
+  { id: "Immigration", label: "Immigration" },
+  { id: "International Affairs", label: "International Affairs" },
+  { id: "Labor and Employment", label: "Labor and Employment" },
+  { id: "Law", label: "Law" },
+  { id: "Native Americans", label: "Native Americans" },
+  {
+    id: "Public Lands and Natural Resources",
+    label: "Public Lands and Natural Resources",
+  },
+  {
+    id: "Science, Technology, Communications",
+    label: "Science, Technology, Communications",
+  },
+  { id: "Social Welfare", label: "Social Welfare" },
+  { id: "Sports and Recreation", label: "Sports and Recreation" },
+  { id: "Taxation", label: "Taxation" },
+  {
+    id: "Transportation and Public Works",
+    label: "Transportation and Public Works",
+  },
+  { id: "Water Resources Development", label: "Water Resources Development" },
 ];
 
 const LEGISLATION_TYPE_OPTIONS: FilterOption[] = [
@@ -224,7 +249,7 @@ export default function LegislationFilterModal({
           </View>
 
           {/* Policy Area */}
-          {/* <View
+          <View
             style={[
               componentStyles.dropdownMulti,
               { marginTop: 12, height: 200 },
@@ -339,7 +364,7 @@ export default function LegislationFilterModal({
                 );
               })}
             </ScrollView>
-          </View> */}
+          </View>
 
           {/* Legislation Type */}
           <View

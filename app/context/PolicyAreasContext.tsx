@@ -14,14 +14,14 @@ export const PolicyAreasProvider = ({
     billsService
       .getPolicyAreas()
       .then((data) => {
-        console.log(
-          "Policy areas fetch success, count:",
-          Object.keys(data).length,
-        );
+        // console.log(
+        //   "Policy areas fetch success, count:",
+        //   Object.keys(data).length,
+        // );
         setPolicyAreas(data);
       })
       .catch((err) => {
-        console.log("Policy areas fetch FAILED:", err.message);
+        // console.log("Policy areas fetch FAILED:", err.message);
       });
   }, []);
 

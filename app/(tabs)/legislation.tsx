@@ -33,6 +33,15 @@ import { getBillIcon } from "../utils/billIcons";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { storage } from "../utils/storage";
 
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState<T>(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 interface FilterOption {
   id: string;
   label: string;
@@ -139,6 +148,15 @@ export default function LegislationScreen() {
     string[]
   >([]);
   const [selectedFilter, setSelectedFilter] = useState("Congress");
+  const debouncedChambers = useDebounced(selectedChambers, 300);
+  const debouncedPolicyAreas = useDebounced(selectedPolicyAreas, 300);
+  const debouncedLegislationTypes = useDebounced(selectedLegislationTypes, 300);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [pendingChambers, setPendingChambers] = useState<string[]>([]);
+  const [pendingPolicyAreas, setPendingPolicyAreas] = useState<string[]>([]);
+  const [pendingLegislationTypes, setPendingLegislationTypes] = useState<
+    string[]
+  >([]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
@@ -153,51 +171,6 @@ export default function LegislationScreen() {
     }
     return "Congress";
   };
-
-  // const POLICY_AREA_OPTIONS: FilterOption[] = [
-  //   { id: "all", label: "All" },
-  //   { id: "agriculture", label: "Agriculture and Food" },
-  //   { id: "animals", label: "Animals" },
-  //   { id: "armed-forces", label: "Armed Forces and National Security" },
-  //   { id: "arts", label: "Arts, Culture, Religion" },
-  //   {
-  //     id: "civil-rights",
-  //     label: "Civil Rights and Liberties, Minority Issues",
-  //   },
-  //   { id: "commerce", label: "Commerce" },
-  //   { id: "congress", label: "Congress" },
-  //   { id: "crime", label: "Crime and Law Enforcement" },
-  //   { id: "economics", label: "Economics and Public Finance" },
-  //   { id: "education", label: "Education" },
-  //   { id: "emergency", label: "Emergency Management" },
-  //   { id: "energy", label: "Energy" },
-  //   { id: "environmental", label: "Environmental Protection" },
-  //   { id: "families", label: "Families" },
-  //   { id: "finance", label: "Finance and Financial Sector" },
-  //   { id: "foreign-trade", label: "Foreign Trade and International Finance" },
-  //   { id: "government", label: "Government Operations and Politics" },
-  //   { id: "health", label: "Health" },
-  //   { id: "housing", label: "Housing and Community Development" },
-  //   { id: "immigration", label: "Immigration" },
-  //   { id: "international", label: "International Affairs" },
-  //   { id: "labor", label: "Labor and Employment" },
-  //   { id: "law", label: "Law" },
-  //   { id: "native-americans", label: "Native Americans" },
-  //   { id: "public-lands", label: "Public Lands and Natural Resources" },
-  //   { id: "science", label: "Science, Technology, Communications" },
-  //   { id: "social-welfare", label: "Social Welfare" },
-  //   { id: "sports", label: "Sports and Recreation" },
-  //   { id: "taxation", label: "Taxation" },
-  //   { id: "transportation", label: "Transportation and Public Works" },
-  //   { id: "water", label: "Water Resources Development" },
-  // ];
-
-  // const SORT_OPTIONS = [
-  //   "Most Viewed",
-  //   "Recent Action",
-  //   "Newest First",
-  //   "Oldest First",
-  // ];
 
   const toggleChamber = (id: string) => {
     setSelectedChambers((prev) =>
@@ -217,8 +190,26 @@ export default function LegislationScreen() {
     );
   };
 
-  const handleFilterCancel = () => setShowFilterModal(false);
-  const handleFilterApply = () => setShowFilterModal(false);
+  const handleFilterCancel = () => {
+    setPendingChambers(selectedChambers);
+    setPendingPolicyAreas(selectedPolicyAreas);
+    setPendingLegislationTypes(selectedLegislationTypes);
+    setShowFilterModal(false);
+  };
+  const handleFilterApply = () => {
+    setShowFilterModal(false);
+    setIsFiltering(true);
+    setSelectedChambers(pendingChambers);
+    setSelectedPolicyAreas(pendingPolicyAreas);
+    setSelectedLegislationTypes(pendingLegislationTypes);
+  };
+  const handleFilterOpen = () => {
+    setPendingChambers(selectedChambers);
+    setPendingPolicyAreas(selectedPolicyAreas);
+    setPendingLegislationTypes(selectedLegislationTypes);
+    setShowSortDropdown(false);
+    setShowFilterModal(true);
+  };
 
   const router = useRouter();
 
@@ -227,14 +218,78 @@ export default function LegislationScreen() {
     queryFn: billsService.getAll,
   });
 
-  const allBills: any[] = data?.bills || [];
+  const allBills: any[] = useMemo(() => {
+    const bills = data?.bills || [];
+    if (Object.keys(policyAreas).length === 0) return bills;
+    return bills.map((bill) => ({
+      ...bill,
+      _policyArea:
+        policyAreas[`${bill.type.toLowerCase()}${bill.number}`] ?? null,
+      _introducedDate:
+        policyAreas[`${bill.type.toLowerCase()}${bill.number}`] !== undefined
+          ? (enrichedBills[`${bill.type.toLowerCase()}${bill.number}`]
+              ?.introducedDate ??
+            bill.updateDate ??
+            null)
+          : (bill.updateDate ?? null),
+    }));
+  }, [data?.bills, policyAreas]);
+
+  const pendingCount = useMemo(() => {
+    let filtered = allBills;
+
+    if (pendingChambers.length > 0) {
+      filtered = filtered.filter((bill) =>
+        pendingChambers.some((chamber) => {
+          if (chamber === "house") return bill.originChamber === "House";
+          if (chamber === "senate") return bill.originChamber === "Senate";
+          return false;
+        }),
+      );
+    }
+
+    if (pendingPolicyAreas.length > 0) {
+      filtered = filtered.filter((bill) => {
+        if (!bill._policyArea) return pendingPolicyAreas.includes("none");
+        return pendingPolicyAreas.includes(bill._policyArea);
+      });
+    }
+
+    if (
+      pendingLegislationTypes.length > 0 &&
+      !pendingLegislationTypes.includes("all")
+    ) {
+      const typeMap: { [key: string]: string[] } = {
+        bill: ["HR", "S"],
+        joint_resolution: ["HJRES", "SJRES"],
+        concurrent_resolution: ["HCONRES", "SCONRES"],
+        resolution: ["HRES", "SRES"],
+        amendment: ["HAMDT", "SAMDT"],
+        nomination: ["PN"],
+        treaty: ["TREATY"],
+      };
+      const apiTypes = pendingLegislationTypes.flatMap(
+        (id) => typeMap[id] || [],
+      );
+      filtered = filtered.filter((bill) => apiTypes.includes(bill.type));
+    }
+
+    return filtered.length;
+  }, [allBills, pendingChambers, pendingPolicyAreas, pendingLegislationTypes]);
 
   const bills = useMemo(() => {
-    let filtered: any[] = allBills;
+    let filtered: any[] = allBills.map((bill) => ({
+      ...bill,
+      _introducedDate:
+        enrichedBills[`${bill.type.toLowerCase()}${bill.number}`]
+          ?.introducedDate ??
+        bill.updateDate ??
+        null,
+    }));
 
-    if (selectedChambers.length > 0) {
+    if (debouncedChambers.length > 0) {
       filtered = filtered.filter((bill) =>
-        selectedChambers.some((chamber) => {
+        debouncedChambers.some((chamber) => {
           if (chamber === "house")
             return (bill as any).originChamber === "House";
           if (chamber === "senate")
@@ -243,10 +298,17 @@ export default function LegislationScreen() {
         }),
       );
     }
-
+    if (debouncedPolicyAreas.length > 0) {
+      filtered = filtered.filter((bill) => {
+        if (!bill._policyArea) {
+          return debouncedPolicyAreas.includes("none");
+        }
+        return debouncedPolicyAreas.includes(bill._policyArea);
+      });
+    }
     if (
-      selectedLegislationTypes.length > 0 &&
-      !selectedLegislationTypes.includes("all")
+      debouncedLegislationTypes.length > 0 &&
+      !debouncedLegislationTypes.includes("all")
     ) {
       const typeMap: { [key: string]: string[] } = {
         bill: ["HR", "S"],
@@ -258,7 +320,7 @@ export default function LegislationScreen() {
         treaty: ["TREATY"],
       };
 
-      const apiTypes = selectedLegislationTypes.flatMap(
+      const apiTypes = debouncedLegislationTypes.flatMap(
         (id) => typeMap[id] || [],
       );
 
@@ -275,34 +337,52 @@ export default function LegislationScreen() {
           new Date((a as any).latestAction?.actionDate ?? 0).getTime(),
       );
     } else if (selectedSort === "Newest First") {
-      sorted.sort((a, b) => (b as any).number - (a as any).number);
+      sorted.sort((a, b) => {
+        const dateA = a._introducedDate
+          ? new Date(a._introducedDate).getTime()
+          : 0;
+        const dateB = b._introducedDate
+          ? new Date(b._introducedDate).getTime()
+          : 0;
+        return dateB - dateA;
+      });
     } else if (selectedSort === "Oldest First") {
-      sorted.sort((a, b) => (a as any).number - (b as any).number);
+      sorted.sort((a, b) => {
+        const dateA = a._introducedDate
+          ? new Date(a._introducedDate).getTime()
+          : 0;
+        const dateB = b._introducedDate
+          ? new Date(b._introducedDate).getTime()
+          : 0;
+        return dateA - dateB;
+      });
     }
     return sorted;
   }, [
     allBills,
-    selectedChambers,
-    selectedPolicyAreas,
-    selectedLegislationTypes,
+    enrichedBills,
+    debouncedChambers,
+    debouncedPolicyAreas,
+    debouncedLegislationTypes,
     selectedSort,
   ]);
 
   // ─── On mount: load SQLite cache for all bills instantly ──────────────────
   useEffect(() => {
-    if (bills.length === 0) return;
+    const rawBills = data?.bills || [];
+    if (rawBills.length === 0) return;
 
     const enriched: { [key: string]: any } = {};
-    for (const bill of bills) {
+    for (const bill of rawBills) {
       const billId = `${bill.type.toLowerCase()}${bill.number}`;
       const cached = billCache.getBill(billId);
       if (cached?.policyArea) {
         enriched[billId] = cached;
-        fetchedIds.current.add(billId); // mark as already known
+        fetchedIds.current.add(billId);
       }
     }
     setEnrichedBills(enriched);
-  }, [bills]);
+  }, [data?.bills]);
 
   // ─── Fetch queue processor ────────────────────────────────────────────────
   // Drains the queue of visible bill IDs that need fetching, one at a time.
@@ -425,10 +505,11 @@ export default function LegislationScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (bills.length === 0) return;
+      const rawBills = data?.bills || [];
+      if (rawBills.length === 0) return;
 
       const enriched: { [key: string]: any } = {};
-      for (const bill of bills) {
+      for (const bill of rawBills) {
         const billId = `${bill.type.toLowerCase()}${bill.number}`;
         const cached = billCache.getBill(billId);
         if (cached?.policyArea) {
@@ -436,24 +517,36 @@ export default function LegislationScreen() {
           fetchedIds.current.add(billId);
         }
       }
-
-      // Merge with existing enriched data rather than replacing it
       setEnrichedBills((prev) => ({ ...prev, ...enriched }));
-    }, [bills]),
+    }, [data?.bills]),
   );
 
   useEffect(() => {
-    if (bills.length === 0) return;
+    const rawBills = data?.bills || [];
+    if (rawBills.length === 0) return;
 
-    for (const bill of bills.slice(0, 10)) {
+    for (const bill of rawBills.slice(0, 10)) {
       const billId = `${bill.type.toLowerCase()}${bill.number}`;
       if (fetchedIds.current.has(billId) || fetchQueue.current.includes(billId))
         continue;
       fetchQueue.current.push(billId);
     }
-    fetchQueue.current = ["hr4403"];
     processFetchQueue();
-  }, [bills]);
+  }, [data?.bills]);
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setIsFiltering(true);
+      const timer = setTimeout(() => setIsFiltering(false), 2250);
+      return () => clearTimeout(timer);
+    }, 50);
+    return () => clearTimeout(delay);
+  }, [selectedChambers, selectedPolicyAreas, selectedLegislationTypes]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsFiltering(false), 300);
+    return () => clearTimeout(timer);
+  }, [selectedSort]);
 
   if (isLoading) {
     return (
@@ -484,7 +577,7 @@ export default function LegislationScreen() {
           <Pressable
             onPress={() => {
               setShowSortDropdown(false);
-              setShowFilterModal(true);
+              handleFilterOpen();
             }}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.96 : 1 }],
@@ -574,27 +667,43 @@ export default function LegislationScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={bills}
-        keyExtractor={(item) => `${item.type}${item.number}`}
-        contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item }) => {
-          const billId = `${item.type.toLowerCase()}${item.number}`;
-          return (
-            <BillCard
-              item={item}
-              onAddPress={(id) => {
-                setCurrentBillId(id);
-                setShowAddModal(true);
-              }}
-              enrichedData={enrichedBills[billId]}
-            />
-          );
-        }}
-        onViewableItemsChanged={onViewableItemsChangedRef.current}
-        viewabilityConfig={viewabilityConfig.current}
-        directionalLockEnabled={true}
-      />
+      {isFiltering ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: -86,
+          }}
+        >
+          <LoadingSpinner />
+          <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+            Loading bills...
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={bills}
+          keyExtractor={(item) => `${item.type}${item.number}`}
+          contentContainerStyle={componentStyles.listContent}
+          renderItem={({ item }) => {
+            const billId = `${item.type.toLowerCase()}${item.number}`;
+            return (
+              <BillCard
+                item={item}
+                onAddPress={(id) => {
+                  setCurrentBillId(id);
+                  setShowAddModal(true);
+                }}
+                enrichedData={enrichedBills[billId]}
+              />
+            );
+          }}
+          onViewableItemsChanged={onViewableItemsChangedRef.current}
+          viewabilityConfig={viewabilityConfig.current}
+          directionalLockEnabled={true}
+        />
+      )}
 
       {/* Search Modal */}
       <SearchModal
@@ -670,25 +779,42 @@ export default function LegislationScreen() {
       <LegislationFilterModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
-        selectedChambers={selectedChambers}
-        selectedPolicyAreas={selectedPolicyAreas}
-        selectedLegislationTypes={selectedLegislationTypes}
-        toggleChamber={toggleChamber}
-        togglePolicyArea={togglePolicyArea}
-        toggleLegislationType={toggleLegislationType}
+        selectedChambers={pendingChambers}
+        selectedPolicyAreas={pendingPolicyAreas}
+        selectedLegislationTypes={pendingLegislationTypes}
+        toggleChamber={(id) =>
+          setPendingChambers((prev) =>
+            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+          )
+        }
+        togglePolicyArea={(id) =>
+          setPendingPolicyAreas((prev) =>
+            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+          )
+        }
+        toggleLegislationType={(id) =>
+          setPendingLegislationTypes((prev) =>
+            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+          )
+        }
         onCancel={handleFilterCancel}
         onApply={handleFilterApply}
-        setSelectedChambers={setSelectedChambers}
-        setSelectedPolicyAreas={setSelectedPolicyAreas}
-        setSelectedLegislationTypes={setSelectedLegislationTypes}
-        resultCount={bills.length}
+        setSelectedChambers={setPendingChambers}
+        setSelectedPolicyAreas={setPendingPolicyAreas}
+        setSelectedLegislationTypes={setPendingLegislationTypes}
+        resultCount={pendingCount}
       />
 
       <SortDropdown
         showSortDropdown={showSortDropdown}
         setShowSortDropdown={setShowSortDropdown}
         selectedSort={selectedSort}
-        setSelectedSort={setSelectedSort}
+        setSelectedSort={(sort) => {
+          if (sort === selectedSort) return;
+          setIsFiltering(true);
+          setShowSortDropdown(false);
+          setSelectedSort(sort);
+        }}
       />
 
       <NewListNameModal
@@ -842,13 +968,15 @@ function BillCard({
   const policyAreas = usePolicyAreas();
   const policyArea =
     policyAreas[`${item.type.toLowerCase()}${item.number}`] ||
-    enrichedData?.policyArea?.nam;
-  if (item.number === "144") {
-    console.log("policyAreas loaded:", Object.keys(policyAreas).length);
-    console.log("lookup key:", `${item.type.toLowerCase()}${item.number}`);
-    console.log("result:", policyArea);
-    console.log("sample keys:", Object.keys(policyAreas).slice(0, 3));
-  }
+    enrichedData?.policyArea?.name;
+  // if (item.number === "144") {
+  //   console.log("policyAreas loaded:", Object.keys(policyAreas).length);
+  //   console.log("lookup key:", `${item.type.toLowerCase()}${item.number}`);
+  //   console.log("result:", policyArea);
+  //   console.log("sample keys:", Object.keys(policyAreas).slice(0, 3));
+  // }
+  // console.log(item.introducedDate, item.type, item.number);
+
   return (
     <Pressable
       onPress={() => {

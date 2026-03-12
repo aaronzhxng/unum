@@ -1,6 +1,7 @@
 // Map policy area names to icon filenames
 export const BILL_ICON_MAP: { [key: string]: any } = {
   "Agriculture and Food": require("../../assets/bills_icons/agriculture.png"),
+  Animals: require("../../assets/bills_icons/animals.png"),
   "Armed Forces and National Security": require("../../assets/bills_icons/armed-forces.png"),
   "Arts, Culture, Religion": require("../../assets/bills_icons/arts.png"),
   "Civil Rights and Liberties, Minority Issues": require("../../assets/bills_icons/civil-rights.png"),

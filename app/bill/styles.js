@@ -358,7 +358,7 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: "#000000",
     marginHorizontal: 4,
-    fontWeight: 100,
+    fontWeight: 900,
   },
   update: {
     fontSize: 12,
