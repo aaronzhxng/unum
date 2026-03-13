@@ -26,10 +26,12 @@
       [
         "expo-splash-screen",
         {
+          "image": "./assets/app_icons/game-icons_olive.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#fafafa",
           "dark": {
+            "image": "./assets/app_icons/game-icons_olive.png",
             "backgroundColor": "#000000"
           }
         }
