@@ -336,26 +336,12 @@ export default function LegislationScreen() {
           new Date((b as any).latestAction?.actionDate ?? 0).getTime() -
           new Date((a as any).latestAction?.actionDate ?? 0).getTime(),
       );
-    } else if (selectedSort === "Newest First") {
-      sorted.sort((a, b) => {
-        const dateA = a._introducedDate
-          ? new Date(a._introducedDate).getTime()
-          : 0;
-        const dateB = b._introducedDate
-          ? new Date(b._introducedDate).getTime()
-          : 0;
-        return dateB - dateA;
-      });
-    } else if (selectedSort === "Oldest First") {
-      sorted.sort((a, b) => {
-        const dateA = a._introducedDate
-          ? new Date(a._introducedDate).getTime()
-          : 0;
-        const dateB = b._introducedDate
-          ? new Date(b._introducedDate).getTime()
-          : 0;
-        return dateA - dateB;
-      });
+    } else if (selectedSort === "Oldest Action") {
+      sorted.sort(
+        (a, b) =>
+          new Date(a.latestAction?.actionDate ?? 0).getTime() -
+          new Date(b.latestAction?.actionDate ?? 0).getTime(),
+      );
     }
     return sorted;
   }, [
@@ -953,8 +939,8 @@ export default function LegislationScreen() {
     </View>
   );
 }
-//test
-function BillCard({
+
+const BillCard = React.memo(function BillCard({
   item,
   onAddPress,
   enrichedData,
@@ -1058,4 +1044,4 @@ function BillCard({
       </View>
     </Pressable>
   );
-}
+});

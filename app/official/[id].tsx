@@ -9,6 +9,7 @@ import {
 } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BackHandler,
   Image,
   Linking,
   Modal,
@@ -100,6 +101,7 @@ export default function OfficialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router: Router = useRouter();
   const [activeTab, setActiveTab] = useState(0);
+  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   // Back swipe on first page
   const backSwipePanResponder = useRef(
@@ -112,7 +114,10 @@ export default function OfficialDetail() {
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
-          router.back();
+          setIsNavigatingBack(true);
+          setTimeout(() => {
+            router.back();
+          }, 50);
         }
       },
     }),
@@ -170,6 +175,20 @@ export default function OfficialDetail() {
     }, 30);
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        setIsNavigatingBack(true);
+        setTimeout(() => {
+          router.back();
+        }, 50);
+        return true; // true = we handled it, prevents default back behavior
+      },
+    );
+    return () => subscription.remove();
+  }, []);
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
@@ -416,12 +435,25 @@ export default function OfficialDetail() {
     );
   }
 
+  if (isNavigatingBack) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LoadingSpinner />
+      </View>
+    );
+  }
+
   return (
     <View style={componentStyles.screen}>
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => {
+            setIsNavigatingBack(true);
+            setTimeout(() => {
+              router.back();
+            }, 50);
+          }}
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.75 : 1 }],
           })}

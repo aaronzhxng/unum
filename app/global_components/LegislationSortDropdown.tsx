@@ -56,7 +56,7 @@ export default function SortDropdown({
           >
             <Text style={componentStyles.dropdownItemText}>Recent Action</Text>
           </Pressable>
-          <Pressable
+          {/* <Pressable
             style={({ pressed }) =>
               pressed
                 ? componentStyles.dropdownItemPressed
@@ -68,7 +68,7 @@ export default function SortDropdown({
             }}
           >
             <Text style={componentStyles.dropdownItemText}>Newest First</Text>
-          </Pressable>
+          </Pressable> */}
           <Pressable
             style={({ pressed }) =>
               pressed

@@ -86,6 +86,7 @@ export default function HomeScreen() {
 
   // In the loadItems function, track which list is loaded:
   const [isLoading, setIsLoading] = useState(true);
+  const [isReturning, setIsReturning] = useState(false);
 
   const loadItems = async () => {
     // console.log("=== loadItems called ===");
@@ -309,6 +310,7 @@ export default function HomeScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
+      setIsReturning(true);
       const loadAllLists = async () => {
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
@@ -316,19 +318,37 @@ export default function HomeScreen() {
           allLists.find((l) => l.name === selectedList) || allLists[0];
         if (currentList) {
           setCurrentListId(currentList.id);
-          setItems(currentList.items);
+          setItems((prev) => {
+            const newItems = currentList.items;
+            if (
+              prev.length === newItems.length &&
+              prev.every((item, i) => item.id === newItems[i].id)
+            ) {
+              return prev;
+            }
+            return newItems;
+          });
         }
         setIsLoading(false);
+        setIsReturning(false);
       };
       loadAllLists();
 
       return () => {
-        setNewItemIds(new Set()); // clear on blur
+        setNewItemIds(new Set());
       };
     }, [selectedList]),
   );
 
   if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LoadingSpinner />
+      </View>
+    );
+  }
+
+  if (isReturning) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <LoadingSpinner />
@@ -854,7 +874,7 @@ export default function HomeScreen() {
   );
 }
 
-function Card({
+const Card = React.memo(function Card({
   item,
   isEditMode,
   isSelected,
@@ -1051,4 +1071,4 @@ function Card({
       </View>
     </Pressable>
   );
-}
+});

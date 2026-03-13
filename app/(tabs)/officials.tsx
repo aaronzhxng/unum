@@ -8,7 +8,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -585,7 +585,7 @@ export default function OfficialsScreen() {
   );
 }
 
-function OfficialCard({
+const OfficialCard = React.memo(function OfficialCard({
   item,
   onAddPress,
 }: {
@@ -676,4 +676,4 @@ function OfficialCard({
       </View>
     </Pressable>
   );
-}
+});

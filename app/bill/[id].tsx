@@ -9,8 +9,9 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import { decode } from "html-entities";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BackHandler,
   Image,
   Modal,
   PanResponder,
@@ -100,6 +101,7 @@ export default function BillDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const congress = billCongressCache.get(id as string);
   const router = useRouter() as Router;
+  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   const [activeTab, setActiveTab] = useState<TabName>("details");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -107,6 +109,7 @@ export default function BillDetail() {
   // Lazy load tracking
   const [votingVisited, setVotingVisited] = useState(false);
   const [cosponsorsVisited, setCosponsorsVisited] = useState(false);
+  const [actionsVisited, setActionsVisited] = useState(false);
 
   // Back swipe on first page
   const backSwipePanResponder = useRef(
@@ -119,7 +122,10 @@ export default function BillDetail() {
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
-          router.back();
+          setIsNavigatingBack(true);
+          setTimeout(() => {
+            router.back();
+          }, 50);
         }
       },
     }),
@@ -280,9 +286,12 @@ export default function BillDetail() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["bill", id],
     queryFn: async () => {
+      console.log("queryFn start:", Date.now());
       const billId = id as string;
       const cacheKey = `${congress}-${billId}`;
+      console.log("checking cache:", Date.now());
       const cached = await billCache.getBill(cacheKey);
+      console.log("cache result:", cached ? "HIT" : "MISS", Date.now());
       if (cached) return { bill: cached };
 
       const billResult = await billsService.getById(billId, congress);
@@ -367,6 +376,172 @@ export default function BillDetail() {
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
 
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        setIsNavigatingBack(true);
+        setTimeout(() => {
+          router.back();
+        }, 50);
+        return true; // true = we handled it, prevents default back behavior
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
+  const parseAPIDate = (dateStr: string) => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day).getTime();
+  };
+
+  const processedActions = useMemo(
+    () =>
+      Array.isArray(bill?.actions)
+        ? bill.actions
+            .filter((action: any) => {
+              const source = action.sourceSystem?.name || "";
+              const text = action.text?.toLowerCase() || "";
+              if (!source.toLowerCase().includes("library of congress"))
+                return true;
+              return (
+                text.includes("signed by president") ||
+                text.includes("presented to president") ||
+                text.includes("became public law") ||
+                text.includes("vetoed by president") ||
+                text.includes("enacted")
+              );
+            })
+            .filter((action: any, index: number, arr: any[]) => {
+              const key = `${action.actionDate}-${action.text}`;
+              return (
+                arr.findIndex((a) => `${a.actionDate}-${a.text}` === key) ===
+                index
+              );
+            })
+            .map((action: any) => {
+              const source = action.sourceSystem?.name || "";
+              let chamber = source;
+              if (source.toLowerCase().includes("house")) chamber = "House";
+              else if (source.toLowerCase().includes("senate"))
+                chamber = "Senate";
+              else chamber = "";
+              return {
+                date:
+                  action.actionDate.split("-").slice(1).join("/") +
+                  "/" +
+                  action.actionDate.split("-")[0].slice(2),
+                chamber,
+                description: action.text,
+              };
+            })
+        : [],
+    [bill?.actions],
+  );
+
+  const sortedActions = useMemo(() => {
+    const activeFilters = selectedChamber.filter((f) => f !== "Bills");
+    const filteredActions =
+      activeFilters.length === 0
+        ? processedActions
+        : processedActions.filter(
+            (action: { chamber: string; date: string; description: string }) =>
+              action.chamber === "" ||
+              activeFilters.some(
+                (f) => action.chamber.toLowerCase() === f.toLowerCase(),
+              ),
+          );
+    return [...filteredActions].sort((a, b) => {
+      const parseDate = (dateStr: string) => {
+        const [month, day, year] = dateStr.split("/");
+        return new Date(
+          parseInt("20" + year),
+          parseInt(month) - 1,
+          parseInt(day),
+        ).getTime();
+      };
+      return selectedActionsSort === "Oldest First"
+        ? parseDate(a.date) - parseDate(b.date)
+        : parseDate(b.date) - parseDate(a.date);
+    });
+  }, [processedActions, selectedChamber, selectedActionsSort]);
+
+  const sortedCosponsors = useMemo(() => {
+    const mappedCosponsors = (cosponsorsData?.cosponsors ?? []).map(
+      (c: any) => ({
+        id: c.bioguideId,
+        name: c.name,
+        party: c.party,
+        role: c.district
+          ? `Rep, ${STATE_NAMES[c.state] || c.state} - ${c.district}`
+          : `Senator, ${STATE_NAMES[c.state] || c.state}`,
+        photoUrl: c.photoUrl,
+        update: c.isOriginalCosponsor
+          ? "Original cosponsor"
+          : `Joined ${new Date(
+              parseAPIDate(c.sponsorshipDate),
+            ).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            })}`,
+        sponsorshipDate: parseAPIDate(c.sponsorshipDate),
+        isOriginal: c.isOriginalCosponsor ?? false,
+      }),
+    );
+    return [...mappedCosponsors].sort((a, b) => {
+      switch (selectedCosponsorSort) {
+        case "A-Z":
+          return a.name.localeCompare(b.name);
+        case "Z-A":
+          return b.name.localeCompare(a.name);
+        case "Newest First":
+          if (a.sponsorshipDate !== b.sponsorshipDate)
+            return b.sponsorshipDate - a.sponsorshipDate;
+          return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? 1 : -1;
+        case "Oldest First":
+          if (a.sponsorshipDate !== b.sponsorshipDate)
+            return a.sponsorshipDate - b.sponsorshipDate;
+          return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? -1 : 1;
+        default:
+          return 0;
+      }
+    });
+  }, [cosponsorsData?.cosponsors, selectedCosponsorSort]);
+
+  const displayedAmendments = useMemo(
+    () =>
+      enrichedAmendments
+        .filter((a: any) => {
+          const chamberMatch =
+            selectedAmendmentChamber.length === 0 ||
+            (selectedAmendmentChamber.includes("house") &&
+              a.type?.startsWith("H")) ||
+            (selectedAmendmentChamber.includes("senate") &&
+              a.type?.startsWith("S"));
+          const partyMatch =
+            selectedAmendmentParty.length === 0 ||
+            (a.sponsors?.[0]?.party &&
+              selectedAmendmentParty
+                .map((p) => p.charAt(0).toUpperCase())
+                .includes(a.sponsors[0].party));
+          return chamberMatch && partyMatch;
+        })
+        .sort((a: any, b: any) => {
+          const numA = parseInt(a.number || "0");
+          const numB = parseInt(b.number || "0");
+          return selectedAmendmentsSort === "Oldest First"
+            ? numA - numB
+            : numB - numA;
+        }),
+    [
+      enrichedAmendments,
+      selectedAmendmentChamber,
+      selectedAmendmentParty,
+      selectedAmendmentsSort,
+    ],
+  );
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -438,146 +613,27 @@ export default function BillDetail() {
     return `${formattedType}${number}`;
   };
 
-  const processedActions = Array.isArray(bill?.actions)
-    ? bill.actions
-        .filter((action: any) => {
-          const source = action.sourceSystem?.name || "";
-          const text = action.text?.toLowerCase() || "";
-          if (!source.toLowerCase().includes("library of congress"))
-            return true;
-          return (
-            text.includes("signed by president") ||
-            text.includes("presented to president") ||
-            text.includes("became public law") ||
-            text.includes("vetoed by president") ||
-            text.includes("enacted")
-          );
-        })
-        .filter((action: any, index: number, arr: any[]) => {
-          const key = `${action.actionDate}-${action.text}`;
-          return (
-            arr.findIndex((a) => `${a.actionDate}-${a.text}` === key) === index
-          );
-        })
-        .map((action: any) => {
-          const source = action.sourceSystem?.name || "";
-          let chamber = source;
-          if (source.toLowerCase().includes("house")) chamber = "House";
-          else if (source.toLowerCase().includes("senate")) chamber = "Senate";
-          else chamber = "";
-          return {
-            date:
-              action.actionDate.split("-").slice(1).join("/") +
-              "/" +
-              action.actionDate.split("-")[0].slice(2),
-            chamber,
-            description: action.text,
-          };
-        })
-    : [];
+  if (isNavigatingBack) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LoadingSpinner />
+      </View>
+    );
+  }
 
-  const activeFilters = selectedChamber.filter((f) => f !== "Bills");
-  const filteredActions =
-    activeFilters.length === 0
-      ? processedActions
-      : processedActions.filter(
-          (action: { chamber: string; date: string; description: string }) =>
-            action.chamber === "" ||
-            activeFilters.some(
-              (f) => action.chamber.toLowerCase() === f.toLowerCase(),
-            ),
-        );
-
-  const sortedActions = [...filteredActions].sort((a, b) => {
-    const parseDate = (dateStr: string) => {
-      const [month, day, year] = dateStr.split("/");
-      return new Date(
-        parseInt("20" + year),
-        parseInt(month) - 1,
-        parseInt(day),
-      ).getTime();
-    };
-    return selectedActionsSort === "Oldest First"
-      ? parseDate(a.date) - parseDate(b.date)
-      : parseDate(b.date) - parseDate(a.date);
-  });
-
-  const parseAPIDate = (dateStr: string) => {
-    const [year, month, day] = dateStr.split("-").map(Number);
-    return new Date(year, month - 1, day).getTime();
-  };
-
-  const mappedCosponsors = (cosponsorsData?.cosponsors ?? []).map((c: any) => ({
-    id: c.bioguideId,
-    name: c.name,
-    party: c.party,
-    role: c.district
-      ? `Rep, ${STATE_NAMES[c.state] || c.state} - ${c.district}`
-      : `Senator, ${STATE_NAMES[c.state] || c.state}`,
-    photoUrl: c.photoUrl,
-    update: c.isOriginalCosponsor
-      ? "Original cosponsor"
-      : `Joined ${new Date(parseAPIDate(c.sponsorshipDate)).toLocaleDateString(
-          "en-US",
-          {
-            month: "2-digit",
-            day: "2-digit",
-            year: "numeric",
-          },
-        )}`,
-    sponsorshipDate: parseAPIDate(c.sponsorshipDate),
-    isOriginal: c.isOriginalCosponsor ?? false,
-  }));
-
-  const sortedCosponsors = [...mappedCosponsors].sort((a, b) => {
-    switch (selectedCosponsorSort) {
-      case "A-Z":
-        return a.name.localeCompare(b.name);
-      case "Z-A":
-        return b.name.localeCompare(a.name);
-      case "Newest First":
-        if (a.sponsorshipDate !== b.sponsorshipDate)
-          return b.sponsorshipDate - a.sponsorshipDate;
-        return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? 1 : -1;
-      case "Oldest First":
-        if (a.sponsorshipDate !== b.sponsorshipDate)
-          return a.sponsorshipDate - b.sponsorshipDate;
-        return a.isOriginal === b.isOriginal ? 0 : a.isOriginal ? -1 : 1;
-      default:
-        return 0;
-    }
-  });
-
-  const displayedAmendments = enrichedAmendments
-    .filter((a: any) => {
-      const chamberMatch =
-        selectedAmendmentChamber.length === 0 ||
-        (selectedAmendmentChamber.includes("house") &&
-          a.type?.startsWith("H")) ||
-        (selectedAmendmentChamber.includes("senate") &&
-          a.type?.startsWith("S"));
-      const partyMatch =
-        selectedAmendmentParty.length === 0 ||
-        (a.sponsors?.[0]?.party &&
-          selectedAmendmentParty
-            .map((p) => p.charAt(0).toUpperCase())
-            .includes(a.sponsors[0].party));
-      return chamberMatch && partyMatch;
-    })
-    .sort((a: any, b: any) => {
-      const numA = parseInt(a.number || "0");
-      const numB = parseInt(b.number || "0");
-      return selectedAmendmentsSort === "Oldest First"
-        ? numA - numB
-        : numB - numA;
-    });
+  console.log("BillDetail rendering UI:", Date.now());
 
   return (
     <View style={componentStyles.screen}>
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => {
+            setIsNavigatingBack(true);
+            setTimeout(() => {
+              router.back();
+            }, 50);
+          }}
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.75 : 1 }],
           })}
@@ -672,6 +728,7 @@ export default function BillDetail() {
                   setActiveTab(TABS[index]);
                   pagerRef.current?.setPage(index);
                   if (index === 1) setVotingVisited(true);
+                  if (index === 2) setActionsVisited(true);
                   if (index === 3) setCosponsorsVisited(true);
                 }}
                 style={({ pressed }) => ({
@@ -702,6 +759,7 @@ export default function BillDetail() {
           setActiveIndex(index);
           setActiveTab(TABS[index]);
           if (index === 1) setVotingVisited(true);
+          if (index === 2) setActionsVisited(true);
           if (index === 3) setCosponsorsVisited(true);
         }}
       >
@@ -1082,10 +1140,12 @@ export default function BillDetail() {
             contentContainerStyle={{ paddingTop: 1 }}
           >
             <View style={{ marginBottom: 96 }}>
-              <VotingCard
-                votes={votesData?.votes ?? []}
-                isLoading={votesLoading}
-              />
+              {votingVisited && (
+                <VotingCard
+                  votes={votesData?.votes ?? []}
+                  isLoading={votesLoading}
+                />
+              )}
             </View>
           </ScrollView>
         </View>
@@ -1093,18 +1153,20 @@ export default function BillDetail() {
         {/* Page 2: Actions */}
         <View key="2" style={{ flex: 1 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <ActionHistory
-              actions={sortedActions}
-              selectedSort={selectedActionsSort}
-              showSort={showActionsSort}
-              setShowSort={setShowActionsSort}
-              showChamberModal={showChamberModal}
-              showPartyModal={showPartyModal}
-              setShowChamberModal={setShowChamberModal}
-              setShowPartyModal={setShowPartyModal}
-              showOnlyChamber={true}
-              chamberLabelOverride="Chamber of Origin"
-            />
+            {actionsVisited && (
+              <ActionHistory
+                actions={sortedActions}
+                selectedSort={selectedActionsSort}
+                showSort={showActionsSort}
+                setShowSort={setShowActionsSort}
+                showChamberModal={showChamberModal}
+                showPartyModal={showPartyModal}
+                setShowChamberModal={setShowChamberModal}
+                setShowPartyModal={setShowPartyModal}
+                showOnlyChamber={true}
+                chamberLabelOverride="Chamber of Origin"
+              />
+            )}
           </ScrollView>
         </View>
 
@@ -1112,23 +1174,25 @@ export default function BillDetail() {
         <View key="3" style={{ flex: 1 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ marginBottom: 96, marginHorizontal: 16 }}>
-              <Cosponsors
-                cosponsors={sortedCosponsors}
-                isLoading={cosponsorsLoading}
-                showCosponsorFilter={showCosponsorFilter}
-                setShowCosponsorFilter={setShowCosponsorFilter}
-                showCosponsorSort={showCosponsorSort}
-                setShowCosponsorSort={setShowCosponsorSort}
-                selectedCosponsorSort={selectedCosponsorSort}
-                showCosponsorChamberModal={showCosponsorChamberModal}
-                showCosponsorPartyModal={showCosponsorPartyModal}
-                setShowCosponsorChamberModal={setShowCosponsorChamberModal}
-                setShowCosponsorPartyModal={setShowCosponsorPartyModal}
-                selectedRole={selectedRole}
-                setSelectedRole={setSelectedRole}
-                selectedParty={selectedCosponsorParty}
-                setSelectedParty={setSelectedCosponsorParty}
-              />
+              {cosponsorsVisited && (
+                <Cosponsors
+                  cosponsors={sortedCosponsors}
+                  isLoading={cosponsorsLoading}
+                  showCosponsorFilter={showCosponsorFilter}
+                  setShowCosponsorFilter={setShowCosponsorFilter}
+                  showCosponsorSort={showCosponsorSort}
+                  setShowCosponsorSort={setShowCosponsorSort}
+                  selectedCosponsorSort={selectedCosponsorSort}
+                  showCosponsorChamberModal={showCosponsorChamberModal}
+                  showCosponsorPartyModal={showCosponsorPartyModal}
+                  setShowCosponsorChamberModal={setShowCosponsorChamberModal}
+                  setShowCosponsorPartyModal={setShowCosponsorPartyModal}
+                  selectedRole={selectedRole}
+                  setSelectedRole={setSelectedRole}
+                  selectedParty={selectedCosponsorParty}
+                  setSelectedParty={setSelectedCosponsorParty}
+                />
+              )}
             </View>
           </ScrollView>
         </View>

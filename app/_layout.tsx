@@ -10,9 +10,11 @@ import { storage } from "./utils/storage";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // data stays fresh for 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
       retryDelay: 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     },
   },
 });
@@ -43,10 +45,13 @@ export default function RootLayout() {
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="bill/[id]" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="bill/[id]"
+                options={{ headerShown: false, gestureEnabled: true }}
+              />
               <Stack.Screen
                 name="official/[id]"
-                options={{ headerShown: false }}
+                options={{ headerShown: false, gestureEnabled: true }}
               />
             </Stack>
           </TabBarProvider>

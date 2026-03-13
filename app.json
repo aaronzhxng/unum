@@ -15,7 +15,8 @@
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.aaronzhxng.unum"
     },
     "web": {
       "output": "static"
@@ -38,6 +39,17 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "12b9a43d-7541-4d8e-b709-0e9d15418ffd"
+      }
+    },
+    "splash": {
+      "image": "./assets/app_icons/game-icons_olive.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fafafa"
     }
   }
 }
