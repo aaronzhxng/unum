@@ -101,7 +101,7 @@ export default function BillDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const congress = billCongressCache.get(id as string);
   const router = useRouter() as Router;
-  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
+  // const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   const [activeTab, setActiveTab] = useState<TabName>("details");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -122,10 +122,11 @@ export default function BillDetail() {
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
-          setIsNavigatingBack(true);
-          setTimeout(() => {
-            router.back();
-          }, 50);
+          // setIsNavigatingBack(true);
+          // setTimeout(() => {
+          //   router.back();
+          // }, 50);
+          router.back();
         }
       },
     }),
@@ -286,12 +287,12 @@ export default function BillDetail() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["bill", id],
     queryFn: async () => {
-      console.log("queryFn start:", Date.now());
+      // console.log("queryFn start:", Date.now());
       const billId = id as string;
       const cacheKey = `${congress}-${billId}`;
-      console.log("checking cache:", Date.now());
+      // console.log("checking cache:", Date.now());
       const cached = await billCache.getBill(cacheKey);
-      console.log("cache result:", cached ? "HIT" : "MISS", Date.now());
+      // console.log("cache result:", cached ? "HIT" : "MISS", Date.now());
       if (cached) return { bill: cached };
 
       const billResult = await billsService.getById(billId, congress);
@@ -380,10 +381,11 @@ export default function BillDetail() {
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
-        setIsNavigatingBack(true);
-        setTimeout(() => {
-          router.back();
-        }, 50);
+        // setIsNavigatingBack(true);
+        // setTimeout(() => {
+        //   router.back();
+        // }, 50);
+        router.back();
         return true; // true = we handled it, prevents default back behavior
       },
     );
@@ -613,15 +615,15 @@ export default function BillDetail() {
     return `${formattedType}${number}`;
   };
 
-  if (isNavigatingBack) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <LoadingSpinner />
-      </View>
-    );
-  }
+  // if (isNavigatingBack) {
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  //       <LoadingSpinner />
+  //     </View>
+  //   );
+  // }
 
-  console.log("BillDetail rendering UI:", Date.now());
+  // console.log("BillDetail rendering UI:", Date.now());
 
   return (
     <View style={componentStyles.screen}>
@@ -629,10 +631,11 @@ export default function BillDetail() {
       <View style={componentStyles.headerBar}>
         <Pressable
           onPress={() => {
-            setIsNavigatingBack(true);
-            setTimeout(() => {
-              router.back();
-            }, 50);
+            // setIsNavigatingBack(true);
+            // setTimeout(() => {
+            //   router.back();
+            // }, 50);
+            router.back();
           }}
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.75 : 1 }],

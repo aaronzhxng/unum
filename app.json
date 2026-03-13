@@ -7,16 +7,27 @@
     "scheme": "unum",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/app_icons/app_icon.png",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/app_icons/app_icon.png",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.aaronzhxng.unum"
+    },
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      // "backgroundColor": "transparent",
+      "translucent": true
+    },
+    "androidNavigationBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#fafafa"
     },
     "web": {
       "output": "static"
@@ -27,16 +38,22 @@
         "expo-splash-screen",
         {
           "image": "./assets/app_icons/game-icons_olive.png",
-          "imageWidth": 200,
+          "imageWidth": 48,
           "resizeMode": "contain",
           "backgroundColor": "#fafafa",
           "dark": {
             "image": "./assets/app_icons/game-icons_olive.png",
-            "backgroundColor": "#000000"
+            "backgroundColor": "#fafafa"
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-system-ui",
+        {
+          "userInterfaceStyle": "automatic"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -85,8 +85,7 @@ export default function HomeScreen() {
   const [currentListId, setCurrentListId] = useState<string>("");
 
   // In the loadItems function, track which list is loaded:
-  const [isLoading, setIsLoading] = useState(true);
-  const [isReturning, setIsReturning] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadItems = async () => {
     // console.log("=== loadItems called ===");
@@ -310,7 +309,6 @@ export default function HomeScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      setIsReturning(true);
       const loadAllLists = async () => {
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
@@ -330,7 +328,6 @@ export default function HomeScreen() {
           });
         }
         setIsLoading(false);
-        setIsReturning(false);
       };
       loadAllLists();
 
@@ -341,14 +338,6 @@ export default function HomeScreen() {
   );
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <LoadingSpinner />
-      </View>
-    );
-  }
-
-  if (isReturning) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <LoadingSpinner />

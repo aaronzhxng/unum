@@ -101,7 +101,7 @@ export default function OfficialDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router: Router = useRouter();
   const [activeTab, setActiveTab] = useState(0);
-  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
+  // const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   // Back swipe on first page
   const backSwipePanResponder = useRef(
@@ -114,10 +114,11 @@ export default function OfficialDetail() {
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
-          setIsNavigatingBack(true);
-          setTimeout(() => {
-            router.back();
-          }, 50);
+          // setIsNavigatingBack(true);
+          // setTimeout(() => {
+          //   router.back();
+          // }, 50);
+          router.back();
         }
       },
     }),
@@ -180,10 +181,11 @@ export default function OfficialDetail() {
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
-        setIsNavigatingBack(true);
-        setTimeout(() => {
-          router.back();
-        }, 50);
+        // setIsNavigatingBack(true);
+        // setTimeout(() => {
+        //   router.back();
+        // }, 50);
+        router.back();
         return true; // true = we handled it, prevents default back behavior
       },
     );
@@ -200,7 +202,7 @@ export default function OfficialDetail() {
       };
       allLists.push(newList);
       await storage.saveLists(allLists);
-      console.log("🔔 LIST_UPDATED emitted");
+      // console.log("🔔 LIST_UPDATED emitted");
       listEvents.emit(LIST_UPDATED);
       setCreatedListName(newListName.trim());
       setShowNewListModal(false);
@@ -435,13 +437,13 @@ export default function OfficialDetail() {
     );
   }
 
-  if (isNavigatingBack) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <LoadingSpinner />
-      </View>
-    );
-  }
+  // if (isNavigatingBack) {
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  //       <LoadingSpinner />
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={componentStyles.screen}>
@@ -449,10 +451,11 @@ export default function OfficialDetail() {
       <View style={componentStyles.headerBar}>
         <Pressable
           onPress={() => {
-            setIsNavigatingBack(true);
-            setTimeout(() => {
-              router.back();
-            }, 50);
+            // setIsNavigatingBack(true);
+            // setTimeout(() => {
+            //   router.back();
+            // }, 50);
+            router.back();
           }}
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.75 : 1 }],

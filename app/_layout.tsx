@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -33,6 +34,11 @@ export default function RootLayout() {
     init();
   }, []);
 
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync("#fafafa");
+    NavigationBar.setButtonStyleAsync("dark");
+  }, []);
+
   if (!isReady) {
     return null;
   }
@@ -47,11 +53,21 @@ export default function RootLayout() {
               <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen
                 name="bill/[id]"
-                options={{ headerShown: false, gestureEnabled: true }}
+                options={{
+                  headerShown: false,
+                  gestureEnabled: true,
+                  animation: "slide_from_right",
+                  gestureDirection: "horizontal",
+                }}
               />
               <Stack.Screen
                 name="official/[id]"
-                options={{ headerShown: false, gestureEnabled: true }}
+                options={{
+                  headerShown: false,
+                  gestureEnabled: true,
+                  animation: "slide_from_right",
+                  gestureDirection: "horizontal",
+                }}
               />
             </Stack>
           </TabBarProvider>
