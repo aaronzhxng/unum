@@ -310,7 +310,7 @@ export default function HomeScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log("HomeScreen focused:", Date.now());
+      // console.log("HomeScreen focused:", Date.now());
       const loadAllLists = async () => {
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));

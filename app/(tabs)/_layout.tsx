@@ -27,6 +27,7 @@ export default function TabsLayout() {
   const [activeIndex, setActiveIndex] = useState(0);
   const pagerRef = useRef<PagerView>(null);
   const { tabBarHidden } = useTabBar();
+  const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
 
   return (
     <View style={{ flex: 1 }}>
@@ -34,16 +35,20 @@ export default function TabsLayout() {
         ref={pagerRef}
         style={{ flex: 1 }}
         initialPage={0}
-        onPageSelected={(e) => setActiveIndex(e.nativeEvent.position)}
+        onPageSelected={(e) => {
+          const index = e.nativeEvent.position;
+          setActiveIndex(index);
+          setVisitedTabs((prev) => new Set([...prev, index]));
+        }}
       >
         <View key="0" style={{ flex: 1 }}>
-          <HomeScreen />
+          {visitedTabs.has(0) && <HomeScreen />}
         </View>
         <View key="1" style={{ flex: 1 }}>
-          <OfficialsScreen />
+          {visitedTabs.has(1) && <OfficialsScreen />}
         </View>
         <View key="2" style={{ flex: 1 }}>
-          <LegislationScreen />
+          {visitedTabs.has(2) && <LegislationScreen />}
         </View>
       </PagerView>
 

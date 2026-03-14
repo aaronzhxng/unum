@@ -637,7 +637,7 @@ export default function BillDetail() {
             // setTimeout(() => {
             //   router.back();
             // }, 50);
-            console.log("Back pressed:", Date.now());
+            // console.log("Back pressed:", Date.now());
             router.back();
           }}
           style={({ pressed }) => ({

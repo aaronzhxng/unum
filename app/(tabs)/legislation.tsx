@@ -162,6 +162,8 @@ export default function LegislationScreen() {
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
   const [currentBillId, setCurrentBillId] = useState<string | null>(null);
   const [listsVersion, setListsVersion] = useState(0);
+  const PAGE_SIZE = 50;
+  const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
 
   const getFilterLabel = () => {
     if (selectedChambers.length === 1) {
@@ -353,6 +355,11 @@ export default function LegislationScreen() {
     selectedSort,
   ]);
 
+  const displayedBills = useMemo(
+    () => bills.slice(0, displayedCount),
+    [bills, displayedCount],
+  );
+
   // ─── On mount: load SQLite cache for all bills instantly ──────────────────
   useEffect(() => {
     const rawBills = data?.bills || [];
@@ -522,6 +529,7 @@ export default function LegislationScreen() {
 
   useEffect(() => {
     const delay = setTimeout(() => {
+      setDisplayedCount(PAGE_SIZE);
       setIsFiltering(true);
       const timer = setTimeout(() => setIsFiltering(false), 2250);
       return () => clearTimeout(timer);
@@ -530,6 +538,7 @@ export default function LegislationScreen() {
   }, [selectedChambers, selectedPolicyAreas, selectedLegislationTypes]);
 
   useEffect(() => {
+    setDisplayedCount(PAGE_SIZE);
     const timer = setTimeout(() => setIsFiltering(false), 300);
     return () => clearTimeout(timer);
   }, [selectedSort]);
@@ -669,7 +678,7 @@ export default function LegislationScreen() {
         </View>
       ) : (
         <FlatList
-          data={bills}
+          data={displayedBills}
           keyExtractor={(item) => `${item.type}${item.number}`}
           contentContainerStyle={componentStyles.listContent}
           renderItem={({ item }) => {
@@ -687,6 +696,12 @@ export default function LegislationScreen() {
           }}
           onViewableItemsChanged={onViewableItemsChangedRef.current}
           viewabilityConfig={viewabilityConfig.current}
+          onEndReached={() => {
+            if (displayedCount < bills.length) {
+              setDisplayedCount((prev) => prev + PAGE_SIZE);
+            }
+          }}
+          onEndReachedThreshold={0.5}
           directionalLockEnabled={true}
         />
       )}
