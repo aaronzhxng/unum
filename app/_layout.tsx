@@ -56,8 +56,7 @@ export default function RootLayout() {
                 options={{
                   headerShown: false,
                   gestureEnabled: true,
-                  animation: "slide_from_right",
-                  gestureDirection: "horizontal",
+                  animation: "none",
                 }}
               />
               <Stack.Screen
@@ -65,8 +64,7 @@ export default function RootLayout() {
                 options={{
                   headerShown: false,
                   gestureEnabled: true,
-                  animation: "slide_from_right",
-                  gestureDirection: "horizontal",
+                  animation: "none",
                 }}
               />
             </Stack>

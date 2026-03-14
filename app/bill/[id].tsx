@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
   Image,
+  Linking,
   Modal,
   PanResponder,
   Pressable,
@@ -97,6 +98,7 @@ const STATE_NAMES: { [key: string]: string } = {
 };
 
 export default function BillDetail() {
+  // console.log("BillDetail render:", Date.now());
   const pagerRef = useRef<PagerView>(null);
   const { id } = useLocalSearchParams<{ id: string }>();
   const congress = billCongressCache.get(id as string);
@@ -635,6 +637,7 @@ export default function BillDetail() {
             // setTimeout(() => {
             //   router.back();
             // }, 50);
+            console.log("Back pressed:", Date.now());
             router.back();
           }}
           style={({ pressed }) => ({
@@ -888,7 +891,10 @@ export default function BillDetail() {
                 </Text>
               )}
               <Pressable
-                onPress={() => {}}
+                onPress={() => {
+                  const url = `https://www.congress.gov/bill/${bill.congress}th-congress/${bill.originChamber?.toLowerCase() === "house" ? "house" : "senate"}-bill/${bill.number}`;
+                  Linking.openURL(url);
+                }}
                 style={{
                   flexDirection: "row",
                   gap: 4,
@@ -902,7 +908,7 @@ export default function BillDetail() {
                   marginTop: 12,
                 }}
               >
-                <Text style={componentStyles.link}>View on Congress.gov</Text>
+                <Text style={componentStyles.link}>View on congress.gov</Text>
               </Pressable>
             </View>
 
@@ -1445,10 +1451,13 @@ export default function BillDetail() {
               {sponsor.firstName} {sponsor.lastName}
             </Text>
             <View style={componentStyles.metaRow}>
-              <Text style={componentStyles.subtitle}>
-                {sponsor.party ? `${sponsor.party} · ` : ""}
-                {role}
-              </Text>
+              {sponsor.party ? (
+                <>
+                  <Text style={componentStyles.subtitle}>{sponsor.party}</Text>
+                  <Text style={componentStyles.separator}>·</Text>
+                </>
+              ) : null}
+              <Text style={componentStyles.subtitle}>{role}</Text>
             </View>
           </View>
         </View>

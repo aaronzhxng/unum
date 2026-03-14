@@ -57,7 +57,7 @@ type Bill = {
 };
 
 export default function LegislationScreen() {
-  // const navigation = useNavigation();
+  // console.log("Legislation Screen render:", Date.now());
   const { setTabBarHidden } = useTabBar();
 
   const [showSearchModal, setShowSearchModal] = useState(false);

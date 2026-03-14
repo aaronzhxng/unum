@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
@@ -120,50 +121,58 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
 
   const CosponsorCard = ({ item }: { item: Cosponsor }) => {
     const [imageError, setImageError] = useState(false);
+    const router = useRouter();
 
     return (
-      <View style={componentStyles.officialCard}>
-        <View style={componentStyles.avatar}>
-          {item.photoUrl && !imageError ? (
-            <Image
-              source={{ uri: item.photoUrl }}
-              style={{ width: "100%", height: "120%" }}
-              resizeMode="cover"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <View
-              style={{
-                width: "100%",
-                height: "100%",
-                backgroundColor: "#BFBFBF",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+      <Pressable
+        onPress={() => router.navigate(`/official/${item.id}`)}
+        style={({ pressed }) => ({
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        })}
+      >
+        <View style={componentStyles.officialCard}>
+          <View style={componentStyles.avatar}>
+            {item.photoUrl && !imageError ? (
+              <Image
+                source={{ uri: item.photoUrl }}
+                style={{ width: "100%", height: "120%" }}
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "#BFBFBF",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
-                {item.name?.charAt(0) || "?"}
-              </Text>
+                <Text
+                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                >
+                  {item.name?.charAt(0) || "?"}
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={componentStyles.cardText}>
+            <Text style={componentStyles.name}>{item.name}</Text>
+            <View style={componentStyles.metaRow}>
+              <Text style={componentStyles.subtitle}>{item.party}</Text>
+              <Text style={componentStyles.separator}>·</Text>
+              <Text style={componentStyles.subtitle}>{item.role}</Text>
+              {item.update ? (
+                <>
+                  <Text style={componentStyles.separator}>·</Text>
+                  <Text style={componentStyles.update}>{item.update}</Text>
+                </>
+              ) : null}
             </View>
-          )}
-        </View>
-        <View style={componentStyles.cardText}>
-          <Text style={componentStyles.name}>{item.name}</Text>
-          <View style={componentStyles.metaRow}>
-            <Text style={componentStyles.subtitle}>{item.party}</Text>
-            <Text style={componentStyles.separator}>•</Text>
-            <Text style={componentStyles.subtitle}>{item.role}</Text>
-            {item.update ? (
-              <>
-                <Text style={componentStyles.separator}>•</Text>
-                <Text style={componentStyles.update}>{item.update}</Text>
-              </>
-            ) : null}
           </View>
         </View>
-      </View>
+      </Pressable>
     );
   };
 

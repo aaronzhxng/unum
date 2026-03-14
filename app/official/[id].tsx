@@ -37,6 +37,8 @@ import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
 
 function LegislationCard({ item }: { item: any }) {
+  const router = useRouter();
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -47,56 +49,68 @@ function LegislationCard({ item }: { item: any }) {
   };
 
   return (
-    <View style={componentStyles.billCard}>
-      <View
-        style={[
-          componentStyles.avatar,
-          {
-            justifyContent: "center",
-            alignItems: "center",
-            width: 50,
-            height: 50,
-            borderRadius: 32,
-            marginRight: 12,
-            backgroundColor: "#eee",
-            overflow: "hidden",
-            borderWidth: 0,
-          },
-        ]}
-      >
-        {item.policyArea?.name ? (
-          <Image
-            source={getBillIcon(item.policyArea.name)}
-            style={{ width: "100%", height: "100%", borderRadius: 6 }}
-            resizeMode="contain"
-          />
-        ) : (
-          <Text style={{ fontSize: 14, fontWeight: "bold", color: "#535353" }}>
-            {item.type}
-          </Text>
-        )}
-      </View>
-      <View style={componentStyles.billInfo}>
-        <View style={componentStyles.billStatusRow}>
-          <Text style={componentStyles.billTitle} numberOfLines={1}>
-            {formatDate(item.introducedDate)}
-            {item.policyArea?.name ? ` · ${item.policyArea.name}` : ""}
-          </Text>
+    <Pressable
+      onPress={() =>
+        router.navigate(`/bill/${item.type.toLowerCase()}${item.number}`)
+      }
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? 0.96 : 1 }],
+      })}
+    >
+      <View style={componentStyles.billCard}>
+        <View
+          style={[
+            componentStyles.avatar,
+            {
+              justifyContent: "center",
+              alignItems: "center",
+              width: 50,
+              height: 50,
+              borderRadius: 32,
+              marginRight: 12,
+              backgroundColor: "#eee",
+              overflow: "hidden",
+              borderWidth: 0,
+            },
+          ]}
+        >
+          {item.policyArea?.name ? (
+            <Image
+              source={getBillIcon(item.policyArea.name)}
+              style={{ width: "100%", height: "100%", borderRadius: 6 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text
+              style={{ fontSize: 14, fontWeight: "bold", color: "#535353" }}
+            >
+              {item.type}
+            </Text>
+          )}
         </View>
-        <Text style={componentStyles.billNumber} numberOfLines={2}>
-          {item.type}.{item.number} - {item.title}
-        </Text>
-        {item.latestAction?.text && (
-          <Text style={componentStyles.billTitle} numberOfLines={1}>
-            {item.latestAction.text}
+        <View style={componentStyles.billInfo}>
+          <View style={componentStyles.billStatusRow}>
+            <Text style={componentStyles.billTitle} numberOfLines={1}>
+              {formatDate(item.introducedDate)}
+              {item.policyArea?.name ? ` · ${item.policyArea.name}` : ""}
+            </Text>
+          </View>
+          <Text style={componentStyles.billNumber} numberOfLines={2}>
+            {item.type}.{item.number} - {item.title}
           </Text>
-        )}
+          {item.latestAction?.text && (
+            <Text style={componentStyles.billTitle} numberOfLines={1}>
+              {item.latestAction.text}
+            </Text>
+          )}
+        </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 export default function OfficialDetail() {
+  // console.log("OfficialDetail render:", Date.now());
   const pagerRef = useRef<PagerView>(null);
   const { id } = useLocalSearchParams<{ id: string }>();
   const router: Router = useRouter();
@@ -455,6 +469,7 @@ export default function OfficialDetail() {
             // setTimeout(() => {
             //   router.back();
             // }, 50);
+            console.log("Back pressed:", Date.now());
             router.back();
           }}
           style={({ pressed }) => ({

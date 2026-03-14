@@ -42,6 +42,7 @@ type Official = {
 };
 
 export default function OfficialsScreen() {
+  // console.log("Official Screen render:", Date.now());
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -652,7 +653,10 @@ const OfficialCard = React.memo(function OfficialCard({
           </Text>
           <View style={componentStyles.metaRow}>
             <Text style={componentStyles.subtitle}>
-              {item.partyName?.charAt(0) || ""} ·{" "}
+              {item.partyName?.charAt(0) || ""}
+            </Text>
+            <Text style={componentStyles.separator}>·</Text>
+            <Text style={componentStyles.subtitle} numberOfLines={1}>
               {item.chamber === "House of Representatives"
                 ? `Representative, ${item.state}${item.district ? `, District ${item.district}` : ""}`
                 : `Senator, ${item.state}`}

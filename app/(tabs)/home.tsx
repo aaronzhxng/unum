@@ -28,6 +28,7 @@ import { ListItem, storage } from "../utils/storage";
 type Item = ListItem;
 
 export default function HomeScreen() {
+  // console.log("HomeScreen render:", Date.now());
   const router = useRouter();
 
   // Normal mode state
@@ -309,6 +310,7 @@ export default function HomeScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
+      console.log("HomeScreen focused:", Date.now());
       const loadAllLists = async () => {
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
