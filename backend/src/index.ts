@@ -705,13 +705,6 @@ app.post("/api/push-tokens", (req, res) => {
   }
 });
 
-app.delete("/api/push-tokens/test", (req, res) => {
-  db.prepare("DELETE FROM push_registrations WHERE token = ?").run(
-    "ExponentPushToken[test123]",
-  );
-  res.json({ success: true });
-});
-
 const prewarmCache = async () => {
   try {
     // console.log("🔄 Pre-warming bills cache...");
