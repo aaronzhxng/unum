@@ -663,9 +663,16 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
   }
 });
 
-// app.listen(PORT, () => {
-//   // console.log(`🚀 Backend running on http://localhost:${PORT}`);
-// });
+app.get("/api/cron/run", async (req, res) => {
+  try {
+    await runCronJob();
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Manual cron trigger error:", error);
+    res.status(500).json({ error: "Cron job failed" });
+  }
+});
+
 app.post("/api/push-tokens", (req, res) => {
   try {
     const {
