@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 
 const POLICY_AREA_OPTIONS = [
   { id: "Agriculture and Food", label: "Agriculture and Food" },
@@ -99,6 +100,7 @@ export default function LegislationOptionsModal({
       "bill",
       selectedPolicyAreas,
     );
+    syncPreferencesToBackend();
     setShowOptionsModal(false);
   };
 

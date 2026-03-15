@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 
 interface Props {
   showOptionsModal: boolean;
@@ -40,6 +41,7 @@ export default function OfficialsOptionsModal({
     );
     setNotifEnabled(newState);
     onNotifVersionChange?.();
+    syncPreferencesToBackend();
   };
 
   return (

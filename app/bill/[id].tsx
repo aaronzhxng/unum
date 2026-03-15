@@ -34,6 +34,7 @@ import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import ActionHistory from "./bill_components/ActionHistory";
 import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
@@ -1320,7 +1321,10 @@ export default function BillDetail() {
         showOptionsModal={showOptionsModal}
         setShowOptionsModal={(val) => {
           setShowOptionsModal(val);
-          if (!val) setNotifVersion((v) => v + 1);
+          if (!val) {
+            setNotifVersion((v) => v + 1);
+            syncPreferencesToBackend();
+          }
         }}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}

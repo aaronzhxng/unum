@@ -8,6 +8,7 @@ import { TabBarProvider } from "./context/TabBarContext";
 import { initializeDatabase } from "./utils/database";
 import { pushToken } from "./utils/pushToken";
 import { storage } from "./utils/storage";
+import { syncPreferencesToBackend } from "./utils/syncPreferences";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +29,10 @@ export default function RootLayout() {
     const init = async () => {
       await initializeDatabase();
       storage.initializeDefaultList();
-      pushToken.register();
+      const token = await pushToken.register();
+      if (token) {
+        await syncPreferencesToBackend();
+      }
       setIsReady(true);
     };
     init();

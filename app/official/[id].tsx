@@ -36,6 +36,7 @@ import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { officialBillsCache } from "../utils/officialBillsCache";
 import { storage } from "../utils/storage";
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
 
@@ -1001,7 +1002,10 @@ export default function OfficialDetail() {
         showOptionsModal={showOptionsModal}
         setShowOptionsModal={(val) => {
           setShowOptionsModal(val);
-          if (!val) setNotifVersion((v) => v + 1);
+          if (!val) {
+            setNotifVersion((v) => v + 1);
+            syncPreferencesToBackend();
+          }
         }}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}

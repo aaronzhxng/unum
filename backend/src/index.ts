@@ -2,6 +2,7 @@ import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import { runCronJob } from "./cron";
 import db from "./db";
 
 dotenv.config();
@@ -715,6 +716,9 @@ const prewarmCache = async () => {
 };
 
 app.listen(PORT, () => {
-  // console.log(`🚀 Backend running on http://localhost:${PORT}`);
   prewarmCache();
+
+  // Run cron job once on startup, then every 24 hours
+  runCronJob();
+  setInterval(runCronJob, 24 * 60 * 60 * 1000);
 });
