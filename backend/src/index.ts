@@ -2,6 +2,7 @@ import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import db from "./db";
 
 dotenv.config();
 
@@ -664,6 +665,44 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
 // app.listen(PORT, () => {
 //   // console.log(`🚀 Backend running on http://localhost:${PORT}`);
 // });
+app.post("/api/push-tokens", (req, res) => {
+  try {
+    const {
+      token,
+      policyAreas,
+      followedStates,
+      followedBills,
+      followedOfficials,
+    } = req.body;
+
+    if (!token) return res.status(400).json({ error: "Token required" });
+
+    db.prepare(
+      `
+      INSERT INTO push_registrations (token, policy_areas, followed_states, followed_bills, followed_officials, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(token) DO UPDATE SET
+        policy_areas = excluded.policy_areas,
+        followed_states = excluded.followed_states,
+        followed_bills = excluded.followed_bills,
+        followed_officials = excluded.followed_officials,
+        updated_at = excluded.updated_at
+    `,
+    ).run(
+      token,
+      JSON.stringify(policyAreas ?? []),
+      JSON.stringify(followedStates ?? []),
+      JSON.stringify(followedBills ?? []),
+      JSON.stringify(followedOfficials ?? []),
+      Date.now(),
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error saving push token:", error);
+    res.status(500).json({ error: "Failed to save push token" });
+  }
+});
 
 const prewarmCache = async () => {
   try {
