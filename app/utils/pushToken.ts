@@ -16,6 +16,7 @@ export const pushToken = {
 
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
+      console.log("Existing permission status:", existingStatus);
       let finalStatus = existingStatus;
 
       if (existingStatus !== "granted") {
@@ -23,13 +24,19 @@ export const pushToken = {
         finalStatus = status;
       }
 
+      console.log("Final permission status:", finalStatus);
+
       if (finalStatus !== "granted") {
         console.log("Push notification permission denied");
         return null;
       }
 
-      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig?.extra?.eas?.projectId,
+      });
+      console.log("Token data:", tokenData);
       const token = tokenData.data;
+      console.log("Token:", token);
 
       const db = getDb();
       db.runSync(
@@ -37,6 +44,8 @@ export const pushToken = {
          ON CONFLICT(id) DO UPDATE SET token = excluded.token, registered_at = excluded.registered_at`,
         [token, Date.now()],
       );
+
+      console.log("Token saved to local DB");
 
       if (Platform.OS === "android") {
         await Notifications.setNotificationChannelAsync("default", {
