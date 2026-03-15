@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
+  Bell,
   Check,
   ChevronDown,
   ChevronUp,
@@ -26,6 +27,7 @@ import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
+import { notificationPreferences } from "../utils/notificationPreferences";
 import { storage } from "../utils/storage";
 
 type Official = {
@@ -40,7 +42,65 @@ type Official = {
   state?: string;
   bioguideId?: string;
 };
-
+const LOCATION_OPTIONS = [
+  "All States",
+  "Alabama",
+  "Alaska",
+  "American Samoa",
+  "Arizona",
+  "Arkansas",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Delaware",
+  "District of Columbia",
+  "Florida",
+  "Georgia",
+  "Guam",
+  "Hawaii",
+  "Idaho",
+  "Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Kentucky",
+  "Louisiana",
+  "Maine",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Minnesota",
+  "Mississippi",
+  "Missouri",
+  "Montana",
+  "Nebraska",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New Mexico",
+  "New York",
+  "North Carolina",
+  "North Dakota",
+  "Northern Mariana Islands",
+  "Ohio",
+  "Oklahoma",
+  "Oregon",
+  "Pennsylvania",
+  "Puerto Rico",
+  "Rhode Island",
+  "South Carolina",
+  "South Dakota",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Vermont",
+  "Virgin Islands",
+  "Virginia",
+  "Washington",
+  "West Virginia",
+  "Wisconsin",
+  "Wyoming",
+];
 export default function OfficialsScreen() {
   // console.log("Official Screen render:", Date.now());
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -127,68 +187,16 @@ export default function OfficialsScreen() {
     null,
   );
   const [listsVersion, setListsVersion] = useState(0);
+  const [notifVersion, setNotifVersion] = useState(0);
+  const [enabledStateNotifs, setEnabledStateNotifs] = useState<Set<string>>(
+    new Set(
+      LOCATION_OPTIONS.filter((s) =>
+        notificationPreferences.isEnabled(`state_${s}`),
+      ),
+    ),
+  );
 
   const router = useRouter();
-
-  const LOCATION_OPTIONS = [
-    "All States",
-    "Alabama",
-    "Alaska",
-    "American Samoa",
-    "Arizona",
-    "Arkansas",
-    "California",
-    "Colorado",
-    "Connecticut",
-    "Delaware",
-    "District of Columbia",
-    "Florida",
-    "Georgia",
-    "Guam",
-    "Hawaii",
-    "Idaho",
-    "Illinois",
-    "Indiana",
-    "Iowa",
-    "Kansas",
-    "Kentucky",
-    "Louisiana",
-    "Maine",
-    "Maryland",
-    "Massachusetts",
-    "Michigan",
-    "Minnesota",
-    "Mississippi",
-    "Missouri",
-    "Montana",
-    "Nebraska",
-    "Nevada",
-    "New Hampshire",
-    "New Jersey",
-    "New Mexico",
-    "New York",
-    "North Carolina",
-    "North Dakota",
-    "Northern Mariana Islands",
-    "Ohio",
-    "Oklahoma",
-    "Oregon",
-    "Pennsylvania",
-    "Puerto Rico",
-    "Rhode Island",
-    "South Carolina",
-    "South Dakota",
-    "Tennessee",
-    "Texas",
-    "Utah",
-    "Vermont",
-    "Virgin Islands",
-    "Virginia",
-    "Washington",
-    "West Virginia",
-    "Wisconsin",
-    "Wyoming",
-  ];
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["officials"],
@@ -261,9 +269,17 @@ export default function OfficialsScreen() {
   }, []);
 
   const handleSetPriority = () => {
-    if (selectedList === "All States") return; // can't set "All States" as priority
+    if (selectedList === "All States") return;
     storage.setPriorityState(selectedList);
     setPriorityStateLocal(selectedList);
+    notificationPreferences.enable(`state_${selectedList}`, "official");
+    setEnabledStateNotifs(
+      new Set(
+        LOCATION_OPTIONS.filter((s) =>
+          notificationPreferences.isEnabled(`state_${s}`),
+        ),
+      ),
+    );
   };
 
   if (isLoading) {
@@ -407,6 +423,17 @@ export default function OfficialsScreen() {
         setShowOptionsModal={setShowOptionsModal}
         onSetPriority={handleSetPriority}
         onReportError={handleReportError}
+        selectedState={selectedList}
+        onNotifVersionChange={() => {
+          setNotifVersion((v) => v + 1);
+          setEnabledStateNotifs(
+            new Set(
+              LOCATION_OPTIONS.filter((s) =>
+                notificationPreferences.isEnabled(`state_${s}`),
+              ),
+            ),
+          );
+        }}
       />
 
       {/* Location Selection Dropdown */}
@@ -425,42 +452,59 @@ export default function OfficialsScreen() {
             style={[componentStyles.dropdown, { marginVertical: 96 }]}
           >
             {[
-              // Priority state first if set
               ...(priorityState && priorityState !== "All States"
                 ? [priorityState]
                 : []),
-              // Then all other options, excluding the priority state to avoid duplicate
               ...LOCATION_OPTIONS.filter((o) => o !== priorityState),
-            ].map((option) => (
-              <Pressable
-                key={option}
-                style={({ pressed }) =>
-                  pressed
-                    ? componentStyles.dropdownItemPressed
-                    : componentStyles.dropdownItem
-                }
-                onPress={() => {
-                  setSelectedList(option);
-                  setShowListSelection(false);
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+            ].map((option) => {
+              const stateNotifEnabled =
+                option !== "All States" && enabledStateNotifs.has(option);
+              return (
+                <Pressable
+                  key={option}
+                  style={({ pressed }) =>
+                    pressed
+                      ? componentStyles.dropdownItemPressed
+                      : componentStyles.dropdownItem
+                  }
+                  onPress={() => {
+                    setSelectedList(option);
+                    setShowListSelection(false);
                   }}
                 >
-                  <Text style={componentStyles.dropdownItemText}>
-                    {option}
-                    {option === priorityState ? " (Priority State)" : ""}
-                  </Text>
-                  {selectedList === option && (
-                    <Check size={20} color="#008CFF" strokeWidth={4} />
-                  )}
-                </View>
-              </Pressable>
-            ))}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <Text style={componentStyles.dropdownItemText}>
+                        {option}
+                        {option === priorityState ? " (Priority State)" : ""}
+                      </Text>
+                      {stateNotifEnabled && (
+                        <Bell
+                          size={14}
+                          style={{ marginTop: 4 }}
+                          color="#008CFF"
+                        />
+                      )}
+                    </View>
+                    {selectedList === option && (
+                      <Check size={20} color="#008CFF" strokeWidth={4} />
+                    )}
+                  </View>
+                </Pressable>
+              );
+            })}
           </ScrollView>
         </Pressable>
       </Modal>

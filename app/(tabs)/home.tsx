@@ -84,6 +84,7 @@ export default function HomeScreen() {
   // const [currentList, setCurrentList] = useState<UserList | null>(null);
 
   const [currentListId, setCurrentListId] = useState<string>("");
+  const [notifVersion, setNotifVersion] = useState(0);
 
   // In the loadItems function, track which list is loaded:
   const [isLoading, setIsLoading] = useState(false);
@@ -719,7 +720,8 @@ export default function HomeScreen() {
         setSelectedNotifications={setSelectedNotifications}
         selectedListId={currentListId}
         refreshLists={refreshLists}
-        setSelectedList={setSelectedList} // ADD THIS
+        setSelectedList={setSelectedList}
+        onNotifVersionChange={() => setNotifVersion((v) => v + 1)}
       />
 
       {/* List Selection Modal */}
@@ -728,8 +730,9 @@ export default function HomeScreen() {
         setShowListSelection={setShowListSelection}
         selectedList={selectedList}
         setSelectedList={setSelectedList}
-        lists={lists} // ADD THIS
-        onNewListPress={() => setShowNewListModal(true)} // ADD THIS
+        lists={lists}
+        onNewListPress={() => setShowNewListModal(true)}
+        notifVersion={notifVersion}
       />
       {/* Edit Options Modal */}
       <EditOptionsModal

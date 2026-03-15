@@ -95,10 +95,28 @@ order_index INTEGER NOT NULL DEFAULT 0,
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+    
+    CREATE TABLE IF NOT EXISTS push_token (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      token TEXT NOT NULL,
+      registered_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS notification_preferences (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+    );
   `);
   try {
     database.execSync(
       `ALTER TABLE list_items ADD COLUMN order_index INTEGER NOT NULL DEFAULT 0`,
+    );
+  } catch {}
+  try {
+    database.execSync(
+      `ALTER TABLE notification_preferences ADD COLUMN sub_types TEXT`,
     );
   } catch {}
 

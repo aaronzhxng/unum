@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { notificationPreferences } from "../../utils/notificationPreferences";
 import { styles } from "../styles"; // Adjust path as needed
 
 interface Props {
@@ -7,6 +8,8 @@ interface Props {
   setShowOptionsModal: React.Dispatch<React.SetStateAction<boolean>>;
   selectedNotifications: string[];
   setSelectedNotifications: React.Dispatch<React.SetStateAction<string[]>>;
+  itemId: string;
+  itemType: "bill" | "official";
 }
 
 const listOptions = [
@@ -22,19 +25,50 @@ export default function OptionsModal({
   setShowOptionsModal,
   selectedNotifications,
   setSelectedNotifications,
+  itemId,
+  itemType,
 }: Props) {
   const closeModal = () => setShowOptionsModal(false);
 
   const toggleList = (id: string) => {
-    setSelectedNotifications((prev: string[]) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
+    if (id === "all-notications") {
+      if (selectedNotifications.includes("all-notications")) {
+        setSelectedNotifications([]);
+      } else {
+        setSelectedNotifications(listOptions.map((o) => o.id));
+      }
+    } else {
+      setSelectedNotifications((prev) => {
+        const next = prev.includes(id)
+          ? prev.filter((item) => item !== id && item !== "all-notications")
+          : [...prev.filter((item) => item !== "all-notications"), id];
+        // Auto-select "all" if every non-all option is checked
+        const nonAllOptions = listOptions.filter(
+          (o) => o.id !== "all-notications",
+        );
+        if (nonAllOptions.every((o) => next.includes(o.id))) {
+          return [...next, "all-notications"];
+        }
+        return next;
+      });
+    }
   };
 
   const handleApply = () => {
+    notificationPreferences.saveSubTypes(
+      itemId,
+      itemType,
+      selectedNotifications,
+    );
     closeModal();
-    // Add any onApply logic here if needed
   };
+
+  useEffect(() => {
+    if (showOptionsModal) {
+      const saved = notificationPreferences.getSubTypes(itemId);
+      setSelectedNotifications(saved);
+    }
+  }, [showOptionsModal, itemId]);
 
   return showOptionsModal ? (
     <Modal

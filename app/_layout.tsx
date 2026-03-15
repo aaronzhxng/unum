@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
 import { initializeDatabase } from "./utils/database";
+import { pushToken } from "./utils/pushToken";
 import { storage } from "./utils/storage";
 
 const queryClient = new QueryClient({
@@ -25,10 +26,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
-      // Initialize SQLite (creates tables + migrates from AsyncStorage)
       await initializeDatabase();
-      // Then initialize default list as before
       storage.initializeDefaultList();
+      pushToken.register();
       setIsReady(true);
     };
     init();

@@ -1,15 +1,17 @@
 import { useLocalSearchParams, useRouter, type Router } from "expo-router";
 import {
+  Bell,
+  BellOff,
+  BellRing,
   ChevronDown,
   ChevronLeft,
   ChevronUp,
-  MoreVertical,
   Plus,
 } from "lucide-react-native";
 
 import { useQuery } from "@tanstack/react-query";
 import { decode } from "html-entities";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
   Image,
@@ -31,6 +33,7 @@ import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
+import { notificationPreferences } from "../utils/notificationPreferences";
 import ActionHistory from "./bill_components/ActionHistory";
 import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
@@ -178,9 +181,21 @@ export default function BillDetail() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const billNotifId = `bill_${id}`;
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
     [],
   );
+  const [notifVersion, setNotifVersion] = useState(0);
+  const notifSubTypes = React.useMemo(
+    () => notificationPreferences.getSubTypes(billNotifId),
+    [notifVersion],
+  );
+  const notifState =
+    notifSubTypes.length === 0
+      ? "none"
+      : notifSubTypes.includes("all-notications")
+        ? "all"
+        : "some";
 
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -661,7 +676,9 @@ export default function BillDetail() {
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
           >
-            <MoreVertical size={24} color="#535353" />
+            {notifState === "none" && <BellOff size={24} color="#535353" />}
+            {notifState === "some" && <Bell size={24} color="#008CFF" />}
+            {notifState === "all" && <BellRing size={24} color="#008CFF" />}
           </Pressable>
         </View>
       </View>
@@ -1301,9 +1318,14 @@ export default function BillDetail() {
       />
       <OptionsModal
         showOptionsModal={showOptionsModal}
-        setShowOptionsModal={setShowOptionsModal}
+        setShowOptionsModal={(val) => {
+          setShowOptionsModal(val);
+          if (!val) setNotifVersion((v) => v + 1);
+        }}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
+        itemId={billNotifId}
+        itemType="bill"
       />
       <Modal
         visible={showNewListProgressModal}

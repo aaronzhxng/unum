@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { Bell } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -9,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
+import { notificationPreferences } from "../utils/notificationPreferences";
 import { storage } from "../utils/storage"; // adjust relative path if needed
 
 interface Props {
@@ -19,6 +21,7 @@ interface Props {
   selectedListId: string;
   refreshLists: () => Promise<void>;
   setSelectedList: React.Dispatch<React.SetStateAction<string>>;
+  onNotifVersionChange?: () => void;
 }
 
 export default function OptionsModal({
@@ -29,15 +32,29 @@ export default function OptionsModal({
   selectedListId,
   refreshLists,
   setSelectedList,
+  onNotifVersionChange,
 }: Props) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    if (showOptionsModal && selectedListId) {
+      const enabled = notificationPreferences.isEnabled(
+        `list_${selectedListId}`,
+      );
+      setNotificationsEnabled(enabled);
+    }
+  }, [showOptionsModal, selectedListId]);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [renameValue, setRenameValue] = useState("New List");
 
   const handleToggleNotifications = () => {
-    setNotificationsEnabled((prev) => !prev);
-    setSelectedNotifications("Notifications for this List");
+    const newState = notificationPreferences.toggle(
+      `list_${selectedListId}`,
+      "list",
+    );
+    setNotificationsEnabled(newState);
+    onNotifVersionChange?.();
   };
 
   const handleRenameConfirm = async () => {
@@ -107,7 +124,14 @@ export default function OptionsModal({
             </Pressable>
 
             {/* Notifications with checkbox */}
-            <Pressable style={componentStyles.dropdownItem}>
+            <Pressable
+              style={({ pressed }) =>
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem
+              }
+              onPress={handleToggleNotifications}
+            >
               <View
                 style={{
                   flexDirection: "row",
@@ -118,39 +142,10 @@ export default function OptionsModal({
                 <Text style={componentStyles.dropdownItemText}>
                   Notifications for this List
                 </Text>
-                <Pressable
-                  style={({ pressed }) => ({
-                    padding: 4,
-                    borderRadius: 4,
-                  })}
-                  onPress={handleToggleNotifications}
-                >
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 2,
-                      borderColor: notificationsEnabled ? "#008CFF" : "#ccc",
-                      borderRadius: 4,
-                      backgroundColor: notificationsEnabled
-                        ? "#008CFF"
-                        : "transparent",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {notificationsEnabled && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: "#008CFF",
-                          borderRadius: 2,
-                        }}
-                      />
-                    )}
-                  </View>
-                </Pressable>
+                <Bell
+                  size={16}
+                  color={notificationsEnabled ? "#008CFF" : "#535353"}
+                />
               </View>
             </Pressable>
           </View>

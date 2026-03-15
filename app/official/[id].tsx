@@ -1,13 +1,15 @@
 import { useLocalSearchParams, useRouter, type Router } from "expo-router";
 import {
+  Bell,
+  BellOff,
+  BellRing,
   ChevronDown,
   ChevronLeft,
   ChevronUp,
-  MoreVertical,
   Plus,
   Search,
 } from "lucide-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
   Image,
@@ -31,6 +33,7 @@ import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
 import { getBillIcon } from "../utils/billIcons";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
+import { notificationPreferences } from "../utils/notificationPreferences";
 import { officialBillsCache } from "../utils/officialBillsCache";
 import { storage } from "../utils/storage";
 import OptionsModal from "./official_components/OptionsModal";
@@ -155,10 +158,21 @@ export default function OfficialDetail() {
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const officialNotifId = `official_${id}`;
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>(
     [],
   );
-
+  const [notifVersion, setNotifVersion] = useState(0);
+  const notifSubTypes = React.useMemo(
+    () => notificationPreferences.getSubTypes(officialNotifId),
+    [notifVersion],
+  );
+  const notifState =
+    notifSubTypes.length === 0
+      ? "none"
+      : notifSubTypes.includes("all-notications")
+        ? "all"
+        : "some";
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
@@ -493,7 +507,9 @@ export default function OfficialDetail() {
               transform: [{ scale: pressed ? 0.75 : 1 }],
             })}
           >
-            <MoreVertical size={24} color="#535353" />
+            {notifState === "none" && <BellOff size={24} color="#535353" />}
+            {notifState === "some" && <Bell size={24} color="#008CFF" />}
+            {notifState === "all" && <BellRing size={24} color="#008CFF" />}
           </Pressable>
         </View>
       </View>
@@ -983,9 +999,14 @@ export default function OfficialDetail() {
 
       <OptionsModal
         showOptionsModal={showOptionsModal}
-        setShowOptionsModal={setShowOptionsModal}
+        setShowOptionsModal={(val) => {
+          setShowOptionsModal(val);
+          if (!val) setNotifVersion((v) => v + 1);
+        }}
         selectedNotifications={selectedNotifications}
         setSelectedNotifications={setSelectedNotifications}
+        itemId={officialNotifId}
+        itemType="official"
       />
 
       <NewListNameModal

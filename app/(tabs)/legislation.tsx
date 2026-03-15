@@ -721,6 +721,7 @@ export default function LegislationScreen() {
             title: undefined,
             date: item.latestAction?.actionDate,
             policyArea:
+              policyAreas[`${item.type.toLowerCase()}${item.number}`] ??
               enrichedBills[`${item.type.toLowerCase()}${item.number}`]
                 ?.policyArea?.name ??
               item.policyArea?.name ??
@@ -848,7 +849,11 @@ export default function LegislationScreen() {
                 date: currentBill.latestAction?.actionDate,
                 latestAction: currentBill.latestAction?.text,
                 policyArea:
-                  enrichedBills[currentBillId ?? ""]?.policyArea?.name,
+                  policyAreas[
+                    `${currentBill.type.toLowerCase()}${currentBill.number}`
+                  ] ??
+                  enrichedBills[currentBillId ?? ""]?.policyArea?.name ??
+                  undefined,
               }
             : undefined
         }
