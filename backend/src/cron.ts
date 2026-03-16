@@ -88,16 +88,16 @@ const getAllRegistrations = () => {
   }[];
 };
 
-// const getLastChecked = (): string => {
-//   // Returns yesterday's date in YYYY-MM-DD format as default
-//   const yesterday = new Date();
-//   yesterday.setDate(yesterday.getDate() - 1);
-//   return yesterday.toISOString().split("T")[0];
-// };
-
 const getLastChecked = (): string => {
-  return "2025-01-01";
+  // Returns yesterday's date in YYYY-MM-DD format as default
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split("T")[0];
 };
+
+// const getLastChecked = (): string => {
+//   return "2025-01-01";
+// };
 
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 
@@ -289,7 +289,7 @@ const checkFollowedOfficials = async () => {
               title: `New Bill Sponsored`,
               body: `${bill.type}.${bill.number} - ${bill.title}`,
               data: {
-                billId: `${bill.type.toLowerCase()}${bill.number}`,
+                billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,
               },
             });
@@ -313,7 +313,7 @@ const checkFollowedOfficials = async () => {
               title: `New Bill Cosponsored`,
               body: `${bill.type}.${bill.number} - ${bill.title}`,
               data: {
-                billId: `${bill.type.toLowerCase()}${bill.number}`,
+                billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,
               },
             });
