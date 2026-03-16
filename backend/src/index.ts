@@ -674,11 +674,7 @@ app.get("/api/cron/run", async (req, res) => {
 });
 
 app.get("/api/push-tokens/list", (req, res) => {
-  const rows = db
-    .prepare(
-      "SELECT token, policy_areas, followed_states, updated_at FROM push_registrations",
-    )
-    .all();
+  const rows = db.prepare("SELECT * FROM push_registrations").all();
   res.json(rows);
 });
 
