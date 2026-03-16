@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { notificationPreferences } from "../../utils/notificationPreferences";
+import { syncPreferencesToBackend } from "../../utils/syncPreferences";
 import { styles } from "../styles"; // Adjust path as needed
 
 interface Props {
@@ -60,6 +61,7 @@ export default function OptionsModal({
       itemType,
       selectedNotifications,
     );
+    syncPreferencesToBackend();
     closeModal();
   };
 
