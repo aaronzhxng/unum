@@ -36,6 +36,13 @@ export const pushToken = {
       });
       console.log("Token data:", tokenData);
       const token = tokenData.data;
+
+      fetch("https://unum-production.up.railway.app/api/debug/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      }).catch(() => {});
+
       console.log("Token:", token);
 
       const db = getDb();
@@ -57,6 +64,11 @@ export const pushToken = {
       return token;
     } catch (error) {
       console.error("Error registering for push notifications:", error);
+      fetch("https://unum-production.up.railway.app/api/debug/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: String(error) }),
+      }).catch(() => {});
       return null;
     }
   },

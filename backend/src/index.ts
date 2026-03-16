@@ -682,6 +682,12 @@ app.get("/api/push-tokens/list", (req, res) => {
   res.json(rows);
 });
 
+app.post("/api/debug/token", (req, res) => {
+  const { token, error } = req.body;
+  console.log("DEBUG TOKEN:", token ?? "null", "ERROR:", error ?? "none");
+  res.json({ success: true });
+});
+
 app.post("/api/push-tokens", (req, res) => {
   try {
     const {
