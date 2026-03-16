@@ -118,8 +118,9 @@ const checkNewBills = async () => {
     });
 
     const newBills = (response.data.bills || []).filter(
-      (b: any) => b.congress === 119,
+      (b: any) => b.congress === 119 && b.introducedDate >= since,
     );
+    console.log(`Found ${newBills.length} new bills since ${since}`);
 
     if (newBills.length === 0) return;
 
