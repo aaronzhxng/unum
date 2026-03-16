@@ -88,16 +88,16 @@ const getAllRegistrations = () => {
   }[];
 };
 
-const getLastChecked = (): string => {
-  // Returns yesterday's date in YYYY-MM-DD format as default
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split("T")[0];
-};
-
 // const getLastChecked = (): string => {
-//   return "2025-01-01";
+//   // Returns yesterday's date in YYYY-MM-DD format as default
+//   const yesterday = new Date();
+//   yesterday.setDate(yesterday.getDate() - 1);
+//   return yesterday.toISOString().split("T")[0];
 // };
+
+const getLastChecked = (): string => {
+  return "2025-01-01";
+};
 
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 
@@ -256,11 +256,18 @@ const checkFollowedOfficials = async () => {
   const since = getLastChecked();
 
   for (const reg of registrations) {
-    const followedOfficials: { bioguideId: string; subTypes: string[] }[] =
-      JSON.parse(reg.followed_officials || "[]");
+    const followedOfficials: {
+      bioguideId: string;
+      name: string;
+      subTypes: string[];
+    }[] = JSON.parse(reg.followed_officials || "[]");
     if (followedOfficials.length === 0) continue;
 
-    for (const { bioguideId: rawId, subTypes } of followedOfficials) {
+    for (const {
+      bioguideId: rawId,
+      name: officialName,
+      subTypes,
+    } of followedOfficials) {
       const bioguideId = rawId.replace(/^official_/, "");
       const wantsSponsored =
         subTypes.includes("all-notications") ||
@@ -286,8 +293,8 @@ const checkFollowedOfficials = async () => {
           for (const bill of recent) {
             messages.push({
               to: reg.token,
-              title: `New Bill Sponsored`,
-              body: `${bill.type}.${bill.number} - ${bill.title}`,
+              title: `New Bill Sponsored by ${officialName}`,
+              body: `${bill.type ?? ""}${bill.number} - ${bill.title}`,
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,
@@ -310,8 +317,8 @@ const checkFollowedOfficials = async () => {
           for (const bill of recent) {
             messages.push({
               to: reg.token,
-              title: `New Bill Cosponsored`,
-              body: `${bill.type}.${bill.number} - ${bill.title}`,
+              title: `New Bill Cosponsored by ${officialName}`,
+              body: `${bill.type ?? ""}${bill.number} - ${bill.title}`,
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,

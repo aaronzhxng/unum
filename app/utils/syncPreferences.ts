@@ -1,3 +1,4 @@
+import { getDb } from "./database";
 import { notificationPreferences } from "./notificationPreferences";
 import { pushToken } from "./pushToken";
 
@@ -31,10 +32,21 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
     const allEnabledOfficials = allEnabledOfficialIds.filter(
       (id) => !id.startsWith("state_"),
     );
-    const followedOfficials = allEnabledOfficials.map((id) => ({
-      bioguideId: id.replace(/^official_/, ""),
-      subTypes: notificationPreferences.getSubTypes(id),
-    }));
+
+    const db = getDb();
+
+    const followedOfficials = allEnabledOfficials.map((id) => {
+      const bioguideId = id.replace(/^official_/, "");
+      const row = db.getFirstSync<{ name: string }>(
+        `SELECT name FROM list_items WHERE item_id = ? AND item_type = 'official' LIMIT 1`,
+        [bioguideId],
+      );
+      return {
+        bioguideId,
+        name: row?.name ?? bioguideId,
+        subTypes: notificationPreferences.getSubTypes(id),
+      };
+    });
 
     // console.log(
     //   "Syncing to backend:",
