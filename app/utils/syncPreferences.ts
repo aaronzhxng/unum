@@ -20,18 +20,20 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
 
     // Get all enabled bills with their sub-types
     const allEnabledBillIds = notificationPreferences.getAllEnabled("bill");
-    const followedBills = allEnabledBillIds.map((billId) => ({
-      billId,
-      subTypes: notificationPreferences.getSubTypes(billId),
-    }));
+    const followedBills = allEnabledBillIds
+      .filter((id) => id.startsWith("bill_"))
+      .map((id) => ({
+        billId: id.replace(/^bill_/, ""),
+        subTypes: notificationPreferences.getSubTypes(id),
+      }));
 
     // Get all enabled officials with their sub-types
     const allEnabledOfficials = allEnabledOfficialIds.filter(
       (id) => !id.startsWith("state_"),
     );
-    const followedOfficials = allEnabledOfficials.map((bioguideId) => ({
-      bioguideId,
-      subTypes: notificationPreferences.getSubTypes(bioguideId),
+    const followedOfficials = allEnabledOfficials.map((id) => ({
+      bioguideId: id.replace(/^official_/, ""),
+      subTypes: notificationPreferences.getSubTypes(id),
     }));
 
     console.log(
