@@ -117,7 +117,8 @@ const checkFollowedBills = async () => {
     );
     if (followedBills.length === 0) continue;
 
-    for (const { billId, subTypes } of followedBills) {
+    for (const { billId: rawBillId, subTypes } of followedBills) {
+      const billId = rawBillId.replace(/^bill_/, "");
       const wantsActions =
         subTypes.includes("all-notications") || subTypes.includes("actions");
       const wantsVoting =
@@ -198,7 +199,8 @@ const checkFollowedOfficials = async () => {
       JSON.parse(reg.followed_officials || "[]");
     if (followedOfficials.length === 0) continue;
 
-    for (const { bioguideId, subTypes } of followedOfficials) {
+    for (const { bioguideId: rawId, subTypes } of followedOfficials) {
+      const bioguideId = rawId.replace(/^official_/, "");
       const wantsSponsored =
         subTypes.includes("all-notications") ||
         subTypes.includes("bills-introduced");
