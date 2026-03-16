@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Constants from "expo-constants";
 import * as NavigationBar from "expo-navigation-bar";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
@@ -24,6 +25,8 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
+  const router = useRouter();
+  const isExpoGo = Constants.appOwnership === "expo";
 
   useEffect(() => {
     const init = async () => {
@@ -41,6 +44,32 @@ export default function RootLayout() {
   useEffect(() => {
     NavigationBar.setBackgroundColorAsync("#fafafa");
     NavigationBar.setButtonStyleAsync("dark");
+  }, []);
+
+  useEffect(() => {
+    if (isExpoGo) return;
+
+    const setupNotificationHandler = async () => {
+      const Notifications = await import("expo-notifications");
+
+      // Handle notification tap when app is foregrounded or backgrounded
+      const subscription =
+        Notifications.addNotificationResponseReceivedListener((response) => {
+          const data = response.notification.request.content.data;
+          if (data?.billId) {
+            router.navigate(`/bill/${data.billId}`);
+          } else if (data?.officialId) {
+            router.navigate(`/official/${data.officialId}`);
+          }
+        });
+
+      return () => subscription.remove();
+    };
+
+    const cleanup = setupNotificationHandler();
+    return () => {
+      cleanup.then((fn) => fn?.());
+    };
   }, []);
 
   if (!isReady) {
