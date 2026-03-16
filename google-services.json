@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "291959255245",
+    "project_id": "unum-351b3",
+    "storage_bucket": "unum-351b3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:291959255245:android:917127c80951ebff17b984",
+        "android_client_info": {
+          "package_name": "com.aaronzhxng.unum"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ68dlzyQmDuSA_sZRNku4yZxl2zAK5oU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
