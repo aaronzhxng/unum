@@ -88,16 +88,16 @@ const getAllRegistrations = () => {
   }[];
 };
 
-// const getLastChecked = (): string => {
-//   // Returns yesterday's date in YYYY-MM-DD format as default
-//   const yesterday = new Date();
-//   yesterday.setDate(yesterday.getDate() - 1);
-//   return yesterday.toISOString().split("T")[0];
-// };
-
 const getLastChecked = (): string => {
-  return "2025-01-01";
+  // Returns yesterday's date in YYYY-MM-DD format as default
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split("T")[0];
 };
+
+// const getLastChecked = (): string => {
+//   return "2025-01-01";
+// };
 
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 
