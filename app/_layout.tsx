@@ -96,9 +96,14 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <PolicyAreasProvider>
           <TabBarProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack initialRouteName="index">
               <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="onboarding"
+                options={{ headerShown: false }}
+              />
+              {/* ADD THIS */}
               <Stack.Screen
                 name="bill/[id]"
                 options={{
