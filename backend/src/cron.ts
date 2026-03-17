@@ -56,13 +56,10 @@ const STATE_ABBR: Record<string, string> = {
   Wyoming: "WY",
 };
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
 const sendNotifications = async (
   messages: { to: string; title: string; body: string; data?: any }[],
 ) => {
   if (messages.length === 0) return;
-  // Expo push API accepts up to 100 messages per request
   const chunks = [];
   for (let i = 0; i < messages.length; i += 100) {
     chunks.push(messages.slice(i, i + 100));
@@ -88,128 +85,22 @@ const getAllRegistrations = () => {
   }[];
 };
 
-// const getLastChecked = (): string => {
-//   // Returns yesterday's date in YYYY-MM-DD format as default
-//   const yesterday = new Date();
-//   yesterday.setDate(yesterday.getDate() - 1);
-//   return yesterday.toISOString().split("T")[0];
-// };
-
 const getLastChecked = (): string => {
-  return "2025-01-01";
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split("T")[0];
 };
 
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
+// NOTE: Congress.gov API does not support filtering by policyArea or stateCode
+// on the bill list endpoint. These loops are disabled until SQLite migration
+// allows local filtering with full bill details cached.
 
 const checkNewBills = async () => {
   console.log("Checking for new bills...");
-  const registrations = getAllRegistrations();
-  if (registrations.length === 0) return;
-
-  const since = getLastChecked();
-  const messages: { to: string; title: string; body: string; data?: any }[] =
-    [];
-
-  const allPolicyAreas = new Set<string>();
-  const allStates = new Set<string>();
-
-  for (const reg of registrations) {
-    const policyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
-    const followedStates: string[] = JSON.parse(reg.followed_states || "[]");
-    policyAreas.forEach((p) => allPolicyAreas.add(p));
-    followedStates.forEach((s) => allStates.add(s));
-  }
-
-  // Fetch new bills per policy area
-  for (const policyArea of allPolicyAreas) {
-    try {
-      const response = await axios.get("https://api.congress.gov/v3/bill/119", {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit: 20, sort: "updateDate+desc", policyArea },
-      });
-
-      const newBills = (response.data.bills || []).filter(
-        (b: any) => b.congress === 119 && b.updateDate >= since,
-      );
-
-      for (const bill of newBills) {
-        for (const reg of registrations) {
-          const regPolicyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
-          if (regPolicyAreas.includes(policyArea)) {
-            messages.push({
-              to: reg.token,
-              title: `${policyArea}: New Bill Introduced`,
-              body: `${bill.type}.${bill.number} — ${bill.title}`,
-              data: {
-                billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
-              },
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error(`Error checking policy area ${policyArea}:`, error);
-    }
-  }
-
-  // Fetch new bills per state using member-sponsored bills
-  for (const state of allStates) {
-    const stateAbbr = STATE_ABBR[state] ?? state;
-    try {
-      // Get current members from this state
-      const membersRes = await axios.get("https://api.congress.gov/v3/member", {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit: 50, currentMember: true, stateCode: stateAbbr },
-      });
-
-      const members = membersRes.data.members || [];
-      console.log(
-        `First 3 NY members:`,
-        members.slice(0, 3).map((m: any) => `${m.name} (${m.state})`),
-      );
-      console.log(
-        `State ${state} (${stateAbbr}): found ${members.length} members`,
-      );
-
-      // For each member, check their recently sponsored bills
-      for (const member of members.slice(0, 5)) {
-        const sponsoredRes = await axios.get(
-          `https://api.congress.gov/v3/member/${member.bioguideId}/sponsored-legislation`,
-          {
-            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-            params: { limit: 5 },
-          },
-        );
-
-        const recentBills = (
-          sponsoredRes.data.sponsoredLegislation || []
-        ).filter((b: any) => b.introducedDate >= since);
-
-        for (const bill of recentBills) {
-          for (const reg of registrations) {
-            const followedStates: string[] = JSON.parse(
-              reg.followed_states || "[]",
-            );
-            if (followedStates.includes(state)) {
-              messages.push({
-                to: reg.token,
-                title: `New Bill from ${state}`,
-                body: `${bill.type?.toLowerCase() ?? ""}${bill.number} — ${bill.title}`,
-                data: {
-                  billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
-                },
-              });
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error(`Error checking state ${state}:`, error);
-    }
-  }
-
-  await sendNotifications(messages);
-  console.log(`Sent ${messages.length} new bill notifications`);
+  // TODO: Re-enable after SQLite migration provides locally cached bills
+  // with policyArea and sponsor state fields for accurate filtering.
+  console.log("Skipping new bill notifications — pending SQLite migration");
 };
 
 // ── Check 2: Status changes on followed bills ─────────────────────────────────
@@ -240,7 +131,6 @@ const checkFollowedBills = async () => {
         if (!match) continue;
         const billType = match[1].toLowerCase();
         const billNumber = match[2];
-
         const since = getLastChecked();
 
         if (wantsActions) {
