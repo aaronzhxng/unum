@@ -125,6 +125,18 @@ const checkNewBills = async () => {
       (b: any) => b.congress === 119 && b.updateDate >= since,
     );
     console.log(`Found ${newBills.length} new bills since ${since}`);
+    console.log(
+      `Sample bill updateDates:`,
+      response.data.bills?.slice(0, 3).map((b: any) => b.updateDate),
+    );
+    console.log(
+      `Policy areas in registrations:`,
+      registrations.map((r) => JSON.parse(r.policy_areas)),
+    );
+    console.log(
+      `States in registrations:`,
+      registrations.map((r) => JSON.parse(r.followed_states)),
+    );
 
     if (newBills.length === 0) return;
 
