@@ -110,78 +110,91 @@ const checkNewBills = async () => {
   const messages: { to: string; title: string; body: string; data?: any }[] =
     [];
 
-  try {
-    // Fetch bills introduced in the last day
-    const response = await axios.get("https://api.congress.gov/v3/bill/119", {
-      headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-      params: {
-        limit: 250,
-        sort: "introducedDate+desc",
-        fromDateTime: `${since}T00:00:00Z`,
-      },
-    });
+  // Collect all unique policy areas and states across all registrations
+  const allPolicyAreas = new Set<string>();
+  const allStates = new Set<string>();
 
-    const newBills = (response.data.bills || []).filter(
-      (b: any) => b.congress === 119 && b.updateDate >= since,
-    );
-    console.log(`Found ${newBills.length} new bills since ${since}`);
-    console.log(
-      `Sample bill updateDates:`,
-      response.data.bills?.slice(0, 3).map((b: any) => b.updateDate),
-    );
-    console.log(
-      `Policy areas in registrations:`,
-      registrations.map((r) => JSON.parse(r.policy_areas)),
-    );
-    console.log(
-      `States in registrations:`,
-      registrations.map((r) => JSON.parse(r.followed_states)),
-    );
+  for (const reg of registrations) {
+    const policyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
+    const followedStates: string[] = JSON.parse(reg.followed_states || "[]");
+    policyAreas.forEach((p) => allPolicyAreas.add(p));
+    followedStates.forEach((s) => allStates.add(s));
+  }
 
-    if (newBills.length === 0) return;
+  // Fetch new bills per policy area
+  for (const policyArea of allPolicyAreas) {
+    try {
+      const response = await axios.get("https://api.congress.gov/v3/bill/119", {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: {
+          limit: 20,
+          sort: "updateDate+desc",
+          policyArea,
+        },
+      });
 
-    for (const reg of registrations) {
-      const policyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
-      const followedStates: string[] = JSON.parse(reg.followed_states || "[]");
+      const newBills = (response.data.bills || []).filter(
+        (b: any) => b.congress === 119 && b.updateDate >= since,
+      );
 
       for (const bill of newBills) {
-        const billPolicyArea = bill.policyArea?.name;
-        const billState = bill.sponsors?.[0]?.state;
-        if (newBills.indexOf(bill) < 3) {
-          console.log(`Bill sample:`, JSON.stringify(bill).slice(0, 200));
-        }
-
-        const matchesPolicyArea =
-          billPolicyArea && policyAreas.includes(billPolicyArea);
-        const followedStateAbbrs = followedStates.map(
-          (s: string) => STATE_ABBR[s] ?? s,
-        );
-        const matchesState =
-          billState && followedStateAbbrs.includes(billState);
-        if (matchesPolicyArea || matchesState) {
-          const reason = matchesPolicyArea
-            ? billPolicyArea
-            : `${billState} delegation`;
-          const stateFullName =
-            Object.entries(STATE_ABBR).find(
-              ([, abbr]) => abbr === billState,
-            )?.[0] ?? billState;
-          const notifTitle = matchesPolicyArea
-            ? `${billPolicyArea}: New Bill Introduced`
-            : `New Bill from ${stateFullName}`;
-          const notifBody = `${bill.type}.${bill.number} — ${bill.title}`;
-
-          messages.push({
-            to: reg.token,
-            title: notifTitle,
-            body: notifBody,
-            data: { billId: `${bill.type.toLowerCase()}${bill.number}` },
-          });
+        // Find all registrations that follow this policy area
+        for (const reg of registrations) {
+          const regPolicyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
+          if (regPolicyAreas.includes(policyArea)) {
+            messages.push({
+              to: reg.token,
+              title: `${policyArea}: New Bill Introduced`,
+              body: `${bill.type}.${bill.number} — ${bill.title}`,
+              data: {
+                billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
+              },
+            });
+          }
         }
       }
+    } catch (error) {
+      console.error(`Error checking policy area ${policyArea}:`, error);
     }
-  } catch (error) {
-    console.error("Error checking new bills:", error);
+  }
+
+  // Fetch new bills per state
+  for (const state of allStates) {
+    const stateAbbr = STATE_ABBR[state] ?? state;
+    try {
+      const response = await axios.get("https://api.congress.gov/v3/bill/119", {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: {
+          limit: 20,
+          sort: "updateDate+desc",
+          sponsor_state: stateAbbr,
+        },
+      });
+
+      const newBills = (response.data.bills || []).filter(
+        (b: any) => b.congress === 119 && b.updateDate >= since,
+      );
+
+      for (const bill of newBills) {
+        for (const reg of registrations) {
+          const followedStates: string[] = JSON.parse(
+            reg.followed_states || "[]",
+          );
+          if (followedStates.includes(state)) {
+            messages.push({
+              to: reg.token,
+              title: `New Bill from ${state}`,
+              body: `${bill.type}.${bill.number} — ${bill.title}`,
+              data: {
+                billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
+              },
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error checking state ${state}:`, error);
+    }
   }
 
   await sendNotifications(messages);
