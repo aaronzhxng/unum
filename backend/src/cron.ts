@@ -163,6 +163,9 @@ const checkNewBills = async () => {
       });
 
       const members = membersRes.data.members || [];
+      console.log(
+        `State ${state} (${stateAbbr}): found ${members.length} members`,
+      );
 
       // For each member, check their recently sponsored bills
       for (const member of members.slice(0, 5)) {
