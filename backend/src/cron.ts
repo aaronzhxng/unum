@@ -133,6 +133,11 @@ const checkNewBills = async () => {
         },
       });
 
+      console.log(
+        `Policy area ${policyArea} returned ${response.data.bills?.length} bills, first bill policyArea:`,
+        response.data.bills?.[0]?.policyArea,
+      );
+
       const newBills = (response.data.bills || []).filter(
         (b: any) => b.congress === 119 && b.updateDate >= since,
       );
@@ -159,39 +164,59 @@ const checkNewBills = async () => {
   }
 
   // Fetch new bills per state
+  // for (const state of allStates) {
+  //   const stateAbbr = STATE_ABBR[state] ?? state;
+  //   try {
+  //     const response = await axios.get("https://api.congress.gov/v3/bill/119", {
+  //       headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+  //       params: {
+  //         limit: 20,
+  //         sort: "updateDate+desc",
+  //         sponsor_state: stateAbbr,
+  //       },
+  //     });
+
+  //     const newBills = (response.data.bills || []).filter(
+  //       (b: any) => b.congress === 119 && b.updateDate >= since,
+  //     );
+
+  //     for (const bill of newBills) {
+  //       for (const reg of registrations) {
+  //         const followedStates: string[] = JSON.parse(
+  //           reg.followed_states || "[]",
+  //         );
+  //         if (followedStates.includes(state)) {
+  //           messages.push({
+  //             to: reg.token,
+  //             title: `New Bill from ${state}`,
+  //             body: `${bill.type}.${bill.number} — ${bill.title}`,
+  //             data: {
+  //               billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
+  //             },
+  //           });
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error checking state ${state}:`, error);
+  //   }
+  // }
+
+  // Fetch new bills per state
   for (const state of allStates) {
     const stateAbbr = STATE_ABBR[state] ?? state;
     try {
       const response = await axios.get("https://api.congress.gov/v3/bill/119", {
         headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
         params: {
-          limit: 20,
+          limit: 5,
           sort: "updateDate+desc",
-          sponsor_state: stateAbbr,
         },
       });
-
-      const newBills = (response.data.bills || []).filter(
-        (b: any) => b.congress === 119 && b.updateDate >= since,
+      console.log(
+        `State ${state} sample bill:`,
+        JSON.stringify(response.data.bills?.[0]).slice(0, 300),
       );
-
-      for (const bill of newBills) {
-        for (const reg of registrations) {
-          const followedStates: string[] = JSON.parse(
-            reg.followed_states || "[]",
-          );
-          if (followedStates.includes(state)) {
-            messages.push({
-              to: reg.token,
-              title: `New Bill from ${state}`,
-              body: `${bill.type}.${bill.number} — ${bill.title}`,
-              data: {
-                billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
-              },
-            });
-          }
-        }
-      }
     } catch (error) {
       console.error(`Error checking state ${state}:`, error);
     }
