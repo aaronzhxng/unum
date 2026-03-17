@@ -1,4 +1,3 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -8,15 +7,8 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
-import { usePolicyAreas } from "../context/PolicyAreasContext";
 import { useTabBar } from "../context/TabBarContext";
 import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
@@ -27,7 +19,6 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
-import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
@@ -42,22 +33,7 @@ function useDebounced<T>(value: T, delay: number): T {
   return debounced;
 }
 
-interface FilterOption {
-  id: string;
-  label: string;
-}
-
-type Bill = {
-  id: string;
-  name: string;
-  date: string;
-  status: string;
-  committee: string;
-  avatar?: any;
-};
-
 export default function LegislationScreen() {
-  // console.log("Legislation Screen render:", Date.now());
   const { setTabBarHidden } = useTabBar();
 
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -65,9 +41,6 @@ export default function LegislationScreen() {
   const [searchFallbackResults, setSearchFallbackResults] = useState<any[]>([]);
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
-  const [selectedNotifications, setSelectedNotifications] =
-    useState("Congress");
-
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Recent Action");
 
@@ -79,18 +52,38 @@ export default function LegislationScreen() {
   const [newListProgress, setNewListProgress] = useState(0);
   const [createdListName, setCreatedListName] = useState("");
 
-  const [enrichedBills, setEnrichedBills] = useState<{ [key: string]: any }>(
-    {},
-  );
-  const policyAreas = usePolicyAreas();
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedChambers, setSelectedChambers] = useState<string[]>([]);
+  const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
+  const [selectedLegislationTypes, setSelectedLegislationTypes] = useState<
+    string[]
+  >([]);
+  const debouncedChambers = useDebounced(selectedChambers, 300);
+  const debouncedPolicyAreas = useDebounced(selectedPolicyAreas, 300);
+  const debouncedLegislationTypes = useDebounced(selectedLegislationTypes, 300);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [pendingChambers, setPendingChambers] = useState<string[]>([]);
+  const [pendingPolicyAreas, setPendingPolicyAreas] = useState<string[]>([]);
+  const [pendingLegislationTypes, setPendingLegislationTypes] = useState<
+    string[]
+  >([]);
 
-  // Tracks which bill IDs have already been fetched this session
-  // so we never fire duplicate requests as the user scrolls back up
-  const fetchedIds = useRef<Set<string>>(new Set());
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedLists, setSelectedLists] = useState<string[]>([]);
+  const [currentBillId, setCurrentBillId] = useState<string | null>(null);
+  const [listsVersion, setListsVersion] = useState(0);
+  const PAGE_SIZE = 50;
+  const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
 
-  // Queue of bill IDs visible on screen waiting to be fetched
-  const fetchQueue = useRef<string[]>([]);
-  const isFetching = useRef(false);
+  const router = useRouter();
+
+  const getFilterLabel = () => {
+    if (selectedChambers.length === 1) {
+      if (selectedChambers[0] === "house") return "House";
+      if (selectedChambers[0] === "senate") return "Senate";
+    }
+    return "Congress";
+  };
 
   const handleReportError = () => {};
 
@@ -98,7 +91,6 @@ export default function LegislationScreen() {
     const name = listName ?? newListName;
     if (name.trim()) {
       const allLists = storage.getLists();
-
       const itemToSave = pendingItemForNewList
         ? {
             id:
@@ -129,7 +121,6 @@ export default function LegislationScreen() {
         name: name.trim(),
         items: itemToSave ? [itemToSave] : [],
       };
-
       allLists.push(newList);
       storage.saveLists(allLists);
       listEvents.emit(LIST_UPDATED);
@@ -141,63 +132,13 @@ export default function LegislationScreen() {
     }
   };
 
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [selectedChambers, setSelectedChambers] = useState<string[]>([]);
-  const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
-  const [selectedLegislationTypes, setSelectedLegislationTypes] = useState<
-    string[]
-  >([]);
-  const [selectedFilter, setSelectedFilter] = useState("Congress");
-  const debouncedChambers = useDebounced(selectedChambers, 300);
-  const debouncedPolicyAreas = useDebounced(selectedPolicyAreas, 300);
-  const debouncedLegislationTypes = useDebounced(selectedLegislationTypes, 300);
-  const [isFiltering, setIsFiltering] = useState(false);
-  const [pendingChambers, setPendingChambers] = useState<string[]>([]);
-  const [pendingPolicyAreas, setPendingPolicyAreas] = useState<string[]>([]);
-  const [pendingLegislationTypes, setPendingLegislationTypes] = useState<
-    string[]
-  >([]);
-
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedLists, setSelectedLists] = useState<string[]>([]);
-  const [currentBillId, setCurrentBillId] = useState<string | null>(null);
-  const [listsVersion, setListsVersion] = useState(0);
-  const PAGE_SIZE = 50;
-  const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
-
-  const getFilterLabel = () => {
-    if (selectedChambers.length === 1) {
-      const chamber = selectedChambers[0];
-      if (chamber === "house") return "House";
-      if (chamber === "senate") return "Senate";
-    }
-    return "Congress";
-  };
-
-  const toggleChamber = (id: string) => {
-    setSelectedChambers((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
-  const togglePolicyArea = (id: string) => {
-    setSelectedPolicyAreas((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
-  const toggleLegislationType = (id: string) => {
-    setSelectedLegislationTypes((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
   const handleFilterCancel = () => {
     setPendingChambers(selectedChambers);
     setPendingPolicyAreas(selectedPolicyAreas);
     setPendingLegislationTypes(selectedLegislationTypes);
     setShowFilterModal(false);
   };
+
   const handleFilterApply = () => {
     setShowFilterModal(false);
     setIsFiltering(true);
@@ -205,6 +146,7 @@ export default function LegislationScreen() {
     setSelectedPolicyAreas(pendingPolicyAreas);
     setSelectedLegislationTypes(pendingLegislationTypes);
   };
+
   const handleFilterOpen = () => {
     setPendingChambers(selectedChambers);
     setPendingPolicyAreas(selectedPolicyAreas);
@@ -213,33 +155,15 @@ export default function LegislationScreen() {
     setShowFilterModal(true);
   };
 
-  const router = useRouter();
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["bills"],
     queryFn: billsService.getAll,
   });
 
-  const allBills: any[] = useMemo(() => {
-    const bills = data?.bills || [];
-    if (Object.keys(policyAreas).length === 0) return bills;
-    return bills.map((bill) => ({
-      ...bill,
-      _policyArea:
-        policyAreas[`${bill.type.toLowerCase()}${bill.number}`] ?? null,
-      _introducedDate:
-        policyAreas[`${bill.type.toLowerCase()}${bill.number}`] !== undefined
-          ? (enrichedBills[`${bill.type.toLowerCase()}${bill.number}`]
-              ?.introducedDate ??
-            bill.updateDate ??
-            null)
-          : (bill.updateDate ?? null),
-    }));
-  }, [data?.bills, policyAreas]);
+  const allBills: any[] = useMemo(() => data?.bills || [], [data?.bills]);
 
   const pendingCount = useMemo(() => {
     let filtered = allBills;
-
     if (pendingChambers.length > 0) {
       filtered = filtered.filter((bill) =>
         pendingChambers.some((chamber) => {
@@ -249,14 +173,13 @@ export default function LegislationScreen() {
         }),
       );
     }
-
     if (pendingPolicyAreas.length > 0) {
       filtered = filtered.filter((bill) => {
-        if (!bill._policyArea) return pendingPolicyAreas.includes("none");
-        return pendingPolicyAreas.includes(bill._policyArea);
+        const pa = bill.policyArea?.name ?? null;
+        if (!pa) return pendingPolicyAreas.includes("none");
+        return pendingPolicyAreas.includes(pa);
       });
     }
-
     if (
       pendingLegislationTypes.length > 0 &&
       !pendingLegislationTypes.includes("all")
@@ -275,37 +198,26 @@ export default function LegislationScreen() {
       );
       filtered = filtered.filter((bill) => apiTypes.includes(bill.type));
     }
-
     return filtered.length;
   }, [allBills, pendingChambers, pendingPolicyAreas, pendingLegislationTypes]);
 
   const bills = useMemo(() => {
-    let filtered: any[] = allBills.map((bill) => ({
-      ...bill,
-      _introducedDate:
-        enrichedBills[`${bill.type.toLowerCase()}${bill.number}`]
-          ?.introducedDate ??
-        bill.updateDate ??
-        null,
-    }));
+    let filtered = [...allBills];
 
     if (debouncedChambers.length > 0) {
       filtered = filtered.filter((bill) =>
         debouncedChambers.some((chamber) => {
-          if (chamber === "house")
-            return (bill as any).originChamber === "House";
-          if (chamber === "senate")
-            return (bill as any).originChamber === "Senate";
+          if (chamber === "house") return bill.originChamber === "House";
+          if (chamber === "senate") return bill.originChamber === "Senate";
           return false;
         }),
       );
     }
     if (debouncedPolicyAreas.length > 0) {
       filtered = filtered.filter((bill) => {
-        if (!bill._policyArea) {
-          return debouncedPolicyAreas.includes("none");
-        }
-        return debouncedPolicyAreas.includes(bill._policyArea);
+        const pa = bill.policyArea?.name ?? null;
+        if (!pa) return debouncedPolicyAreas.includes("none");
+        return debouncedPolicyAreas.includes(pa);
       });
     }
     if (
@@ -321,34 +233,28 @@ export default function LegislationScreen() {
         nomination: ["PN"],
         treaty: ["TREATY"],
       };
-
       const apiTypes = debouncedLegislationTypes.flatMap(
         (id) => typeMap[id] || [],
       );
-
-      filtered = filtered.filter((bill) =>
-        apiTypes.includes((bill as any).type),
-      );
+      filtered = filtered.filter((bill) => apiTypes.includes(bill.type));
     }
 
-    let sorted = [...filtered];
     if (selectedSort === "Recent Action") {
-      sorted.sort(
+      filtered.sort(
         (a, b) =>
-          new Date((b as any).latestAction?.actionDate ?? 0).getTime() -
-          new Date((a as any).latestAction?.actionDate ?? 0).getTime(),
+          new Date(b.latestAction?.actionDate ?? 0).getTime() -
+          new Date(a.latestAction?.actionDate ?? 0).getTime(),
       );
     } else if (selectedSort === "Oldest Action") {
-      sorted.sort(
+      filtered.sort(
         (a, b) =>
           new Date(a.latestAction?.actionDate ?? 0).getTime() -
           new Date(b.latestAction?.actionDate ?? 0).getTime(),
       );
     }
-    return sorted;
+    return filtered;
   }, [
     allBills,
-    enrichedBills,
     debouncedChambers,
     debouncedPolicyAreas,
     debouncedLegislationTypes,
@@ -360,84 +266,8 @@ export default function LegislationScreen() {
     [bills, displayedCount],
   );
 
-  // ─── On mount: load SQLite cache for all bills instantly ──────────────────
-  useEffect(() => {
-    const rawBills = data?.bills || [];
-    if (rawBills.length === 0) return;
-
-    const enriched: { [key: string]: any } = {};
-    for (const bill of rawBills) {
-      const billId = `${bill.type.toLowerCase()}${bill.number}`;
-      const cached = billCache.getBill(billId);
-      if (cached?.policyArea) {
-        enriched[billId] = cached;
-        fetchedIds.current.add(billId);
-      }
-    }
-    setEnrichedBills(enriched);
-  }, [data?.bills]);
-
-  // ─── Fetch queue processor ────────────────────────────────────────────────
-  // Drains the queue of visible bill IDs that need fetching, one at a time.
-  const processFetchQueue = useCallback(async () => {
-    if (isFetching.current) return;
-    isFetching.current = true;
-
-    while (fetchQueue.current.length > 0) {
-      const billId = fetchQueue.current.shift()!;
-
-      // Double-check it hasn't been fetched while waiting in queue
-      if (fetchedIds.current.has(billId)) continue;
-      fetchedIds.current.add(billId);
-
-      // Find the bill to get its congress number
-      const bill = bills.find(
-        (b) => `${b.type.toLowerCase()}${b.number}` === billId,
-      );
-      if (!bill) continue;
-
-      try {
-        const detail = await billsService.getById(billId, bill.congress);
-        const billData = detail?.bill ?? detail;
-
-        if (billData?.policyArea) {
-          billCache.saveBill(billId, billData);
-          setEnrichedBills((prev) => ({ ...prev, [billId]: billData }));
-        }
-      } catch {
-        // Silent fail — icon stays as letter placeholder
-      }
-
-      // Small pause between fetches to be polite to the API
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-
-    isFetching.current = false;
-  }, [bills]);
-
-  const processFetchQueueRef = useRef(processFetchQueue);
-  useEffect(() => {
-    processFetchQueueRef.current = processFetchQueue;
-  }, [processFetchQueue]);
-
-  // ─── viewabilityConfig: item must be 50% visible to count ────────────────
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 });
-
-  // ─── onViewableItemsChanged: fires as user scrolls ───────────────────────
-  const onViewableItemsChangedRef = useRef(
-    ({ viewableItems }: { viewableItems: any[] }) => {
-      // Prioritize visible items by putting them at the FRONT of the queue
-      for (const { item } of viewableItems) {
-        const billId = `${item.type.toLowerCase()}${item.number}`;
-        if (fetchedIds.current.has(billId)) continue;
-        if (fetchQueue.current.includes(billId)) {
-          // Move to front if already queued
-          fetchQueue.current = fetchQueue.current.filter((id) => id !== billId);
-        }
-        fetchQueue.current.unshift(billId); // front of queue
-      }
-      processFetchQueueRef.current();
-    },
+  const currentBill = bills.find(
+    (b) => `${b.type.toLowerCase()}${b.number}` === currentBillId,
   );
 
   useEffect(() => {
@@ -445,33 +275,21 @@ export default function LegislationScreen() {
       setSearchFallbackResults([]);
       return;
     }
-
     const timeout = setTimeout(async () => {
       try {
         const results = await billsService.search(searchQuery);
-        if (results?.bills?.length > 0) {
-          setSearchFallbackResults(results.bills);
-        }
-      } catch (e) {
-        // silently fail
-      }
+        if (results?.bills?.length > 0) setSearchFallbackResults(results.bills);
+      } catch {}
     }, 400);
-
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
-  const currentBill = bills.find(
-    (b) => `${b.type.toLowerCase()}${b.number}` === currentBillId,
-  );
-
   useEffect(() => {
     if (!showNewListProgressModal) return;
-
     let currentProgress = 0;
     const interval = setInterval(() => {
       currentProgress += 5;
       setNewListProgress(currentProgress);
-
       if (currentProgress >= 100) {
         clearInterval(interval);
         setTimeout(() => {
@@ -480,7 +298,6 @@ export default function LegislationScreen() {
         }, 300);
       }
     }, 30);
-
     return () => clearInterval(interval);
   }, [showNewListProgressModal]);
 
@@ -495,37 +312,6 @@ export default function LegislationScreen() {
       listEvents.removeListener(LIST_UPDATED, handler);
     };
   }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      const rawBills = data?.bills || [];
-      if (rawBills.length === 0) return;
-
-      const enriched: { [key: string]: any } = {};
-      for (const bill of rawBills) {
-        const billId = `${bill.type.toLowerCase()}${bill.number}`;
-        const cached = billCache.getBill(billId);
-        if (cached?.policyArea) {
-          enriched[billId] = cached;
-          fetchedIds.current.add(billId);
-        }
-      }
-      setEnrichedBills((prev) => ({ ...prev, ...enriched }));
-    }, [data?.bills]),
-  );
-
-  useEffect(() => {
-    const rawBills = data?.bills || [];
-    if (rawBills.length === 0) return;
-
-    for (const bill of rawBills.slice(0, 10)) {
-      const billId = `${bill.type.toLowerCase()}${bill.number}`;
-      if (fetchedIds.current.has(billId) || fetchQueue.current.includes(billId))
-        continue;
-      fetchQueue.current.push(billId);
-    }
-    processFetchQueue();
-  }, [data?.bills]);
 
   useEffect(() => {
     const delay = setTimeout(() => {
@@ -611,11 +397,7 @@ export default function LegislationScreen() {
             })}
           >
             <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-              }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
               <Text
                 style={[
@@ -681,21 +463,15 @@ export default function LegislationScreen() {
           data={displayedBills}
           keyExtractor={(item) => `${item.type}${item.number}`}
           contentContainerStyle={componentStyles.listContent}
-          renderItem={({ item }) => {
-            const billId = `${item.type.toLowerCase()}${item.number}`;
-            return (
-              <BillCard
-                item={item}
-                onAddPress={(id) => {
-                  setCurrentBillId(id);
-                  setShowAddModal(true);
-                }}
-                enrichedData={enrichedBills[billId]}
-              />
-            );
-          }}
-          onViewableItemsChanged={onViewableItemsChangedRef.current}
-          viewabilityConfig={viewabilityConfig.current}
+          renderItem={({ item }) => (
+            <BillCard
+              item={item}
+              onAddPress={(id) => {
+                setCurrentBillId(id);
+                setShowAddModal(true);
+              }}
+            />
+          )}
           onEndReached={() => {
             if (displayedCount < bills.length) {
               setDisplayedCount((prev) => prev + PAGE_SIZE);
@@ -706,12 +482,11 @@ export default function LegislationScreen() {
         />
       )}
 
-      {/* Search Modal */}
       <SearchModal
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
-        searchContext={selectedFilter}
+        searchContext={getFilterLabel()}
         items={[
           ...bills.map((item: any) => ({
             ...item,
@@ -720,12 +495,7 @@ export default function LegislationScreen() {
             name: `${item.type}.${item.number} - ${item.title}`,
             title: undefined,
             date: item.latestAction?.actionDate,
-            policyArea:
-              policyAreas[`${item.type.toLowerCase()}${item.number}`] ??
-              enrichedBills[`${item.type.toLowerCase()}${item.number}`]
-                ?.policyArea?.name ??
-              item.policyArea?.name ??
-              null,
+            policyArea: item.policyArea?.name ?? null,
             latestAction: (item.latestAction as any)?.text ?? item.latestAction,
           })),
           ...searchFallbackResults
@@ -737,27 +507,17 @@ export default function LegislationScreen() {
                     `${b.type}${b.number}`,
                 ),
             )
-            .map((item: any) => {
-              const billType = item.type ?? item.billType;
-              const billNumber = item.number;
-              const billTitle = item.title;
-              const actionDate = item.latestAction?.actionDate;
-              const actionText = item.latestAction?.text;
-              const policyArea =
-                item.policyArea?.name ?? item.policyArea ?? null;
-
-              return {
-                ...item,
-                type: "bill",
-                billType,
-                name: `${billType}.${billNumber} - ${billTitle}`,
-                title: undefined,
-                date: actionDate,
-                policyArea,
-                latestAction: actionText ?? null,
-                congress: item.congress ?? 119,
-              };
-            }),
+            .map((item: any) => ({
+              ...item,
+              type: "bill",
+              billType: item.type ?? item.billType,
+              name: `${item.type ?? item.billType}.${item.number} - ${item.title}`,
+              title: undefined,
+              date: item.latestAction?.actionDate,
+              policyArea: item.policyArea?.name ?? item.policyArea ?? null,
+              latestAction: item.latestAction?.text ?? null,
+              congress: item.congress ?? 119,
+            })),
         ]}
         onItemPress={(item) => {
           billCongressCache.set(
@@ -848,12 +608,7 @@ export default function LegislationScreen() {
                 name: `${currentBill.type}.${currentBill.number} - ${currentBill.title}`,
                 date: currentBill.latestAction?.actionDate,
                 latestAction: currentBill.latestAction?.text,
-                policyArea:
-                  policyAreas[
-                    `${currentBill.type.toLowerCase()}${currentBill.number}`
-                  ] ??
-                  enrichedBills[currentBillId ?? ""]?.policyArea?.name ??
-                  undefined,
+                policyArea: currentBill.policyArea?.name ?? undefined,
               }
             : undefined
         }
@@ -894,7 +649,6 @@ export default function LegislationScreen() {
             >
               Creating and adding to {createdListName || "new list"}...
             </Text>
-
             <View
               style={{
                 width: "100%",
@@ -914,7 +668,6 @@ export default function LegislationScreen() {
                 }}
               />
             </View>
-
             <Text
               style={{
                 fontSize: 12,
@@ -925,16 +678,14 @@ export default function LegislationScreen() {
             >
               {Math.round(newListProgress)}%
             </Text>
-
             <Pressable
               onPress={async () => {
                 const allLists = await storage.getLists();
                 const newlyCreatedList = allLists.find(
                   (l) => l.name === createdListName,
                 );
-                if (newlyCreatedList) {
+                if (newlyCreatedList)
                   await storage.deleteList(newlyCreatedList.id);
-                }
                 setShowNewListProgressModal(false);
                 setNewListProgress(0);
                 setCreatedListName("");
@@ -944,11 +695,7 @@ export default function LegislationScreen() {
               })}
             >
               <Text
-                style={{
-                  fontSize: 14,
-                  color: "#535353",
-                  textAlign: "center",
-                }}
+                style={{ fontSize: 14, color: "#535353", textAlign: "center" }}
               >
                 Cancel
               </Text>
@@ -963,25 +710,13 @@ export default function LegislationScreen() {
 const BillCard = React.memo(function BillCard({
   item,
   onAddPress,
-  enrichedData,
 }: {
   item: any;
   onAddPress: (id: string) => void;
-  enrichedData?: any;
 }) {
   const router = useRouter();
   const billId = `${item.type.toLowerCase()}${item.number}`;
-  const policyAreas = usePolicyAreas();
-  const policyArea =
-    policyAreas[`${item.type.toLowerCase()}${item.number}`] ||
-    enrichedData?.policyArea?.name;
-  // if (item.number === "144") {
-  //   console.log("policyAreas loaded:", Object.keys(policyAreas).length);
-  //   console.log("lookup key:", `${item.type.toLowerCase()}${item.number}`);
-  //   console.log("result:", policyArea);
-  //   console.log("sample keys:", Object.keys(policyAreas).slice(0, 3));
-  // }
-  // console.log(item.introducedDate, item.type, item.number);
+  const policyArea = item.policyArea?.name ?? null;
 
   return (
     <Pressable
@@ -1020,21 +755,21 @@ const BillCard = React.memo(function BillCard({
           <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
             <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
               {new Date(
-                item.latestAction?.actionDate ?? item.introducedDate ?? 0,
+                item.latestAction?.actionDate ?? item.updateDate ?? 0,
               ).toLocaleDateString("en-US", {
                 month: "2-digit",
                 day: "2-digit",
                 year: "numeric",
               })}
             </Text>
-            {(enrichedData?.policyArea?.name || item.policyArea?.name) && (
+            {policyArea && (
               <>
                 <Text style={componentStyles.separator}>·</Text>
                 <Text
                   style={[componentStyles.subtitle, { flexShrink: 1 }]}
                   numberOfLines={1}
                 >
-                  {enrichedData?.policyArea?.name || item.policyArea?.name}
+                  {policyArea}
                 </Text>
               </>
             )}
