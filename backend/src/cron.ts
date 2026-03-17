@@ -122,7 +122,7 @@ const checkNewBills = async () => {
     });
 
     const newBills = (response.data.bills || []).filter(
-      (b: any) => b.congress === 119 && b.introducedDate >= since,
+      (b: any) => b.congress === 119 && b.updateDate >= since,
     );
     console.log(`Found ${newBills.length} new bills since ${since}`);
 
@@ -147,10 +147,19 @@ const checkNewBills = async () => {
           const reason = matchesPolicyArea
             ? billPolicyArea
             : `${billState} delegation`;
+          const stateFullName =
+            Object.entries(STATE_ABBR).find(
+              ([, abbr]) => abbr === billState,
+            )?.[0] ?? billState;
+          const notifTitle = matchesPolicyArea
+            ? `${billPolicyArea}: New Bill Introduced`
+            : `New Bill from ${stateFullName}`;
+          const notifBody = `${bill.type}.${bill.number} — ${bill.title}`;
+
           messages.push({
             to: reg.token,
-            title: `New Bill: ${bill.type}.${bill.number}`,
-            body: `${bill.title} — matched your ${reason} notifications`,
+            title: notifTitle,
+            body: notifBody,
             data: { billId: `${bill.type.toLowerCase()}${bill.number}` },
           });
         }
@@ -293,7 +302,7 @@ const checkFollowedOfficials = async () => {
           for (const bill of recent) {
             messages.push({
               to: reg.token,
-              title: `New Bill Sponsored by ${officialName}`,
+              title: `${officialName} sponsored a new bill`,
               body: `${bill.type ?? ""}${bill.number} - ${bill.title}`,
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
@@ -317,7 +326,7 @@ const checkFollowedOfficials = async () => {
           for (const bill of recent) {
             messages.push({
               to: reg.token,
-              title: `New Bill Cosponsored by ${officialName}`,
+              title: `${officialName} cosponsored a new bill`,
               body: `${bill.type ?? ""}${bill.number} - ${bill.title}`,
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,

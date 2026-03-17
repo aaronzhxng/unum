@@ -41,9 +41,18 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
         `SELECT name FROM list_items WHERE item_id = ? AND item_type = 'official' LIMIT 1`,
         [bioguideId],
       );
+      const rawName = row?.name ?? null;
+      const formattedName = rawName?.includes(",")
+        ? rawName
+            .split(",")
+            .reverse()
+            .map((s: string) => s.trim())
+            .join(" ")
+        : (rawName ?? bioguideId);
+
       return {
         bioguideId,
-        name: row?.name ?? bioguideId,
+        name: formattedName,
         subTypes: notificationPreferences.getSubTypes(id),
       };
     });
