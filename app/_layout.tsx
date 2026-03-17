@@ -52,7 +52,22 @@ export default function RootLayout() {
     const setupNotificationHandler = async () => {
       const Notifications = await import("expo-notifications");
 
-      // Handle notification tap when app is foregrounded or backgrounded
+      // Handle cold start — app opened from notification
+      const initialResponse =
+        await Notifications.getLastNotificationResponseAsync();
+      if (initialResponse) {
+        const data = initialResponse.notification.request.content.data;
+        if (data?.billId) {
+          setTimeout(() => router.navigate(`/bill/${data.billId}`), 500);
+        } else if (data?.officialId) {
+          setTimeout(
+            () => router.navigate(`/official/${data.officialId}`),
+            500,
+          );
+        }
+      }
+
+      // Handle foreground/background tap
       const subscription =
         Notifications.addNotificationResponseReceivedListener((response) => {
           const data = response.notification.request.content.data;
