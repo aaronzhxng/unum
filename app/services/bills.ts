@@ -68,6 +68,30 @@ const upsertBills = (bills: Bill[]): void => {
   stmt.finalizeSync();
 };
 
+const getPolicyAreaMap = (): Record<string, string> => {
+  try {
+    const db = getDb();
+    const row = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'policy_areas_map'`,
+    );
+    if (!row) return {};
+    return JSON.parse(row.value);
+  } catch {
+    return {};
+  }
+};
+
+const savePolicyAreaMap = (map: Record<string, string>): void => {
+  try {
+    const db = getDb();
+    db.runSync(
+      `INSERT INTO meta (key, value) VALUES ('policy_areas_map', ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [JSON.stringify(map)],
+    );
+  } catch {}
+};
+
 const getAllBillsFromSQLite = (): BillsResponse | null => {
   try {
     const db = getDb();
@@ -76,11 +100,41 @@ const getAllBillsFromSQLite = (): BillsResponse | null => {
     );
     if (!count || count.count === 0) return null;
 
-    const rows = db.getAllSync<{ data: string }>(
-      `SELECT data FROM bills ORDER BY update_date DESC`,
+    const rows = db.getAllSync<{
+      data: string;
+      bill_id: string;
+      policy_area: string | null;
+    }>(
+      `SELECT data, bill_id, policy_area FROM bills ORDER BY update_date DESC`,
     );
+
+    // Load policy areas from policy_areas_map and bill_cache
+    const policyAreaMap = getPolicyAreaMap();
+    const cacheRows = db.getAllSync<{ bill_id: string; data: string }>(
+      `SELECT bill_id, data FROM bill_cache WHERE fetched_at > ?`,
+      [Date.now() - 7 * 24 * 60 * 60 * 1000],
+    );
+    for (const row of cacheRows) {
+      try {
+        const parsed = JSON.parse(row.data);
+        if (parsed?.policyArea?.name) {
+          policyAreaMap[row.bill_id] = parsed.policyArea.name;
+        }
+      } catch {}
+    }
+
     return {
-      bills: rows.map((r) => JSON.parse(r.data)),
+      bills: rows.map((r) => {
+        const bill = JSON.parse(r.data);
+        const policyAreaName =
+          r.policy_area ?? policyAreaMap[r.bill_id] ?? null;
+        return {
+          ...bill,
+          policyArea: policyAreaName
+            ? { name: policyAreaName }
+            : (bill.policyArea ?? null),
+        };
+      }),
       pagination: { count: count.count },
     };
   } catch {
@@ -130,7 +184,6 @@ const runDeltaSync = async (): Promise<void> => {
       upsertBills(fresh.bills);
     }
 
-    // Save today as last sync date
     const today = new Date().toISOString().split("T")[0];
     setLastSyncDate(today);
   } catch (error) {
@@ -144,10 +197,15 @@ const runDeltaSync = async (): Promise<void> => {
 
 export const billsService = {
   getAll: async (): Promise<BillsResponse> => {
+    // Fetch and cache policy areas map in background
+    billsService
+      .getPolicyAreas()
+      .then(savePolicyAreaMap)
+      .catch(() => {});
+
     const cached = getAllBillsFromSQLite();
 
     if (cached) {
-      // Return local data immediately, sync in background
       runDeltaSync();
       return cached;
     }
