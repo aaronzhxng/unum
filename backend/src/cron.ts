@@ -147,6 +147,9 @@ const checkNewBills = async () => {
       for (const bill of newBills) {
         const billPolicyArea = bill.policyArea?.name;
         const billState = bill.sponsors?.[0]?.state;
+        if (newBills.indexOf(bill) < 3) {
+          console.log(`Bill sample:`, JSON.stringify(bill).slice(0, 200));
+        }
 
         const matchesPolicyArea =
           billPolicyArea && policyAreas.includes(billPolicyArea);
