@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
   ChevronDown,
@@ -76,6 +76,7 @@ export default function LegislationScreen() {
   const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
 
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const getFilterLabel = () => {
     if (selectedChambers.length === 1) {
@@ -239,17 +240,21 @@ export default function LegislationScreen() {
       filtered = filtered.filter((bill) => apiTypes.includes(bill.type));
     }
 
-    if (selectedSort === "Recent Action") {
+    if (selectedSort === "Most Viewed") {
       filtered.sort(
-        (a, b) =>
-          new Date(b.latestAction?.actionDate ?? 0).getTime() -
-          new Date(a.latestAction?.actionDate ?? 0).getTime(),
+        (a, b) => (a._congressOrder ?? 999999) - (b._congressOrder ?? 999999),
       );
-    } else if (selectedSort === "Oldest Action") {
+    } else if (selectedSort === "Recent Action") {
       filtered.sort(
         (a, b) =>
-          new Date(a.latestAction?.actionDate ?? 0).getTime() -
-          new Date(b.latestAction?.actionDate ?? 0).getTime(),
+          new Date(b.latestAction?.actionDate ?? b.updateDate ?? 0).getTime() -
+          new Date(a.latestAction?.actionDate ?? a.updateDate ?? 0).getTime(),
+      );
+    } else if (selectedSort === "Oldest First") {
+      filtered.sort(
+        (a, b) =>
+          new Date(a.latestAction?.actionDate ?? a.updateDate ?? 0).getTime() -
+          new Date(b.latestAction?.actionDate ?? b.updateDate ?? 0).getTime(),
       );
     }
     return filtered;
@@ -328,6 +333,14 @@ export default function LegislationScreen() {
     const timer = setTimeout(() => setIsFiltering(false), 300);
     return () => clearTimeout(timer);
   }, [selectedSort]);
+
+  useEffect(() => {
+    // Re-fetch bills after policy areas map is saved to SQLite
+    const timer = setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["bills"] });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (isLoading) {
     return (

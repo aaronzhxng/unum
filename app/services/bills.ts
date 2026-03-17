@@ -26,13 +26,13 @@ const congressParam = (congress?: number) =>
 
 // ─── SQLite helpers ───────────────────────────────────────────────────────────
 
-const upsertBills = (bills: Bill[]): void => {
+const upsertBills = (bills: Bill[], preserveOrder = false): void => {
   const db = getDb();
   const stmt = db.prepareSync(
     `INSERT INTO bills (bill_id, type, number, congress, title, origin_chamber,
       latest_action_date, latest_action_text, update_date, policy_area,
-      sponsor_state, data, synced_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      sponsor_state, congress_order, data, synced_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(bill_id) DO UPDATE SET
        title = excluded.title,
        latest_action_date = excluded.latest_action_date,
@@ -40,13 +40,14 @@ const upsertBills = (bills: Bill[]): void => {
        update_date = excluded.update_date,
        policy_area = excluded.policy_area,
        sponsor_state = excluded.sponsor_state,
+       congress_order = CASE WHEN excluded.congress_order IS NOT NULL THEN excluded.congress_order ELSE bills.congress_order END,
        data = excluded.data,
        synced_at = excluded.synced_at`,
   );
 
   const now = Date.now();
   db.withTransactionSync(() => {
-    for (const bill of bills) {
+    bills.forEach((bill, index) => {
       const billId = `${bill.type.toLowerCase()}${bill.number}`;
       stmt.executeSync([
         billId,
@@ -60,10 +61,11 @@ const upsertBills = (bills: Bill[]): void => {
         bill.updateDate ?? null,
         bill.policyArea?.name ?? null,
         bill.sponsors?.[0]?.state ?? null,
+        preserveOrder ? index : null,
         JSON.stringify(bill),
         now,
       ]);
-    }
+    });
   });
   stmt.finalizeSync();
 };
@@ -104,9 +106,8 @@ const getAllBillsFromSQLite = (): BillsResponse | null => {
       data: string;
       bill_id: string;
       policy_area: string | null;
-    }>(
-      `SELECT data, bill_id, policy_area FROM bills ORDER BY update_date DESC`,
-    );
+      congress_order: number | null;
+    }>(`SELECT data, bill_id, policy_area, congress_order FROM bills`);
 
     // Load policy areas from policy_areas_map and bill_cache
     const policyAreaMap = getPolicyAreaMap();
@@ -133,6 +134,7 @@ const getAllBillsFromSQLite = (): BillsResponse | null => {
           policyArea: policyAreaName
             ? { name: policyAreaName }
             : (bill.policyArea ?? null),
+          _congressOrder: r.congress_order,
         };
       }),
       pagination: { count: count.count },
@@ -197,25 +199,36 @@ const runDeltaSync = async (): Promise<void> => {
 
 export const billsService = {
   getAll: async (): Promise<BillsResponse> => {
-    // Fetch and cache policy areas map in background
-    billsService
-      .getPolicyAreas()
-      .then(savePolicyAreaMap)
-      .catch(() => {});
-
+    // Fetch and cache policy areas map, then return enriched data
     const cached = getAllBillsFromSQLite();
 
     if (cached) {
+      // Fetch policy areas in background and save
+      billsService
+        .getPolicyAreas()
+        .then(savePolicyAreaMap)
+        .catch(() => {});
       runDeltaSync();
       return cached;
     }
 
-    // First launch — fetch everything from Railway
-    const fresh = await apiClient.get<BillsResponse>("/bills");
-    upsertBills(fresh.bills);
+    // First launch — fetch policy areas AND bills together
+    // First launch — fetch policy areas AND bills together
+    const [fresh] = await Promise.all([
+      apiClient.get<BillsResponse>("/bills"),
+      billsService
+        .getPolicyAreas()
+        .then(savePolicyAreaMap)
+        .catch(() => {}),
+    ]);
+
+    upsertBills(fresh.bills, true); // preserve order on full fetch
+
     const today = new Date().toISOString().split("T")[0];
     setLastSyncDate(today);
-    return fresh;
+
+    // Return with policy areas already applied
+    return getAllBillsFromSQLite() ?? fresh;
   },
 
   getById: async (billId: string, congress?: number): Promise<any> => {

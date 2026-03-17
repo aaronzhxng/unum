@@ -85,25 +85,26 @@ order_index INTEGER NOT NULL DEFAULT 0,
       fetched_at INTEGER NOT NULL
     );
 
-CREATE TABLE IF NOT EXISTS bills (
-  bill_id TEXT PRIMARY KEY,
-  type TEXT NOT NULL,
-  number TEXT NOT NULL,
-  congress INTEGER NOT NULL,
-  title TEXT NOT NULL,
-  origin_chamber TEXT,
-  latest_action_date TEXT,
-  latest_action_text TEXT,
-  update_date TEXT,
-  policy_area TEXT,
-  sponsor_state TEXT,
-  data TEXT NOT NULL,
-  synced_at INTEGER NOT NULL
-);
+    CREATE TABLE IF NOT EXISTS bills (
+      bill_id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      number TEXT NOT NULL,
+      congress INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      origin_chamber TEXT,
+      latest_action_date TEXT,
+      latest_action_text TEXT,
+      update_date TEXT,
+      policy_area TEXT,
+      sponsor_state TEXT,
+      congress_order INTEGER,
+      data TEXT NOT NULL,
+      synced_at INTEGER NOT NULL
+    );
 
-CREATE INDEX IF NOT EXISTS idx_bills_update_date ON bills(update_date DESC);
-CREATE INDEX IF NOT EXISTS idx_bills_policy_area ON bills(policy_area);
-CREATE INDEX IF NOT EXISTS idx_bills_sponsor_state ON bills(sponsor_state);
+    CREATE INDEX IF NOT EXISTS idx_bills_update_date ON bills(update_date DESC);
+    CREATE INDEX IF NOT EXISTS idx_bills_policy_area ON bills(policy_area);
+    CREATE INDEX IF NOT EXISTS idx_bills_sponsor_state ON bills(sponsor_state);
 
     CREATE TABLE IF NOT EXISTS officials_list_cache (
       id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -138,6 +139,9 @@ CREATE INDEX IF NOT EXISTS idx_bills_sponsor_state ON bills(sponsor_state);
     database.execSync(
       `ALTER TABLE notification_preferences ADD COLUMN sub_types TEXT`,
     );
+  } catch {}
+  try {
+    database.execSync(`ALTER TABLE bills ADD COLUMN congress_order INTEGER`);
   } catch {}
 
   // Run migration from AsyncStorage on first launch
