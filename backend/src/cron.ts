@@ -164,6 +164,10 @@ const checkNewBills = async () => {
 
       const members = membersRes.data.members || [];
       console.log(
+        `First 3 NY members:`,
+        members.slice(0, 3).map((m: any) => `${m.name} (${m.state})`),
+      );
+      console.log(
         `State ${state} (${stateAbbr}): found ${members.length} members`,
       );
 
