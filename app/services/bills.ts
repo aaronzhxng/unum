@@ -11,101 +11,152 @@ interface Bill {
     text: string;
   };
   updateDate: string;
+  originChamber?: string;
+  policyArea?: { name: string };
+  sponsors?: { state: string }[];
 }
 
 interface BillsResponse {
   bills: Bill[];
-  pagination: {
-    count: number;
-  };
+  pagination: { count: number };
 }
-
-// How long before we consider the bills list stale and re-fetch in background.
-// 1 hour — Railway's own in-memory cache is 1 hour, so this aligns with that.
-const BILLS_LIST_STALE_MS = 60 * 60 * 1000;
 
 const congressParam = (congress?: number) =>
   congress ? `?congress=${congress}` : "";
 
-// ─── Cache helpers ────────────────────────────────────────────────────────────
+// ─── SQLite helpers ───────────────────────────────────────────────────────────
 
-const getCachedBillsList = (): {
-  data: BillsResponse;
-  fetchedAt: number;
-} | null => {
+const upsertBills = (bills: Bill[]): void => {
+  const db = getDb();
+  const stmt = db.prepareSync(
+    `INSERT INTO bills (bill_id, type, number, congress, title, origin_chamber,
+      latest_action_date, latest_action_text, update_date, policy_area,
+      sponsor_state, data, synced_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(bill_id) DO UPDATE SET
+       title = excluded.title,
+       latest_action_date = excluded.latest_action_date,
+       latest_action_text = excluded.latest_action_text,
+       update_date = excluded.update_date,
+       policy_area = excluded.policy_area,
+       sponsor_state = excluded.sponsor_state,
+       data = excluded.data,
+       synced_at = excluded.synced_at`,
+  );
+
+  const now = Date.now();
+  db.withTransactionSync(() => {
+    for (const bill of bills) {
+      const billId = `${bill.type.toLowerCase()}${bill.number}`;
+      stmt.executeSync([
+        billId,
+        bill.type,
+        bill.number,
+        bill.congress,
+        bill.title,
+        bill.originChamber ?? null,
+        bill.latestAction?.actionDate ?? null,
+        bill.latestAction?.text ?? null,
+        bill.updateDate ?? null,
+        bill.policyArea?.name ?? null,
+        bill.sponsors?.[0]?.state ?? null,
+        JSON.stringify(bill),
+        now,
+      ]);
+    }
+  });
+  stmt.finalizeSync();
+};
+
+const getAllBillsFromSQLite = (): BillsResponse | null => {
   try {
     const db = getDb();
-    const row = db.getFirstSync<{ data: string; fetched_at: number }>(
-      `SELECT data, fetched_at FROM bills_list_cache WHERE id = 1`,
+    const count = db.getFirstSync<{ count: number }>(
+      `SELECT COUNT(*) as count FROM bills`,
     );
-    if (!row) return null;
-    return { data: JSON.parse(row.data), fetchedAt: row.fetched_at };
+    if (!count || count.count === 0) return null;
+
+    const rows = db.getAllSync<{ data: string }>(
+      `SELECT data FROM bills ORDER BY update_date DESC`,
+    );
+    return {
+      bills: rows.map((r) => JSON.parse(r.data)),
+      pagination: { count: count.count },
+    };
   } catch {
     return null;
   }
 };
 
-const saveBillsListCache = (response: BillsResponse): void => {
+const getLastSyncDate = (): string | null => {
   try {
     const db = getDb();
-    db.runSync(
-      `INSERT INTO bills_list_cache (id, data, fetched_at) VALUES (1, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET data = excluded.data, fetched_at = excluded.fetched_at`,
-      [JSON.stringify(response), Date.now()],
+    const row = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'last_bills_sync'`,
     );
-  } catch (error) {
-    console.error("Error saving bills list cache:", error);
+    return row?.value ?? null;
+  } catch {
+    return null;
   }
 };
 
-// ─── Background refresh ───────────────────────────────────────────────────────
-// Fetches fresh data from Railway and updates SQLite silently.
-// Never throws — failures are silent so they don't affect the UI.
+const setLastSyncDate = (date: string): void => {
+  try {
+    const db = getDb();
+    db.runSync(
+      `INSERT INTO meta (key, value) VALUES ('last_bills_sync', ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [date],
+    );
+  } catch {}
+};
 
-let backgroundRefreshInProgress = false;
+// ─── Background delta sync ────────────────────────────────────────────────────
 
-const refreshBillsInBackground = async (): Promise<void> => {
-  if (backgroundRefreshInProgress) return;
-  backgroundRefreshInProgress = true;
+let syncInProgress = false;
+
+const runDeltaSync = async (): Promise<void> => {
+  if (syncInProgress) return;
+  syncInProgress = true;
 
   try {
-    // console.log("🔄 Background refresh: fetching fresh bills from Railway...");
-    const fresh = await apiClient.get<BillsResponse>("/bills");
-    saveBillsListCache(fresh);
-    // console.log(
-    //   `✅ Background refresh complete — ${fresh.bills.length} bills cached`,
-    // );
+    const lastSync = getLastSyncDate();
+    const since = lastSync ?? undefined;
+
+    const url = since ? `/bills?since=${since}` : `/bills`;
+    const fresh = await apiClient.get<BillsResponse>(url);
+
+    if (fresh.bills.length > 0) {
+      upsertBills(fresh.bills);
+    }
+
+    // Save today as last sync date
+    const today = new Date().toISOString().split("T")[0];
+    setLastSyncDate(today);
   } catch (error) {
-    // console.warn("Background bills refresh failed (silent):", error);
+    console.error("Delta sync failed:", error);
   } finally {
-    backgroundRefreshInProgress = false;
+    syncInProgress = false;
   }
 };
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 export const billsService = {
-  // Stale-while-revalidate:
-  // - If cache exists → return it immediately, refresh in background if stale
-  // - If no cache → fetch from Railway (first ever launch only)
   getAll: async (): Promise<BillsResponse> => {
-    const cached = getCachedBillsList();
+    const cached = getAllBillsFromSQLite();
 
     if (cached) {
-      const isStale = Date.now() - cached.fetchedAt > BILLS_LIST_STALE_MS;
-      if (isStale) {
-        // Return stale data immediately, refresh quietly in background
-        refreshBillsInBackground();
-      }
-      return cached.data;
+      // Return local data immediately, sync in background
+      runDeltaSync();
+      return cached;
     }
 
-    // No cache at all — first launch, must wait for Railway
-    // console.log(
-    //   "📡 No bills cache found — fetching from Railway (first launch)...",
-    // );
+    // First launch — fetch everything from Railway
     const fresh = await apiClient.get<BillsResponse>("/bills");
-    saveBillsListCache(fresh);
+    upsertBills(fresh.bills);
+    const today = new Date().toISOString().split("T")[0];
+    setLastSyncDate(today);
     return fresh;
   },
 
