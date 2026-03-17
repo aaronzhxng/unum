@@ -21,22 +21,30 @@ let billsCache: { data: any; timestamp: number } | null = null;
 const BILLS_CACHE_TTL = 60 * 60 * 1000;
 
 app.get("/api/bills", async (req, res) => {
-  if (billsCache && Date.now() - billsCache.timestamp < BILLS_CACHE_TTL) {
-    return res.json(billsCache.data);
+  const since = req.query.since as string | undefined;
+
+  // Delta sync: if ?since=date is provided, skip cache and fetch only updated bills
+  if (!since) {
+    if (billsCache && Date.now() - billsCache.timestamp < BILLS_CACHE_TTL) {
+      return res.json(billsCache.data);
+    }
   }
 
   try {
-    const fetchBills = async (sort: string) => {
+    const fetchBills = async (sort: string, since?: string) => {
       let bills: any[] = [];
       let offset = 0;
       const limit = 250;
 
       while (true) {
+        const params: any = { limit, offset, sort };
+        if (since) params.fromDateTime = `${since}T00:00:00Z`;
+
         const response = await axios.get(
           "https://api.congress.gov/v3/bill/119",
           {
             headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-            params: { limit, offset, sort },
+            params,
           },
         );
 
@@ -44,6 +52,13 @@ app.get("/api/bills", async (req, res) => {
         bills = bills.concat(page);
 
         if (!response.data.pagination?.next || page.length < limit) break;
+
+        // For delta sync, stop after first page if bills are older than since
+        if (since && page.length > 0) {
+          const lastBill = page[page.length - 1];
+          if (lastBill.updateDate < since) break;
+        }
+
         offset += limit;
       }
 
@@ -52,8 +67,10 @@ app.get("/api/bills", async (req, res) => {
 
     // Fetch all bills sorted both ways to maximize coverage
     // Run sequentially to avoid hammering the API
-    const byUpdateDate = await fetchBills("updateDate+desc");
-    const byIntroducedDate = await fetchBills("introducedDate+desc");
+    const byUpdateDate = await fetchBills("updateDate+desc", since);
+    const byIntroducedDate = since
+      ? []
+      : await fetchBills("introducedDate+desc");
 
     const seen = new Set<string>();
     const merged = [...byUpdateDate, ...byIntroducedDate]
@@ -70,7 +87,9 @@ app.get("/api/bills", async (req, res) => {
       pagination: { count: merged.length },
     };
 
-    billsCache = { data: responseData, timestamp: Date.now() };
+    if (!since) {
+      billsCache = { data: responseData, timestamp: Date.now() };
+    }
     res.json(responseData);
   } catch (error) {
     console.error("Error fetching bills:", error);
