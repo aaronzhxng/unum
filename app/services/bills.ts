@@ -210,20 +210,36 @@ const enrichBackend = async (): Promise<void> => {
     // Force re-run by clearing the flag
     db.runSync(`DELETE FROM meta WHERE key = 'backend_enriched_v1'`);
 
+    // Get all bills
     const rows = db.getAllSync<{
       bill_id: string;
       sponsor_state: string | null;
       policy_area: string | null;
-    }>(
-      `SELECT bill_id, sponsor_state, policy_area FROM bills
-       WHERE sponsor_state IS NOT NULL OR policy_area IS NOT NULL`,
-    );
+    }>(`SELECT bill_id, sponsor_state, policy_area FROM bills`);
 
     if (rows.length === 0) return;
 
+    // Load policy area map to fill in missing policy_area values
+    const policyAreaMapRow = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'policy_areas_map'`,
+    );
+    const policyAreaMap: Record<string, string> = policyAreaMapRow
+      ? JSON.parse(policyAreaMapRow.value)
+      : {};
+
+    // Merge map into rows
+    const enrichedRows = rows
+      .map((r) => ({
+        ...r,
+        policy_area: r.policy_area ?? policyAreaMap[r.bill_id] ?? null,
+      }))
+      .filter((r) => r.policy_area !== null || r.sponsor_state !== null);
+
+    if (enrichedRows.length === 0) return;
+
     // Send in batches of 500
-    for (let i = 0; i < rows.length; i += 500) {
-      const batch = rows.slice(i, i + 500);
+    for (let i = 0; i < enrichedRows.length; i += 500) {
+      const batch = enrichedRows.slice(i, i + 500);
       await fetch(`${BACKEND_URL}/api/bills/enrich`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

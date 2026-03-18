@@ -106,6 +106,24 @@ const checkNewBills = async () => {
     [];
   const since = getLastChecked();
 
+  // Query only HR and S bills with a policy area, updated since yesterday
+  const recentBills = db
+    .prepare(
+      `SELECT bill_id, type, number, title, policy_area, sponsor_state
+     FROM bills
+     WHERE update_date >= ?
+       AND type IN ('HR', 'S')
+       AND policy_area IS NOT NULL`,
+    )
+    .all(since) as {
+    bill_id: string;
+    type: string;
+    number: string;
+    title: string;
+    policy_area: string;
+    sponsor_state: string | null;
+  }[];
+
   for (const reg of registrations) {
     const followedPolicyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
     const followedStates: string[] = JSON.parse(reg.followed_states || "[]");
@@ -113,49 +131,42 @@ const checkNewBills = async () => {
     if (followedPolicyAreas.length === 0 && followedStates.length === 0)
       continue;
 
-    // Query bills updated since yesterday from local SQLite
-    const recentBills = db
-      .prepare(
-        `SELECT bill_id, type, number, title, policy_area, sponsor_state
-         FROM bills
-         WHERE update_date >= ?`,
-      )
-      .all(since) as {
-      bill_id: string;
-      type: string;
-      number: string;
-      title: string;
-      policy_area: string | null;
-      sponsor_state: string | null;
-      // latest_action_date: string | null;
-    }[];
+    // Track per-area and per-state caps
+    const policyAreaCounts: Record<string, number> = {};
+    const stateCounts: Record<string, number> = {};
 
     for (const bill of recentBills) {
       const billId = `${bill.type.toLowerCase()}${bill.number}`;
 
-      // Policy area notifications
-      if (bill.policy_area && followedPolicyAreas.includes(bill.policy_area)) {
+      // Policy area notifications — cap at 4 per area per day
+      if (
+        followedPolicyAreas.includes(bill.policy_area) &&
+        (policyAreaCounts[bill.policy_area] ?? 0) < 4
+      ) {
         messages.push({
           to: reg.token,
           title: `New bill: ${bill.policy_area}`,
           body: `${bill.type}.${bill.number} — ${bill.title}`,
           data: { billId },
         });
+        policyAreaCounts[bill.policy_area] =
+          (policyAreaCounts[bill.policy_area] ?? 0) + 1;
         continue; // Don't double-notify if also matches state
       }
 
-      // State notifications — sponsor_state is stored as abbreviation (e.g. "NY")
+      // State notifications — cap at 4 per state per day
       if (bill.sponsor_state) {
         const matchedState = followedStates.find(
           (s) => STATE_ABBR[s] === bill.sponsor_state,
         );
-        if (matchedState) {
+        if (matchedState && (stateCounts[matchedState] ?? 0) < 4) {
           messages.push({
             to: reg.token,
             title: `New bill from ${matchedState}`,
             body: `${bill.type}.${bill.number} — ${bill.title}`,
             data: { billId },
           });
+          stateCounts[matchedState] = (stateCounts[matchedState] ?? 0) + 1;
         }
       }
     }
