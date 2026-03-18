@@ -38,7 +38,7 @@ const modalStyles = {
     shadowRadius: 4,
     elevation: 8,
     margin: 16,
-    marginTop: 280,
+    maxHeight: 400,
   },
   dropdownItem: {
     paddingVertical: 16,
@@ -288,8 +288,11 @@ export default function AddModal({
         statusBarTranslucent={true}
         onRequestClose={closeModal}
       >
-        <Pressable style={modalStyles.modalOverlay} onPress={closeModal}>
-          <View style={{ padding: 0, minHeight: 400 }}>
+        <Pressable
+          style={[modalStyles.modalOverlay, { justifyContent: "center" }]}
+          onPress={closeModal}
+        >
+          <View style={{ width: "100%" }}>
             <ScrollView
               style={modalStyles.dropdownAdd}
               nestedScrollEnabled

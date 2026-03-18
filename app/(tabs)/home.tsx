@@ -465,7 +465,39 @@ export default function HomeScreen() {
 
       {/* List Content */}
       {items.length === 0 ? (
-        <Text>No items in this list</Text>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 32,
+            gap: 8,
+          }}
+        >
+          <Text style={{ fontSize: 32, marginBottom: 16 }}>📋</Text>
+          <Text
+            style={{
+              fontSize: 17,
+              fontWeight: "600",
+              color: "#1a1a1a",
+              marginBottom: 8,
+              textAlign: "center",
+            }}
+          >
+            Your list is empty
+          </Text>
+          <Text
+            style={{
+              fontSize: 14,
+              color: "#7B7C81",
+              textAlign: "center",
+              lineHeight: 20,
+            }}
+          >
+            Add from the Officials and Legislation tabs to start tracking what
+            matters to you.
+          </Text>
+        </View>
       ) : isEditMode ? (
         <DraggableFlatList
           data={items}
@@ -868,6 +900,55 @@ export default function HomeScreen() {
   );
 }
 
+const POLICY_AREA_COLORS: Record<string, string> = {
+  "Agriculture and Food": "#7CB342",
+  Animals: "#8D6E63",
+  "Armed Forces and National Security": "#455A64",
+  "Arts, Culture, Religion": "#AB47BC",
+  "Civil Rights and Liberties, Minority Issues": "#E53935",
+  Commerce: "#00ACC1",
+  Congress: "#1565C0",
+  "Crime and Law Enforcement": "#424242",
+  "Economics and Public Finance": "#4CAF82",
+  Education: "#F5A623",
+  "Emergency Management": "#FF5722",
+  Energy: "#E67E22",
+  "Environmental Protection": "#43A047",
+  Families: "#F06292",
+  "Finance and Financial Sector": "#4CAF82",
+  "Foreign Trade and International Finance": "#9B59B6",
+  "Government Operations and Politics": "#6B7FD4",
+  Health: "#E53935",
+  "Housing and Community Development": "#FF8F00",
+  Immigration: "#00897B",
+  "International Affairs": "#1E88E5",
+  "Labor and Employment": "#6D4C41",
+  Law: "#546E7A",
+  "Native Americans": "#BF360C",
+  "Public Lands and Natural Resources": "#27AE60",
+  "Science, Technology, Communications": "#0288D1",
+  "Social Welfare": "#E91E8C",
+  "Sports and Recreation": "#00BCD4",
+  Taxation: "#F9A825",
+  "Transportation and Public Works": "#5C6BC0",
+  "Water Resources Development": "#0277BD",
+};
+
+function formatRole(
+  chamber: string,
+  state: string,
+  district?: number | null,
+): string {
+  if (chamber === "House of Representatives") {
+    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
+    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    return full.length > 39 ? abbr : full;
+  }
+  const full = `Senator, ${state}`;
+  const abbr = `Sen, ${state}`;
+  return full.length > 40 ? abbr : full;
+}
+
 const Card = React.memo(function Card({
   item,
   isEditMode,
@@ -927,81 +1008,71 @@ const Card = React.memo(function Card({
           },
         ]}
       >
-        {/* Avatar with selection overlay */}
-        <View>
-          {item.type === "bill" ? (
-            // Bill icon - check this FIRST
+        {/* Official avatar column */}
+        {item.type === "bill" ? null : (
+          <View
+            style={{
+              width: 64,
+              height: 50,
+              marginRight: 12,
+              flexShrink: 0,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <View
-              style={[
-                componentStyles.avatar,
-                {
-                  backgroundColor: "#eee",
-                  justifyContent: "center",
-                  alignItems: "center",
-                },
-              ]}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                overflow: "hidden",
+                backgroundColor: "#eee",
+              }}
             >
-              <Image
-                source={
-                  (item as any).policyArea
-                    ? getBillIcon((item as any).policyArea)
-                    : getBillIcon()
-                }
-                style={{ width: "100%", height: "100%", borderRadius: 6 }}
-                resizeMode="contain"
-              />
+              {(item.photoUrl && !imageError) || item.avatar ? (
+                <Image
+                  source={item.avatar || { uri: item.photoUrl }}
+                  style={{ width: "100%", height: "120%" }}
+                  resizeMode="cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "#BFBFBF",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                  >
+                    {item.name?.charAt(0) || "?"}
+                  </Text>
+                </View>
+              )}
             </View>
-          ) : (item.photoUrl && !imageError) || item.avatar ? (
-            // Official with photo
-            <View style={componentStyles.avatar}>
-              <Image
-                source={item.avatar || { uri: item.photoUrl }}
-                style={{
-                  width: "100%",
-                  height: "120%",
-                }}
-                resizeMode="cover"
-                onError={() => setImageError(true)}
-              />
-            </View>
-          ) : (
-            // Official fallback (initials)
-            <View style={componentStyles.avatar}>
+            {isEditMode && (
               <View
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#BFBFBF",
+                  position: "absolute",
+                  top: 0,
+                  left: 7,
+                  width: 50,
+                  height: 50,
+                  borderRadius: 25,
+                  backgroundColor: isSelected ? "#008CFF" : "rgba(0,0,0,0.15)",
                   justifyContent: "center",
                   alignItems: "center",
                 }}
               >
-                <Text
-                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
-                >
-                  {item.name?.charAt(0) || "?"}
-                </Text>
+                {isSelected && <Check size={24} color="white" />}
               </View>
-            </View>
-          )}
-          {isEditMode && (
-            <View
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: 50,
-                height: 50,
-                borderRadius: 36,
-                backgroundColor: isSelected ? "#008CFF" : "rgba(0,0,0,0.15)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {isSelected && <Check size={24} color="white" />}
-            </View>
-          )}
-        </View>
+            )}
+          </View>
+        )}
 
         {isOfficial ? (
           <View style={{ flex: 1 }}>
@@ -1029,37 +1100,125 @@ const Card = React.memo(function Card({
             </View>
           </View>
         ) : (
-          <View style={{ flex: 1, gap: 4 }}>
-            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
-              <Text
-                style={[componentStyles.subtitle, { flexShrink: 0 }]}
-                numberOfLines={1}
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+            {/* Left column: badge + icon */}
+            <View
+              style={{
+                alignItems: "center",
+                flexShrink: 0,
+                width: 64,
+                marginRight: 12,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor:
+                    POLICY_AREA_COLORS[(item as any).policyArea] ?? "#008CFF",
+                  borderRadius: 6,
+                  paddingHorizontal: 6,
+                  paddingVertical: 4,
+                  marginBottom: 6,
+                  alignItems: "center",
+                  width: "100%",
+                }}
               >
-                {formatDate(item.date)}
-              </Text>
-              {item.policyArea && (
-                <>
-                  <Text style={componentStyles.separator}>·</Text>
+                <Text
+                  style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
+                  numberOfLines={1}
+                >
+                  {item.name?.split(" - ")[0] ?? item.name}
+                </Text>
+              </View>
+              <View style={{ width: 50, height: 50, borderRadius: 6 }}>
+                <Image
+                  source={
+                    (item as any).policyArea
+                      ? getBillIcon((item as any).policyArea)
+                      : getBillIcon()
+                  }
+                  style={{ width: 50, height: 50, borderRadius: 6 }}
+                  resizeMode="contain"
+                />
+                {isEditMode && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: 50,
+                      height: 50,
+                      borderRadius: 25,
+                      backgroundColor: isSelected
+                        ? "#008CFF"
+                        : "rgba(0,0,0,0.15)",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {isSelected && <Check size={24} color="white" />}
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Info */}
+            <View
+              style={{
+                flex: 1,
+                alignSelf: "stretch",
+                justifyContent: "space-between",
+              }}
+            >
+              {/* Date + policy area */}
+              <View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    flexWrap: "nowrap",
+                    marginBottom: 4,
+                  }}
+                >
                   <Text
-                    style={[componentStyles.subtitle, { flexShrink: 1 }]}
+                    style={[componentStyles.subtitle, { flexShrink: 0 }]}
                     numberOfLines={1}
                   >
-                    {item.policyArea}
+                    {formatDate(item.date)}
                   </Text>
-                </>
-              )}
+                  {(item as any).policyArea && (
+                    <>
+                      <Text style={componentStyles.separator}>·</Text>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color:
+                            POLICY_AREA_COLORS[(item as any).policyArea] ??
+                            "#008CFF",
+                          fontWeight: "600",
+                          flexShrink: 1,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {(item as any).policyArea}
+                      </Text>
+                    </>
+                  )}
+                </View>
+                {/* Descriptive title only — strip the HR.123 prefix */}
+                <Text style={componentStyles.name} numberOfLines={2}>
+                  {item.name?.includes(" - ")
+                    ? item.name.split(" - ").slice(1).join(" - ")
+                    : item.name}
+                </Text>
+              </View>
+
+              {/* Latest action pinned to bottom */}
+              <Text style={componentStyles.subtitle} numberOfLines={1}>
+                {typeof item.latestAction === "string"
+                  ? item.latestAction
+                  : ((item.latestAction as any)?.text ?? "")}
+              </Text>
             </View>
-            <Text style={componentStyles.name} numberOfLines={2}>
-              {item.name}
-            </Text>
-            <Text
-              style={[componentStyles.subtitle, { flexShrink: 1 }]}
-              numberOfLines={1}
-            >
-              {typeof item.latestAction === "string"
-                ? item.latestAction
-                : ((item.latestAction as any)?.text ?? "")}
-            </Text>
           </View>
         )}
       </View>

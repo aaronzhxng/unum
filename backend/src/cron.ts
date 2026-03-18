@@ -1,4 +1,5 @@
 import axios from "axios";
+import * as cron from "node-cron";
 import db from "./db";
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
@@ -92,15 +93,72 @@ const getLastChecked = (): string => {
 };
 
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
-// NOTE: Congress.gov API does not support filtering by policyArea or stateCode
-// on the bill list endpoint. These loops are disabled until SQLite migration
-// allows local filtering with full bill details cached.
+// Uses Railway SQLite bills table — no Congress.gov API needed
 
 const checkNewBills = async () => {
   console.log("Checking for new bills...");
-  // TODO: Re-enable after SQLite migration provides locally cached bills
-  // with policyArea and sponsor state fields for accurate filtering.
-  console.log("Skipping new bill notifications — pending SQLite migration");
+  const registrations = getAllRegistrations();
+  const messages: { to: string; title: string; body: string; data?: any }[] =
+    [];
+  const since = getLastChecked();
+
+  for (const reg of registrations) {
+    const followedPolicyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
+    const followedStates: string[] = JSON.parse(reg.followed_states || "[]");
+
+    if (followedPolicyAreas.length === 0 && followedStates.length === 0)
+      continue;
+
+    // Query bills updated since yesterday from local SQLite
+    const recentBills = db
+      .prepare(
+        `SELECT bill_id, type, number, title, policy_area, sponsor_state
+         FROM bills
+         WHERE update_date >= ?`,
+      )
+      .all(since) as {
+      bill_id: string;
+      type: string;
+      number: string;
+      title: string;
+      policy_area: string | null;
+      sponsor_state: string | null;
+      // latest_action_date: string | null;
+    }[];
+
+    for (const bill of recentBills) {
+      const billId = `${bill.type.toLowerCase()}${bill.number}`;
+
+      // Policy area notifications
+      if (bill.policy_area && followedPolicyAreas.includes(bill.policy_area)) {
+        messages.push({
+          to: reg.token,
+          title: `New bill: ${bill.policy_area}`,
+          body: `${bill.type}.${bill.number} — ${bill.title}`,
+          data: { billId },
+        });
+        continue; // Don't double-notify if also matches state
+      }
+
+      // State notifications — sponsor_state is stored as abbreviation (e.g. "NY")
+      if (bill.sponsor_state) {
+        const matchedState = followedStates.find(
+          (s) => STATE_ABBR[s] === bill.sponsor_state,
+        );
+        if (matchedState) {
+          messages.push({
+            to: reg.token,
+            title: `New bill from ${matchedState}`,
+            body: `${bill.type}.${bill.number} — ${bill.title}`,
+            data: { billId },
+          });
+        }
+      }
+    }
+  }
+
+  await sendNotifications(messages);
+  console.log(`Sent ${messages.length} new bill notifications`);
 };
 
 // ── Check 2: Status changes on followed bills ─────────────────────────────────
@@ -285,4 +343,12 @@ export const runCronJob = async () => {
   await checkFollowedBills();
   await checkFollowedOfficials();
   console.log("Cron job complete.");
+};
+
+// ── Scheduler — runs every day at 8:00 AM UTC ─────────────────────────────────
+export const startCronScheduler = () => {
+  cron.schedule("0 8 * * *", () => {
+    runCronJob();
+  });
+  console.log("Cron scheduler started — runs daily at 8:00 AM UTC");
 };

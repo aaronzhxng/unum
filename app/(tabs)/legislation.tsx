@@ -720,6 +720,40 @@ export default function LegislationScreen() {
   );
 }
 
+const POLICY_AREA_COLORS: Record<string, string> = {
+  "Agriculture and Food": "#7CB342",
+  Animals: "#8D6E63",
+  "Armed Forces and National Security": "#455A64",
+  "Arts, Culture, Religion": "#AB47BC",
+  "Civil Rights and Liberties, Minority Issues": "#E53935",
+  Commerce: "#00ACC1",
+  Congress: "#1565C0",
+  "Crime and Law Enforcement": "#424242",
+  "Economics and Public Finance": "#4CAF82",
+  Education: "#F5A623",
+  "Emergency Management": "#FF5722",
+  Energy: "#E67E22",
+  "Environmental Protection": "#43A047",
+  Families: "#F06292",
+  "Finance and Financial Sector": "#4CAF82",
+  "Foreign Trade and International Finance": "#9B59B6",
+  "Government Operations and Politics": "#6B7FD4",
+  Health: "#E53935",
+  "Housing and Community Development": "#FF8F00",
+  Immigration: "#00897B",
+  "International Affairs": "#1E88E5",
+  "Labor and Employment": "#6D4C41",
+  Law: "#546E7A",
+  "Native Americans": "#BF360C",
+  "Public Lands and Natural Resources": "#27AE60",
+  "Science, Technology, Communications": "#0288D1",
+  "Social Welfare": "#E91E8C",
+  "Sports and Recreation": "#00BCD4",
+  Taxation: "#F9A825",
+  "Transportation and Public Works": "#5C6BC0",
+  "Water Resources Development": "#0277BD",
+};
+
 const BillCard = React.memo(function BillCard({
   item,
   onAddPress,
@@ -730,6 +764,15 @@ const BillCard = React.memo(function BillCard({
   const router = useRouter();
   const billId = `${item.type.toLowerCase()}${item.number}`;
   const policyArea = item.policyArea?.name ?? null;
+  const dotColor = POLICY_AREA_COLORS[policyArea] ?? "#008CFF";
+
+  const dateStr = new Date(
+    item.latestAction?.actionDate ?? item.updateDate ?? 0,
+  ).toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
 
   return (
     <Pressable
@@ -739,64 +782,90 @@ const BillCard = React.memo(function BillCard({
       }}
     >
       <View style={componentStyles.officialCard}>
+        {/* Left column: badge + icon */}
         <View
-          style={[
-            componentStyles.avatar,
-            {
-              backgroundColor: "#eee",
-              justifyContent: "center",
-              alignItems: "center",
-            },
-          ]}
+          style={{
+            alignItems: "center",
+            marginRight: 12,
+            flexShrink: 0,
+            width: 64,
+          }}
         >
-          {policyArea ? (
-            <Image
-              source={getBillIcon(policyArea)}
-              style={{ width: "100%", height: "100%", borderRadius: 6 }}
-              resizeMode="contain"
-            />
-          ) : (
+          <View
+            style={{
+              backgroundColor: dotColor,
+              borderRadius: 6,
+              paddingHorizontal: 6,
+              paddingVertical: 4,
+              marginBottom: 6,
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
             <Text
-              style={{ fontSize: 16, fontWeight: "bold", color: "#535353" }}
+              style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
+              numberOfLines={1}
             >
-              {item.type}
+              {item.type}.{item.number}
             </Text>
-          )}
+          </View>
+          <Image
+            source={getBillIcon(policyArea)}
+            style={{ width: 50, height: 50, borderRadius: 6 }}
+            resizeMode="contain"
+          />
         </View>
 
-        <View style={{ flex: 1, gap: 4 }}>
-          <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
-            <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
-              {new Date(
-                item.latestAction?.actionDate ?? item.updateDate ?? 0,
-              ).toLocaleDateString("en-US", {
-                month: "2-digit",
-                day: "2-digit",
-                year: "numeric",
-              })}
+        {/* Info */}
+        <View
+          style={{
+            flex: 1,
+            alignSelf: "stretch",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Date + policy area + title grouped at top */}
+          <View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                flexWrap: "nowrap",
+                marginBottom: 4,
+              }}
+            >
+              <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
+                {dateStr}
+              </Text>
+              {policyArea && (
+                <>
+                  <Text style={componentStyles.separator}>·</Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: dotColor,
+                      fontWeight: "600",
+                      flexShrink: 1,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {policyArea}
+                  </Text>
+                </>
+              )}
+            </View>
+            <Text style={componentStyles.name} numberOfLines={2}>
+              {item.title}
             </Text>
-            {policyArea && (
-              <>
-                <Text style={componentStyles.separator}>·</Text>
-                <Text
-                  style={[componentStyles.subtitle, { flexShrink: 1 }]}
-                  numberOfLines={1}
-                >
-                  {policyArea}
-                </Text>
-              </>
-            )}
           </View>
-          <Text style={componentStyles.name} numberOfLines={2}>
-            {item.type}.{item.number} - {item.title}
+
+          {/* Latest action pinned to bottom */}
+          <Text style={componentStyles.subtitle} numberOfLines={1}>
+            {item.latestAction?.text ?? "No action yet"}
           </Text>
-          <View style={componentStyles.metaRow}>
-            <Text style={componentStyles.subtitle} numberOfLines={1}>
-              {item.latestAction?.text ?? "No action yet"}
-            </Text>
-          </View>
         </View>
 
+        {/* Add button */}
         <Pressable
           onPress={(e) => {
             e.stopPropagation();

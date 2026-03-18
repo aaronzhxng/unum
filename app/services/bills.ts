@@ -195,6 +195,55 @@ const runDeltaSync = async (): Promise<void> => {
   }
 };
 
+const BACKEND_URL = "https://unum-production.up.railway.app";
+
+const enrichBackend = async (): Promise<void> => {
+  try {
+    const db = getDb();
+
+    // Only run once
+    const already = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'backend_enriched_v1'`,
+    );
+    if (already) return;
+
+    const rows = db.getAllSync<{
+      bill_id: string;
+      sponsor_state: string | null;
+      policy_area: string | null;
+    }>(
+      `SELECT bill_id, sponsor_state, policy_area FROM bills
+       WHERE sponsor_state IS NOT NULL OR policy_area IS NOT NULL`,
+    );
+
+    if (rows.length === 0) return;
+
+    // Send in batches of 500
+    for (let i = 0; i < rows.length; i += 500) {
+      const batch = rows.slice(i, i + 500);
+      await fetch(`${BACKEND_URL}/api/bills/enrich`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bills: batch.map((b) => ({
+            billId: b.bill_id,
+            sponsorState: b.sponsor_state,
+            policyArea: b.policy_area,
+          })),
+        }),
+      });
+    }
+
+    // Mark complete so it never runs again
+    db.runSync(
+      `INSERT INTO meta (key, value) VALUES ('backend_enriched_v1', 'true')
+       ON CONFLICT(key) DO UPDATE SET value = 'true'`,
+    );
+  } catch (err) {
+    console.error("Backend enrichment failed:", err);
+  }
+};
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 export const billsService = {
@@ -226,6 +275,9 @@ export const billsService = {
 
     const today = new Date().toISOString().split("T")[0];
     setLastSyncDate(today);
+
+    // One-time: send sponsor_state and policy_area to Railway for cron use
+    enrichBackend().catch(() => {});
 
     // Return with policy areas already applied
     return getAllBillsFromSQLite() ?? fresh;

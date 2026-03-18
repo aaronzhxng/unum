@@ -1,5 +1,6 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { Check, ChevronLeft } from "lucide-react-native";
+import { Check } from "lucide-react-native";
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
@@ -59,27 +60,33 @@ const STATES = [
 
 export default function PickStateScreen() {
   const router = useRouter();
-  const { priorityState, setPriorityState } = useOnboarding();
+  const { priorityState, setPriorityState, setOverlayConfig } = useOnboarding();
   const [showList, setShowList] = useState(false);
 
-  const handleContinue = () => router.push("/onboarding/name-list" as any);
-  const handleSkip = () => router.push("/onboarding/name-list" as any);
+  useFocusEffect(
+    React.useCallback(() => {
+      setOverlayConfig({
+        dotIndex: 4,
+        continueLabel: priorityState ? `Set ${priorityState}` : "Continue",
+        onContinue: () => router.push("/onboarding/name-list" as any),
+        onBack: () => router.back(),
+        onSkip: () => router.push("/onboarding/name-list" as any),
+      });
+    }, [priorityState]),
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
-      {/* Header */}
       <View
         style={{ paddingTop: 64, paddingHorizontal: 24, paddingBottom: 24 }}
       >
-        <Pressable onPress={() => router.back()} style={{ marginBottom: 16 }}>
-          <ChevronLeft size={28} color="#535353" />
-        </Pressable>
         <Text
           style={{
             fontSize: 24,
             fontWeight: "700",
             color: "#1a1a1a",
             marginBottom: 8,
+            marginTop: 32,
           }}
         >
           Set a priority state
@@ -91,22 +98,19 @@ export default function PickStateScreen() {
       </View>
 
       <View style={{ paddingHorizontal: 16, flex: 1 }}>
-        {/* State selector button */}
         <Pressable
           onPress={() => setShowList(!showList)}
           style={({ pressed }) => ({
             backgroundColor: "#fff",
-            borderRadius: 16,
+            borderRadius: 24,
             padding: 16,
-            borderWidth: 2,
-            borderColor: priorityState ? "#008CFF" : "#E0E0E0",
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
             transform: [{ scale: pressed ? 0.98 : 1 }],
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
+            shadowColor: "#000000",
+            shadowOpacity: 0.15,
+            shadowOffset: { width: 0, height: 2 },
             shadowRadius: 4,
             elevation: 2,
           })}
@@ -123,7 +127,6 @@ export default function PickStateScreen() {
           {priorityState && <Check size={20} color="#008CFF" strokeWidth={3} />}
         </Pressable>
 
-        {/* State list */}
         {showList && (
           <View
             style={{
@@ -131,8 +134,6 @@ export default function PickStateScreen() {
               borderRadius: 16,
               marginTop: 8,
               maxHeight: 320,
-              borderWidth: 1,
-              borderColor: "#E0E0E0",
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.08,
@@ -141,7 +142,7 @@ export default function PickStateScreen() {
               overflow: "hidden",
             }}
           >
-            <ScrollView showsVerticalScrollIndicator={true} nestedScrollEnabled>
+            <ScrollView showsVerticalScrollIndicator nestedScrollEnabled>
               {STATES.map((state) => (
                 <Pressable
                   key={state}
@@ -181,67 +182,6 @@ export default function PickStateScreen() {
             </ScrollView>
           </View>
         )}
-      </View>
-
-      {/* Bottom Buttons */}
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: "#fafafa",
-          paddingHorizontal: 24,
-          paddingBottom: 48,
-          paddingTop: 16,
-          borderTopWidth: 1,
-          borderTopColor: "#f0f0f0",
-        }}
-      >
-        {/* Dot indicators */}
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            justifyContent: "center",
-            marginBottom: 16,
-          }}
-        >
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <View
-              key={i}
-              style={{
-                width: i === 4 ? 20 : 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: i === 4 ? "#008CFF" : "#D0D0D0",
-              }}
-            />
-          ))}
-        </View>
-
-        <Pressable
-          onPress={handleContinue}
-          style={({ pressed }) => ({
-            backgroundColor: "#008CFF",
-            paddingVertical: 16,
-            borderRadius: 32,
-            alignItems: "center",
-            marginBottom: 12,
-            transform: [{ scale: pressed ? 0.96 : 1 }],
-          })}
-        >
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            {priorityState ? `Set ${priorityState}` : "Continue"}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={handleSkip}
-          style={{ alignItems: "center", paddingVertical: 8 }}
-        >
-          <Text style={{ color: "#535353", fontSize: 15 }}>Skip</Text>
-        </Pressable>
       </View>
     </View>
   );

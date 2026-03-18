@@ -1,18 +1,36 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
+import { useOnboarding } from "../context/OnboardingContext";
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const { setOverlayConfig } = useOnboarding();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setOverlayConfig({
+        dotIndex: 0,
+        continueLabel: "Get Started",
+        onContinue: () => router.push("/onboarding/pick-officials" as any),
+        showBorder: false,
+      });
+    }, []),
+  );
 
   return (
     <View
-      style={{ flex: 1, backgroundColor: "#fafafa", paddingHorizontal: 32 }}
+      style={{
+        flex: 1,
+        backgroundColor: "#fafafa",
+        paddingHorizontal: 32,
+        paddingBottom: 160,
+      }}
     >
-      {/* Center content */}
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <Image
-          source={require("../../assets/app_icons/app_icon.png")}
+          source={require("../../assets/app_icons/app_icon_small.png")}
           style={{ width: 96, height: 96, borderRadius: 22, marginBottom: 24 }}
           resizeMode="cover"
         />
@@ -21,8 +39,8 @@ export default function WelcomeScreen() {
             fontSize: 32,
             fontWeight: "700",
             color: "#1a1a1a",
-            marginBottom: 16,
             textAlign: "center",
+            marginBottom: 24,
           }}
         >
           Welcome to Unum
@@ -38,44 +56,6 @@ export default function WelcomeScreen() {
           Unum lets you build lists of your elected officials, bills, and policy
           areas of interest.
         </Text>
-      </View>
-
-      {/* Bottom: dots + button */}
-      <View style={{ paddingBottom: 48 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            justifyContent: "center",
-            marginBottom: 24,
-          }}
-        >
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <View
-              key={i}
-              style={{
-                width: i === 0 ? 20 : 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: i === 0 ? "#008CFF" : "#D0D0D0",
-              }}
-            />
-          ))}
-        </View>
-        <Pressable
-          onPress={() => router.push("/onboarding/pick-officials" as any)}
-          style={({ pressed }) => ({
-            backgroundColor: "#008CFF",
-            paddingVertical: 16,
-            borderRadius: 32,
-            transform: [{ scale: pressed ? 0.96 : 1 }],
-            alignItems: "center",
-          })}
-        >
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            Get Started
-          </Text>
-        </Pressable>
       </View>
     </View>
   );

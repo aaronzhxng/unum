@@ -1,8 +1,9 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
+import { getBillIcon } from "../utils/billIcons";
 
 const SUGGESTED_BILLS = [
   {
@@ -29,7 +30,7 @@ const SUGGESTED_BILLS = [
     number: "3633",
     title: "Digital Asset Market Clarity Act of 2025",
     description:
-      "Establishes a regulatory framework for digital assets and cryptocurrency markets.",
+      "Establishes a regulatory framework for digital assets and crypto markets.",
     policyArea: "Finance and Financial Sector",
   },
   {
@@ -89,7 +90,7 @@ const POLICY_AREA_COLORS: Record<string, string> = {
 
 export default function PickBillsScreen() {
   const router = useRouter();
-  const { selectedBills, setSelectedBills } = useOnboarding();
+  const { selectedBills, setSelectedBills, setOverlayConfig } = useOnboarding();
 
   const toggle = (id: string) => {
     setSelectedBills(
@@ -99,25 +100,33 @@ export default function PickBillsScreen() {
     );
   };
 
-  const handleContinue = () =>
-    router.push("/onboarding/pick-policy-areas" as any);
-  const handleSkip = () => router.push("/onboarding/pick-policy-areas" as any);
+  useFocusEffect(
+    React.useCallback(() => {
+      setOverlayConfig({
+        dotIndex: 2,
+        continueLabel:
+          selectedBills.length > 0
+            ? `Add ${selectedBills.length} Bill${selectedBills.length > 1 ? "s" : ""}`
+            : "Continue",
+        onContinue: () => router.push("/onboarding/pick-policy-areas" as any),
+        onBack: () => router.back(),
+        onSkip: () => router.push("/onboarding/pick-policy-areas" as any),
+      });
+    }, [selectedBills]),
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
-      {/* Header */}
       <View
         style={{ paddingTop: 64, paddingHorizontal: 24, paddingBottom: 16 }}
       >
-        <Pressable onPress={() => router.back()} style={{ marginBottom: 16 }}>
-          <ChevronLeft size={28} color="#535353" />
-        </Pressable>
         <Text
           style={{
             fontSize: 24,
             fontWeight: "700",
             color: "#1a1a1a",
             marginBottom: 8,
+            marginTop: 32,
           }}
         >
           Follow some bills
@@ -127,9 +136,8 @@ export default function PickBillsScreen() {
         </Text>
       </View>
 
-      {/* Bill Cards */}
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 180 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 220 }}
         showsVerticalScrollIndicator={false}
       >
         {SUGGESTED_BILLS.map((bill) => {
@@ -154,76 +162,100 @@ export default function PickBillsScreen() {
                 elevation: 2,
               })}
             >
-              <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                {/* Bill type badge */}
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                {/* Left column: badge + icon */}
                 <View
                   style={{
-                    backgroundColor: dotColor,
-                    borderRadius: 8,
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    marginRight: 10,
-                    marginTop: 2,
-                    minWidth: 40,
                     alignItems: "center",
+                    flexShrink: 0,
+                    width: 64,
+                    marginRight: 12,
                   }}
                 >
-                  <Text
-                    style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}
+                  <View
+                    style={{
+                      backgroundColor: dotColor,
+                      borderRadius: 6,
+                      paddingHorizontal: 6,
+                      paddingVertical: 4,
+                      marginBottom: 6,
+                      alignItems: "center",
+                      width: "100%",
+                    }}
                   >
-                    {bill.type}.{bill.number}
-                  </Text>
+                    <Text
+                      style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
+                      numberOfLines={1}
+                    >
+                      {bill.type}.{bill.number}
+                    </Text>
+                  </View>
+                  <Image
+                    source={getBillIcon(bill.policyArea)}
+                    style={{ width: 50, height: 50, borderRadius: 6 }}
+                    resizeMode="contain"
+                  />
                 </View>
 
                 {/* Info */}
-                <View style={{ flex: 1 }}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignSelf: "stretch",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <View>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: dotColor,
+                        fontWeight: "600",
+                        marginBottom: 4,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {bill.policyArea}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "600",
+                        color: "#1a1a1a",
+                      }}
+                      numberOfLines={2}
+                    >
+                      {bill.title}
+                    </Text>
+                  </View>
                   <Text
-                    style={{
-                      fontSize: 15,
-                      fontWeight: "600",
-                      color: "#1a1a1a",
-                      marginBottom: 4,
-                    }}
-                  >
-                    {bill.title}
-                  </Text>
-                  <Text
-                    style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}
+                    style={{ fontSize: 12, color: "#7B7C81" }}
+                    numberOfLines={1}
                   >
                     {bill.description}
                   </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: dotColor,
-                      marginTop: 6,
-                      fontWeight: "500",
-                    }}
-                  >
-                    {bill.policyArea}
-                  </Text>
                 </View>
 
-                {/* Checkmark */}
+                {/* Square checkbox */}
                 <View
                   style={{
                     width: 24,
                     height: 24,
-                    borderRadius: 12,
+                    borderRadius: 6,
                     borderWidth: 2,
                     borderColor: isSelected ? "#008CFF" : "#ccc",
                     backgroundColor: isSelected ? "#008CFF" : "transparent",
                     justifyContent: "center",
                     alignItems: "center",
                     marginLeft: 8,
-                    marginTop: 2,
+                    flexShrink: 0,
                   }}
                 >
                   {isSelected && (
                     <Text
                       style={{
                         color: "white",
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: "700",
                       }}
                     >
@@ -236,69 +268,6 @@ export default function PickBillsScreen() {
           );
         })}
       </ScrollView>
-
-      {/* Bottom Buttons */}
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: "#fafafa",
-          paddingHorizontal: 24,
-          paddingBottom: 48,
-          paddingTop: 16,
-          borderTopWidth: 1,
-          borderTopColor: "#f0f0f0",
-        }}
-      >
-        {/* Dot indicators */}
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            justifyContent: "center",
-            marginBottom: 16,
-          }}
-        >
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <View
-              key={i}
-              style={{
-                width: i === 2 ? 20 : 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: i === 2 ? "#008CFF" : "#D0D0D0",
-              }}
-            />
-          ))}
-        </View>
-
-        <Pressable
-          onPress={handleContinue}
-          style={({ pressed }) => ({
-            backgroundColor: "#008CFF",
-            paddingVertical: 16,
-            borderRadius: 32,
-            alignItems: "center",
-            marginBottom: 12,
-            transform: [{ scale: pressed ? 0.96 : 1 }],
-          })}
-        >
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            {selectedBills.length > 0
-              ? `Add ${selectedBills.length} Bill${selectedBills.length > 1 ? "s" : ""}`
-              : "Continue"}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={handleSkip}
-          style={{ alignItems: "center", paddingVertical: 8 }}
-        >
-          <Text style={{ color: "#535353", fontSize: 15 }}>Skip</Text>
-        </Pressable>
-      </View>
     </View>
   );
 }

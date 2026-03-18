@@ -1,5 +1,15 @@
 import React, { createContext, useContext, useState } from "react";
 
+interface OverlayConfig {
+  dotIndex: number;
+  continueLabel: string;
+  onContinue: () => void;
+  onBack?: () => void;
+  onSkip?: () => void;
+  continueDisabled?: boolean;
+  showBorder?: boolean;
+}
+
 interface OnboardingData {
   selectedOfficials: string[];
   selectedBills: string[];
@@ -11,6 +21,8 @@ interface OnboardingData {
   setSelectedPolicyAreas: (areas: string[]) => void;
   setPriorityState: (state: string | null) => void;
   setListName: (name: string) => void;
+  overlayConfig: OverlayConfig | null;
+  setOverlayConfig: (config: OverlayConfig | null) => void;
 }
 
 const OnboardingContext = createContext<OnboardingData>({
@@ -24,6 +36,8 @@ const OnboardingContext = createContext<OnboardingData>({
   setSelectedPolicyAreas: () => {},
   setPriorityState: () => {},
   setListName: () => {},
+  overlayConfig: null,
+  setOverlayConfig: () => {},
 });
 
 export const OnboardingProvider = ({
@@ -36,6 +50,9 @@ export const OnboardingProvider = ({
   const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
   const [priorityState, setPriorityState] = useState<string | null>(null);
   const [listName, setListName] = useState("");
+  const [overlayConfig, setOverlayConfig] = useState<OverlayConfig | null>(
+    null,
+  );
 
   return (
     <OnboardingContext.Provider
@@ -50,6 +67,8 @@ export const OnboardingProvider = ({
         setPriorityState,
         listName,
         setListName,
+        overlayConfig,
+        setOverlayConfig,
       }}
     >
       {children}

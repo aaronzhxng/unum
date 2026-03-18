@@ -15,6 +15,40 @@ import { styles as componentStyles } from "../global_styles/styles";
 import { getBillIcon } from "../utils/billIcons";
 import AddModal from "./AddModal";
 
+const POLICY_AREA_COLORS: Record<string, string> = {
+  "Agriculture and Food": "#7CB342",
+  Animals: "#8D6E63",
+  "Armed Forces and National Security": "#455A64",
+  "Arts, Culture, Religion": "#AB47BC",
+  "Civil Rights and Liberties, Minority Issues": "#E53935",
+  Commerce: "#00ACC1",
+  Congress: "#1565C0",
+  "Crime and Law Enforcement": "#424242",
+  "Economics and Public Finance": "#4CAF82",
+  Education: "#F5A623",
+  "Emergency Management": "#FF5722",
+  Energy: "#E67E22",
+  "Environmental Protection": "#43A047",
+  Families: "#F06292",
+  "Finance and Financial Sector": "#4CAF82",
+  "Foreign Trade and International Finance": "#9B59B6",
+  "Government Operations and Politics": "#6B7FD4",
+  Health: "#E53935",
+  "Housing and Community Development": "#FF8F00",
+  Immigration: "#00897B",
+  "International Affairs": "#1E88E5",
+  "Labor and Employment": "#6D4C41",
+  Law: "#546E7A",
+  "Native Americans": "#BF360C",
+  "Public Lands and Natural Resources": "#27AE60",
+  "Science, Technology, Communications": "#0288D1",
+  "Social Welfare": "#E91E8C",
+  "Sports and Recreation": "#00BCD4",
+  Taxation: "#F9A825",
+  "Transportation and Public Works": "#5C6BC0",
+  "Water Resources Development": "#0277BD",
+};
+
 interface SearchModalProps {
   isVisible: boolean;
   onClose: () => void;
@@ -71,31 +105,28 @@ export default function SearchModal({
     }
 
     const lowercaseQuery = searchQuery.toLowerCase();
+    const queryWords = lowercaseQuery.trim().split(/\s+/);
+
+    const matchesAll = (text: string) => {
+      const lower = text.toLowerCase();
+      return queryWords.every((word) => lower.includes(word));
+    };
+
     const filtered = items.filter((item) => {
-      // Search in name (for stored list items)
-      if (item.name?.toLowerCase().includes(lowercaseQuery)) return true;
+      if (item.name && matchesAll(item.name)) return true;
+      if (item.role && matchesAll(item.role)) return true;
+      if (item.party && matchesAll(item.party)) return true;
 
-      // Search in role (for officials)
-      if (item.role?.toLowerCase().includes(lowercaseQuery)) return true;
-
-      // Search in party
-      if (item.party?.toLowerCase().includes(lowercaseQuery)) return true;
-
-      // Search in latestAction (for stored list items)
       const latestActionText =
         typeof item.latestAction === "string"
           ? item.latestAction
           : item.latestAction?.text;
-      if (latestActionText?.toLowerCase().includes(lowercaseQuery)) return true;
+      if (latestActionText && matchesAll(latestActionText)) return true;
 
-      // Search in bill title (for legislation.tsx API bills)
-      if (item.title?.toLowerCase().includes(lowercaseQuery)) return true;
+      if (item.title && matchesAll(item.title)) return true;
 
-      // Search in bill type + number (e.g. "HR 1234")
-      if (`${item.type} ${item.number}`.toLowerCase().includes(lowercaseQuery))
-        return true;
-      if (`${item.type}.${item.number}`.toLowerCase().includes(lowercaseQuery))
-        return true;
+      if (matchesAll(`${item.type} ${item.number}`)) return true;
+      if (matchesAll(`${item.type}.${item.number}`)) return true;
 
       return false;
     });
@@ -248,108 +279,145 @@ export default function SearchModal({
                   >
                     <View style={componentStyles.officialCard}>
                       {/* Avatar */}
-                      {item.type === "bill" ? (
-                        <View
-                          style={[
-                            componentStyles.avatar,
-                            {
-                              backgroundColor: "#eee",
-                              justifyContent: "center",
-                              alignItems: "center",
-                            },
-                          ]}
-                        >
-                          {item.policyArea?.name || item.policyArea ? (
-                            <Image
-                              source={getBillIcon(
-                                item.policyArea?.name || item.policyArea,
-                              )}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                borderRadius: 6,
-                              }}
-                              resizeMode="contain"
-                            />
-                          ) : (
-                            <Text
-                              style={{
-                                fontSize: 16,
-                                fontWeight: "bold",
-                                color: "#535353",
-                              }}
-                            >
-                              {item.billType || item.type}
-                            </Text>
-                          )}
-                        </View>
-                      ) : (
+                      {item.type === "bill" ? null : (
                         <OfficialAvatar item={item} />
                       )}
 
                       {/* Content */}
                       {item.type === "bill" ? (
-                        <View style={{ flex: 1, gap: 4 }}>
-                          <View
-                            style={[
-                              componentStyles.metaRow,
-                              { flexWrap: "nowrap" },
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                componentStyles.subtitle,
-                                { flexShrink: 0 },
-                              ]}
-                            >
-                              {item.latestAction?.actionDate
-                                ? new Date(
-                                    item.latestAction.actionDate,
-                                  ).toLocaleDateString("en-US", {
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                    year: "numeric",
-                                  })
-                                : item.date
-                                  ? new Date(item.date).toLocaleDateString(
-                                      "en-US",
-                                      {
-                                        month: "2-digit",
-                                        day: "2-digit",
-                                        year: "numeric",
-                                      },
-                                    )
-                                  : null}
-                            </Text>
-                            {(item.policyArea?.name || item.policyArea) && (
-                              <>
-                                <Text style={componentStyles.separator}>·</Text>
+                        (() => {
+                          const policyArea =
+                            item.policyArea?.name ?? item.policyArea ?? null;
+                          const dotColor =
+                            POLICY_AREA_COLORS[policyArea] ?? "#008CFF";
+                          const dateStr = (() => {
+                            const d =
+                              item.latestAction?.actionDate ??
+                              item.date ??
+                              null;
+                            if (!d) return null;
+                            return new Date(d).toLocaleDateString("en-US", {
+                              month: "2-digit",
+                              day: "2-digit",
+                              year: "numeric",
+                            });
+                          })();
+
+                          return (
+                            <>
+                              {/* Left column: badge + icon */}
+                              <View
+                                style={{
+                                  alignItems: "center",
+                                  marginRight: 12,
+                                  flexShrink: 0,
+                                  width: 64,
+                                }}
+                              >
+                                <View
+                                  style={{
+                                    backgroundColor: dotColor,
+                                    borderRadius: 6,
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 4,
+                                    marginBottom: 6,
+                                    alignItems: "center",
+                                    width: "100%",
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      color: "#fff",
+                                      fontSize: 12,
+                                      fontWeight: "700",
+                                    }}
+                                    numberOfLines={1}
+                                  >
+                                    {item.billType || item.type}.{item.number}
+                                  </Text>
+                                </View>
+                                <Image
+                                  source={getBillIcon(policyArea)}
+                                  style={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: 6,
+                                  }}
+                                  resizeMode="contain"
+                                />
+                              </View>
+
+                              {/* Info */}
+                              <View
+                                style={{
+                                  flex: 1,
+                                  alignSelf: "stretch",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <View>
+                                  <View
+                                    style={{
+                                      flexDirection: "row",
+                                      alignItems: "center",
+                                      flexWrap: "nowrap",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    {dateStr && (
+                                      <Text
+                                        style={[
+                                          componentStyles.subtitle,
+                                          { flexShrink: 0 },
+                                        ]}
+                                      >
+                                        {dateStr}
+                                      </Text>
+                                    )}
+                                    {policyArea && (
+                                      <>
+                                        <Text style={componentStyles.separator}>
+                                          ·
+                                        </Text>
+                                        <Text
+                                          style={{
+                                            fontSize: 12,
+                                            color: dotColor,
+                                            fontWeight: "600",
+                                            flexShrink: 1,
+                                          }}
+                                          numberOfLines={1}
+                                        >
+                                          {policyArea}
+                                        </Text>
+                                      </>
+                                    )}
+                                  </View>
+                                  <Text
+                                    style={componentStyles.name}
+                                    numberOfLines={2}
+                                  >
+                                    {item.title ??
+                                      (item.name?.includes(" - ")
+                                        ? item.name
+                                            .split(" - ")
+                                            .slice(1)
+                                            .join(" - ")
+                                        : item.name)}
+                                  </Text>
+                                </View>
                                 <Text
-                                  style={[
-                                    componentStyles.subtitle,
-                                    { flexShrink: 1 },
-                                  ]}
+                                  style={componentStyles.subtitle}
                                   numberOfLines={1}
                                 >
-                                  {item.policyArea?.name || item.policyArea}
+                                  {typeof item.latestAction === "string"
+                                    ? item.latestAction
+                                    : (item.latestAction?.text ?? "")}
                                 </Text>
-                              </>
-                            )}
-                          </View>
-                          <Text style={componentStyles.name} numberOfLines={2}>
-                            {item.title
-                              ? `${item.type}.${item.number} - ${item.title}`
-                              : item.name}
-                          </Text>
-                          <Text
-                            style={componentStyles.subtitle}
-                            numberOfLines={1}
-                          >
-                            {typeof item.latestAction === "string"
-                              ? item.latestAction
-                              : item.latestAction?.text}
-                          </Text>
-                        </View>
+                              </View>
+                            </>
+                          );
+                        })()
                       ) : (
                         // Official info
                         <View style={{ flex: 1 }}>
@@ -366,9 +434,13 @@ export default function SearchModal({
                             <Text style={componentStyles.subtitle}>
                               {item.partyName?.charAt(0) || item.party || ""}
                               {(item.partyName || item.party) && " · "}
-                              {item.chamber === "House of Representatives"
-                                ? `Representative, ${item.state}${item.district ? `, District ${item.district}` : ""}`
-                                : item.role || `Senator, ${item.state}`}
+                              {item.chamber
+                                ? formatRole(
+                                    item.chamber,
+                                    item.state,
+                                    item.district,
+                                  )
+                                : (item.role ?? "")}
                             </Text>
                           </View>
                         </View>
@@ -442,6 +514,21 @@ export default function SearchModal({
       />
     </Modal>
   );
+}
+
+function formatRole(
+  chamber: string,
+  state: string,
+  district?: number | null,
+): string {
+  if (chamber === "House of Representatives") {
+    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
+    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    return full.length > 39 ? abbr : full;
+  }
+  const full = `Senator, ${state}`;
+  const abbr = `Sen, ${state}`;
+  return full.length > 40 ? abbr : full;
 }
 
 function OfficialAvatar({ item }: { item: any }) {

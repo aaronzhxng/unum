@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { useOnboarding } from "../context/OnboardingContext";
 
 const TOUR_STEPS = [
   {
@@ -42,6 +43,11 @@ const TOUR_STEPS = [
 ];
 
 export default function TourScreen() {
+  const { setOverlayConfig } = useOnboarding();
+
+  useEffect(() => {
+    setOverlayConfig(null);
+  }, []);
   const router = useRouter();
   const [step, setStep] = useState(0);
 

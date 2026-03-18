@@ -486,7 +486,12 @@ export default function OfficialsScreen() {
                         gap: 6,
                       }}
                     >
-                      <Text style={componentStyles.dropdownItemText}>
+                      <Text
+                        style={[
+                          componentStyles.dropdownItemText,
+                          selectedList === option && { fontWeight: "600" },
+                        ]}
+                      >
                         {option}
                         {option === priorityState ? " (Priority State)" : ""}
                       </Text>
@@ -630,6 +635,21 @@ export default function OfficialsScreen() {
   );
 }
 
+function formatRole(
+  chamber: string,
+  state: string,
+  district?: number | null,
+): string {
+  if (chamber === "House of Representatives") {
+    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
+    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    return full.length > 39 ? abbr : full;
+  }
+  const full = `Senator, ${state}`;
+  const abbr = `Sen, ${state}`;
+  return full.length > 40 ? abbr : full;
+}
+
 const OfficialCard = React.memo(function OfficialCard({
   item,
   onAddPress,
@@ -639,24 +659,44 @@ const OfficialCard = React.memo(function OfficialCard({
 }) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
+
   return (
     <Pressable
       onPress={() => router.navigate(`/official/${item.bioguideId}`)}
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.96 : 1 }],
+        borderRadius: 48,
       })}
     >
-      <View style={componentStyles.officialCard}>
-        {/* Avatar */}
-        {item.depiction?.imageUrl ? (
-          <View style={componentStyles.avatar}>
+      <View
+        style={[
+          componentStyles.officialCard,
+          { paddingVertical: 16, borderWidth: 2, borderColor: "transparent" },
+        ]}
+      >
+        {/* Avatar column — 64px wide, avatar 50px */}
+        <View
+          style={{
+            width: 64,
+            marginRight: 12,
+            flexShrink: 0,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: 25,
+              overflow: "hidden",
+              backgroundColor: "#eee",
+            }}
+          >
             {item.depiction?.imageUrl && !imageError ? (
               <Image
                 source={{ uri: item.depiction.imageUrl }}
-                style={{
-                  width: "100%",
-                  height: "120%",
-                }}
+                style={{ width: "100%", height: "120%" }}
                 resizeMode="cover"
                 onError={() => setImageError(true)}
               />
@@ -678,12 +718,7 @@ const OfficialCard = React.memo(function OfficialCard({
               </View>
             )}
           </View>
-        ) : (
-          <View
-            style={[componentStyles.avatar, { backgroundColor: "#eee" }]}
-          ></View>
-        )}
-
+        </View>
         {/* Official Info */}
         <View style={{ flex: 1 }}>
           <Text style={componentStyles.name}>
@@ -701,13 +736,10 @@ const OfficialCard = React.memo(function OfficialCard({
             </Text>
             <Text style={componentStyles.separator}>·</Text>
             <Text style={componentStyles.subtitle} numberOfLines={1}>
-              {item.chamber === "House of Representatives"
-                ? `Representative, ${item.state}${item.district ? `, District ${item.district}` : ""}`
-                : `Senator, ${item.state}`}
+              {formatRole(item.chamber, item.state, item.district)}
             </Text>
           </View>
         </View>
-
         {/* Plus Button */}
         <Pressable
           onPress={(e) => {

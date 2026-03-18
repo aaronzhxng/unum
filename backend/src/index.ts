@@ -2,7 +2,7 @@ import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import { runCronJob } from "./cron";
+import { runCronJob, startCronScheduler } from "./cron";
 import db from "./db";
 
 dotenv.config();
@@ -90,6 +90,32 @@ app.get("/api/bills", async (req, res) => {
     if (!since) {
       billsCache = { data: responseData, timestamp: Date.now() };
     }
+
+    // Sync bills into Railway SQLite for cron use
+    try {
+      const insert = db.prepare(`
+        INSERT OR REPLACE INTO bills (bill_id, type, number, title, policy_area, sponsor_state, update_date, synced_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      const syncBills = db.transaction((bills: any[]) => {
+        for (const bill of bills) {
+          insert.run(
+            `${bill.type.toLowerCase()}${bill.number}`,
+            bill.type,
+            bill.number,
+            bill.title,
+            bill.policyArea?.name ?? null,
+            bill.sponsors?.[0]?.state ?? null,
+            bill.updateDate ?? null,
+            Date.now(),
+          );
+        }
+      });
+      syncBills(merged);
+    } catch (err) {
+      console.error("Bill sync to SQLite failed:", err);
+    }
+
     res.json(responseData);
   } catch (error) {
     console.error("Error fetching bills:", error);
@@ -682,15 +708,40 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
   }
 });
 
-// app.get("/api/cron/run", async (req, res) => {
-//   try {
-//     await runCronJob();
-//     res.json({ success: true });
-//   } catch (error) {
-//     console.error("Manual cron trigger error:", error);
-//     res.status(500).json({ error: "Cron job failed" });
-//   }
-// });
+app.get("/api/cron/run", async (req, res) => {
+  try {
+    await runCronJob();
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Manual cron trigger error:", error);
+    res.status(500).json({ error: "Cron job failed" });
+  }
+});
+
+app.get("/api/bills/enrich-status", (req, res) => {
+  try {
+    const total = db.prepare(`SELECT COUNT(*) as count FROM bills`).get() as {
+      count: number;
+    };
+    const withState = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM bills WHERE sponsor_state IS NOT NULL`,
+      )
+      .get() as { count: number };
+    const withPolicy = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM bills WHERE policy_area IS NOT NULL`,
+      )
+      .get() as { count: number };
+    res.json({
+      total: total.count,
+      withState: withState.count,
+      withPolicy: withPolicy.count,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to check enrich status" });
+  }
+});
 
 // app.get("/api/push-tokens/list", (req, res) => {
 //   const rows = db.prepare("SELECT * FROM push_registrations").all();
@@ -742,6 +793,35 @@ app.post("/api/push-tokens", (req, res) => {
   }
 });
 
+app.post("/api/bills/enrich", (req, res) => {
+  try {
+    const { bills } = req.body as {
+      bills: {
+        billId: string;
+        sponsorState: string | null;
+        policyArea: string | null;
+      }[];
+    };
+
+    const update = db.prepare(`
+      UPDATE bills SET sponsor_state = ?, policy_area = COALESCE(policy_area, ?)
+      WHERE bill_id = ?
+    `);
+
+    const updateAll = db.transaction((bills: any[]) => {
+      for (const bill of bills) {
+        update.run(bill.sponsorState, bill.policyArea, bill.billId);
+      }
+    });
+
+    updateAll(bills);
+    res.json({ success: true, updated: bills.length });
+  } catch (error) {
+    console.error("Error enriching bills:", error);
+    res.status(500).json({ error: "Failed to enrich bills" });
+  }
+});
+
 const prewarmCache = async () => {
   try {
     // console.log("🔄 Pre-warming bills cache...");
@@ -754,8 +834,5 @@ const prewarmCache = async () => {
 
 app.listen(PORT, () => {
   prewarmCache();
-
-  // Run cron job once on startup, then every 24 hours
-  runCronJob();
-  setInterval(runCronJob, 24 * 60 * 60 * 1000);
+  startCronScheduler();
 });

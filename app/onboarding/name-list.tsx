@@ -1,5 +1,5 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import React, { useRef } from "react";
 import {
   KeyboardAvoidingView,
@@ -13,35 +13,47 @@ import { useOnboarding } from "../context/OnboardingContext";
 
 export default function NameListScreen() {
   const router = useRouter();
-  const { listName, setListName, selectedOfficials, selectedBills } =
-    useOnboarding();
+  const {
+    listName,
+    setListName,
+    selectedOfficials,
+    selectedBills,
+    setOverlayConfig,
+  } = useOnboarding();
   const inputRef = useRef<TextInput>(null);
 
   const totalItems = selectedOfficials.length + selectedBills.length;
 
-  const handleContinue = () => {
-    if (!listName.trim()) return;
-    router.push("/onboarding/finish" as any);
-  };
+  useFocusEffect(
+    React.useCallback(() => {
+      setOverlayConfig({
+        dotIndex: 5,
+        continueLabel: "Build My List",
+        onContinue: () => {
+          if (!listName.trim()) return;
+          router.push("/onboarding/finish" as any);
+        },
+        onBack: () => router.back(),
+        continueDisabled: !listName.trim(),
+      });
+    }, [listName]),
+  );
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "#fafafa" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {/* Header */}
       <View
         style={{ paddingTop: 64, paddingHorizontal: 24, paddingBottom: 24 }}
       >
-        <Pressable onPress={() => router.back()} style={{ marginBottom: 16 }}>
-          <ChevronLeft size={28} color="#535353" />
-        </Pressable>
         <Text
           style={{
             fontSize: 24,
             fontWeight: "700",
             color: "#1a1a1a",
             marginBottom: 8,
+            marginTop: 32,
           }}
         >
           Name your list
@@ -54,15 +66,12 @@ export default function NameListScreen() {
       </View>
 
       <View style={{ paddingHorizontal: 24, flex: 1 }}>
-        {/* Text input */}
         <Pressable
           onPress={() => inputRef.current?.focus()}
           style={{
             backgroundColor: "#fff",
-            borderRadius: 24, // was 16
+            borderRadius: 24,
             padding: 16,
-            borderWidth: 2,
-            borderColor: listName.trim() ? "#008CFF" : "transparent", // was "#E0E0E0"
             shadowColor: "#000000",
             shadowOpacity: 0.15,
             shadowOffset: { width: 0, height: 2 },
@@ -76,19 +85,17 @@ export default function NameListScreen() {
             onChangeText={setListName}
             placeholder="e.g. My List, Politics 2026, Watch List..."
             placeholderTextColor="#aaa"
-            style={{
-              fontSize: 16,
-              color: "#1a1a1a",
-              padding: 0,
-            }}
+            style={{ fontSize: 16, color: "#1a1a1a", padding: 0 }}
             autoFocus
             maxLength={40}
             returnKeyType="done"
-            onSubmitEditing={handleContinue}
+            onSubmitEditing={() => {
+              if (!listName.trim()) return;
+              router.push("/onboarding/finish" as any);
+            }}
           />
         </Pressable>
 
-        {/* Character count */}
         <Text
           style={{
             fontSize: 12,
@@ -100,7 +107,6 @@ export default function NameListScreen() {
           {listName.length}/40
         </Text>
 
-        {/* Summary of selections */}
         {totalItems > 0 && (
           <View
             style={{
@@ -127,55 +133,6 @@ export default function NameListScreen() {
             )}
           </View>
         )}
-      </View>
-
-      {/* Bottom Buttons */}
-      <View
-        style={{
-          paddingHorizontal: 24,
-          paddingBottom: 48,
-          paddingTop: 16,
-          borderTopWidth: 1,
-          borderTopColor: "#f0f0f0",
-        }}
-      >
-        {/* Dot indicators */}
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            justifyContent: "center",
-            marginBottom: 16,
-          }}
-        >
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <View
-              key={i}
-              style={{
-                width: i === 5 ? 20 : 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: i === 5 ? "#008CFF" : "#D0D0D0",
-              }}
-            />
-          ))}
-        </View>
-
-        <Pressable
-          onPress={handleContinue}
-          style={({ pressed }) => ({
-            backgroundColor: listName.trim() ? "#008CFF" : "#ccc",
-            paddingVertical: 16,
-            borderRadius: 32,
-            alignItems: "center",
-            transform: [{ scale: pressed ? 0.96 : 1 }],
-          })}
-          disabled={!listName.trim()}
-        >
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            Build My List
-          </Text>
-        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );

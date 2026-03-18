@@ -152,8 +152,13 @@ export default function FinishScreen() {
     selectedPolicyAreas,
     priorityState,
     listName,
+    setOverlayConfig,
   } = useOnboarding();
   const hasRun = useRef(false);
+
+  useEffect(() => {
+    setOverlayConfig(null);
+  }, []);
 
   useEffect(() => {
     if (hasRun.current) return;
