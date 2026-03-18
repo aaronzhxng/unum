@@ -772,10 +772,10 @@ app.get("/api/cron/run", async (req, res) => {
   }
 });
 
-// app.get("/api/push-tokens/list", (req, res) => {
-//   const rows = db.prepare("SELECT * FROM push_registrations").all();
-//   res.json(rows);
-// });
+app.get("/api/push-tokens/list", (req, res) => {
+  const rows = db.prepare("SELECT * FROM push_registrations").all();
+  res.json(rows);
+});
 
 // app.post("/api/debug/token", (req, res) => {
 //   const { token, error } = req.body;
