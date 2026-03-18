@@ -252,15 +252,14 @@ export const billsService = {
     const cached = getAllBillsFromSQLite();
 
     if (cached) {
-      // Fetch policy areas in background and save
       billsService
         .getPolicyAreas()
         .then(savePolicyAreaMap)
         .catch(() => {});
       runDeltaSync();
+      enrichBackend().catch(() => {});
       return cached;
     }
-
     // First launch — fetch policy areas AND bills together
     // First launch — fetch policy areas AND bills together
     const [fresh] = await Promise.all([
