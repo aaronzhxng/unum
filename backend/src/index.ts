@@ -176,6 +176,60 @@ app.get("/api/bills/policy-areas", (req, res) => {
   res.json(POLICY_AREAS_STATIC);
 });
 
+app.get("/api/bills/enrich-status", (req, res) => {
+  try {
+    const total = db.prepare(`SELECT COUNT(*) as count FROM bills`).get() as {
+      count: number;
+    };
+    const withState = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM bills WHERE sponsor_state IS NOT NULL`,
+      )
+      .get() as { count: number };
+    const withPolicy = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM bills WHERE policy_area IS NOT NULL`,
+      )
+      .get() as { count: number };
+    res.json({
+      total: total.count,
+      withState: withState.count,
+      withPolicy: withPolicy.count,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to check enrich status" });
+  }
+});
+
+app.post("/api/bills/enrich", (req, res) => {
+  try {
+    const { bills } = req.body as {
+      bills: {
+        billId: string;
+        sponsorState: string | null;
+        policyArea: string | null;
+      }[];
+    };
+
+    const update = db.prepare(`
+      UPDATE bills SET sponsor_state = ?, policy_area = COALESCE(policy_area, ?)
+      WHERE bill_id = ?
+    `);
+
+    const updateAll = db.transaction((bills: any[]) => {
+      for (const bill of bills) {
+        update.run(bill.sponsorState, bill.policyArea, bill.billId);
+      }
+    });
+
+    updateAll(bills);
+    res.json({ success: true, updated: bills.length });
+  } catch (error) {
+    console.error("Error enriching bills:", error);
+    res.status(500).json({ error: "Failed to enrich bills" });
+  }
+});
+
 // Get single bill by ID
 app.get("/api/bills/:billId", async (req, res) => {
   try {
@@ -718,31 +772,6 @@ app.get("/api/cron/run", async (req, res) => {
   }
 });
 
-app.get("/api/bills/enrich-status", (req, res) => {
-  try {
-    const total = db.prepare(`SELECT COUNT(*) as count FROM bills`).get() as {
-      count: number;
-    };
-    const withState = db
-      .prepare(
-        `SELECT COUNT(*) as count FROM bills WHERE sponsor_state IS NOT NULL`,
-      )
-      .get() as { count: number };
-    const withPolicy = db
-      .prepare(
-        `SELECT COUNT(*) as count FROM bills WHERE policy_area IS NOT NULL`,
-      )
-      .get() as { count: number };
-    res.json({
-      total: total.count,
-      withState: withState.count,
-      withPolicy: withPolicy.count,
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to check enrich status" });
-  }
-});
-
 // app.get("/api/push-tokens/list", (req, res) => {
 //   const rows = db.prepare("SELECT * FROM push_registrations").all();
 //   res.json(rows);
@@ -790,35 +819,6 @@ app.post("/api/push-tokens", (req, res) => {
   } catch (error) {
     console.error("Error saving push token:", error);
     res.status(500).json({ error: "Failed to save push token" });
-  }
-});
-
-app.post("/api/bills/enrich", (req, res) => {
-  try {
-    const { bills } = req.body as {
-      bills: {
-        billId: string;
-        sponsorState: string | null;
-        policyArea: string | null;
-      }[];
-    };
-
-    const update = db.prepare(`
-      UPDATE bills SET sponsor_state = ?, policy_area = COALESCE(policy_area, ?)
-      WHERE bill_id = ?
-    `);
-
-    const updateAll = db.transaction((bills: any[]) => {
-      for (const bill of bills) {
-        update.run(bill.sponsorState, bill.policyArea, bill.billId);
-      }
-    });
-
-    updateAll(bills);
-    res.json({ success: true, updated: bills.length });
-  } catch (error) {
-    console.error("Error enriching bills:", error);
-    res.status(500).json({ error: "Failed to enrich bills" });
   }
 });
 
