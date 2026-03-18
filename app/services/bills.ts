@@ -202,13 +202,13 @@ const enrichBackend = async (): Promise<void> => {
     const db = getDb();
 
     // Only run once
-    // const already = db.getFirstSync<{ value: string }>(
-    //   `SELECT value FROM meta WHERE key = 'backend_enriched_v1'`,
-    // );
-    // if (already) return;
+    const already = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'backend_enriched_v1'`,
+    );
+    if (already) return;
 
     // Force re-run by clearing the flag
-    db.runSync(`DELETE FROM meta WHERE key = 'backend_enriched_v1'`);
+    // db.runSync(`DELETE FROM meta WHERE key = 'backend_enriched_v1'`);
 
     // Get all bills
     const rows = db.getAllSync<{

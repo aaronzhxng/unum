@@ -7,9 +7,10 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import { useTabBar } from "../context/TabBarContext";
+import { useTour } from "../context/TourContext";
 import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
@@ -34,6 +35,9 @@ function useDebounced<T>(value: T, delay: number): T {
 }
 
 export default function LegislationScreen() {
+  const filterButtonRef = useRef<View>(null);
+  const optionsButtonRef = useRef<View>(null);
+  const { isActive, currentStep, setTargetLayout } = useTour();
   const { setTabBarHidden } = useTabBar();
 
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -342,6 +346,23 @@ export default function LegislationScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (isActive && currentStep === 4) {
+      setTimeout(() => {
+        filterButtonRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0) setTargetLayout({ x, y, width, height });
+        });
+      }, 300);
+    }
+    if (isActive && currentStep === 5) {
+      setTimeout(() => {
+        optionsButtonRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0) setTargetLayout({ x, y, width, height });
+        });
+      }, 300);
+    }
+  }, [isActive, currentStep]);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -378,6 +399,8 @@ export default function LegislationScreen() {
             })}
           >
             <View
+              ref={filterButtonRef}
+              collapsable={false}
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
               <Text style={[componentStyles.header, { alignItems: "center" }]}>
@@ -446,14 +469,16 @@ export default function LegislationScreen() {
           >
             <Search size={24} color="#535353" />
           </Pressable>
-          <Pressable
-            onPress={() => setShowOptionsModal(true)}
-            style={({ pressed }) => ({
-              transform: [{ scale: pressed ? 0.75 : 1 }],
-            })}
-          >
-            <MoreVertical size={24} color="#535353" />
-          </Pressable>
+          <View ref={optionsButtonRef} collapsable={false}>
+            <Pressable
+              onPress={() => setShowOptionsModal(true)}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.75 : 1 }],
+              })}
+            >
+              <MoreVertical size={24} color="#535353" />
+            </Pressable>
+          </View>
         </View>
       </View>
 

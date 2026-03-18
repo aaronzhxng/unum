@@ -86,15 +86,15 @@ const getAllRegistrations = () => {
   }[];
 };
 
-// const getLastChecked = (): string => {
-//   const yesterday = new Date();
-//   yesterday.setDate(yesterday.getDate() - 1);
-//   return yesterday.toISOString().split("T")[0];
-// };
-
 const getLastChecked = (): string => {
-  return "2025-01-01";
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split("T")[0];
 };
+
+// const getLastChecked = (): string => {
+//   return "2025-01-01";
+// };
 
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 // Uses Railway SQLite bills table — no Congress.gov API needed
@@ -362,8 +362,8 @@ export const runCronJob = async () => {
 
 // ── Scheduler — runs every day at 8:00 AM UTC ─────────────────────────────────
 export const startCronScheduler = () => {
-  cron.schedule("0 8 * * *", () => {
+  cron.schedule("0 13,21 * * *", () => {
     runCronJob();
   });
-  console.log("Cron scheduler started — runs daily at 8:00 AM UTC");
+  console.log("Cron scheduler started — runs at 8am and 4pm EST daily");
 };

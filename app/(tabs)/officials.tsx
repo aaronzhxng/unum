@@ -9,7 +9,7 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   Image,
@@ -19,6 +19,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useTour } from "../context/TourContext";
 import AddModal from "../global_components/AddModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
@@ -102,6 +103,10 @@ const LOCATION_OPTIONS = [
   "Wyoming",
 ];
 export default function OfficialsScreen() {
+  const stateDropdownRef = useRef<View>(null);
+  const firstCardPlusRef = useRef<View>(null);
+
+  const { isActive, currentStep, setTargetLayout } = useTour();
   // console.log("Official Screen render:", Date.now());
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -268,6 +273,26 @@ export default function OfficialsScreen() {
     }
   }, []);
 
+  useEffect(() => {
+    if (isActive && currentStep === 2) {
+      setTimeout(() => {
+        stateDropdownRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0) setTargetLayout({ x, y, width, height });
+        });
+      }, 300);
+    }
+  }, [isActive, currentStep]);
+
+  useEffect(() => {
+    if (isActive && currentStep === 3) {
+      setTimeout(() => {
+        firstCardPlusRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0) setTargetLayout({ x, y, width, height });
+        });
+      }, 300);
+    }
+  }, [isActive, currentStep]);
+
   const handleSetPriority = () => {
     if (selectedList === "All States") return;
     storage.setPriorityState(selectedList);
@@ -307,33 +332,37 @@ export default function OfficialsScreen() {
     <View style={componentStyles.container}>
       <View style={componentStyles.headerBar}>
         <View style={componentStyles.headerLeft}>
-          <Pressable
-            onPress={() => setShowListSelection(!showListSelection)}
-            style={({ pressed }) => ({
-              transform: [{ scale: pressed ? 0.96 : 1 }],
-            })}
-          >
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+          <View ref={stateDropdownRef} collapsable={false}>
+            <Pressable
+              onPress={() => setShowListSelection(!showListSelection)}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
-              <Text style={[componentStyles.header, { alignItems: "center" }]}>
-                {selectedList}
-              </Text>
-              {showListSelection ? (
-                <ChevronUp
-                  size={24}
-                  color="#535353"
-                  style={{ marginBottom: 12 }}
-                />
-              ) : (
-                <ChevronDown
-                  size={24}
-                  color="#535353"
-                  style={{ marginBottom: 12 }}
-                />
-              )}
-            </View>
-          </Pressable>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
+                <Text
+                  style={[componentStyles.header, { alignItems: "center" }]}
+                >
+                  {selectedList}
+                </Text>
+                {showListSelection ? (
+                  <ChevronUp
+                    size={24}
+                    color="#535353"
+                    style={{ marginBottom: 12 }}
+                  />
+                ) : (
+                  <ChevronDown
+                    size={24}
+                    color="#535353"
+                    style={{ marginBottom: 12 }}
+                  />
+                )}
+              </View>
+            </Pressable>
+          </View>
         </View>
 
         <View style={componentStyles.headerRight}>
@@ -360,13 +389,14 @@ export default function OfficialsScreen() {
         data={officials}
         keyExtractor={(item) => item.bioguideId}
         contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <OfficialCard
             item={item}
             onAddPress={(id) => {
               setCurrentOfficialId(id);
               setShowAddModal(true);
             }}
+            plusRef={index === 0 ? firstCardPlusRef : undefined}
           />
         )}
         directionalLockEnabled={true}
@@ -653,9 +683,11 @@ function formatRole(
 const OfficialCard = React.memo(function OfficialCard({
   item,
   onAddPress,
+  plusRef,
 }: {
   item: any;
   onAddPress: (id: string) => void;
+  plusRef?: React.RefObject<any>;
 }) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
@@ -741,18 +773,20 @@ const OfficialCard = React.memo(function OfficialCard({
           </View>
         </View>
         {/* Plus Button */}
-        <Pressable
-          onPress={(e) => {
-            e.stopPropagation();
-            onAddPress(item.bioguideId);
-          }}
-          style={({ pressed }) => ({
-            padding: 8,
-            transform: [{ scale: pressed ? 0.9 : 1 }],
-          })}
-        >
-          <Plus size={24} color="#008CFF" />
-        </Pressable>
+        <View ref={plusRef} collapsable={false}>
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onAddPress(item.bioguideId);
+            }}
+            style={({ pressed }) => ({
+              padding: 8,
+              transform: [{ scale: pressed ? 0.9 : 1 }],
+            })}
+          >
+            <Plus size={24} color="#008CFF" />
+          </Pressable>
+        </View>
       </View>
     </Pressable>
   );

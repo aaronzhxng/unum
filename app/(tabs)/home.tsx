@@ -8,10 +8,11 @@ import {
   MoreVertical,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useTabBar } from "../context/TabBarContext";
+import { useTour } from "../context/TourContext";
 import EditOptionsModal from "../global_components/EditOptionsModal";
 import ListSelection from "../global_components/ListSelection";
 import LoadingSpinner from "../global_components/LoadingSpinner";
@@ -22,12 +23,14 @@ import { styles as componentStyles } from "../global_styles/styles";
 import { getBillIcon } from "../utils/billIcons";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { ListItem, storage } from "../utils/storage";
-
 // type ItemType = "official" | "bill";
 
 type Item = ListItem;
 
 export default function HomeScreen() {
+  const flatListRef = useRef<View>(null);
+  const listDropdownRef = useRef<View>(null);
+  const { isActive, currentStep, setTargetLayout } = useTour();
   // console.log("HomeScreen render:", Date.now());
   const router = useRouter();
 
@@ -309,6 +312,23 @@ export default function HomeScreen() {
     };
   }, [selectedList, items]);
 
+  useEffect(() => {
+    if (isActive && currentStep === 0) {
+      setTimeout(() => {
+        listDropdownRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0) setTargetLayout({ x, y, width, height });
+        });
+      }, 300);
+    }
+    if (isActive && currentStep === 1) {
+      setTimeout(() => {
+        flatListRef.current?.measureInWindow((x, y, width, height) => {
+          if (width > 0) setTargetLayout({ x, y, width, height });
+        });
+      }, 300);
+    }
+  }, [isActive, currentStep]);
+
   useFocusEffect(
     React.useCallback(() => {
       // console.log("HomeScreen focused:", Date.now());
@@ -418,7 +438,20 @@ export default function HomeScreen() {
                 })}
               >
                 <View
+                  ref={listDropdownRef}
+                  collapsable={false}
                   style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                  onLayout={() => {
+                    if (isActive && currentStep === 0) {
+                      setTimeout(() => {
+                        listDropdownRef.current?.measureInWindow(
+                          (x, y, width, height) => {
+                            setTargetLayout({ x, y, width, height });
+                          },
+                        );
+                      }, 100);
+                    }
+                  }}
                 >
                   <Text
                     style={[componentStyles.header, { alignItems: "center" }]}
@@ -529,22 +562,37 @@ export default function HomeScreen() {
           directionalLockEnabled={true}
         />
       ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(item, index) => item.id || index.toString()}
-          contentContainerStyle={componentStyles.listContent}
-          renderItem={({ item }) => (
-            <Card
-              item={item}
-              isEditMode={isEditMode}
-              isSelected={selectedIds.has(item.id)}
-              isNew={newItemIds.has(item.id)}
-              onLongPress={() => enterEditMode(item.id)}
-              onPress={() => toggleSelect(item.id)}
-            />
-          )}
-          directionalLockEnabled={true}
-        />
+        <View
+          ref={flatListRef}
+          collapsable={false}
+          style={{ flex: 1 }}
+          onLayout={() => {
+            if (isActive && currentStep === 1) {
+              setTimeout(() => {
+                flatListRef.current?.measureInWindow((x, y, width, height) => {
+                  setTargetLayout({ x, y, width, height });
+                });
+              }, 100);
+            }
+          }}
+        >
+          <FlatList
+            data={items}
+            keyExtractor={(item, index) => item.id || index.toString()}
+            contentContainerStyle={componentStyles.listContent}
+            renderItem={({ item }) => (
+              <Card
+                item={item}
+                isEditMode={isEditMode}
+                isSelected={selectedIds.has(item.id)}
+                isNew={newItemIds.has(item.id)}
+                onLongPress={() => enterEditMode(item.id)}
+                onPress={() => toggleSelect(item.id)}
+              />
+            )}
+            directionalLockEnabled={true}
+          />
+        </View>
       )}
 
       {/* Bottom Cancel / Remove bar and modals stay the same */}
