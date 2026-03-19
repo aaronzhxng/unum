@@ -28,6 +28,7 @@ import { ListItem, storage } from "../utils/storage";
 type Item = ListItem;
 
 export default function HomeScreen() {
+  const [contentHeight, setContentHeight] = useState(0);
   const flatListRef = useRef<View>(null);
   const listDropdownRef = useRef<View>(null);
   const { isActive, currentStep, setTargetLayout, markAppReady } = useTour();
@@ -322,8 +323,14 @@ export default function HomeScreen() {
     }
     if (isActive && currentStep === 1) {
       setTimeout(() => {
-        flatListRef.current?.measureInWindow((x, y, width, height) => {
-          if (width > 0) setTargetLayout({ x, y, width, height });
+        flatListRef.current?.measureInWindow((px, py, pw, ph) => {
+          if (pw > 0)
+            setTargetLayout({
+              x: px,
+              y: py,
+              width: pw,
+              height: Math.min(contentHeight, ph),
+            });
         });
       }, 300);
     }
@@ -586,6 +593,7 @@ export default function HomeScreen() {
             data={items}
             keyExtractor={(item, index) => item.id || index.toString()}
             contentContainerStyle={componentStyles.listContent}
+            onContentSizeChange={(_w, h) => setContentHeight(h)}
             renderItem={({ item }) => (
               <Card
                 item={item}

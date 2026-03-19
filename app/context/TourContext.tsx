@@ -69,10 +69,12 @@ type TourContextType = {
   currentStep: number;
   steps: TourStep[];
   targetLayout: TargetLayout;
+  layoutOffset: number;
   startTour: () => void;
   endTour: () => void;
   nextStep: () => void;
   setTargetLayout: (layout: TargetLayout) => void;
+  setLayoutOffset: (offset: number) => void;
   markAppReady: () => void;
 };
 
@@ -97,6 +99,7 @@ export function TourProvider({
   const [pendingStart, setPendingStart] = useState(false);
   const [appReady, setAppReady] = useState(false);
   const router = useRouter();
+  const [layoutOffset, setLayoutOffset] = useState(0);
 
   const startTour = useCallback(() => {
     if (appReady) {
@@ -157,6 +160,8 @@ export function TourProvider({
         nextStep,
         setTargetLayout,
         markAppReady,
+        layoutOffset,
+        setLayoutOffset,
       }}
     >
       {children}

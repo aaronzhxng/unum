@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Pressable, StatusBar, Text, View } from "react-native";
+import { Dimensions, Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
@@ -25,6 +26,20 @@ const TABS = [
   },
 ];
 
+function RootOffsetDetector() {
+  const { setLayoutOffset } = useTour();
+  return (
+    <View
+      collapsable={false}
+      onLayout={(e) => {
+        const { y } = e.nativeEvent.layout;
+        setLayoutOffset(y);
+      }}
+      style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1 }}
+    />
+  );
+}
+
 function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
   const { startTour, isActive, currentStep, setTargetLayout } = useTour();
 
@@ -35,7 +50,12 @@ function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
           tabBarRef.current.measureInWindow(
             (px: number, py: number, pw: number, ph: number) => {
               if (pw > 0)
-                setTargetLayout({ x: px, y: py, width: pw, height: ph });
+                setTargetLayout({
+                  x: px,
+                  y: py,
+                  width: pw,
+                  height: Math.min(ph, 60),
+                });
             },
           );
         }
@@ -58,32 +78,45 @@ function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
 }
 
 function TourOverlay() {
-  const { isActive, currentStep, steps, targetLayout, nextStep, endTour } =
-    useTour();
+  const {
+    isActive,
+    currentStep,
+    steps,
+    targetLayout,
+    nextStep,
+    endTour,
+    layoutOffset,
+  } = useTour();
 
   if (!isActive || !targetLayout) return null;
 
   const step = steps[currentStep];
   const isLast = currentStep === steps.length - 1;
 
-  const statusBarHeight = StatusBar.currentHeight ?? 0;
-  const adjustedY = targetLayout.y - statusBarHeight;
+  const statusBarHeight = Constants.statusBarHeight ?? 0;
+  const adjustedY = targetLayout.y + statusBarHeight;
 
   const TOOLTIP_HEIGHT = 140;
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+  const isCenteredStep = currentStep === 1;
   const showAbove =
+    !isCenteredStep &&
     adjustedY + targetLayout.height + TOOLTIP_HEIGHT > SCREEN_HEIGHT - 100;
 
-  const tooltipTop = showAbove
-    ? Math.max(adjustedY - TOOLTIP_HEIGHT - 12, 60)
-    : Math.min(
-        adjustedY + targetLayout.height + 12,
-        SCREEN_HEIGHT - TOOLTIP_HEIGHT - 80,
-      );
+  const tooltipTop = isCenteredStep
+    ? SCREEN_HEIGHT * 0.55 - TOOLTIP_HEIGHT / 2
+    : currentStep === 2
+      ? Math.max(adjustedY - TOOLTIP_HEIGHT - 12 - 50, 60)
+      : showAbove
+        ? Math.max(adjustedY - TOOLTIP_HEIGHT - 12, 60)
+        : Math.min(
+            adjustedY + targetLayout.height + 12,
+            SCREEN_HEIGHT - TOOLTIP_HEIGHT - 80,
+          );
 
   return (
     <>
-      {/* Darkened overlay with cutout effect approximated by semi-transparent layer */}
       <View
         pointerEvents="box-none"
         style={{
@@ -97,25 +130,24 @@ function TourOverlay() {
         }}
       />
 
-      {/* Highlight ring around target */}
-      {/* Highlight ring around target */}
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          top: adjustedY - 6,
-          left: targetLayout.x - 6,
-          width: targetLayout.width + 12,
-          height: targetLayout.height + 12,
-          borderRadius: 16,
-          borderWidth: 2.5,
-          borderColor: "#008CFF",
-          backgroundColor: "rgba(0,140,255,0.08)",
-          zIndex: 999,
-        }}
-      />
+      {!isCenteredStep && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: adjustedY - 6,
+            left: targetLayout.x - 6,
+            width: targetLayout.width + 12,
+            height: targetLayout.height + 12,
+            borderRadius: 16,
+            borderWidth: 2.5,
+            borderColor: "#008CFF",
+            backgroundColor: "rgba(0,140,255,0.08)",
+            zIndex: 999,
+          }}
+        />
+      )}
 
-      {/* Tooltip bubble */}
       <View
         style={{
           position: "absolute",
@@ -133,7 +165,6 @@ function TourOverlay() {
           zIndex: 1000,
         }}
       >
-        {/* Step dots */}
         <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
           {steps.map((_, i) => (
             <View
@@ -214,6 +245,7 @@ function TabsLayoutInner() {
   return (
     <TourProvider onNavigateTab={navigateToTab}>
       <View style={{ flex: 1 }}>
+        <RootOffsetDetector />
         <TourConsumer tabBarRef={tabBarRef} />
         <PagerView
           ref={pagerRef}
