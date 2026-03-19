@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Dimensions, Pressable, StatusBar, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
@@ -25,17 +25,30 @@ const TABS = [
   },
 ];
 
-function TourStarter() {
-  const { startTour } = useTour();
+function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
+  const { startTour, isActive, currentStep, setTargetLayout } = useTour();
+
+  useEffect(() => {
+    if (isActive && currentStep === 2) {
+      setTimeout(() => {
+        if (tabBarRef.current) {
+          tabBarRef.current.measureInWindow(
+            (px: number, py: number, pw: number, ph: number) => {
+              if (pw > 0)
+                setTargetLayout({ x: px, y: py, width: pw, height: ph });
+            },
+          );
+        }
+      }, 300);
+    }
+  }, [isActive, currentStep]);
 
   useEffect(() => {
     const checkPendingTour = async () => {
       const pending = await AsyncStorage.getItem("pending_tour");
       if (pending === "true") {
         await AsyncStorage.removeItem("pending_tour");
-        setTimeout(() => {
-          startTour();
-        }, 500);
+        setTimeout(() => startTour(), 500);
       }
     };
     checkPendingTour();
@@ -53,15 +66,20 @@ function TourOverlay() {
   const step = steps[currentStep];
   const isLast = currentStep === steps.length - 1;
 
-  // Decide tooltip position — above or below the target
-  const TOOLTIP_HEIGHT = 120;
-  const SCREEN_HEIGHT = 800; // approximate
+  const statusBarHeight = StatusBar.currentHeight ?? 0;
+  const adjustedY = targetLayout.y - statusBarHeight;
+
+  const TOOLTIP_HEIGHT = 140;
+  const { height: SCREEN_HEIGHT } = Dimensions.get("window");
   const showAbove =
-    targetLayout.y + targetLayout.height + TOOLTIP_HEIGHT > SCREEN_HEIGHT - 100;
+    adjustedY + targetLayout.height + TOOLTIP_HEIGHT > SCREEN_HEIGHT - 100;
 
   const tooltipTop = showAbove
-    ? targetLayout.y - TOOLTIP_HEIGHT - 12
-    : targetLayout.y + targetLayout.height + 12;
+    ? Math.max(adjustedY - TOOLTIP_HEIGHT - 12, 60)
+    : Math.min(
+        adjustedY + targetLayout.height + 12,
+        SCREEN_HEIGHT - TOOLTIP_HEIGHT - 80,
+      );
 
   return (
     <>
@@ -80,11 +98,12 @@ function TourOverlay() {
       />
 
       {/* Highlight ring around target */}
+      {/* Highlight ring around target */}
       <View
         pointerEvents="none"
         style={{
           position: "absolute",
-          top: targetLayout.y - 6,
+          top: adjustedY - 6,
           left: targetLayout.x - 6,
           width: targetLayout.width + 12,
           height: targetLayout.height + 12,
@@ -180,6 +199,7 @@ function TourOverlay() {
 }
 
 function TabsLayoutInner() {
+  const tabBarRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const pagerRef = useRef<PagerView>(null);
   const { tabBarHidden } = useTabBar();
@@ -194,7 +214,7 @@ function TabsLayoutInner() {
   return (
     <TourProvider onNavigateTab={navigateToTab}>
       <View style={{ flex: 1 }}>
-        <TourStarter />
+        <TourConsumer tabBarRef={tabBarRef} />
         <PagerView
           ref={pagerRef}
           style={{ flex: 1 }}
@@ -218,6 +238,8 @@ function TabsLayoutInner() {
 
         {!tabBarHidden && (
           <View
+            ref={tabBarRef}
+            collapsable={false}
             style={{
               height: 100,
               flexDirection: "row",

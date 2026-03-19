@@ -347,14 +347,14 @@ export default function LegislationScreen() {
   }, []);
 
   useEffect(() => {
-    if (isActive && currentStep === 4) {
+    if (isActive && currentStep === 5) {
       setTimeout(() => {
         filterButtonRef.current?.measureInWindow((x, y, width, height) => {
           if (width > 0) setTargetLayout({ x, y, width, height });
         });
       }, 300);
     }
-    if (isActive && currentStep === 5) {
+    if (isActive && currentStep === 6) {
       setTimeout(() => {
         optionsButtonRef.current?.measureInWindow((x, y, width, height) => {
           if (width > 0) setTargetLayout({ x, y, width, height });

@@ -274,7 +274,7 @@ export default function OfficialsScreen() {
   }, []);
 
   useEffect(() => {
-    if (isActive && currentStep === 2) {
+    if (isActive && currentStep === 3) {
       setTimeout(() => {
         stateDropdownRef.current?.measureInWindow((x, y, width, height) => {
           if (width > 0) setTargetLayout({ x, y, width, height });
@@ -284,7 +284,7 @@ export default function OfficialsScreen() {
   }, [isActive, currentStep]);
 
   useEffect(() => {
-    if (isActive && currentStep === 3) {
+    if (isActive && currentStep === 4) {
       setTimeout(() => {
         firstCardPlusRef.current?.measureInWindow((x, y, width, height) => {
           if (width > 0) setTargetLayout({ x, y, width, height });

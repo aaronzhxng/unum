@@ -30,7 +30,7 @@ type Item = ListItem;
 export default function HomeScreen() {
   const flatListRef = useRef<View>(null);
   const listDropdownRef = useRef<View>(null);
-  const { isActive, currentStep, setTargetLayout } = useTour();
+  const { isActive, currentStep, setTargetLayout, markAppReady } = useTour();
   // console.log("HomeScreen render:", Date.now());
   const router = useRouter();
 
@@ -90,7 +90,7 @@ export default function HomeScreen() {
   const [notifVersion, setNotifVersion] = useState(0);
 
   // In the loadItems function, track which list is loaded:
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const loadItems = async () => {
     // console.log("=== loadItems called ===");
@@ -328,6 +328,12 @@ export default function HomeScreen() {
       }, 300);
     }
   }, [isActive, currentStep]);
+
+  useEffect(() => {
+    if (!isLoading && items !== undefined) {
+      markAppReady();
+    }
+  }, [isLoading]);
 
   useFocusEffect(
     React.useCallback(() => {

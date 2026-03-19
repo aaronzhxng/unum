@@ -1,5 +1,11 @@
 import { useRouter } from "expo-router";
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export type TourStep = {
   tab: number;
@@ -19,6 +25,12 @@ const TOUR_STEPS: TourStep[] = [
     title: "Your Items",
     description:
       "Long press any card to enter edit mode — reorder, move, or remove items from your list.",
+  },
+  {
+    tab: 0,
+    title: "Navigate",
+    description:
+      "Use these three tabs to switch between your lists, browse officials, and explore legislation.",
   },
   {
     tab: 1,
@@ -61,6 +73,7 @@ type TourContextType = {
   endTour: () => void;
   nextStep: () => void;
   setTargetLayout: (layout: TargetLayout) => void;
+  markAppReady: () => void;
 };
 
 const TourContext = createContext<TourContextType | null>(null);
@@ -81,14 +94,20 @@ export function TourProvider({
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [targetLayout, setTargetLayout] = useState<TargetLayout>(null);
+  const [pendingStart, setPendingStart] = useState(false);
+  const [appReady, setAppReady] = useState(false);
   const router = useRouter();
 
   const startTour = useCallback(() => {
-    setCurrentStep(0);
-    setTargetLayout(null);
-    setIsActive(true);
-    onNavigateTab(0);
-  }, [onNavigateTab]);
+    if (appReady) {
+      setCurrentStep(0);
+      setTargetLayout(null);
+      setIsActive(true);
+      onNavigateTab(0);
+    } else {
+      setPendingStart(true);
+    }
+  }, [appReady, onNavigateTab]);
 
   const endTour = useCallback(() => {
     setIsActive(false);
@@ -112,6 +131,20 @@ export function TourProvider({
     }
   }, [currentStep, endTour, onNavigateTab]);
 
+  const markAppReady = useCallback(() => {
+    setAppReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (pendingStart && appReady) {
+      setPendingStart(false);
+      setCurrentStep(0);
+      setTargetLayout(null);
+      setIsActive(true);
+      onNavigateTab(0);
+    }
+  }, [pendingStart, appReady]);
+
   return (
     <TourContext.Provider
       value={{
@@ -123,6 +156,7 @@ export function TourProvider({
         endTour,
         nextStep,
         setTargetLayout,
+        markAppReady,
       }}
     >
       {children}
