@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
@@ -23,6 +24,25 @@ const TABS = [
     size: 28,
   },
 ];
+
+function TourStarter() {
+  const { startTour } = useTour();
+
+  useEffect(() => {
+    const checkPendingTour = async () => {
+      const pending = await AsyncStorage.getItem("pending_tour");
+      if (pending === "true") {
+        await AsyncStorage.removeItem("pending_tour");
+        setTimeout(() => {
+          startTour();
+        }, 500);
+      }
+    };
+    checkPendingTour();
+  }, []);
+
+  return null;
+}
 
 function TourOverlay() {
   const { isActive, currentStep, steps, targetLayout, nextStep, endTour } =
@@ -174,6 +194,7 @@ function TabsLayoutInner() {
   return (
     <TourProvider onNavigateTab={navigateToTab}>
       <View style={{ flex: 1 }}>
+        <TourStarter />
         <PagerView
           ref={pagerRef}
           style={{ flex: 1 }}
