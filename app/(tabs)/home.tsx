@@ -21,9 +21,9 @@ import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { getBillIcon } from "../utils/billIcons";
+import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { ListItem, storage } from "../utils/storage";
-// type ItemType = "official" | "bill";
 
 type Item = ListItem;
 
@@ -264,6 +264,25 @@ export default function HomeScreen() {
       year: "numeric",
     });
   };
+
+  const [voterCardDismissed, setVoterCardDismissed] = useState(false);
+
+  const dismissVoterCard = () => {
+    const db = getDb();
+    db.runSync(
+      `INSERT INTO meta (key, value) VALUES ('voter_card_dismissed', 'true')
+     ON CONFLICT(key) DO UPDATE SET value = 'true'`,
+    );
+    setVoterCardDismissed(true);
+  };
+
+  useEffect(() => {
+    const db = getDb();
+    const row = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
+    );
+    if (row?.value === "true") setVoterCardDismissed(true);
+  }, []);
 
   useEffect(() => {
     refreshLists();
@@ -522,38 +541,41 @@ export default function HomeScreen() {
 
       {/* List Content */}
       {items.length === 0 ? (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingHorizontal: 32,
-            gap: 8,
-          }}
-        >
-          <Text style={{ fontSize: 32, marginBottom: 16 }}>📋</Text>
-          <Text
+        <View style={{ flex: 1 }}>
+          {!voterCardDismissed && <VoterCard onDismiss={dismissVoterCard} />}
+          <View
             style={{
-              fontSize: 17,
-              fontWeight: "600",
-              color: "#1a1a1a",
-              marginBottom: 8,
-              textAlign: "center",
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingHorizontal: 32,
+              gap: 8,
             }}
           >
-            Your list is empty
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              color: "#7B7C81",
-              textAlign: "center",
-              lineHeight: 20,
-            }}
-          >
-            Add from the Officials and Legislation tabs to start tracking what
-            matters to you.
-          </Text>
+            <Text style={{ fontSize: 32, marginBottom: 16 }}>📋</Text>
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginBottom: 8,
+                textAlign: "center",
+              }}
+            >
+              Your list is empty
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#7B7C81",
+                textAlign: "center",
+                lineHeight: 20,
+              }}
+            >
+              Add from the Officials and Legislation tabs to start tracking what
+              matters to you.
+            </Text>
+          </View>
         </View>
       ) : isEditMode ? (
         <DraggableFlatList
@@ -604,7 +626,11 @@ export default function HomeScreen() {
             data={items}
             keyExtractor={(item, index) => item.id || index.toString()}
             contentContainerStyle={componentStyles.listContent}
-            onContentSizeChange={(_w, h) => setContentHeight(h)}
+            ListHeaderComponent={
+              !voterCardDismissed && !isEditMode
+                ? () => <VoterCard onDismiss={dismissVoterCard} />
+                : null
+            }
             renderItem={({ item }) => (
               <Card
                 item={item}
@@ -1202,7 +1228,10 @@ const Card = React.memo(function Card({
                   style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
                   numberOfLines={1}
                 >
-                  {item.id?.toUpperCase() ?? item.name}
+                  {item.id?.replace(
+                    /^([a-zA-Z]+)(\d+)$/,
+                    (_, t, n) => `${t.toUpperCase()}.${n}`,
+                  ) ?? item.name}{" "}
                 </Text>
               </View>
               <View style={{ width: 50, height: 50, borderRadius: 6 }}>
@@ -1301,3 +1330,102 @@ const Card = React.memo(function Card({
     </Pressable>
   );
 });
+
+function VoterCard({ onDismiss }: { onDismiss: () => void }) {
+  const router = useRouter();
+  const [showMenu, setShowMenu] = useState(false);
+
+  return (
+    <Pressable
+      onPress={() => router.navigate("/voter-registration" as any)}
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+        // marginHorizontal: 16,
+        marginTop: 8,
+        marginBottom: 12,
+        backgroundColor: "#E8F4FF",
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: "#008CFF33",
+      })}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "700",
+              color: "#1a1a1a",
+              marginBottom: 4,
+            }}
+          >
+            🗳️ Are you registered to vote?
+          </Text>
+          <Text style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}>
+            Your vote shapes who makes the laws you're tracking. Check your
+            registration status.
+          </Text>
+        </View>
+        {/* <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            setShowMenu(true);
+          }}
+          style={{ padding: 4, marginLeft: 8 }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <MoreVertical size={18} color="#7B7C81" />
+        </Pressable> */}
+      </View>
+
+      <Modal
+        visible={showMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMenu(false)}
+        statusBarTranslucent
+      >
+        <Pressable style={{ flex: 1 }} onPress={() => setShowMenu(false)}>
+          <View
+            style={{
+              position: "absolute",
+              right: 24,
+              top: 120,
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              padding: 4,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.12,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+          >
+            <Pressable
+              onPress={() => {
+                setShowMenu(false);
+                onDismiss();
+              }}
+              style={({ pressed }) => ({
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Text style={{ fontSize: 15, color: "#FF3B30" }}>
+                Hide this card
+              </Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+    </Pressable>
+  );
+}

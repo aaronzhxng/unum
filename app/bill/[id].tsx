@@ -904,7 +904,9 @@ export default function BillDetail() {
                     style={{ fontSize: 12, color: "#7B7C81", marginTop: 8 }}
                   >
                     {bill.summaries[0].actionDesc} • Last updated:{" "}
-                    {safeFormatDate(bill.summaries[0].updateDate)}
+                    {safeFormatDate(
+                      bill.summaries[0].updateDate?.split("T")[0],
+                    )}{" "}
                   </Text>
                   <JargonFootnotes
                     text={bill.summaries?.[0]?.text?.replace(/<[^>]*>/g, "")}
@@ -1083,7 +1085,7 @@ export default function BillDetail() {
                             </View>
                             <Text style={componentStyles.amendmentSummary}>
                               {safeFormatDate(amendment.submittedDate) ||
-                                "Date unavailable"}
+                                "Date unavailable. "}
                               {amendment.purpose ||
                                 amendment.amendedAmendment?.purpose ||
                                 "Description not yet available"}

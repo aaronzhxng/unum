@@ -120,6 +120,10 @@ export default function RootLayout() {
                   animation: "none",
                 }}
               />
+              <Stack.Screen
+                name="voter-registration"
+                options={{ headerShown: false }}
+              />
             </Stack>
           </TabBarProvider>
         </PolicyAreasProvider>
