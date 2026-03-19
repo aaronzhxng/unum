@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -273,25 +274,44 @@ export default function OfficialsScreen() {
     }
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isActive) return;
+      if (currentStep === 3) {
+        setTimeout(() => {
+          stateDropdownRef.current?.measureInWindow((x, y, width, height) => {
+            if (width > 0) setTargetLayout({ x, y, width, height });
+          });
+        }, 500);
+      }
+      if (currentStep === 4) {
+        setTimeout(() => {
+          firstCardPlusRef.current?.measureInWindow((x, y, width, height) => {
+            if (width > 0) setTargetLayout({ x, y, width, height });
+          });
+        }, 500);
+      }
+    }, [isActive, currentStep]),
+  );
+
   useEffect(() => {
-    if (isActive && currentStep === 3) {
+    if (!isActive) return;
+    if (isLoading) return;
+    if (currentStep === 3) {
       setTimeout(() => {
         stateDropdownRef.current?.measureInWindow((x, y, width, height) => {
           if (width > 0) setTargetLayout({ x, y, width, height });
         });
       }, 300);
     }
-  }, [isActive, currentStep]);
-
-  useEffect(() => {
-    if (isActive && currentStep === 4) {
+    if (currentStep === 4) {
       setTimeout(() => {
         firstCardPlusRef.current?.measureInWindow((x, y, width, height) => {
           if (width > 0) setTargetLayout({ x, y, width, height });
         });
       }, 300);
     }
-  }, [isActive, currentStep]);
+  }, [isLoading, isActive, currentStep]);
 
   const handleSetPriority = () => {
     if (selectedList === "All States") return;

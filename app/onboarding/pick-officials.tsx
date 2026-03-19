@@ -84,13 +84,13 @@ const SUGGESTED_OFFICIALS = [
     photoUrl: "https://bioguide.congress.gov/bioguide/photo/M/M000355.jpg",
   },
   {
-    bioguideId: "J000304",
+    bioguideId: "J000299",
     name: "Mike Johnson",
     party: "R",
     role: "Representative",
     state: "LA",
     district: "4",
-    photoUrl: "https://bioguide.congress.gov/bioguide/photo/J/J000304.jpg",
+    photoUrl: "https://bioguide.congress.gov/bioguide/photo/J/J000299.jpg",
   },
   {
     bioguideId: "J000294",

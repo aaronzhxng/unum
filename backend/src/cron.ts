@@ -362,7 +362,7 @@ export const runCronJob = async () => {
 
 // ── Scheduler — runs every day at 8:00 AM UTC ─────────────────────────────────
 export const startCronScheduler = () => {
-  cron.schedule("0 13,21 * * *", () => {
+  cron.schedule("0 12,21 * * *", () => {
     runCronJob();
   });
   console.log("Cron scheduler started — runs at 8am and 4pm EST daily");

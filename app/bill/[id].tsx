@@ -415,6 +415,17 @@ export default function BillDetail() {
     return new Date(year, month - 1, day).getTime();
   };
 
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
   const processedActions = useMemo(
     () =>
       Array.isArray(bill?.actions)
@@ -713,14 +724,16 @@ export default function BillDetail() {
         <View style={{ flex: 1, gap: 8 }}>
           <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
             <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
-              {new Date(bill.latestAction.actionDate).toLocaleDateString(
-                "en-US",
-                {
+              {(() => {
+                const [y, m, d] = bill.latestAction.actionDate
+                  .split("-")
+                  .map(Number);
+                return new Date(y, m - 1, d).toLocaleDateString("en-US", {
                   month: "2-digit",
                   day: "2-digit",
                   year: "numeric",
-                },
-              )}
+                });
+              })()}
             </Text>
             {bill.policyArea?.name && (
               <>
@@ -821,25 +834,23 @@ export default function BillDetail() {
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Latest Action: </Text>
               <Text style={componentStyles.detailInfo}>
-                {new Date(bill.latestAction.actionDate).toLocaleDateString(
-                  "en-US",
-                  {
+                {(() => {
+                  const [y, m, d] = bill.latestAction.actionDate
+                    .split("-")
+                    .map(Number);
+                  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
                     month: "2-digit",
                     day: "2-digit",
                     year: "numeric",
-                  },
-                )}
+                  });
+                })()}
               </Text>
             </View>
 
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Introduced: </Text>
               <Text style={componentStyles.detailInfo}>
-                {new Date(bill.introducedDate).toLocaleDateString("en-US", {
-                  month: "2-digit",
-                  day: "2-digit",
-                  year: "numeric",
-                })}
+                {safeFormatDate(bill.introducedDate)}
               </Text>
             </View>
 
@@ -893,9 +904,7 @@ export default function BillDetail() {
                     style={{ fontSize: 12, color: "#7B7C81", marginTop: 8 }}
                   >
                     {bill.summaries[0].actionDesc} • Last updated:{" "}
-                    {new Date(
-                      bill.summaries[0].updateDate,
-                    ).toLocaleDateString()}
+                    {safeFormatDate(bill.summaries[0].updateDate)}
                   </Text>
                   <JargonFootnotes
                     text={bill.summaries?.[0]?.text?.replace(/<[^>]*>/g, "")}
@@ -1073,16 +1082,8 @@ export default function BillDetail() {
                               )}
                             </View>
                             <Text style={componentStyles.amendmentSummary}>
-                              {amendment.submittedDate
-                                ? new Date(
-                                    amendment.submittedDate,
-                                  ).toLocaleDateString("en-US", {
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                    year: "numeric",
-                                  })
-                                : "Date unavailable"}{" "}
-                              ·{" "}
+                              {safeFormatDate(amendment.submittedDate) ||
+                                "Date unavailable"}
                               {amendment.purpose ||
                                 amendment.amendedAmendment?.purpose ||
                                 "Description not yet available"}

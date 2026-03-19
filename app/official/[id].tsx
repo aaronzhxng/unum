@@ -79,13 +79,18 @@ function LegislationCard({ item }: { item: any }) {
   const policyArea = item.policyArea?.name ?? null;
   const dotColor = POLICY_AREA_COLORS[policyArea] ?? "#008CFF";
 
-  const dateStr = item.introducedDate
-    ? new Date(item.introducedDate).toLocaleDateString("en-US", {
-        month: "2-digit",
-        day: "2-digit",
-        year: "numeric",
-      })
-    : "";
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const dateStr = safeFormatDate(item.introducedDate);
 
   return (
     <Pressable
@@ -410,7 +415,8 @@ export default function OfficialDetail() {
   const sponsoredBills = useMemo(
     () =>
       (sponsoredData?.legislation ?? []).filter(
-        (item: any) => !item.amendmentNumber && item.type,
+        (item: any) =>
+          !item.amendmentNumber && item.type && item.congress === 119,
       ),
     [sponsoredData],
   );
@@ -418,7 +424,10 @@ export default function OfficialDetail() {
   const cosponsoredBills = useMemo(
     () =>
       (cosponsoredData?.legislation ?? []).filter(
-        (item: any) => !item.amendmentNumber && item.type,
+        (item: any) =>
+          !item.amendmentNumber &&
+          item.type &&
+          (item.congress === 119 || item.congress === "119" || !item.congress),
       ),
     [cosponsoredData],
   );
@@ -524,6 +533,17 @@ export default function OfficialDetail() {
 
   const topPolicyAreas: { name: string; count: number }[] =
     policyAreasData?.policyAreas ?? [];
+
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
 
   if (isLoading) {
     return (
@@ -917,6 +937,16 @@ export default function OfficialDetail() {
                   )}
                 </>
               )}
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#535353",
+                  textAlign: "center",
+                  paddingVertical: 16,
+                }}
+              >
+                Bills are currently limited to the 119th Congress (2025–2027).
+              </Text>
             </View>
           </ScrollView>
         </View>
@@ -1020,6 +1050,16 @@ export default function OfficialDetail() {
                   )}
                 </>
               )}
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#535353",
+                  textAlign: "center",
+                  paddingVertical: 16,
+                }}
+              >
+                Bills are currently limited to the 119th Congress (2025–2027).
+              </Text>
             </View>
           </ScrollView>
         </View>

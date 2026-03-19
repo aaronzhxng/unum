@@ -279,6 +279,17 @@ export default function LegislationScreen() {
     (b) => `${b.type.toLowerCase()}${b.number}` === currentBillId,
   );
 
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
   useEffect(() => {
     if (searchQuery.length < 3) {
       setSearchFallbackResults([]);
@@ -517,6 +528,18 @@ export default function LegislationScreen() {
           }}
           onEndReachedThreshold={0.5}
           directionalLockEnabled={true}
+          ListFooterComponent={() => (
+            <Text
+              style={{
+                fontSize: 12,
+                color: "#535353",
+                textAlign: "center",
+                paddingVertical: 16,
+              }}
+            >
+              Bills are currently limited to the 119th Congress (2025–2027).
+            </Text>
+          )}
         />
       )}
 
@@ -791,13 +814,20 @@ const BillCard = React.memo(function BillCard({
   const policyArea = item.policyArea?.name ?? null;
   const dotColor = POLICY_AREA_COLORS[policyArea] ?? "#008CFF";
 
-  const dateStr = new Date(
-    item.latestAction?.actionDate ?? item.updateDate ?? 0,
-  ).toLocaleDateString("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-  });
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const dateStr = safeFormatDate(
+    item.latestAction?.actionDate ?? item.updateDate,
+  );
 
   return (
     <Pressable

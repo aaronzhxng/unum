@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
+import { billsService } from "../services/bills";
 import { getDb } from "../utils/database";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { storage } from "../utils/storage";
@@ -34,13 +35,13 @@ const SUGGESTED_OFFICIALS = [
     photoUrl: "https://bioguide.congress.gov/bioguide/photo/M/M000355.jpg",
   },
   {
-    bioguideId: "J000304",
+    bioguideId: "J000299",
     name: "Mike Johnson",
     party: "R",
     role: "Representative",
     state: "LA",
     district: "4",
-    photoUrl: "https://bioguide.congress.gov/bioguide/photo/J/J000304.jpg",
+    photoUrl: "https://bioguide.congress.gov/bioguide/photo/J/J000299.jpg",
   },
   {
     bioguideId: "J000294",
@@ -76,8 +77,8 @@ const SUGGESTED_BILLS = [
     number: "22",
     title: "SAVE Act",
     policyArea: "Government Operations and Politics",
-    updateDate: "2025-01-15",
-    latestAction: "Referred to the House Committee on House Administration.",
+    updateDate: "2025-04-09",
+    latestAction: "Received in the Senate.",
   },
   {
     id: "hr7148",
@@ -85,8 +86,8 @@ const SUGGESTED_BILLS = [
     number: "7148",
     title: "Consolidated Appropriations Act, 2026",
     policyArea: "Economics and Public Finance",
-    updateDate: "2025-03-01",
-    latestAction: "Passed House.",
+    updateDate: "2026-02-02",
+    latestAction: "Became Public Law no: 119-75.",
   },
   {
     id: "hr3633",
@@ -111,7 +112,7 @@ const SUGGESTED_BILLS = [
     type: "S",
     number: "2563",
     title: "Global Investment in American Jobs Act of 2025",
-    policyArea: "Foreign Trade and International Finance",
+    policyArea: "Government Operations and Politics",
     updateDate: "2025-05-14",
     latestAction: "Read twice and referred to the Committee on Commerce.",
   },
@@ -120,7 +121,7 @@ const SUGGESTED_BILLS = [
     type: "HR",
     number: "2709",
     title: "Save Our Sequoias Act",
-    policyArea: "Public Lands and Natural Resources",
+    policyArea: "Environmental Protection",
     updateDate: "2025-02-28",
     latestAction: "Referred to the Subcommittee on National Parks.",
   },
@@ -138,7 +139,7 @@ const SUGGESTED_BILLS = [
     type: "S",
     number: "3718",
     title: "Delivering for Rural Seniors Act of 2026",
-    policyArea: "Social Welfare",
+    policyArea: "Agriculture and Food",
     updateDate: "2026-01-08",
     latestAction: "Read twice and referred to the Committee on Agriculture.",
   },
@@ -155,6 +156,20 @@ export default function FinishScreen() {
     setOverlayConfig,
   } = useOnboarding();
   const hasRun = useRef(false);
+
+  const [msgIndex, setMsgIndex] = useState(0);
+  const messages = [
+    "Just a moment...",
+    "Loading legislation data for the first time...",
+    "This only happens once...",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((prev) => (prev + 1) % messages.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setOverlayConfig(null);
@@ -244,16 +259,51 @@ export default function FinishScreen() {
           }
         }
 
+        // 3. Save priority state
+        if (priorityState) {
+          storage.setPriorityState(priorityState);
+          notificationPreferences.enable(`state_${priorityState}`, "official");
+        }
+
+        // 4. Save policy area notification preferences
+        if (selectedPolicyAreas.length > 0) {
+          notificationPreferences.saveSubTypes(
+            "policy_areas",
+            "bill",
+            selectedPolicyAreas,
+          );
+        }
+
+        // 5. Sync preferences to backend
+        await syncPreferencesToBackend();
+
+        // 6. Pre-populate SQLite with bills so the tour doesn't stall
+        try {
+          await billsService.getAll();
+        } catch (error) {
+          console.error("Bills prefetch failed:", error);
+          // Non-fatal — app will retry when legislation tab loads
+        }
+
         for (const billId of selectedBills) {
           const bill = SUGGESTED_BILLS.find((b) => b.id === billId);
           if (bill) {
+            // Look up live data from SQLite (populated in step 6)
+            const db = getDb();
+            const row = db.getFirstSync<{
+              latest_action_text: string | null;
+              latest_action_date: string | null;
+            }>(
+              `SELECT latest_action_text, latest_action_date FROM bills WHERE bill_id = ?`,
+              [bill.id],
+            );
             items.push({
               id: bill.id,
               type: "bill",
               name: bill.title,
               policyArea: bill.policyArea,
-              date: bill.updateDate ?? "",
-              latestAction: bill.latestAction ?? "",
+              date: row?.latest_action_date ?? bill.updateDate ?? "",
+              latestAction: row?.latest_action_text ?? bill.latestAction ?? "",
               update: "",
             });
           }
@@ -282,32 +332,14 @@ export default function FinishScreen() {
           storage.saveLists(allLists);
         }
 
-        // 3. Save priority state
-        if (priorityState) {
-          storage.setPriorityState(priorityState);
-          notificationPreferences.enable(`state_${priorityState}`, "official");
-        }
-
-        // 4. Save policy area notification preferences
-        if (selectedPolicyAreas.length > 0) {
-          notificationPreferences.saveSubTypes(
-            "policy_areas",
-            "bill",
-            selectedPolicyAreas,
-          );
-        }
-
-        // 5. Sync preferences to backend
-        await syncPreferencesToBackend();
-
-        // 6. Mark onboarding complete
+        // 7. Mark onboarding complete
         const db = getDb();
         db.runSync(
           `INSERT INTO meta (key, value) VALUES ('onboarding_complete', 'true')
            ON CONFLICT(key) DO UPDATE SET value = 'true'`,
         );
 
-        // 7. Navigate to tour
+        // 8. Navigate to tour
         router.replace("/onboarding/tour" as any);
       } catch (error) {
         console.error("Error finishing onboarding:", error);
@@ -345,7 +377,9 @@ export default function FinishScreen() {
       >
         Building your list...
       </Text>
-      <Text style={{ fontSize: 15, color: "#535353" }}>Just a moment</Text>
+      <Text style={{ fontSize: 15, color: "#535353" }}>
+        {messages[msgIndex]}
+      </Text>
     </View>
   );
 }

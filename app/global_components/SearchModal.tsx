@@ -163,6 +163,17 @@ export default function SearchModal({
     setShowAddModal(true);
   };
 
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -290,18 +301,9 @@ export default function SearchModal({
                             item.policyArea?.name ?? item.policyArea ?? null;
                           const dotColor =
                             POLICY_AREA_COLORS[policyArea] ?? "#008CFF";
-                          const dateStr = (() => {
-                            const d =
-                              item.latestAction?.actionDate ??
-                              item.date ??
-                              null;
-                            if (!d) return null;
-                            return new Date(d).toLocaleDateString("en-US", {
-                              month: "2-digit",
-                              day: "2-digit",
-                              year: "numeric",
-                            });
-                          })();
+                          const dateStr = safeFormatDate(
+                            item.latestAction?.actionDate ?? item.date,
+                          );
 
                           return (
                             <>

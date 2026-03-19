@@ -102,7 +102,13 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   const filteredCosponsors = sortedCosponsors.filter((cosponsor) => {
     const roleMatch =
       !selectedRole?.length ||
-      selectedRole.some((role) => cosponsor.role?.toLowerCase().includes(role));
+      selectedRole.some((role) => {
+        if (role === "representative")
+          return cosponsor.role?.toLowerCase().startsWith("rep");
+        if (role === "senator")
+          return cosponsor.role?.toLowerCase().startsWith("senator");
+        return false;
+      });
 
     const partyMatch =
       !selectedParty?.length ||

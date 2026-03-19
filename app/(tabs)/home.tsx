@@ -254,6 +254,17 @@ export default function HomeScreen() {
 
   const { setTabBarHidden } = useTabBar();
 
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
   useEffect(() => {
     refreshLists();
   }, []);
@@ -1040,16 +1051,19 @@ const Card = React.memo(function Card({
     }
   };
 
-  // Date formatter
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+  const safeFormatDate = (dateStr?: string | null): string => {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split("-").map(Number);
+    if (!y || !m || !d) return "";
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
       month: "2-digit",
       day: "2-digit",
       year: "numeric",
     });
   };
+
+  // Date formatter
+  const formatDate = (dateString?: string) => safeFormatDate(dateString);
 
   return (
     <Pressable
@@ -1188,7 +1202,7 @@ const Card = React.memo(function Card({
                   style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
                   numberOfLines={1}
                 >
-                  {item.name?.split(" - ")[0] ?? item.name}
+                  {item.id?.toUpperCase() ?? item.name}
                 </Text>
               </View>
               <View style={{ width: 50, height: 50, borderRadius: 6 }}>

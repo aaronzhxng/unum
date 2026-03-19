@@ -682,17 +682,31 @@ app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
 app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
   try {
     const { bioguideId } = req.params;
-    const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit: 250 },
-      },
-    );
-    const allLegislation = response.data.cosponsoredLegislation || [];
+
+    let allLegislation: any[] = [];
+    let offset = 0;
+    const limit = 250;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await axios.get(
+        `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
+        {
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { limit, offset },
+        },
+      );
+      const page = response.data.cosponsoredLegislation || [];
+      allLegislation = allLegislation.concat(page);
+      hasMore = response.data.pagination?.next != null && page.length === limit;
+      offset += limit;
+    }
+
+    const filtered = allLegislation.filter((b: any) => b.congress === 119);
+
     res.json({
-      legislation: allLegislation,
-      count: response.data.pagination?.count || allLegislation.length,
+      legislation: filtered,
+      count: allLegislation.length,
     });
   } catch (error) {
     console.error("Error fetching cosponsored legislation:", error);
@@ -760,6 +774,21 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
     console.error("Error fetching policy areas:", error);
     res.status(500).json({ error: "Failed to fetch policy areas" });
   }
+});
+
+app.get("/api/debug/update-dates", (req, res) => {
+  const rows = db
+    .prepare(
+      `
+    SELECT update_date, COUNT(*) as count 
+    FROM bills 
+    GROUP BY update_date 
+    ORDER BY update_date DESC 
+    LIMIT 10
+  `,
+    )
+    .all();
+  res.json(rows);
 });
 
 // app.get("/api/cron/run", async (req, res) => {

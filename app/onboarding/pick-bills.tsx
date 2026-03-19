@@ -47,7 +47,7 @@ const SUGGESTED_BILLS = [
     number: "2563",
     title: "Global Investment in American Jobs Act of 2025",
     description: "Promotes foreign investment in American job creation.",
-    policyArea: "Foreign Trade and International Finance",
+    policyArea: "Government Operations and Politics",
   },
   {
     id: "hr2709",
@@ -56,7 +56,7 @@ const SUGGESTED_BILLS = [
     title: "Save Our Sequoias Act",
     description:
       "Authorizes emergency measures to protect giant sequoia trees.",
-    policyArea: "Public Lands and Natural Resources",
+    policyArea: "Environmental Protection",
   },
   {
     id: "hr398",
@@ -73,7 +73,7 @@ const SUGGESTED_BILLS = [
     title: "Delivering for Rural Seniors Act of 2026",
     description:
       "Improves delivery of services and benefits to rural senior citizens.",
-    policyArea: "Social Welfare",
+    policyArea: "Agriculture and Food",
   },
 ];
 
