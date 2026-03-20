@@ -99,16 +99,16 @@ app.get("/api/bills", async (req, res) => {
       `);
       const syncBills = db.transaction((bills: any[]) => {
         for (const bill of bills) {
-          insert.run(
-            `${bill.type.toLowerCase()}${bill.number}`,
-            bill.type,
-            bill.number,
-            bill.title,
-            bill.policyArea?.name ?? null,
-            bill.sponsors?.[0]?.state ?? null,
-            bill.updateDate ?? null,
-            Date.now(),
-          );
+          const insert = db.prepare(`
+  INSERT INTO bills (bill_id, type, number, title, policy_area, sponsor_state, update_date, synced_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  ON CONFLICT(bill_id) DO UPDATE SET
+    title = excluded.title,
+    sponsor_state = excluded.sponsor_state,
+    update_date = excluded.update_date,
+    synced_at = excluded.synced_at,
+    policy_area = COALESCE(bills.policy_area, excluded.policy_area)
+`);
         }
       });
       syncBills(merged);

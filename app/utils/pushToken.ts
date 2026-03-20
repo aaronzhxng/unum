@@ -2,11 +2,10 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { getDb } from "./database";
 
-const isExpoGo = Constants.appOwnership === "expo";
-
+const isExpoGo = Constants.executionEnvironment === "storeClient";
 export const pushToken = {
   register: async (): Promise<string | null> => {
-    console.log("appOwnership:", Constants.appOwnership);
+    console.log("executionEnvironment:", Constants.executionEnvironment);
     console.log("isExpoGo:", isExpoGo);
     if (isExpoGo) {
       console.log("Push notifications not supported in Expo Go — skipping");
