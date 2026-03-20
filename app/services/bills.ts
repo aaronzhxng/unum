@@ -203,9 +203,9 @@ const enrichBackend = async (): Promise<void> => {
 
     // Only run once
     const already = db.getFirstSync<{ value: string }>(
-      `SELECT value FROM meta WHERE key = 'backend_enriched_v1'`,
+      `SELECT value FROM meta WHERE key = 'backend_enriched_v2'`,
     );
-    if (already) return; // temporarily disabled to force re-run
+    if (already) return;
 
     // Force re-run by clearing the flag
     // db.runSync(`DELETE FROM meta WHERE key = 'backend_enriched_v1'`);
@@ -255,7 +255,7 @@ const enrichBackend = async (): Promise<void> => {
 
     // Mark complete so it never runs again
     db.runSync(
-      `INSERT INTO meta (key, value) VALUES ('backend_enriched_v1', 'true')
+      `INSERT INTO meta (key, value) VALUES ('backend_enriched_v2', 'true')
        ON CONFLICT(key) DO UPDATE SET value = 'true'`,
     );
   } catch (err) {
