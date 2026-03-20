@@ -1,0 +1,4378 @@
+{
+  "B001296": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "Y000064": {
+    "committees": [
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Finance",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000779": {
+    "committees": [
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Finance",
+      "Senate Committee on the Budget",
+      "Joint Committee on Taxation",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000437": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Rules and Administration",
+      "Senate Select Committee on Intelligence",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000802": {
+    "committees": [
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Finance",
+      "Senate Committee on the Budget",
+      "Senate Committee on the Judiciary",
+      "United States Senate Caucus on International Narcotics Control",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000800": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Finance",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000817": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Finance",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000790": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Finance",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000805": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Finance",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on the Budget",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "V000128": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000278": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Veterans' Affairs",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000476": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Finance",
+      "Senate Committee on the Judiciary",
+      "Senate Committee on Veterans' Affairs",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000250": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Finance",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001198": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001203": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Finance",
+      "Senate Committee on Indian Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001208": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001232": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001181": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Select Committee on Ethics",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001217": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on the Budget",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001184": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Finance",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Small Business and Entrepreneurship"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S000148": {
+    "committees": [
+      "Senate Committee on Rules and Administration",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001227": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on the Judiciary",
+      "Joint Economic Committee"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001150": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001194": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Indian Affairs",
+      "Senate Select Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S000033": {
+    "committees": [
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Finance",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on the Budget",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000605": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Indian Affairs",
+      "Senate Select Committee on Intelligence",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000608": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Small Business and Entrepreneurship"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000584": {
+    "committees": [
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Select Committee on Ethics",
+      "Senate Select Committee on Intelligence",
+      "United States Senate Caucus on International Narcotics Control"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000618": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000122": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000595": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Homeland Security and Governmental Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000603": {
+    "committees": [
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on Small Business and Entrepreneurship"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000145": {
+    "committees": [
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on the Budget",
+      "Senate Committee on the Judiciary",
+      "Joint Committee on Printing",
+      "Joint Committee of Congress on the Library"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "O000174": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Rules and Administration",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001111": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on the Budget",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001169": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Health, Education, Labor, and Pensions"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001153": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Indian Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001190": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Indian Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001242": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on the Budget",
+      "United States Senate Caucus on International Narcotics Control"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000934": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Appropriations",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Indian Affairs",
+      "Senate Committee on Veterans' Affairs",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001244": {
+    "committees": [
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on the Judiciary",
+      "Joint Economic Committee",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001176": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on the Budget",
+      "Joint Committee on Printing"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001243": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Foreign Relations",
+      "Joint Economic Committee",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000355": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Appropriations",
+      "Senate Committee on Rules and Administration",
+      "Joint Committee on Printing",
+      "Joint Committee of Congress on the Library"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001198": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Finance",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000133": {
+    "committees": [
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Small Business and Entrepreneurship"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000571": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Environment and Public Works"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000570": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Finance",
+      "Senate Committee on Indian Affairs",
+      "Senate Committee on the Budget",
+      "United States Senate Caucus on International Narcotics Control"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000577": {
+    "committees": [
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on the Budget",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000575": {
+    "committees": [
+      "Senate Committee on Finance",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Select Committee on Ethics",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000367": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on the Judiciary",
+      "Joint Committee of Congress on the Library",
+      "Joint Economic Committee"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000383": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Veterans' Affairs",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000394": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000393": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on the Budget",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000377": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Environment and Public Works",
+      "Joint Economic Committee",
+      "Senate Select Committee on Intelligence",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000384": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000312": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000293": {
+    "committees": [
+      "Senate Committee on Finance",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on the Budget",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001079": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Appropriations",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Rules and Administration",
+      "Joint Committee of Congress on the Library"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001104": {
+    "committees": [
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001061": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Appropriations",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Indian Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001042": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Committee on the Judiciary",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H000273": {
+    "committees": [
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Small Business and Entrepreneurship"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001046": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Energy and Natural Resources",
+      "Joint Economic Committee",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001089": {
+    "committees": [
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001076": {
+    "committees": [
+      "Senate Committee on Finance",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on Veterans' Affairs",
+      "Joint Economic Committee"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H000601": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Rules and Administration",
+      "Joint Committee on Printing"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000386": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Finance",
+      "Senate Committee on the Budget",
+      "Senate Committee on the Judiciary",
+      "Joint Committee on Taxation",
+      "United States Senate Caucus on International Narcotics Control"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000359": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on the Budget",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000555": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Armed Services",
+      "Senate Select Committee on Intelligence",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000574": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on Veterans' Affairs",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000463": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Appropriations",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Rules and Administration",
+      "Joint Committee on Printing",
+      "Joint Committee of Congress on the Library",
+      "Senate Select Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000479": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000295": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Armed Services",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on Small Business and Entrepreneurship"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000563": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Appropriations",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000622": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000618": {
+    "committees": [
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Finance",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Indian Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001114": {
+    "committees": [
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Small Business and Entrepreneurship"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001098": {
+    "committees": [
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C000880": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Finance",
+      "Senate Committee on the Budget",
+      "Joint Committee on Taxation"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001096": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001095": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Energy and Natural Resources",
+      "Joint Economic Committee",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001113": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Finance",
+      "Senate Committee on Indian Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001056": {
+    "committees": [
+      "Senate Committee on Finance",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on the Budget",
+      "Senate Committee on the Judiciary",
+      "Joint Committee on Taxation",
+      "Senate Select Committee on Intelligence",
+      "United States Senate Caucus on International Narcotics Control"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001088": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Committee on the Judiciary",
+      "Senate Select Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001035": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001075": {
+    "committees": [
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Finance",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001047": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Rules and Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C000127": {
+    "committees": [
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Finance",
+      "Senate Committee on Indian Affairs",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Joint Committee on Taxation"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001305": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Joint Economic Committee",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001319": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on the Judiciary",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001236": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Appropriations",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Rules and Administration",
+      "Senate Committee on Veterans' Affairs",
+      "Commission on Security and Cooperation in Europe"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001288": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Foreign Relations",
+      "Senate Committee on Small Business and Entrepreneurship",
+      "Senate Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001303": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Health, Education, Labor, and Pensions"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001277": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Homeland Security and Governmental Affairs",
+      "Senate Committee on the Judiciary",
+      "Senate Committee on Veterans' Affairs",
+      "United States Senate Caucus on International Narcotics Control"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001243": {
+    "committees": [
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Finance",
+      "Senate Committee on the Judiciary",
+      "Senate Committee on Veterans' Affairs",
+      "Joint Economic Committee"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001267": {
+    "committees": [
+      "Senate Committee on Agriculture, Nutrition, and Forestry",
+      "Senate Committee on Finance",
+      "Senate Committee on Rules and Administration",
+      "Senate Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001261": {
+    "committees": [
+      "Senate Committee on Energy and Natural Resources",
+      "Senate Committee on Finance",
+      "Senate Committee on Foreign Relations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001299": {
+    "committees": [
+      "Senate Committee on Armed Services",
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001230": {
+    "committees": [
+      "Senate Committee on Appropriations",
+      "Senate Committee on Commerce, Science, and Transportation",
+      "Senate Committee on Health, Education, Labor, and Pensions"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000382": {
+    "committees": [
+      "Senate Committee on Banking, Housing, and Urban Affairs",
+      "Senate Committee on Environment and Public Works",
+      "Senate Committee on Health, Education, Labor, and Pensions",
+      "Senate Special Committee on Aging"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000476": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001245": {
+    "committees": ["House Committee on Science, Space, and Technology"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001120": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000566": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001118": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Appropriations",
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001059": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000812": {
+    "committees": [
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000619": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000628": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000147": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000216": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "W000187": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "P000197": {
+    "committees": [],
+    "caucuses": [],
+    "education": []
+  },
+  "V000139": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000606": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001087": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000830": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000484": {
+    "committees": [
+      "House Committee on Foreign Affairs",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000622": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "V000138": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000490": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001230": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001229": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001228": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Armed Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000622": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000621": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "O000176": {
+    "committees": [
+      "House Committee on Foreign Affairs",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001240": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001239": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001237": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001236": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001235": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001233": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001232": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001231": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001230": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Foreign Affairs",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000606": {
+    "committees": [
+      "House Committee on Foreign Affairs",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000405": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary",
+      "House Committee on Homeland Security",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000403": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000310": {
+    "committees": [
+      "Joint Committee of Congress on the Library",
+      "House Committee on Homeland Security",
+      "House Committee on Foreign Affairs",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001103": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001102": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on the Judiciary",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001101": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000604": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000603": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Oversight and Government Reform",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000602": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000601": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "F000483": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000482": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "E000301": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000635": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000634": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001136": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001327": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001326": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "B001325": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Homeland Security",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001322": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Foreign Affairs",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001321": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001218": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Armed Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001188": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000110": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "O000177": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001238": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001234": {
+    "committees": [
+      "House Committee on Veterans' Affairs",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000404": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Veterans' Affairs",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000311": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Small Business",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001099": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000481": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000300": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001137": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001324": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000829": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001229": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000480": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000402": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001228": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Appropriations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000380": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Foreign Affairs",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001227": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "V000135": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001224": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Foreign Affairs",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000600": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "O000175": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001224": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001223": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000603": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Homeland Security",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000602": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000399": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Armed Services",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001095": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001096": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on the Judiciary",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000478": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000530": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000594": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001130": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Oversight and Government Reform",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001131": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001318": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001212": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000472": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Appropriations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B000825": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001205": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001208": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001123": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001205": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000581": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "S001201": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "G000553": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000399": {
+    "committees": [
+      "Joint Committee on Taxation",
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "V000136": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000487": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000488": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001223": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001225": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001221": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001226": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000617": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000193": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Financial Services",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001219": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Foreign Affairs",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001217": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Foreign Affairs",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001216": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001222": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001226": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001220": {
+    "committees": [
+      "House Committee on Veterans' Affairs",
+      "House Committee on Small Business",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000596": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000597": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Energy and Commerce",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000599": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000600": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Energy and Commerce",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000601": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "L000598": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000398": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000307": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "J000309": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "I000058": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001094": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001093": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on Rules",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000599": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000477": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000235": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000246": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000230": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001129": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001316": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001315": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001317": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000379": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000579": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001215": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001136": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001091": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000593": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Homeland Security",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000481": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000478": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Ways and Means",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001199": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000609": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "L000585": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Permanent Select Committee on Intelligence",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "Z000018": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000624": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001194": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001067": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "F000462": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "H001058": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000798": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000002": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000797": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "D000600": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "S001220": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000620": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001225": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "K000401": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000400": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000598": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001132": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001133": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001314": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "Y000067": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "F000475": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000474": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001127": {
+    "committees": [
+      "House Committee on Foreign Affairs",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001126": {
+    "committees": [
+      "Joint Committee of Congress on the Library",
+      "House Committee on Ways and Means",
+      "House Committee on the Budget",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001313": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Oversight and Government Reform",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000071": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001218": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001125": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000595": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "O000019": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Energy and Commerce",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000397": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "V000134": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001159": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "O000086": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000026": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001213": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000305": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000304": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services",
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000594": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000471": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001090": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "S001211": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Foreign Affairs",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000613": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000582": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000371": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "D000623": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Education and Workforce",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000608": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "V000130": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "T000472": {
+    "committees": [
+      "House Committee on Veterans' Affairs",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000599": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "V000129": {
+    "committees": [
+      "Joint Committee of Congress on the Library",
+      "House Committee on Appropriations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001193": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Homeland Security",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001287": {
+    "committees": [
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000559": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001080": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001183": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000565": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001177": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on the Judiciary",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001163": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "T000460": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "S000344": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S000250": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "I000056": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on the Judiciary",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C000059": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "L000397": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000788": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "T000486": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S000929": {
+    "committees": ["Joint Economic Committee"],
+    "caucuses": [],
+    "education": []
+  },
+  "S000168": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000305": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on the Judiciary",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000048": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001214": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001211": {
+    "committees": [
+      "Joint Committee on Printing",
+      "House Committee on Agriculture",
+      "House Committee on Education and Workforce",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000871": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000317": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000194": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000273": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001086": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "G000597": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Financial Services",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000470": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000446": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000246": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Oversight and Government Reform",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000032": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001116": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001039": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B000740": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B000668": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000148": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "T000165": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001210": {
+    "committees": [
+      "Joint Committee on Printing",
+      "House Committee on Ways and Means",
+      "House Committee on Veterans' Affairs",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000592": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001213": {
+    "committees": [
+      "Joint Committee on Printing",
+      "Joint Committee of Congress on the Library",
+      "House Committee on Financial Services",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001216": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "G000587": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000614": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Rules",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000299": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000468": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "G000589": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000612": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001309": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000301": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000480": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000610": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "J000302": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001204": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001085": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000631": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "V000133": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001119": {
+    "committees": ["House Committee on Agriculture"],
+    "caucuses": [],
+    "education": []
+  },
+  "G000586": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001199": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000296": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "P000605": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Oversight and Government Reform",
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000376": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "T000467": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000687": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000831": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "O000172": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "L000590": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Appropriations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000614": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000591": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Homeland Security",
+      "House Committee on Ethics"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001212": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "O000173": {
+    "committees": [
+      "House Committee on Education and Workforce",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001215": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Education and Workforce",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000617": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000482": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "D000629": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001307": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Agriculture",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "U000040": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001117": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000469": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001214": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001081": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001121": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000191": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on the Judiciary",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000593": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "H001082": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001206": {
+    "committees": [
+      "Joint Committee on Printing",
+      "Joint Committee of Congress on the Library",
+      "House Committee on Appropriations",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001306": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001115": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000585": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000190": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Rules",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000298": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000298": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Foreign Affairs",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000375": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Ways and Means",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000392": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "F000466": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000297": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "G000583": {
+    "committees": [
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001298": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001301": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Veterans' Affairs",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000606": {
+    "committees": ["House Committee on the Judiciary"],
+    "caucuses": [],
+    "education": []
+  },
+  "J000299": {
+    "committees": [],
+    "caucuses": [],
+    "education": []
+  },
+  "H001077": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Oversight and Government Reform",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000391": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Permanent Select Committee on Intelligence",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001200": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001110": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Homeland Security"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001300": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001112": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001066": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "S001190": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000806": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001055": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001241": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Natural Resources",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001100": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001302": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000389": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Oversight and Government Reform",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001108": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000626": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000388": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000576": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Education and Workforce",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000189": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Appropriations",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000610": {
+    "committees": [
+      "House Committee on Ways and Means",
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001292": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001291": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001196": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000822": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000603": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "E000294": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001196": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Armed Services",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001295": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Agriculture",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000372": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000583": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on House Administration",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001103": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000474": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000821": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001072": {
+    "committees": [
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000600": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Foreign Affairs",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000609": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000188": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000370": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001101": {
+    "committees": [],
+    "caucuses": [],
+    "education": []
+  },
+  "S001195": {
+    "committees": [
+      "Joint Committee on Taxation",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001282": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001067": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "T000469": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "K000385": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001137": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "V000081": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000463": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000491": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000607": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "V000131": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "W000816": {
+    "committees": [
+      "House Committee on Financial Services",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001091": {
+    "committees": [
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000814": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Energy and Commerce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000295": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "B001281": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "J000294": {
+    "committees": [],
+    "caucuses": [],
+    "education": []
+  },
+  "M001188": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "B001285": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001068": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000617": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001184": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001278": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000369": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Appropriations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000804": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Armed Services",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000568": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Committee on Rules",
+      "House Committee on House Administration",
+      "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "D000616": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000459": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Appropriations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H001052": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "K000375": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001189": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Armed Services",
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000808": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "W000809": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "S001185": {
+    "committees": [
+      "Joint Committee on Printing",
+      "House Committee on Ways and Means",
+      "House Committee on House Administration"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001068": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000289": {
+    "committees": [
+      "House Committee on the Judiciary",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001260": {
+    "committees": [
+      "Joint Committee on Taxation",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001066": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001257": {
+    "committees": [
+      "House Committee on Energy and Commerce",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "Q000023": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Permanent Select Committee on Intelligence"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "T000468": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000597": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Appropriations"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000558": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "H001047": {
+    "committees": [
+      "House Permanent Select Committee on Intelligence",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001176": {
+    "committees": [],
+    "caucuses": [],
+    "education": []
+  },
+  "F000454": {
+    "committees": [
+      "House Committee on Science, Space, and Technology",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001072": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Permanent Select Committee on Intelligence",
+      "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M000312": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "N000015": {
+    "committees": [
+      "Joint Committee on Taxation",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001160": {
+    "committees": [
+      "Joint Economic Committee",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001157": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001156": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "L000562": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001231": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Small Business"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000621": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000620": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000607": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "H001098": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Veterans' Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "G000605": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Agriculture"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "B001323": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Science, Space, and Technology"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "A000381": {
+    "committees": [
+      "House Committee on Natural Resources",
+      "House Committee on Oversight and Government Reform"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "S001172": {
+    "committees": [
+      "Joint Committee on Taxation",
+      "House Committee on Ways and Means"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "J000288": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on the Judiciary"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001069": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "P000034": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "S001148": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "S001145": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "L000557": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "S000510": {
+    "committees": ["House Committee on Armed Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "D000197": {
+    "committees": ["House Committee on Energy and Commerce"],
+    "caucuses": [],
+    "education": []
+  },
+  "D000096": {
+    "committees": ["House Committee on Ways and Means"],
+    "caucuses": [],
+    "education": []
+  },
+  "A000055": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "T000193": {
+    "committees": ["House Committee on Homeland Security"],
+    "caucuses": [],
+    "education": []
+  },
+  "S000522": {
+    "committees": ["House Committee on Foreign Affairs"],
+    "caucuses": [],
+    "education": []
+  },
+  "S000185": {
+    "committees": [
+      "House Committee on Education and Workforce",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "R000395": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "B000490": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "L000491": {
+    "committees": [
+      "House Committee on Agriculture",
+      "House Committee on Financial Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001063": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "M001157": {
+    "committees": [
+      "House Committee on Homeland Security",
+      "House Committee on Foreign Affairs"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "F000450": {
+    "committees": [
+      "House Committee on Oversight and Government Reform",
+      "House Committee on Education and Workforce",
+      "House Committee on Rules"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "C001061": {
+    "committees": ["House Committee on Financial Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001051": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "C001053": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "R000575": {
+    "committees": ["House Committee on Armed Services"],
+    "caucuses": [],
+    "education": []
+  },
+  "W000795": {
+    "committees": [
+      "House Committee on Armed Services",
+      "House Committee on Foreign Affairs",
+      "House Committee on Education and Workforce"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "L000560": {
+    "committees": ["House Committee on Transportation and Infrastructure"],
+    "caucuses": [],
+    "education": []
+  },
+  "G000546": {
+    "committees": [
+      "House Committee on Transportation and Infrastructure",
+      "House Committee on Armed Services"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "M001143": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "C000537": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  },
+  "K000009": {
+    "committees": [
+      "House Committee on Appropriations",
+      "House Committee on the Budget"
+    ],
+    "caucuses": [],
+    "education": []
+  },
+  "H000874": {
+    "committees": ["House Committee on Appropriations"],
+    "caucuses": [],
+    "education": []
+  }
+}

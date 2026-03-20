@@ -25,6 +25,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
+import officialsStatic from "../data/officials-static.json";
 import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
@@ -32,6 +33,7 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
 import { getBillIcon } from "../utils/billIcons";
+import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { officialBillsCache } from "../utils/officialBillsCache";
@@ -90,8 +92,9 @@ function LegislationCard({ item }: { item: any }) {
     });
   };
 
-  const dateStr = safeFormatDate(item.introducedDate);
-
+  const dateStr = safeFormatDate(
+    item.latestAction?.actionDate ?? item.introducedDate,
+  );
   return (
     <Pressable
       onPress={() =>
@@ -412,6 +415,12 @@ export default function OfficialDetail() {
 
   const official = data?.member;
 
+  const staticData = (officialsStatic as any)[id as string] ?? {
+    committees: [],
+    caucuses: [],
+    education: [],
+  };
+
   const sponsoredBills = useMemo(
     () =>
       (sponsoredData?.legislation ?? []).filter(
@@ -520,6 +529,53 @@ export default function OfficialDetail() {
     selectedSort,
   ]);
 
+  const { signedIntoLaw, signedSponsored, signedCosponsored } = useMemo(() => {
+    const db = getDb();
+    const seen = new Set<string>();
+
+    const all = [...sponsoredBills, ...cosponsoredBills]
+      .filter((bill) => {
+        const key = `${bill.type}${bill.number}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        const billId = `${bill.type.toLowerCase()}${bill.number}`;
+        const row = db.getFirstSync<{ latest_action_text: string | null }>(
+          `SELECT latest_action_text FROM bills WHERE bill_id = ?`,
+          [billId],
+        );
+        const action = row?.latest_action_text?.toLowerCase() ?? "";
+        return (
+          action.includes("became public law") ||
+          action.includes("signed by president") ||
+          action.includes("veto overridden")
+        );
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.latestAction?.actionDate ?? 0).getTime() -
+          new Date(a.latestAction?.actionDate ?? 0).getTime(),
+      );
+
+    const sponsoredSet = new Set(
+      sponsoredBills.map((b: any) => `${b.type}${b.number}`),
+    );
+
+    // const testRow = db.getFirstSync<{ bill_id: string }>(
+    //   `SELECT bill_id FROM bills LIMIT 1`,
+    // );
+    // console.log("Sample bill_id from SQLite:", testRow?.bill_id);
+
+    return {
+      signedIntoLaw: all,
+      signedSponsored: all.filter((b) =>
+        sponsoredSet.has(`${b.type}${b.number}`),
+      ),
+      signedCosponsored: all.filter(
+        (b) => !sponsoredSet.has(`${b.type}${b.number}`),
+      ),
+    };
+  }, [sponsoredBills, cosponsoredBills, sponsoredLoading, cosponsoredLoading]);
+
   const toSearchable = (bills: any[]) =>
     bills.map((item: any) => ({
       ...item,
@@ -622,7 +678,8 @@ export default function OfficialDetail() {
             ? `Representative, ${official.state}${official.terms?.[official.terms.length - 1]?.district ? ` - District ${official.terms[official.terms.length - 1].district}` : ""}`
             : `Senator, ${official.state}`}
         </Text>
-        <View style={componentStyles.centeredRow}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+          {/* Avatar */}
           <View
             style={[
               componentStyles.avatar,
@@ -663,7 +720,52 @@ export default function OfficialDetail() {
               </View>
             )}
           </View>
-          <Text style={componentStyles.name}>{official.directOrderName}</Text>
+
+          {/* Name + Buttons */}
+          <View
+            style={{ flex: 1, height: 64, justifyContent: "space-between" }}
+          >
+            <Text style={componentStyles.name}>{official.directOrderName}</Text>
+            {official.officialWebsiteUrl && (
+              <View style={{ flexDirection: "row", gap: 16 }}>
+                <Pressable
+                  onPress={() => Linking.openURL(official.officialWebsiteUrl)}
+                  style={({ pressed }) => ({
+                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                  })}
+                >
+                  <Text
+                    style={{
+                      color: "#008CFF",
+                      fontSize: 13,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Website
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    const contactUrl = `${official.officialWebsiteUrl.replace(/\/$/, "")}/contact`;
+                    Linking.openURL(contactUrl);
+                  }}
+                  style={({ pressed }) => ({
+                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                  })}
+                >
+                  <Text
+                    style={{
+                      color: "#008CFF",
+                      fontSize: 13,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Contact
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
@@ -716,19 +818,63 @@ export default function OfficialDetail() {
             }}
           />
           <ScrollView keyboardShouldPersistTaps="handled">
-            {/* Website */}
-            <Pressable
-              onPress={() => {
-                if (official.officialWebsiteUrl) {
-                  Linking.openURL(official.officialWebsiteUrl);
-                }
+            {/* Bills Signed Into Law */}
+            <View
+              style={{
+                paddingHorizontal: 32,
+                marginBottom: 8,
+                marginTop: 8,
               }}
-              style={{ paddingHorizontal: 16, paddingVertical: 8 }}
             >
-              <Text style={componentStyles.website}>
-                {official.officialWebsiteUrl || "No website available"}
+              <Text style={{ fontSize: 16, fontWeight: "700" }}>
+                Bills Signed Into Law
               </Text>
-            </Pressable>
+            </View>
+            {!sponsoredLoading && !cosponsoredLoading ? (
+              <>
+                {signedSponsored.length > 0 ? (
+                  <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+                    {(signedSponsored as any[])
+                      .sort(
+                        (a: any, b: any) => Number(a.number) - Number(b.number),
+                      )
+                      .map((bill: any, index: number) => (
+                        <LegislationCard
+                          key={`sp-${bill.type}-${bill.number}-${index}`}
+                          item={bill}
+                        />
+                      ))}
+                  </View>
+                ) : (
+                  <View style={{ paddingHorizontal: 32, marginBottom: 16 }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: "#7B7C81",
+                        marginTop: 12,
+                        marginBottom: 16,
+                      }}
+                    >
+                      No sponsored legislation has become public law in the
+                      119th Congress (2025–2027).
+                    </Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <View
+                style={{
+                  paddingTop: 12,
+                  paddingBottom: 36,
+                  alignItems: "center",
+                }}
+              >
+                <LoadingSpinner />
+                <Text style={{ color: "#7B7C81", marginTop: 24 }}>
+                  Loading bills signed into law...
+                </Text>
+              </View>
+            )}
 
             {/* Top Policy Areas */}
             <View style={componentStyles.section}>
@@ -792,6 +938,50 @@ export default function OfficialDetail() {
                 </Text>
               )}
             </View>
+
+            {/* Committees */}
+            {staticData.committees.length > 0 && (
+              <View style={componentStyles.section}>
+                <View style={componentStyles.termRow}>
+                  <Text style={componentStyles.sectionTitle}>Committees</Text>
+                </View>
+                {staticData.committees.map(
+                  (committee: string, index: number) => (
+                    <View key={index} style={componentStyles.termRow}>
+                      <Text style={componentStyles.term}>{committee}</Text>
+                    </View>
+                  ),
+                )}
+              </View>
+            )}
+
+            {/* Caucuses */}
+            {staticData.caucuses.length > 0 && (
+              <View style={componentStyles.section}>
+                <View style={componentStyles.termRow}>
+                  <Text style={componentStyles.sectionTitle}>Caucuses</Text>
+                </View>
+                {staticData.caucuses.map((caucus: string, index: number) => (
+                  <View key={index} style={componentStyles.termRow}>
+                    <Text style={componentStyles.term}>{caucus}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Education */}
+            {staticData.education.length > 0 && (
+              <View style={componentStyles.section}>
+                <View style={componentStyles.termRow}>
+                  <Text style={componentStyles.sectionTitle}>Education</Text>
+                </View>
+                {staticData.education.map((edu: string, index: number) => (
+                  <View key={index} style={componentStyles.termRow}>
+                    <Text style={componentStyles.term}>{edu}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
 
             {/* Congressional History */}
             <View style={[componentStyles.section, { marginBottom: 96 }]}>
