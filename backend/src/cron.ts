@@ -224,6 +224,10 @@ const checkFollowedBills = async () => {
           const recentActions = (actionsRes.data.actions || []).filter(
             (a: any) => a.actionDate >= since,
           );
+          console.log(
+            `Bill ${billId} actions:`,
+            actionsRes.data.actions?.slice(0, 2).map((a: any) => a.actionDate),
+          );
           for (const action of recentActions) {
             messages.push({
               to: reg.token,
@@ -244,6 +248,10 @@ const checkFollowedBills = async () => {
           );
           const recentVotes = (actionsRes.data.actions || []).filter(
             (a: any) => a.actionDate >= since && a.recordedVotes?.length > 0,
+          );
+          console.log(
+            `Bill ${billId} votes:`,
+            actionsRes.data.actions?.slice(0, 2).map((a: any) => a.actionDate),
           );
           for (const action of recentVotes) {
             messages.push({

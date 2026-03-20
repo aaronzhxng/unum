@@ -6,11 +6,12 @@ const isExpoGo = Constants.appOwnership === "expo";
 
 export const pushToken = {
   register: async (): Promise<string | null> => {
+    console.log("appOwnership:", Constants.appOwnership);
+    console.log("isExpoGo:", isExpoGo);
     if (isExpoGo) {
       console.log("Push notifications not supported in Expo Go — skipping");
       return null;
     }
-
     try {
       const Notifications = await import("expo-notifications");
 
@@ -37,11 +38,11 @@ export const pushToken = {
       console.log("Token data:", tokenData);
       const token = tokenData.data;
 
-      fetch("https://unum-production.up.railway.app/api/debug/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      }).catch(() => {});
+      // fetch("https://unum-production.up.railway.app/api/debug/token", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ token }),
+      // }).catch(() => {});
 
       console.log("Token:", token);
 
@@ -64,11 +65,11 @@ export const pushToken = {
       return token;
     } catch (error) {
       console.error("Error registering for push notifications:", error);
-      fetch("https://unum-production.up.railway.app/api/debug/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: String(error) }),
-      }).catch(() => {});
+      // fetch("https://unum-production.up.railway.app/api/debug/token", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ error: String(error) }),
+      // }).catch(() => {});
       return null;
     }
   },

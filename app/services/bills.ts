@@ -205,7 +205,7 @@ const enrichBackend = async (): Promise<void> => {
     const already = db.getFirstSync<{ value: string }>(
       `SELECT value FROM meta WHERE key = 'backend_enriched_v1'`,
     );
-    // if (already) return;  // temporarily disabled to force re-run
+    if (already) return; // temporarily disabled to force re-run
 
     // Force re-run by clearing the flag
     // db.runSync(`DELETE FROM meta WHERE key = 'backend_enriched_v1'`);
