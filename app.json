@@ -9,7 +9,11 @@
     "newArchEnabled": true,
     "icon": "./assets/app_icons/app_icon.png",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aaronzhxng.unum",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -23,8 +27,8 @@
     },
     "androidStatusBar": {
       "barStyle": "dark-content",
-      // "backgroundColor": "transparent",
-      "translucent": true
+      "translucent": true,
+      "backgroundColor": "#fafafa"
     },
     "androidNavigationBar": {
       "barStyle": "dark-content",
