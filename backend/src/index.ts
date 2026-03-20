@@ -867,11 +867,16 @@ app.get("/api/debug/sample-bills", (req, res) => {
       `
     SELECT bill_id, update_date, policy_area, sponsor_state 
     FROM bills 
-    ORDER BY update_date DESC 
+    ORDER BY rowid DESC
     LIMIT 20
   `,
     )
     .all();
+  res.json(rows);
+});
+
+app.get("/api/debug/meta", (req, res) => {
+  const rows = db.prepare(`SELECT * FROM meta`).all();
   res.json(rows);
 });
 
