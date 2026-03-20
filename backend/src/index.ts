@@ -861,6 +861,20 @@ const prewarmCache = async () => {
   }
 };
 
+app.get("/api/debug/sample-bills", (req, res) => {
+  const rows = db
+    .prepare(
+      `
+    SELECT bill_id, update_date, policy_area, sponsor_state 
+    FROM bills 
+    ORDER BY update_date DESC 
+    LIMIT 20
+  `,
+    )
+    .all();
+  res.json(rows);
+});
+
 app.listen(PORT, () => {
   prewarmCache();
   startCronScheduler();

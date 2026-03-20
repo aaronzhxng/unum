@@ -87,9 +87,9 @@ const getAllRegistrations = () => {
 };
 
 const getLastChecked = (): string => {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split("T")[0];
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  return threeDaysAgo.toISOString().split("T")[0];
 };
 
 // const getLastChecked = (): string => {
@@ -122,7 +122,14 @@ const checkNewBills = async () => {
     title: string;
     policy_area: string;
     sponsor_state: string | null;
+    update_date: string | null; // ADD THIS LINE
   }[];
+
+  console.log(`Found ${recentBills.length} recent bills since ${since}`);
+  console.log(
+    `Sample update_dates:`,
+    (recentBills as any[]).slice(0, 3).map((b) => b.update_date),
+  );
 
   for (const reg of registrations) {
     const followedPolicyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
@@ -362,7 +369,7 @@ export const runCronJob = async () => {
 
 // ── Scheduler — runs every day at 8:00 AM UTC ─────────────────────────────────
 export const startCronScheduler = () => {
-  cron.schedule("0 12,21 * * *", () => {
+  cron.schedule("*/30 * * * *", () => {
     runCronJob();
   });
   console.log("Cron scheduler started — runs at 8am and 4pm EST daily");
