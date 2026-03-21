@@ -87,9 +87,10 @@ const getAllRegistrations = () => {
 };
 
 const getLastChecked = (): string => {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split("T")[0];
+  // const yesterday = new Date();
+  // yesterday.setDate(yesterday.getDate() - 1);
+  // return yesterday.toISOString().split("T")[0];
+  return "2026-03-19";
 };
 
 // const getLastChecked = (): string => {
