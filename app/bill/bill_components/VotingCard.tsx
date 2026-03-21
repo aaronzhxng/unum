@@ -1,5 +1,12 @@
-import React from "react";
-import { Text, View } from "react-native";
+import React, { useState } from "react";
+import {
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import LoadingSpinner from "../../global_components/LoadingSpinner";
 import { styles as componentStyles } from "../styles";
 
@@ -125,9 +132,11 @@ const PartyBar = ({
 const SingleVoteCard = ({
   vote,
   followedOfficials,
+  onSeeAll,
 }: {
   vote: VoteData;
   followedOfficials?: FollowedOfficial[];
+  onSeeAll: () => void;
 }) => {
   const grandTotal =
     vote.total.yea +
@@ -362,6 +371,16 @@ const SingleVoteCard = ({
           <Text style={{ fontSize: 11, color: "#535353" }}>Independent</Text>
         </View>
       </View>
+      {vote.members && vote.members.length > 0 && (
+        <TouchableOpacity
+          onPress={onSeeAll}
+          style={{ alignSelf: "flex-start", marginTop: 4 }}
+        >
+          <Text style={{ fontSize: 13, color: "#008CFF", fontWeight: "600" }}>
+            See all votes ({vote.members.length})
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -371,6 +390,8 @@ const VotingCard: React.FC<VotingCardProps> = ({
   isLoading,
   followedOfficials,
 }) => {
+  const [selectedVote, setSelectedVote] = useState<VoteData | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   if (isLoading) {
     return (
       <View style={{ padding: 40, alignItems: "center" }}>
@@ -399,8 +420,189 @@ const VotingCard: React.FC<VotingCardProps> = ({
           key={`${vote.chamber}-${vote.rollNumber ?? i}`}
           vote={vote}
           followedOfficials={followedOfficials}
+          onSeeAll={() => setSelectedVote(vote)}
         />
       ))}
+      {/* Full vote list modal */}
+      <Modal
+        visible={selectedVote !== null}
+        animationType="slide"
+        onRequestClose={() => setSelectedVote(null)}
+        statusBarTranslucent
+      >
+        <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
+          {/* Header */}
+          <View
+            style={{
+              paddingTop: 56,
+              paddingHorizontal: 16,
+              paddingBottom: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: "#f0f0f0",
+              gap: 12,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{ fontSize: 16, fontWeight: "700", color: "#1a1a1a" }}
+              >
+                {selectedVote?.chamber} ·{" "}
+                {selectedVote?.date
+                  ? new Date(selectedVote.date).toLocaleDateString("en-US", {
+                      month: "2-digit",
+                      day: "2-digit",
+                      year: "numeric",
+                    })
+                  : ""}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedVote(null);
+                  setSearchQuery("");
+                }}
+              >
+                <Text style={{ fontSize: 15, color: "#008CFF" }}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              placeholder="Search by name..."
+              placeholderTextColor="#7B7C81"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={{
+                backgroundColor: "#f0f0f0",
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                fontSize: 15,
+                color: "#1a1a1a",
+              }}
+            />
+          </View>
+
+          <ScrollView contentContainerStyle={{ paddingBottom: 48 }}>
+            {selectedVote?.members &&
+              (() => {
+                const query = searchQuery.toLowerCase();
+                const filtered = selectedVote.members.filter(
+                  (m) =>
+                    query === "" ||
+                    m.firstName.toLowerCase().includes(query) ||
+                    m.lastName.toLowerCase().includes(query),
+                );
+
+                const groups: {
+                  label: string;
+                  color: string;
+                  members: typeof filtered;
+                }[] = [
+                  {
+                    label: "Yea",
+                    color: "#16a34a",
+                    members: filtered.filter((m) => m.vote === "Yea"),
+                  },
+                  {
+                    label: "Nay",
+                    color: "#dc2626",
+                    members: filtered.filter((m) => m.vote === "Nay"),
+                  },
+                  {
+                    label: "Present",
+                    color: "#535353",
+                    members: filtered.filter((m) => m.vote === "Present"),
+                  },
+                  {
+                    label: "Not Voting",
+                    color: "#7B7C81",
+                    members: filtered.filter(
+                      (m) => m.vote === "Not Voting" || m.vote === "Absent",
+                    ),
+                  },
+                ].filter((g) => g.members.length > 0);
+
+                return groups.map((group) => (
+                  <View key={group.label} style={{ marginTop: 16 }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: "700",
+                        color: group.color,
+                        paddingHorizontal: 16,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {group.label} ({group.members.length})
+                    </Text>
+                    {group.members.map((m, i) => {
+                      const isFollowed = followedOfficials?.some((o) => {
+                        const parts = o.name.split(",").map((s) => s.trim());
+                        const lastName = parts[0] ?? "";
+                        const firstName = parts[1]?.split(" ")[0] ?? "";
+                        return (
+                          m.lastName.toLowerCase() === lastName.toLowerCase() &&
+                          (firstName === "" ||
+                            m.firstName
+                              .toLowerCase()
+                              .startsWith(firstName.toLowerCase()))
+                        );
+                      });
+                      return (
+                        <View
+                          key={i}
+                          style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            paddingHorizontal: 16,
+                            paddingVertical: 8,
+                            borderBottomWidth: 1,
+                            borderBottomColor: "#f0f0f0",
+                            backgroundColor: isFollowed
+                              ? "#F0F7FF"
+                              : "transparent",
+                          }}
+                        >
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 14,
+                                color: "#1a1a1a",
+                                fontWeight: isFollowed ? "600" : "400",
+                              }}
+                            >
+                              {m.firstName} {m.lastName}
+                            </Text>
+                          </View>
+                          <Text style={{ fontSize: 12, color: "#7B7C81" }}>
+                            {m.party === "D"
+                              ? "D"
+                              : m.party === "R"
+                                ? "R"
+                                : m.party === "I"
+                                  ? "I"
+                                  : m.party}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ));
+              })()}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 };
