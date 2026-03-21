@@ -33,6 +33,13 @@ db.exec(`
     synced_at INTEGER NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS notified_bills (
+  token TEXT NOT NULL,
+  bill_id TEXT NOT NULL,
+  notified_date TEXT NOT NULL,
+  PRIMARY KEY (token, bill_id, notified_date)
+);
+
   CREATE INDEX IF NOT EXISTS idx_bills_update_date ON bills(update_date DESC);
   CREATE INDEX IF NOT EXISTS idx_bills_policy_area ON bills(policy_area);
   CREATE INDEX IF NOT EXISTS idx_bills_sponsor_state ON bills(sponsor_state);

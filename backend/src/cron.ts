@@ -179,8 +179,32 @@ const checkNewBills = async () => {
     }
   }
 
-  await sendNotifications(messages);
-  console.log(`Sent ${messages.length} new bill notifications`);
+  const today = new Date().toISOString().split("T")[0];
+
+  const deduped = messages.filter((msg) => {
+    const billId = msg.data?.billId;
+    if (!billId) return true;
+    const already = db
+      .prepare(
+        `SELECT 1 FROM notified_bills WHERE token = ? AND bill_id = ? AND notified_date = ?`,
+      )
+      .get(msg.to, billId, today);
+    return !already;
+  });
+
+  const insert = db.prepare(
+    `INSERT OR IGNORE INTO notified_bills (token, bill_id, notified_date) VALUES (?, ?, ?)`,
+  );
+  db.transaction(() => {
+    for (const msg of deduped) {
+      if (msg.data?.billId) insert.run(msg.to, msg.data.billId, today);
+    }
+  })();
+
+  await sendNotifications(deduped);
+  console.log(
+    `Sent ${deduped.length} new bill notifications (${messages.length - deduped.length} deduplicated)`,
+  );
 };
 
 // ── Check 2: Status changes on followed bills ─────────────────────────────────
@@ -418,6 +442,9 @@ const checkFollowedOfficials = async () => {
 // ── Main runner ───────────────────────────────────────────────────────────────
 
 export const runCronJob = async () => {
+  db.prepare(
+    `DELETE FROM notified_bills WHERE notified_date < date('now', '-3 days')`,
+  ).run();
   console.log(
     "Running daily notification cron job...",
     new Date().toISOString(),
