@@ -152,7 +152,7 @@ const checkNewBills = async () => {
       ) {
         messages.push({
           to: reg.token,
-          title: `New bill: ${bill.policy_area}`,
+          title: `${bill.policy_area}: New bill`,
           body: `${bill.type}.${bill.number} — ${bill.title}`,
           data: { billId },
         });
@@ -204,8 +204,12 @@ const checkFollowedBills = async () => {
       const wantsVoting =
         subTypes.includes("all-notications") || subTypes.includes("voting");
 
-      if (!wantsActions && !wantsVoting) continue;
-
+      const wantsCosponsors =
+        subTypes.includes("all-notications") || subTypes.includes("cosponsors");
+      const wantsAmendments =
+        subTypes.includes("all-notications") || subTypes.includes("amendments");
+      if (!wantsActions && !wantsVoting && !wantsCosponsors && !wantsAmendments)
+        continue;
       try {
         const match = billId.match(/^([a-z]+)(\d+)$/i);
         if (!match) continue;
@@ -231,7 +235,7 @@ const checkFollowedBills = async () => {
           for (const action of recentActions) {
             messages.push({
               to: reg.token,
-              title: `${billId.toUpperCase()} Update`,
+              title: `${billId.toUpperCase()} had a new action`,
               body: action.text,
               data: { billId },
             });
@@ -256,8 +260,57 @@ const checkFollowedBills = async () => {
           for (const action of recentVotes) {
             messages.push({
               to: reg.token,
-              title: `Vote Recorded: ${billId.toUpperCase()}`,
+              title: `Vote recorded on ${billId.toUpperCase()}`,
               body: action.text,
+              data: { billId },
+            });
+          }
+        }
+
+        if (wantsCosponsors) {
+          const cosponsorsRes = await axios.get(
+            `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/cosponsors`,
+            {
+              headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+              params: { limit: 10 },
+            },
+          );
+          const recentCosponsors = (cosponsorsRes.data.cosponsors || []).filter(
+            (c: any) => c.sponsorshipDate >= since,
+          );
+          if (recentCosponsors.length > 0) {
+            messages.push({
+              to: reg.token,
+              title: `${billId.toUpperCase()} received a new cosponsor`,
+              body: recentCosponsors
+                .map(
+                  (c: any) =>
+                    `${c.firstName} ${c.lastName} (${c.party}-${c.state})`,
+                )
+                .join(", "),
+              data: { billId },
+            });
+          }
+        }
+        if (wantsAmendments) {
+          const amendmentsRes = await axios.get(
+            `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}/amendments`,
+            {
+              headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+              params: { limit: 10 },
+            },
+          );
+          const recentAmendments = (amendmentsRes.data.amendments || []).filter(
+            (a: any) => a.updateDate >= since,
+          );
+          if (recentAmendments.length > 0) {
+            messages.push({
+              to: reg.token,
+              title: `${billId.toUpperCase()} has a new amendment`,
+              body:
+                recentAmendments.length === 1
+                  ? `1 new amendment submitted`
+                  : `${recentAmendments.length} new amendments submitted`,
               data: { billId },
             });
           }
@@ -319,8 +372,8 @@ const checkFollowedOfficials = async () => {
           for (const bill of recent) {
             messages.push({
               to: reg.token,
-              title: `${officialName} sponsored a new bill`,
-              body: `${bill.type ?? ""}${bill.number} - ${bill.title}`,
+              title: `${officialName} introduced a new bill`,
+              body: `${bill.type ?? ""}.${bill.number} — ${bill.title}`,
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,
@@ -343,8 +396,8 @@ const checkFollowedOfficials = async () => {
           for (const bill of recent) {
             messages.push({
               to: reg.token,
-              title: `${officialName} cosponsored a new bill`,
-              body: `${bill.type ?? ""}${bill.number} - ${bill.title}`,
+              title: `${officialName} cosponsored a bill`,
+              body: `${bill.type ?? ""}.${bill.number} — ${bill.title}`,
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,
