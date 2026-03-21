@@ -25,11 +25,25 @@ interface VoteData {
   presentPercent: number;
   notVotingPercent: number;
   rollNumber?: number; // ← add this
+  members?: MemberVote[];
+}
+
+interface FollowedOfficial {
+  bioguideId: string;
+  name: string; // "Last, First" format
 }
 
 interface VotingCardProps {
   votes: VoteData[];
   isLoading?: boolean;
+  followedOfficials?: FollowedOfficial[];
+}
+
+interface MemberVote {
+  firstName: string;
+  lastName: string;
+  party: string;
+  vote: string;
 }
 
 const PartyBar = ({
@@ -108,7 +122,13 @@ const PartyBar = ({
   </View>
 );
 
-const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
+const SingleVoteCard = ({
+  vote,
+  followedOfficials,
+}: {
+  vote: VoteData;
+  followedOfficials?: FollowedOfficial[];
+}) => {
   const grandTotal =
     vote.total.yea +
       vote.total.nay +
@@ -140,6 +160,89 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
 
   return (
     <View style={[componentStyles.section, { gap: 12 }]}>
+      {/* Followed officials callout */}
+      {followedOfficials &&
+        followedOfficials.length > 0 &&
+        vote.members &&
+        vote.members.length > 0 &&
+        (() => {
+          const matches = followedOfficials.flatMap((official) => {
+            // Convert "Last, First" to first/last
+            const parts = official.name.split(",").map((s) => s.trim());
+            const lastName = parts[0] ?? "";
+            const firstName = parts[1]?.split(" ")[0] ?? "";
+
+            const match = vote.members!.find(
+              (m) =>
+                m.lastName.toLowerCase() === lastName.toLowerCase() &&
+                (firstName === "" ||
+                  m.firstName
+                    .toLowerCase()
+                    .startsWith(firstName.toLowerCase())),
+            );
+
+            if (!match) return [];
+            return [
+              {
+                name: `${match.firstName} ${match.lastName}`,
+                vote: match.vote,
+                party: match.party,
+              },
+            ];
+          });
+
+          if (matches.length === 0) return null;
+
+          return (
+            <View
+              style={{
+                backgroundColor: "#F0F7FF",
+                borderRadius: 8,
+                padding: 10,
+                marginBottom: 4,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "600",
+                  color: "#535353",
+                  marginBottom: 6,
+                }}
+              >
+                Your officials
+              </Text>
+              {matches.map((m, i) => (
+                <View
+                  key={i}
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 2,
+                  }}
+                >
+                  <Text style={{ fontSize: 13, color: "#1a1a1a" }}>
+                    {m.name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "600",
+                      color:
+                        m.vote === "Yea"
+                          ? "#16a34a"
+                          : m.vote === "Nay"
+                            ? "#dc2626"
+                            : "#535353",
+                    }}
+                  >
+                    {m.vote}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          );
+        })()}
       {/* Header */}
       <View style={{ gap: 4 }}>
         <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>
@@ -263,7 +366,11 @@ const SingleVoteCard = ({ vote }: { vote: VoteData }) => {
   );
 };
 
-const VotingCard: React.FC<VotingCardProps> = ({ votes, isLoading }) => {
+const VotingCard: React.FC<VotingCardProps> = ({
+  votes,
+  isLoading,
+  followedOfficials,
+}) => {
   if (isLoading) {
     return (
       <View style={{ padding: 40, alignItems: "center" }}>
@@ -291,6 +398,7 @@ const VotingCard: React.FC<VotingCardProps> = ({ votes, isLoading }) => {
         <SingleVoteCard
           key={`${vote.chamber}-${vote.rollNumber ?? i}`}
           vote={vote}
+          followedOfficials={followedOfficials}
         />
       ))}
     </View>

@@ -33,6 +33,7 @@ import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
+import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
@@ -206,6 +207,17 @@ export default function BillDetail() {
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
   const [createdListName, setCreatedListName] = useState("");
+
+  const followedOfficials = useMemo(() => {
+    const db = getDb();
+    const rows = db.getAllSync<{ item_id: string; name: string }>(
+      `SELECT DISTINCT item_id, name FROM list_items WHERE item_type = 'official'`,
+    );
+    return rows.map((r) => ({
+      bioguideId: r.item_id,
+      name: r.name,
+    }));
+  }, []);
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
@@ -1200,6 +1212,7 @@ export default function BillDetail() {
                 <VotingCard
                   votes={votesData?.votes ?? []}
                   isLoading={votesLoading}
+                  followedOfficials={followedOfficials}
                 />
               )}
             </View>

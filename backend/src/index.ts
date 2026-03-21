@@ -437,6 +437,12 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
     });
 
     const parseVoteXml = (xml: string, meta: any) => {
+      let members: {
+        firstName: string;
+        lastName: string;
+        party: string;
+        vote: string;
+      }[] = [];
       const get = (tag: string) => {
         const m = xml.match(
           new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"),
@@ -469,6 +475,13 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
           const isNay = voteCast === "Nay";
           const isPresent = voteCast === "Present";
           const isAbsent = voteCast === "Not Voting" || voteCast === "Absent";
+          const firstName =
+            inner.match(/<first_name>(.*?)<\/first_name>/i)?.[1]?.trim() ?? "";
+          const lastName =
+            inner.match(/<last_name>(.*?)<\/last_name>/i)?.[1]?.trim() ?? "";
+          if (firstName || lastName) {
+            members.push({ firstName, lastName, party, vote: voteCast });
+          }
           if (party === "D") {
             dem.yea += isYea ? 1 : 0;
             dem.nay += isNay ? 1 : 0;
@@ -545,6 +558,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
         nayPercent: Math.round((total.nay / grandTotal) * 100),
         presentPercent: Math.round((total.present / grandTotal) * 100),
         notVotingPercent: Math.round((total.notVoting / grandTotal) * 100),
+        members,
       };
     };
 
