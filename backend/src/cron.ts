@@ -87,10 +87,9 @@ const getAllRegistrations = () => {
 };
 
 const getLastChecked = (): string => {
-  // const yesterday = new Date();
-  // yesterday.setDate(yesterday.getDate() - 1);
-  // return yesterday.toISOString().split("T")[0];
-  return "2026-03-19";
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split("T")[0];
 };
 
 // const getLastChecked = (): string => {
@@ -153,7 +152,7 @@ const checkNewBills = async () => {
       ) {
         messages.push({
           to: reg.token,
-          title: `${bill.policy_area}: New bill`,
+          title: `${bill.policy_area}: Recent update`,
           body: `${bill.type}.${bill.number} — ${bill.title}`,
           data: { billId },
         });

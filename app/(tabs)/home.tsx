@@ -376,6 +376,11 @@ export default function HomeScreen() {
     React.useCallback(() => {
       // console.log("HomeScreen focused:", Date.now());
       const loadAllLists = async () => {
+        const db = getDb();
+        const row = db.getFirstSync<{ value: string }>(
+          `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
+        );
+        if (row?.value === "true") setVoterCardDismissed(true);
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
         const currentList =
@@ -1357,21 +1362,33 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
           alignItems: "flex-start",
         }}
       >
-        <View style={{ flex: 1 }}>
-          <Text
+        <View style={{ flex: 1, flexDirection: "row" }}>
+          <View
             style={{
-              fontSize: 16,
-              fontWeight: "700",
-              color: "#1a1a1a",
-              marginBottom: 4,
+              width: 64,
+              // height: 64,
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 12,
             }}
           >
-            🗳️ Are you registered to vote?
-          </Text>
-          <Text style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}>
-            Your vote shapes who makes the laws you're tracking. Check your
-            registration status.
-          </Text>
+            <Text style={{ fontSize: 24 }}>🗳️</Text>
+          </View>
+          <View style={{ flexDirection: "column", maxWidth: 300 }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: "#1a1a1a",
+                marginBottom: 4,
+              }}
+            >
+              Are you registered to vote?
+            </Text>
+            <Text style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}>
+              Your vote shapes who makes the laws you're tracking.
+            </Text>
+          </View>
         </View>
         {/* <Pressable
           onPress={(e) => {

@@ -1,4 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter, type Router } from "expo-router";
+import { decode } from "html-entities";
 import {
   Bell,
   BellOff,
@@ -6,14 +8,13 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronUp,
+  Copy,
   Plus,
 } from "lucide-react-native";
-
-import { useQuery } from "@tanstack/react-query";
-import { decode } from "html-entities";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
+  Clipboard,
   Image,
   Linking,
   Modal,
@@ -889,7 +890,32 @@ export default function BillDetail() {
 
             {/* Summary */}
             <View style={componentStyles.section}>
-              <Text style={componentStyles.detailTitle}>Summary</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 4,
+                }}
+              >
+                <Text style={componentStyles.detailTitle}>Summary</Text>
+                {bill.summaries && bill.summaries.length > 0 && (
+                  <Pressable
+                    onPress={() => {
+                      const text = decode(
+                        bill.summaries[0].text.replace(/<[^>]*>/g, ""),
+                      );
+                      Clipboard.setString(text);
+                    }}
+                    style={({ pressed }) => ({
+                      transform: [{ scale: pressed ? 0.75 : 1 }],
+                      padding: 4,
+                    })}
+                  >
+                    <Copy size={16} color="#7B7C81" />
+                  </Pressable>
+                )}
+              </View>
               {bill.summaries && bill.summaries.length > 0 ? (
                 <>
                   <Text style={componentStyles.summary}>

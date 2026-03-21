@@ -269,6 +269,7 @@ export default function OfficialDetail() {
   const [createdListName, setCreatedListName] = useState("");
 
   const [imageError, setImageError] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   useEffect(() => {
     setImageError(false);
@@ -680,46 +681,49 @@ export default function OfficialDetail() {
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           {/* Avatar */}
-          <View
-            style={[
-              componentStyles.avatar,
-              {
-                borderColor:
-                  official.partyHistory?.[0]?.partyName === "Republican"
-                    ? "#D45252"
-                    : official.partyHistory?.[0]?.partyName === "Democratic"
-                      ? "#008CFF"
-                      : official.partyHistory?.[0]?.partyName === "Independent"
-                        ? "#FAEA70"
-                        : "#008CFF",
-              },
-            ]}
-          >
-            {official.depiction?.imageUrl && !imageError ? (
-              <Image
-                source={{ uri: official.depiction.imageUrl }}
-                style={{ width: "100%", height: "120%" }}
-                resizeMode="cover"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <View
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#BFBFBF",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+          <Pressable onPress={() => setShowPhotoModal(true)}>
+            <View
+              style={[
+                componentStyles.avatar,
+                {
+                  borderColor:
+                    official.partyHistory?.[0]?.partyName === "Republican"
+                      ? "#D45252"
+                      : official.partyHistory?.[0]?.partyName === "Democratic"
+                        ? "#008CFF"
+                        : official.partyHistory?.[0]?.partyName ===
+                            "Independent"
+                          ? "#FAEA70"
+                          : "#008CFF",
+                },
+              ]}
+            >
+              {official.depiction?.imageUrl && !imageError ? (
+                <Image
+                  source={{ uri: official.depiction.imageUrl }}
+                  style={{ width: "100%", height: "120%" }}
+                  resizeMode="cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "#BFBFBF",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
                 >
-                  {official.lastName?.charAt(0) || "?"}
-                </Text>
-              </View>
-            )}
-          </View>
+                  <Text
+                    style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
+                  >
+                    {official.lastName?.charAt(0) || "?"}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Pressable>
 
           {/* Name + Buttons */}
           <View
@@ -1350,7 +1354,31 @@ export default function OfficialDetail() {
         value={newListName}
         onChangeText={setNewListName}
       />
-
+      <Modal
+        visible={showPhotoModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setShowPhotoModal(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.85)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => setShowPhotoModal(false)}
+        >
+          {official.depiction?.imageUrl && (
+            <Image
+              source={{ uri: official.depiction.imageUrl }}
+              style={{ width: 300, height: 360, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+          )}
+        </Pressable>
+      </Modal>
       <Modal
         visible={showNewListProgressModal}
         transparent

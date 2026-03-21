@@ -1,7 +1,6 @@
 import { Bell, Check } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
-import { styles } from "../global_styles/styles";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { notificationPreferences } from "../utils/notificationPreferences";
 
 interface ListSelectionProps {
@@ -60,71 +59,103 @@ export default function ListSelection({
       statusBarTranslucent={true}
     >
       <Pressable
-        style={styles.modalOverlay}
+        style={{ flex: 1 }}
         onPress={() => setShowListSelection(false)}
       >
-        <View style={styles.dropdown}>
-          {/* Dynamic lists from storage */}
-          {lists.map((list) => {
-            const listNotifEnabled = enabledListNotifs.has(list.id);
-            return (
-              <Pressable
-                key={list.id}
-                style={({ pressed }) =>
-                  pressed ? styles.dropdownItemPressed : styles.dropdownItem
-                }
-                onPress={() => handleListSelect(list.name)}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+        <View
+          style={{
+            position: "absolute",
+            top: 100,
+            left: 16,
+            backgroundColor: "#fff",
+            borderRadius: 12,
+            padding: 4,
+            minWidth: 200,
+            maxWidth: 280,
+            maxHeight: 360,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.12,
+            shadowRadius: 12,
+            elevation: 8,
+          }}
+        >
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {lists.map((list) => {
+              const listNotifEnabled = enabledListNotifs.has(list.id);
+              return (
+                <Pressable
+                  key={list.id}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                  onPress={() => handleListSelect(list.name)}
                 >
                   <View
                     style={{
                       flexDirection: "row",
+                      justifyContent: "space-between",
                       alignItems: "center",
-                      gap: 6,
+                      gap: 8,
                     }}
                   >
-                    <Text style={styles.dropdownItemText}>{list.name}</Text>
-                    {listNotifEnabled && (
-                      <Bell
-                        size={14}
-                        style={{ marginTop: 4 }}
-                        color="#008CFF"
-                      />
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                        flex: 1,
+                      }}
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          fontSize: 15,
+                          fontWeight:
+                            selectedList === list.name ? "700" : "400",
+                          color: "#1a1a1a",
+                          flex: 1,
+                        }}
+                      >
+                        {list.name}
+                      </Text>
+                      {listNotifEnabled && <Bell size={14} color="#008CFF" />}
+                    </View>
+                    {selectedList === list.name && (
+                      <Check size={20} color="#008CFF" strokeWidth={4} />
                     )}
                   </View>
-                  {selectedList === list.name && (
-                    <Check size={20} color="#008CFF" strokeWidth={4} />
-                  )}
-                </View>
-              </Pressable>
-            );
-          })}
+                </Pressable>
+              );
+            })}
 
-          {/* New List option */}
-          <Pressable
-            style={({ pressed }) =>
-              pressed ? styles.dropdownItemPressed : styles.dropdownItem
-            }
-            onPress={handleNewList}
-          >
+            {/* Divider */}
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
+                height: 1,
+                backgroundColor: "#f0f0f0",
+                marginHorizontal: 12,
               }}
+            />
+
+            {/* New List */}
+            <Pressable
+              style={({ pressed }) => ({
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                opacity: pressed ? 0.7 : 1,
+              })}
+              onPress={handleNewList}
             >
-              <Text style={[styles.dropdownItemText, { color: "#7B7C81" }]}>
-                New List
-              </Text>
-            </View>
-          </Pressable>
+              <Text style={{ fontSize: 15, color: "#7B7C81" }}>New List</Text>
+            </Pressable>
+          </ScrollView>
         </View>
       </Pressable>
     </Modal>
