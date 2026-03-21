@@ -261,7 +261,7 @@ const checkFollowedBills = async () => {
               to: reg.token,
               title: `${billId.toUpperCase()} had a new action`,
               body: action.text,
-              data: { billId },
+              data: { billId, notifType: "actions" },
             });
           }
         }
@@ -286,7 +286,7 @@ const checkFollowedBills = async () => {
               to: reg.token,
               title: `Vote recorded on ${billId.toUpperCase()}`,
               body: action.text,
-              data: { billId },
+              data: { billId, notifType: "voting" },
             });
           }
         }
@@ -312,7 +312,7 @@ const checkFollowedBills = async () => {
                     `${c.firstName} ${c.lastName} (${c.party}-${c.state})`,
                 )
                 .join(", "),
-              data: { billId },
+              data: { billId, notifType: "cosponsors" },
             });
           }
         }
@@ -335,7 +335,7 @@ const checkFollowedBills = async () => {
                 recentAmendments.length === 1
                   ? `1 new amendment submitted`
                   : `${recentAmendments.length} new amendments submitted`,
-              data: { billId },
+              data: { billId, notifType: "amendments" },
             });
           }
         }
@@ -345,8 +345,35 @@ const checkFollowedBills = async () => {
     }
   }
 
-  await sendNotifications(messages);
-  console.log(`Sent ${messages.length} followed bill notifications`);
+  const today = new Date().toISOString().split("T")[0];
+
+  const deduped = messages.filter((msg) => {
+    const billId = msg.data?.billId;
+    const notifType = msg.data?.notifType;
+    if (!billId || !notifType) return true;
+    const already = db
+      .prepare(
+        `SELECT 1 FROM notified_bills WHERE token = ? AND bill_id = ? AND notified_date = ?`,
+      )
+      .get(msg.to, `${billId}-${notifType}`, today);
+    return !already;
+  });
+
+  const insert = db.prepare(
+    `INSERT OR IGNORE INTO notified_bills (token, bill_id, notified_date) VALUES (?, ?, ?)`,
+  );
+  db.transaction(() => {
+    for (const msg of deduped) {
+      if (msg.data?.billId && msg.data?.notifType) {
+        insert.run(msg.to, `${msg.data.billId}-${msg.data.notifType}`, today);
+      }
+    }
+  })();
+
+  await sendNotifications(deduped);
+  console.log(
+    `Sent ${deduped.length} followed bill notifications (${messages.length - deduped.length} deduplicated)`,
+  );
 };
 
 // ── Check 3: Activity from followed officials ─────────────────────────────────
@@ -401,6 +428,7 @@ const checkFollowedOfficials = async () => {
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,
+                notifType: "introduced",
               },
             });
           }
@@ -425,6 +453,7 @@ const checkFollowedOfficials = async () => {
               data: {
                 billId: `${bill.type?.toLowerCase() ?? ""}${bill.number}`,
                 officialId: bioguideId,
+                notifType: "cosponsored",
               },
             });
           }
@@ -435,11 +464,81 @@ const checkFollowedOfficials = async () => {
     }
   }
 
-  await sendNotifications(messages);
-  console.log(`Sent ${messages.length} followed official notifications`);
+  const today = new Date().toISOString().split("T")[0];
+
+  const deduped = messages.filter((msg) => {
+    const billId = msg.data?.billId;
+    const notifType = msg.data?.notifType;
+    if (!billId || !notifType) return true;
+    const already = db
+      .prepare(
+        `SELECT 1 FROM notified_bills WHERE token = ? AND bill_id = ? AND notified_date = ?`,
+      )
+      .get(msg.to, `${billId}-${notifType}`, today);
+    return !already;
+  });
+
+  const insert = db.prepare(
+    `INSERT OR IGNORE INTO notified_bills (token, bill_id, notified_date) VALUES (?, ?, ?)`,
+  );
+  db.transaction(() => {
+    for (const msg of deduped) {
+      if (msg.data?.billId && msg.data?.notifType) {
+        insert.run(msg.to, `${msg.data.billId}-${msg.data.notifType}`, today);
+      }
+    }
+  })();
+
+  await sendNotifications(deduped);
+  console.log(
+    `Sent ${deduped.length} followed official notifications (${messages.length - deduped.length} deduplicated)`,
+  );
 };
 
 // ── Main runner ───────────────────────────────────────────────────────────────
+
+const enrichMissingPolicyAreas = async (): Promise<void> => {
+  const billsToEnrich = db
+    .prepare(
+      `
+    SELECT bill_id, type, number
+    FROM bills
+    WHERE policy_area IS NULL
+      AND latest_action_date >= date('now', '-7 days')
+      AND type IN ('HR', 'S')
+    LIMIT 50
+  `,
+    )
+    .all() as { bill_id: string; type: string; number: string }[];
+
+  if (billsToEnrich.length === 0) return;
+  console.log(
+    `Enriching ${billsToEnrich.length} bills missing policy areas...`,
+  );
+
+  const update = db.prepare(
+    `UPDATE bills SET policy_area = ? WHERE bill_id = ?`,
+  );
+
+  for (const bill of billsToEnrich) {
+    try {
+      const response = await axios.get(
+        `https://api.congress.gov/v3/bill/119/${bill.type.toLowerCase()}/${bill.number}`,
+        { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+      );
+      const policyArea = response.data?.bill?.policyArea?.name ?? null;
+      if (policyArea) {
+        update.run(policyArea, bill.bill_id);
+      }
+      // Small delay to avoid rate limiting
+      await new Promise((res) => setTimeout(res, 100));
+    } catch {
+      // Skip failed bills silently
+    }
+  }
+
+  console.log(`Policy area enrichment complete.`);
+};
 
 export const runCronJob = async () => {
   db.prepare(
@@ -449,6 +548,7 @@ export const runCronJob = async () => {
     "Running daily notification cron job...",
     new Date().toISOString(),
   );
+  await enrichMissingPolicyAreas();
   await checkNewBills();
   await checkFollowedBills();
   await checkFollowedOfficials();
