@@ -30,14 +30,12 @@ db.exec(`
     policy_area TEXT,
     sponsor_state TEXT,
     update_date TEXT,
-    latest_action_date TEXT,
     synced_at INTEGER NOT NULL
   );
 
-CREATE INDEX IF NOT EXISTS idx_bills_update_date ON bills(update_date DESC);
-CREATE INDEX IF NOT EXISTS idx_bills_latest_action_date ON bills(latest_action_date DESC);
-CREATE INDEX IF NOT EXISTS idx_bills_policy_area ON bills(policy_area);
-CREATE INDEX IF NOT EXISTS idx_bills_sponsor_state ON bills(sponsor_state);
+  CREATE INDEX IF NOT EXISTS idx_bills_update_date ON bills(update_date DESC);
+  CREATE INDEX IF NOT EXISTS idx_bills_policy_area ON bills(policy_area);
+  CREATE INDEX IF NOT EXISTS idx_bills_sponsor_state ON bills(sponsor_state);
 `);
 
 // Migration: add latest_action_date column if it doesn't exist
@@ -47,7 +45,7 @@ try {
   // Column already exists, ignore
 }
 
-// Migration: add index if it doesn't exist
+// Migration: add index after column exists
 try {
   db.exec(
     `CREATE INDEX IF NOT EXISTS idx_bills_latest_action_date ON bills(latest_action_date DESC)`,
