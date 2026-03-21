@@ -111,7 +111,7 @@ const checkNewBills = async () => {
     .prepare(
       `SELECT bill_id, type, number, title, policy_area, sponsor_state
      FROM bills
-     WHERE update_date >= ?
+     WHERE latest_action_date >= ?
        AND type IN ('HR', 'S')
        AND policy_area IS NOT NULL`,
     )

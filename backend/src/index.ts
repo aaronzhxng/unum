@@ -94,15 +94,16 @@ app.get("/api/bills", async (req, res) => {
     // Sync bills into Railway SQLite for cron use
     try {
       const insert = db.prepare(`
-    INSERT INTO bills (bill_id, type, number, title, policy_area, sponsor_state, update_date, synced_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(bill_id) DO UPDATE SET
-      title = excluded.title,
-      sponsor_state = excluded.sponsor_state,
-      update_date = excluded.update_date,
-      synced_at = excluded.synced_at,
-      policy_area = COALESCE(bills.policy_area, excluded.policy_area)
-  `);
+          INSERT INTO bills (bill_id, type, number, title, policy_area, sponsor_state, update_date, latest_action_date, synced_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(bill_id) DO UPDATE SET
+            title = excluded.title,
+            sponsor_state = excluded.sponsor_state,
+            update_date = excluded.update_date,
+            latest_action_date = excluded.latest_action_date,
+            synced_at = excluded.synced_at,
+            policy_area = COALESCE(bills.policy_area, excluded.policy_area)
+        `);
       const syncBills = db.transaction((bills: any[]) => {
         for (const bill of bills) {
           insert.run(
@@ -113,6 +114,7 @@ app.get("/api/bills", async (req, res) => {
             bill.policyArea?.name ?? null,
             bill.sponsors?.[0]?.state ?? null,
             bill.updateDate ?? null,
+            bill.latestAction?.actionDate ?? null,
             Date.now(),
           );
         }
