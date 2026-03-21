@@ -886,6 +886,23 @@ app.get("/api/debug/meta", (req, res) => {
   res.json(rows);
 });
 
+app.get("/api/debug/old-bills-with-policy", (req, res) => {
+  const rows = db
+    .prepare(
+      `
+    SELECT bill_id, update_date, policy_area
+    FROM bills
+    WHERE update_date >= date('now', '-3 days')
+      AND type IN ('HR', 'S')
+      AND policy_area IS NOT NULL
+    ORDER BY update_date DESC
+    LIMIT 50
+  `,
+    )
+    .all();
+  res.json(rows);
+});
+
 app.listen(PORT, () => {
   prewarmCache();
   startCronScheduler();
