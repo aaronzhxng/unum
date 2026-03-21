@@ -40,4 +40,18 @@ CREATE INDEX IF NOT EXISTS idx_bills_policy_area ON bills(policy_area);
 CREATE INDEX IF NOT EXISTS idx_bills_sponsor_state ON bills(sponsor_state);
 `);
 
+// Migration: add latest_action_date column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE bills ADD COLUMN latest_action_date TEXT`);
+} catch {
+  // Column already exists, ignore
+}
+
+// Migration: add index if it doesn't exist
+try {
+  db.exec(
+    `CREATE INDEX IF NOT EXISTS idx_bills_latest_action_date ON bills(latest_action_date DESC)`,
+  );
+} catch {}
+
 export default db;
