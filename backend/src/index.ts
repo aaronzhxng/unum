@@ -875,7 +875,9 @@ app.get("/api/debug/sample-bills", (req, res) => {
       `
     SELECT bill_id, update_date, latest_action_date, policy_area, sponsor_state 
     FROM bills 
-    ORDER BY rowid DESC
+    WHERE policy_area IS NOT NULL
+    AND latest_action_date IS NOT NULL
+    ORDER BY latest_action_date DESC
     LIMIT 20
   `,
     )
