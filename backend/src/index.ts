@@ -906,6 +906,6 @@ app.get("/api/debug/old-bills-with-policy", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  prewarmCache();
+  setTimeout(() => prewarmCache(), 5000);
   startCronScheduler();
 });
