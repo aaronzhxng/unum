@@ -169,6 +169,41 @@ const SingleVoteCard = ({
 
   return (
     <View style={[componentStyles.section, { gap: 12 }]}>
+      {/* Header */}
+      <View style={{ gap: 4 }}>
+        <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>
+          {vote.chamber} ·{" "}
+          {new Date(vote.date).toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          })}
+        </Text>
+        {vote.question || vote.result
+          ? (() => {
+              const embeddedMatch = vote.result?.match(/\(([^)]+)\)/);
+              const resultText = vote.result
+                ?.replace(/\s*\([^)]+\)/, "")
+                .trim();
+              const voteCount = embeddedMatch
+                ? embeddedMatch[1]
+                : `${vote.total.yea}-${vote.total.nay}`;
+              const displayResult = `${resultText} (${voteCount})`;
+              return (
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: resultColor,
+                  }}
+                >
+                  {[vote.question, displayResult].filter(Boolean).join(" · ")}
+                </Text>
+              );
+            })()
+          : null}
+      </View>
+
       {/* Followed officials callout */}
       {followedOfficials &&
         followedOfficials.length > 0 &&
@@ -176,11 +211,9 @@ const SingleVoteCard = ({
         vote.members.length > 0 &&
         (() => {
           const matches = followedOfficials.flatMap((official) => {
-            // Convert "Last, First" to first/last
             const parts = official.name.split(",").map((s) => s.trim());
             const lastName = parts[0] ?? "";
             const firstName = parts[1]?.split(" ")[0] ?? "";
-
             const match = vote.members!.find(
               (m) =>
                 m.lastName.toLowerCase() === lastName.toLowerCase() &&
@@ -189,7 +222,6 @@ const SingleVoteCard = ({
                     .toLowerCase()
                     .startsWith(firstName.toLowerCase())),
             );
-
             if (!match) return [];
             return [
               {
@@ -199,16 +231,13 @@ const SingleVoteCard = ({
               },
             ];
           });
-
           if (matches.length === 0) return null;
-
           return (
             <View
               style={{
                 backgroundColor: "#F0F7FF",
                 borderRadius: 8,
                 padding: 10,
-                marginBottom: 4,
               }}
             >
               <Text
@@ -252,40 +281,18 @@ const SingleVoteCard = ({
             </View>
           );
         })()}
-      {/* Header */}
-      <View style={{ gap: 4 }}>
-        <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>
-          {vote.chamber} ·{" "}
-          {new Date(vote.date).toLocaleDateString("en-US", {
-            month: "2-digit",
-            day: "2-digit",
-            year: "numeric",
-          })}
-        </Text>
-        {vote.question || vote.result
-          ? (() => {
-              const embeddedMatch = vote.result?.match(/\(([^)]+)\)/);
-              const resultText = vote.result
-                ?.replace(/\s*\([^)]+\)/, "")
-                .trim();
-              const voteCount = embeddedMatch
-                ? embeddedMatch[1]
-                : `${vote.total.yea}-${vote.total.nay}`;
-              const displayResult = `${resultText} (${voteCount})`;
-              return (
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: "600",
-                    color: resultColor,
-                  }}
-                >
-                  {[vote.question, displayResult].filter(Boolean).join(" · ")}
-                </Text>
-              );
-            })()
-          : null}
-      </View>
+
+      {/* See all votes */}
+      {vote.members && vote.members.length > 0 && (
+        <TouchableOpacity
+          onPress={onSeeAll}
+          style={{ alignSelf: "flex-start" }}
+        >
+          <Text style={{ fontSize: 13, color: "#008CFF", fontWeight: "600" }}>
+            See all votes ({vote.members.length})
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* Bars */}
       <PartyBar
@@ -371,16 +378,6 @@ const SingleVoteCard = ({
           <Text style={{ fontSize: 11, color: "#535353" }}>Independent</Text>
         </View>
       </View>
-      {vote.members && vote.members.length > 0 && (
-        <TouchableOpacity
-          onPress={onSeeAll}
-          style={{ alignSelf: "flex-start", marginTop: 4 }}
-        >
-          <Text style={{ fontSize: 13, color: "#008CFF", fontWeight: "600" }}>
-            See all votes ({vote.members.length})
-          </Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 };

@@ -760,9 +760,17 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
           },
         );
         const page = response.data[key] || [];
-        all = all.concat(page);
+
+        // Filter to 119th congress only
+        const filtered = page.filter((b: any) => b.congress === 119);
+        all = all.concat(filtered);
+
+        // Stop if we've gone past the 119th congress
+        const hasOlderBills = page.some((b: any) => b.congress < 119);
         hasMore =
-          response.data.pagination?.next != null && page.length === limit;
+          response.data.pagination?.next != null &&
+          page.length === limit &&
+          !hasOlderBills;
         offset += limit;
       }
 
@@ -775,9 +783,10 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
       fetchAll("cosponsored-legislation", "cosponsoredLegislation"),
     ]);
 
-    // Count policy areas across full career, both directions
+    // Count policy areas for 119th congress only
     const counts: { [key: string]: number } = {};
     for (const bill of [...sponsored, ...cosponsored]) {
+      if (bill.congress !== 119) continue;
       const area = bill.policyArea?.name;
       if (area) counts[area] = (counts[area] || 0) + 1;
     }

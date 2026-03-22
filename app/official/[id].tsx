@@ -398,13 +398,13 @@ export default function OfficialDetail() {
     queryKey: ["officialPolicyAreas", id],
     queryFn: async () => {
       const cached = await officialBillsCache.get(
-        `policy_areas_v3_${id}`,
+        `policy_areas_v4_${id}`,
         30 * 24 * 60 * 60 * 1000,
       );
       if (cached) return cached;
       const result = await officialsService.getPolicyAreas(id as string);
       await officialBillsCache.save(
-        `policy_areas_v3_${id}`,
+        `policy_areas_v4_${id}`,
         result,
         30 * 24 * 60 * 60 * 1000,
       );
@@ -531,20 +531,47 @@ export default function OfficialDetail() {
   ]);
 
   const { signedIntoLaw, signedSponsored, signedCosponsored } = useMemo(() => {
+    if (sponsoredLoading || cosponsoredLoading) {
+      return { signedIntoLaw: [], signedSponsored: [], signedCosponsored: [] };
+    }
+
     const db = getDb();
     const seen = new Set<string>();
 
-    const all = [...sponsoredBills, ...cosponsoredBills]
+    // Deduplicate bills first
+    const allBills = [...sponsoredBills, ...cosponsoredBills].filter((bill) => {
+      const key = `${bill.type}${bill.number}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    if (allBills.length === 0) {
+      return { signedIntoLaw: [], signedSponsored: [], signedCosponsored: [] };
+    }
+
+    // Single batch query instead of N individual queries
+    const billIds = allBills.map((b) => `${b.type.toLowerCase()}${b.number}`);
+    const placeholders = billIds.map(() => "?").join(",");
+    const rows = db.getAllSync<{
+      bill_id: string;
+      latest_action_text: string | null;
+    }>(
+      `SELECT bill_id, latest_action_text FROM bills WHERE bill_id IN (${placeholders})`,
+      billIds,
+    );
+
+    const actionMap = new Map<string, string>();
+    for (const row of rows) {
+      if (row.latest_action_text) {
+        actionMap.set(row.bill_id, row.latest_action_text.toLowerCase());
+      }
+    }
+
+    const all = allBills
       .filter((bill) => {
-        const key = `${bill.type}${bill.number}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
         const billId = `${bill.type.toLowerCase()}${bill.number}`;
-        const row = db.getFirstSync<{ latest_action_text: string | null }>(
-          `SELECT latest_action_text FROM bills WHERE bill_id = ?`,
-          [billId],
-        );
-        const action = row?.latest_action_text?.toLowerCase() ?? "";
+        const action = actionMap.get(billId) ?? "";
         return (
           action.includes("became public law") ||
           action.includes("signed by president") ||
@@ -560,11 +587,6 @@ export default function OfficialDetail() {
     const sponsoredSet = new Set(
       sponsoredBills.map((b: any) => `${b.type}${b.number}`),
     );
-
-    // const testRow = db.getFirstSync<{ bill_id: string }>(
-    //   `SELECT bill_id FROM bills LIMIT 1`,
-    // );
-    // console.log("Sample bill_id from SQLite:", testRow?.bill_id);
 
     return {
       signedIntoLaw: all,
