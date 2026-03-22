@@ -119,27 +119,6 @@ export default function BillDetail() {
   const [cosponsorsVisited, setCosponsorsVisited] = useState(false);
   const [actionsVisited, setActionsVisited] = useState(false);
 
-  // Back swipe on first page
-  const backSwipePanResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return (
-          gestureState.dx > 20 &&
-          Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
-        );
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
-          // setIsNavigatingBack(true);
-          // setTimeout(() => {
-          //   router.back();
-          // }, 50);
-          router.back();
-        }
-      },
-    }),
-  ).current;
-
   // const [showSearchModal, setShowSearchModal] = useState(false);
   // const [searchQuery, setSearchQuery] = useState("");
   const [showAmendments, setShowAmendments] = useState(false);
@@ -238,6 +217,31 @@ export default function BillDetail() {
       setTimeout(() => setShowNewListProgressModal(true), 50);
     }
   };
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)/home");
+    }
+  };
+
+  // Back swipe on first page
+  const backSwipePanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          gestureState.dx > 20 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
+        );
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
+          handleBack();
+        }
+      },
+    }),
+  ).current;
 
   interface FilterOption {
     id: string;
@@ -412,11 +416,7 @@ export default function BillDetail() {
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
-        // setIsNavigatingBack(true);
-        // setTimeout(() => {
-        //   router.back();
-        // }, 50);
-        router.back();
+        handleBack();
         return true; // true = we handled it, prevents default back behavior
       },
     );
@@ -673,12 +673,7 @@ export default function BillDetail() {
       <View style={componentStyles.headerBar}>
         <Pressable
           onPress={() => {
-            // setIsNavigatingBack(true);
-            // setTimeout(() => {
-            //   router.back();
-            // }, 50);
-            // console.log("Back pressed:", Date.now());
-            router.back();
+            handleBack();
           }}
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.75 : 1 }],

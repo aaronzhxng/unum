@@ -204,6 +204,13 @@ export default function OfficialDetail() {
   const pagerRef = useRef<PagerView>(null);
   const { id } = useLocalSearchParams<{ id: string }>();
   const router: Router = useRouter();
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)/home");
+    }
+  };
   const [activeTab, setActiveTab] = useState(0);
   // const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
@@ -218,11 +225,7 @@ export default function OfficialDetail() {
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
-          // setIsNavigatingBack(true);
-          // setTimeout(() => {
-          //   router.back();
-          // }, 50);
-          router.back();
+          handleBack();
         }
       },
     }),
@@ -297,11 +300,7 @@ export default function OfficialDetail() {
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
-        // setIsNavigatingBack(true);
-        // setTimeout(() => {
-        //   router.back();
-        // }, 50);
-        router.back();
+        handleBack();
         return true; // true = we handled it, prevents default back behavior
       },
     );
@@ -657,12 +656,7 @@ export default function OfficialDetail() {
       <View style={componentStyles.headerBar}>
         <Pressable
           onPress={() => {
-            // setIsNavigatingBack(true);
-            // setTimeout(() => {
-            //   router.back();
-            // }, 50);
-            // console.log("Back pressed:", Date.now());
-            router.back();
+            handleBack();
           }}
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.75 : 1 }],
