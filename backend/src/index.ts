@@ -682,17 +682,31 @@ app.get("/api/officials/:bioguideId", async (req, res) => {
 app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
   try {
     const { bioguideId } = req.params;
-    const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit: 250 },
-      },
-    );
-    const allLegislation = response.data.sponsoredLegislation || [];
+
+    let allLegislation: any[] = [];
+    let offset = 0;
+    const limit = 250;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await axios.get(
+        `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
+        {
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { limit, offset },
+        },
+      );
+      const page = response.data.sponsoredLegislation || [];
+      allLegislation = allLegislation.concat(page);
+      hasMore = response.data.pagination?.next != null && page.length === limit;
+      offset += limit;
+    }
+
+    const filtered = allLegislation.filter((b: any) => b.congress === 119);
+
     res.json({
-      legislation: allLegislation,
-      count: response.data.pagination?.count || allLegislation.length,
+      legislation: filtered,
+      count: allLegislation.length, // true all-time count
     });
   } catch (error) {
     console.error("Error fetching sponsored legislation:", error);
@@ -728,7 +742,7 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
 
     res.json({
       legislation: filtered,
-      count: allLegislation.length,
+      count: allLegislation.length, // true all-time count
     });
   } catch (error) {
     console.error("Error fetching cosponsored legislation:", error);

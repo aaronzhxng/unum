@@ -371,10 +371,10 @@ export default function OfficialDetail() {
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
     queryFn: async () => {
-      const cached = await officialBillsCache.get(`sponsored_${id}`);
+      const cached = await officialBillsCache.get(`sponsored_v2_${id}`);
       if (cached) return cached;
       const result = await officialsService.getSponsored(id as string);
-      await officialBillsCache.save(`sponsored_${id}`, result);
+      await officialBillsCache.save(`sponsored_v2_${id}`, result);
       return result;
     },
     enabled: !!id,
@@ -384,10 +384,10 @@ export default function OfficialDetail() {
   const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
     queryKey: ["officialCosponsored", id],
     queryFn: async () => {
-      const cached = await officialBillsCache.get(`cosponsored_${id}`);
+      const cached = await officialBillsCache.get(`cosponsored_v2_${id}`);
       if (cached) return cached;
       const result = await officialsService.getCosponsored(id as string);
-      await officialBillsCache.save(`cosponsored_${id}`, result);
+      await officialBillsCache.save(`cosponsored_v2_${id}`, result);
       return result;
     },
     enabled: !!id,
@@ -437,7 +437,7 @@ export default function OfficialDetail() {
         (item: any) =>
           !item.amendmentNumber &&
           item.type &&
-          (item.congress === 119 || item.congress === "119" || !item.congress),
+          (item.congress === 119 || item.congress === "119"),
       ),
     [cosponsoredData],
   );
@@ -1085,7 +1085,7 @@ export default function OfficialDetail() {
                         onPress={() => setShowFilterModal(true)}
                       >
                         <Text style={componentStyles.legislationHeaderTotal}>
-                          {`${filteredSponsored.length.toLocaleString()} / ${(policyAreasData?.totalSponsored ?? sponsoredData?.count ?? 0).toLocaleString()} all-time`}{" "}
+                          {`${filteredSponsored.length.toLocaleString()} in 119th · ${(sponsoredData?.count ?? 0).toLocaleString()} all-time`}
                         </Text>
                         {showFilterModal ? (
                           <ChevronUp
@@ -1198,7 +1198,7 @@ export default function OfficialDetail() {
                         onPress={() => setShowFilterModal(true)}
                       >
                         <Text style={componentStyles.legislationHeaderTotal}>
-                          {`${filteredCosponsored.length.toLocaleString()} / ${(policyAreasData?.totalCosponsored ?? cosponsoredData?.count ?? 0).toLocaleString()} all-time`}{" "}
+                          {`${filteredCosponsored.length.toLocaleString()} in 119th · ${(cosponsoredData?.count ?? 0).toLocaleString()} all-time`}
                         </Text>
                         {showFilterModal ? (
                           <ChevronUp
