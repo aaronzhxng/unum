@@ -21,7 +21,7 @@ function OnboardingOverlay() {
 
   return (
     <>
-      {/* Skip — top right, absolutely positioned over everything */}
+      {/* Skip — top right */}
       {onSkip && (
         <Pressable
           onPress={onSkip}
@@ -53,7 +53,16 @@ function OnboardingOverlay() {
           zIndex: 100,
         }}
       >
-        {/* Progress dots */}
+        {/* Progress dots — 8 total for new flow:
+            0: welcome
+            1: how-familiar
+            2: pick-policy-areas
+            3: pick-state
+            4: pick-rep
+            5: pick-items
+            6: finish
+            7: tour (no overlay shown)
+        */}
         <View
           style={{
             flexDirection: "row",
@@ -62,7 +71,7 @@ function OnboardingOverlay() {
             marginBottom: 16,
           }}
         >
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
             <View
               key={i}
               style={{
@@ -126,11 +135,11 @@ export default function OnboardingLayout() {
           screenOptions={{ headerShown: false, animation: "slide_from_right" }}
         >
           <Stack.Screen name="welcome" />
-          <Stack.Screen name="pick-officials" />
-          <Stack.Screen name="pick-bills" />
+          <Stack.Screen name="how-familiar" />
           <Stack.Screen name="pick-policy-areas" />
           <Stack.Screen name="pick-state" />
-          <Stack.Screen name="name-list" />
+          <Stack.Screen name="pick-rep" />
+          <Stack.Screen name="pick-items" />
           <Stack.Screen name="finish" />
           <Stack.Screen name="tour" />
         </Stack>

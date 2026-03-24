@@ -58,7 +58,8 @@
         {
           "userInterfaceStyle": "automatic"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -74,6 +75,7 @@
       "image": "./assets/app_icons/game-icons_olive.png",
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
-    }
+    },
+    "assets": ["assets/seed.db"]
   }
 }

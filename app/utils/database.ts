@@ -1,4 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Asset } from "expo-asset";
+import * as FileSystem from "expo-file-system/legacy";
 import * as SQLite from "expo-sqlite";
 
 // ─── Types (shared with storage.ts) ──────────────────────────────────────────
@@ -34,12 +36,140 @@ export const getDb = (): SQLite.SQLiteDatabase => {
   return db;
 };
 
+// ─── Seed copy (Strategy C) ───────────────────────────────────────────────────
+// On first install, if the bills table is empty, copy the pre-built seed.db
+// from the app bundle into SQLite so the user sees data instantly with no
+// network request. After copying, delta sync runs in the background to catch
+// anything newer than the seed date.
+
+export const copySeedIfNeeded = async (): Promise<boolean> => {
+  try {
+    const database = getDb();
+
+    // Check if bills table already has data — if so, skip entirely
+    const count = database.getFirstSync<{ count: number }>(
+      `SELECT COUNT(*) as count FROM bills`,
+    );
+    if (count && count.count > 0) return false;
+
+    console.log("🌱 Bills table empty — copying seed.db...");
+
+    // Load the seed asset from the bundle
+    const asset = Asset.fromModule(require("../../assets/seed.db"));
+    await asset.downloadAsync();
+
+    if (!asset.localUri) {
+      console.warn("⚠️ seed.db asset has no localUri — skipping seed copy");
+      return false;
+    }
+
+    const docDir = FileSystem.documentDirectory;
+    if (!docDir) {
+      console.warn("⚠️ documentDirectory unavailable — skipping seed copy");
+      return false;
+    }
+
+    const destPath = `${docDir}SQLite/seed_import.db`;
+
+    // Ensure the SQLite directory exists
+    await FileSystem.makeDirectoryAsync(`${docDir}SQLite`, {
+      intermediates: true,
+    });
+
+    // Copy seed file to a readable location
+    await FileSystem.copyAsync({ from: asset.localUri, to: destPath });
+
+    // Open the seed database and read all bills from it
+    const seedDb = SQLite.openDatabaseSync("seed_import.db");
+
+    const bills = seedDb.getAllSync<{
+      bill_id: string;
+      type: string;
+      number: string;
+      congress: number;
+      title: string;
+      origin_chamber: string | null;
+      latest_action_date: string | null;
+      latest_action_text: string | null;
+      update_date: string | null;
+      policy_area: string | null;
+      sponsor_state: string | null;
+      congress_order: number | null;
+      data: string;
+      synced_at: number;
+    }>(`SELECT * FROM bills`);
+
+    // Read the seed date from meta
+    const seedMeta = seedDb.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'seed_date'`,
+    );
+    const seedDate = seedMeta?.value ?? null;
+
+    seedDb.closeSync();
+
+    if (bills.length === 0) {
+      console.warn("⚠️ seed.db contained no bills — skipping");
+      return false;
+    }
+
+    // Insert all bills into the live database in one transaction
+    const stmt = database.prepareSync(
+      `INSERT INTO bills (
+        bill_id, type, number, congress, title, origin_chamber,
+        latest_action_date, latest_action_text, update_date,
+        policy_area, sponsor_state, congress_order, data, synced_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(bill_id) DO NOTHING`,
+    );
+
+    database.withTransactionSync(() => {
+      for (const bill of bills) {
+        stmt.executeSync([
+          bill.bill_id,
+          bill.type,
+          bill.number,
+          bill.congress,
+          bill.title,
+          bill.origin_chamber,
+          bill.latest_action_date,
+          bill.latest_action_text,
+          bill.update_date,
+          bill.policy_area,
+          bill.sponsor_state,
+          bill.congress_order,
+          bill.data,
+          bill.synced_at,
+        ]);
+      }
+    });
+
+    stmt.finalizeSync();
+
+    // Store the seed date in meta so delta sync knows where to start from
+    if (seedDate) {
+      database.runSync(
+        `INSERT INTO meta (key, value) VALUES ('last_bills_sync', ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+        [seedDate],
+      );
+    }
+
+    // Clean up the temporary seed file
+    await FileSystem.deleteAsync(destPath, { idempotent: true });
+
+    console.log(`✅ Seed copy complete: ${bills.length} bills loaded`);
+    return true;
+  } catch (error) {
+    console.error("❌ Seed copy failed:", error);
+    return false; // Non-fatal — app will fall back to Railway fetch
+  }
+};
+
 // ─── Schema setup ─────────────────────────────────────────────────────────────
 
 export const initializeDatabase = async (): Promise<void> => {
   const database = getDb();
 
-  // Create all tables if they don't exist yet
   database.execSync(`
     PRAGMA journal_mode = WAL;
 
@@ -62,7 +192,7 @@ export const initializeDatabase = async (): Promise<void> => {
       policy_area TEXT,
       update_text TEXT,
       photo_url TEXT,
-order_index INTEGER NOT NULL DEFAULT 0,
+      order_index INTEGER NOT NULL DEFAULT 0,
       added_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
       FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE
     );
@@ -116,7 +246,7 @@ order_index INTEGER NOT NULL DEFAULT 0,
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
-    
+
     CREATE TABLE IF NOT EXISTS push_token (
       id INTEGER PRIMARY KEY CHECK (id = 1),
       token TEXT NOT NULL,
@@ -130,6 +260,7 @@ order_index INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
     );
   `);
+
   try {
     database.execSync(
       `ALTER TABLE list_items ADD COLUMN order_index INTEGER NOT NULL DEFAULT 0`,
@@ -144,13 +275,14 @@ order_index INTEGER NOT NULL DEFAULT 0,
     database.execSync(`ALTER TABLE bills ADD COLUMN congress_order INTEGER`);
   } catch {}
 
+  // Copy seed.db into bills table if this is a fresh install
+  await copySeedIfNeeded();
+
   // Run migration from AsyncStorage on first launch
   await migrateFromAsyncStorage(database);
 };
 
 // ─── Migration from AsyncStorage ─────────────────────────────────────────────
-// Runs once on first launch after this update. Reads existing data from
-// AsyncStorage and writes it into SQLite, then clears AsyncStorage.
 
 const MIGRATION_KEY = "sqlite_migration_v1_complete";
 
@@ -158,28 +290,22 @@ const migrateFromAsyncStorage = async (
   database: SQLite.SQLiteDatabase,
 ): Promise<void> => {
   try {
-    // Check if migration already ran
     const existing = database.getFirstSync<{ value: string }>(
       "SELECT value FROM meta WHERE key = ?",
       [MIGRATION_KEY],
     );
     if (existing) return;
 
-    // console.log("🔄 Migrating data from AsyncStorage to SQLite...");
-
-    // ── Migrate lists and list items ────────────────────────────────────────
     const listsRaw = await AsyncStorage.getItem("user_lists");
     if (listsRaw) {
       const lists: UserList[] = JSON.parse(listsRaw);
 
       for (const list of lists) {
-        // Insert list (ignore if somehow already exists)
         database.runSync(
           `INSERT OR IGNORE INTO lists (id, name) VALUES (?, ?)`,
           [list.id, list.name],
         );
 
-        // Insert each item in the list
         for (const item of list.items || []) {
           const rowId = `${list.id}__${item.id}`;
           database.runSync(
@@ -204,11 +330,8 @@ const migrateFromAsyncStorage = async (
           );
         }
       }
-
-      // console.log(`✅ Migrated ${lists.length} lists`);
     }
 
-    // ── Migrate bill cache ───────────────────────────────────────────────────
     const allKeys = await AsyncStorage.getAllKeys();
 
     const billKeys = allKeys.filter((k) => k.startsWith("bill_cache_"));
@@ -222,10 +345,7 @@ const migrateFromAsyncStorage = async (
         [billId, JSON.stringify(parsed.data), parsed.timestamp],
       );
     }
-    // if (billKeys.length > 0)
-    //   console.log(`✅ Migrated ${billKeys.length} cached bills`);
 
-    // ── Migrate official bills cache ─────────────────────────────────────────
     const officialKeys = allKeys.filter((k) =>
       k.startsWith("official_bills_cache_"),
     );
@@ -239,10 +359,7 @@ const migrateFromAsyncStorage = async (
         [cacheKey, JSON.stringify(parsed.data), parsed.timestamp],
       );
     }
-    // if (officialKeys.length > 0)
-    //   console.log(`✅ Migrated ${officialKeys.length} official bill caches`);
 
-    // ── Clean up AsyncStorage ────────────────────────────────────────────────
     const keysToRemove = [
       "user_lists",
       "current_list_id",
@@ -250,18 +367,12 @@ const migrateFromAsyncStorage = async (
       ...officialKeys,
     ];
     await AsyncStorage.multiRemove(keysToRemove);
-    // console.log("🧹 Cleared AsyncStorage after migration");
 
-    // ── Mark migration complete ──────────────────────────────────────────────
     database.runSync(`INSERT INTO meta (key, value) VALUES (?, ?)`, [
       MIGRATION_KEY,
       "true",
     ]);
-
-    // console.log("✅ Migration complete");
   } catch (error) {
     console.error("Migration error:", error);
-    // Don't crash the app — if migration fails, the app still works,
-    // it just starts fresh in SQLite.
   }
 };

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 
+export type FamiliarityLevel = "low" | "mid" | "high" | null;
+
 interface OverlayConfig {
   dotIndex: number;
   continueLabel: string;
@@ -15,12 +17,14 @@ interface OnboardingData {
   selectedBills: string[];
   selectedPolicyAreas: string[];
   priorityState: string | null;
-  listName: string;
+  familiarityLevel: FamiliarityLevel;
+  userRepBioguideId: string | null;
   setSelectedOfficials: (ids: string[]) => void;
   setSelectedBills: (ids: string[]) => void;
   setSelectedPolicyAreas: (areas: string[]) => void;
   setPriorityState: (state: string | null) => void;
-  setListName: (name: string) => void;
+  setFamiliarityLevel: (level: FamiliarityLevel) => void;
+  setUserRepBioguideId: (id: string | null) => void;
   overlayConfig: OverlayConfig | null;
   setOverlayConfig: (config: OverlayConfig | null) => void;
 }
@@ -30,12 +34,14 @@ const OnboardingContext = createContext<OnboardingData>({
   selectedBills: [],
   selectedPolicyAreas: [],
   priorityState: null,
-  listName: "",
+  familiarityLevel: null,
+  userRepBioguideId: null,
   setSelectedOfficials: () => {},
   setSelectedBills: () => {},
   setSelectedPolicyAreas: () => {},
   setPriorityState: () => {},
-  setListName: () => {},
+  setFamiliarityLevel: () => {},
+  setUserRepBioguideId: () => {},
   overlayConfig: null,
   setOverlayConfig: () => {},
 });
@@ -49,7 +55,11 @@ export const OnboardingProvider = ({
   const [selectedBills, setSelectedBills] = useState<string[]>([]);
   const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
   const [priorityState, setPriorityState] = useState<string | null>(null);
-  const [listName, setListName] = useState("");
+  const [familiarityLevel, setFamiliarityLevel] =
+    useState<FamiliarityLevel>(null);
+  const [userRepBioguideId, setUserRepBioguideId] = useState<string | null>(
+    null,
+  );
   const [overlayConfig, setOverlayConfig] = useState<OverlayConfig | null>(
     null,
   );
@@ -65,8 +75,10 @@ export const OnboardingProvider = ({
         setSelectedPolicyAreas,
         priorityState,
         setPriorityState,
-        listName,
-        setListName,
+        familiarityLevel,
+        setFamiliarityLevel,
+        userRepBioguideId,
+        setUserRepBioguideId,
         overlayConfig,
         setOverlayConfig,
       }}

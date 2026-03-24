@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
 import { billsService } from "../services/bills";
@@ -145,6 +145,59 @@ const SUGGESTED_BILLS = [
   },
 ];
 
+const STATE_ABBR: Record<string, string> = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+};
+
 export default function FinishScreen() {
   const router = useRouter();
   const {
@@ -152,24 +205,9 @@ export default function FinishScreen() {
     selectedBills,
     selectedPolicyAreas,
     priorityState,
-    listName,
     setOverlayConfig,
   } = useOnboarding();
   const hasRun = useRef(false);
-
-  const [msgIndex, setMsgIndex] = useState(0);
-  const messages = [
-    "Just a moment...",
-    "Loading legislation data for the first time...",
-    "This only happens once...",
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMsgIndex((prev) => (prev + 1) % messages.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     setOverlayConfig(null);
@@ -181,61 +219,28 @@ export default function FinishScreen() {
 
     const finish = async () => {
       try {
-        // 1. Build list items from selections
-        const items: any[] = [];
+        // 1. Save priority state
+        if (priorityState) {
+          storage.setPriorityState(priorityState);
+          notificationPreferences.enable(`state_${priorityState}`, "official");
+        }
 
-        const STATE_ABBR: Record<string, string> = {
-          AL: "Alabama",
-          AK: "Alaska",
-          AZ: "Arizona",
-          AR: "Arkansas",
-          CA: "California",
-          CO: "Colorado",
-          CT: "Connecticut",
-          DE: "Delaware",
-          FL: "Florida",
-          GA: "Georgia",
-          HI: "Hawaii",
-          ID: "Idaho",
-          IL: "Illinois",
-          IN: "Indiana",
-          IA: "Iowa",
-          KS: "Kansas",
-          KY: "Kentucky",
-          LA: "Louisiana",
-          ME: "Maine",
-          MD: "Maryland",
-          MA: "Massachusetts",
-          MI: "Michigan",
-          MN: "Minnesota",
-          MS: "Mississippi",
-          MO: "Missouri",
-          MT: "Montana",
-          NE: "Nebraska",
-          NV: "Nevada",
-          NH: "New Hampshire",
-          NJ: "New Jersey",
-          NM: "New Mexico",
-          NY: "New York",
-          NC: "North Carolina",
-          ND: "North Dakota",
-          OH: "Ohio",
-          OK: "Oklahoma",
-          OR: "Oregon",
-          PA: "Pennsylvania",
-          RI: "Rhode Island",
-          SC: "South Carolina",
-          SD: "South Dakota",
-          TN: "Tennessee",
-          TX: "Texas",
-          UT: "Utah",
-          VT: "Vermont",
-          VA: "Virginia",
-          WA: "Washington",
-          WV: "West Virginia",
-          WI: "Wisconsin",
-          WY: "Wyoming",
-        };
+        // 2. Save policy area notification preferences
+        if (selectedPolicyAreas.length > 0) {
+          notificationPreferences.saveSubTypes(
+            "policy_areas",
+            "bill",
+            selectedPolicyAreas,
+          );
+        }
+
+        // 3. Sync preferences to backend
+        await syncPreferencesToBackend();
+
+        // 4. Build list items from onboarding selections.
+        //    Bills come from SUGGESTED_BILLS directly — no SQLite lookup needed
+        //    since seed.db is already in place from initializeDatabase().
+        const items: any[] = [];
 
         for (const bioguideId of selectedOfficials) {
           const official = SUGGESTED_OFFICIALS.find(
@@ -259,36 +264,10 @@ export default function FinishScreen() {
           }
         }
 
-        // 3. Save priority state
-        if (priorityState) {
-          storage.setPriorityState(priorityState);
-          notificationPreferences.enable(`state_${priorityState}`, "official");
-        }
-
-        // 4. Save policy area notification preferences
-        if (selectedPolicyAreas.length > 0) {
-          notificationPreferences.saveSubTypes(
-            "policy_areas",
-            "bill",
-            selectedPolicyAreas,
-          );
-        }
-
-        // 5. Sync preferences to backend
-        await syncPreferencesToBackend();
-
-        // 6. Pre-populate SQLite with bills so the tour doesn't stall
-        try {
-          await billsService.getAll();
-        } catch (error) {
-          console.error("Bills prefetch failed:", error);
-          // Non-fatal — app will retry when legislation tab loads
-        }
-
         for (const billId of selectedBills) {
           const bill = SUGGESTED_BILLS.find((b) => b.id === billId);
           if (bill) {
-            // Look up live data from SQLite (populated in step 6)
+            // Try SQLite first (seed data already there), fall back to static
             const db = getDb();
             const row = db.getFirstSync<{
               latest_action_text: string | null;
@@ -309,20 +288,18 @@ export default function FinishScreen() {
           }
         }
 
-        // 2. Create the list
+        // 5. Create the list
         const allLists = storage.getLists();
-        const name = listName.trim() || "My List";
+        const name = "My List";
         const existingDefault = allLists.find(
           (l) => l.name === "My List" && l.items.length === 0,
         );
 
         if (existingDefault && items.length > 0) {
-          // Rename and populate the default empty list
           existingDefault.name = name;
           existingDefault.items = items;
           storage.saveLists(allLists);
         } else {
-          // Create a new list
           const newList = {
             id: Date.now().toString(),
             name,
@@ -332,18 +309,22 @@ export default function FinishScreen() {
           storage.saveLists(allLists);
         }
 
-        // 7. Mark onboarding complete
+        // 6. Mark onboarding complete
         const db = getDb();
         db.runSync(
           `INSERT INTO meta (key, value) VALUES ('onboarding_complete', 'true')
            ON CONFLICT(key) DO UPDATE SET value = 'true'`,
         );
 
-        // 8. Navigate to tour
+        // 7. Kick off background delta sync — fire and forget, no await.
+        //    Seed data is already in SQLite so the user sees bills immediately.
+        //    This just catches anything newer than the seed date.
+        billsService.getAll().catch(() => {});
+
+        // 8. Navigate immediately
         router.replace("/onboarding/tour" as any);
       } catch (error) {
         console.error("Error finishing onboarding:", error);
-        // Even on error, mark complete and proceed
         try {
           const db = getDb();
           db.runSync(
@@ -358,6 +339,8 @@ export default function FinishScreen() {
     finish();
   }, []);
 
+  // This screen is shown only very briefly while preferences are saved.
+  // The loading messages about bills are gone — there's nothing to wait for.
   return (
     <View
       style={{
@@ -377,9 +360,7 @@ export default function FinishScreen() {
       >
         Building your list...
       </Text>
-      <Text style={{ fontSize: 15, color: "#535353" }}>
-        {messages[msgIndex]}
-      </Text>
+      <Text style={{ fontSize: 15, color: "#535353" }}>Just a moment...</Text>
     </View>
   );
 }

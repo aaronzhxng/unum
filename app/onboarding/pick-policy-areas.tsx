@@ -54,7 +54,7 @@ export default function PickPolicyAreasScreen() {
   useFocusEffect(
     React.useCallback(() => {
       setOverlayConfig({
-        dotIndex: 3,
+        dotIndex: 2,
         continueLabel:
           selectedPolicyAreas.length > 0
             ? `Add ${selectedPolicyAreas.length} Area${selectedPolicyAreas.length > 1 ? "s" : ""}`
