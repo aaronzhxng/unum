@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
 import { billsService } from "../services/bills";
@@ -317,11 +317,12 @@ export default function FinishScreen() {
         );
 
         // 7. Kick off background delta sync — fire and forget, no await.
-        //    Seed data is already in SQLite so the user sees bills immediately.
-        //    This just catches anything newer than the seed date.
         billsService.getAll().catch(() => {});
 
-        // 8. Navigate immediately
+        // 8. Wait at least 4 seconds from when finish screen appeared,
+        //    then navigate. Runs in parallel with the work above.
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+
         router.replace("/onboarding/tour" as any);
       } catch (error) {
         console.error("Error finishing onboarding:", error);
@@ -337,6 +338,21 @@ export default function FinishScreen() {
     };
 
     finish();
+  }, []);
+
+  const [msgIndex, setMsgIndex] = useState(0);
+  const messages = [
+    "Setting up your list...",
+    "Personalizing your feed...",
+    "Syncing legislation data...",
+    "Almost ready...",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((prev) => (prev + 1) % messages.length);
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // This screen is shown only very briefly while preferences are saved.
@@ -360,7 +376,9 @@ export default function FinishScreen() {
       >
         Building your list...
       </Text>
-      <Text style={{ fontSize: 15, color: "#535353" }}>Just a moment...</Text>
+      <Text style={{ fontSize: 15, color: "#535353" }}>
+        {messages[msgIndex]}
+      </Text>
     </View>
   );
 }

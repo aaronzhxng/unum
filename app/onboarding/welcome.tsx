@@ -13,7 +13,7 @@ export default function WelcomeScreen() {
       setOverlayConfig({
         dotIndex: 0,
         continueLabel: "Get Started",
-        onContinue: () => router.push("/onboarding/pick-officials" as any),
+        onContinue: () => router.push("/onboarding/how-familiar" as any),
         showBorder: false,
       });
     }, []),

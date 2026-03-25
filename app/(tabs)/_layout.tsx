@@ -6,6 +6,7 @@ import { Dimensions, Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
+import { getDb } from "../utils/database";
 import HomeScreen from "./home";
 import LegislationScreen from "./legislation";
 import OfficialsScreen from "./officials";
@@ -41,7 +42,8 @@ function RootOffsetDetector() {
 }
 
 function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
-  const { startTour, isActive, currentStep, setTargetLayout } = useTour();
+  const { startTour, isActive, currentStep, setTargetLayout, setHasListItems } =
+    useTour();
 
   useEffect(() => {
     if (isActive && currentStep === 2) {
@@ -68,6 +70,27 @@ function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
       const pending = await AsyncStorage.getItem("pending_tour");
       if (pending === "true") {
         await AsyncStorage.removeItem("pending_tour");
+
+        // Check if the active list has any items before starting
+        const listsRaw = await AsyncStorage.getItem("user_lists");
+        let itemCount = 0;
+        if (listsRaw) {
+          try {
+            const lists = JSON.parse(listsRaw);
+            itemCount = lists?.[0]?.items?.length ?? 0;
+          } catch {}
+        }
+
+        // Also check SQLite since lists may have migrated there
+        try {
+          const db = getDb();
+          const row = db.getFirstSync(
+            `SELECT COUNT(*) as count FROM list_items`,
+          ) as { count: number } | null;
+          if (row && row.count > 0) itemCount = row.count;
+        } catch {}
+
+        setHasListItems(itemCount > 0);
         setTimeout(() => startTour(), 500);
       }
     };

@@ -11,6 +11,7 @@ export type TourStep = {
   tab: number;
   title: string;
   description: string;
+  requiresItems?: boolean;
 };
 
 const TOUR_STEPS: TourStep[] = [
@@ -25,6 +26,7 @@ const TOUR_STEPS: TourStep[] = [
     title: "Your Items",
     description:
       "Long press any card to enter edit mode — reorder, move, or remove items from your list.",
+    requiresItems: true,
   },
   {
     tab: 0,
@@ -76,6 +78,7 @@ type TourContextType = {
   setTargetLayout: (layout: TargetLayout) => void;
   setLayoutOffset: (offset: number) => void;
   markAppReady: () => void;
+  setHasListItems: (has: boolean) => void;
 };
 
 const TourContext = createContext<TourContextType | null>(null);
@@ -98,6 +101,7 @@ export function TourProvider({
   const [targetLayout, setTargetLayout] = useState<TargetLayout>(null);
   const [pendingStart, setPendingStart] = useState(false);
   const [appReady, setAppReady] = useState(false);
+  const [hasListItems, setHasListItems] = useState(false);
   const router = useRouter();
   const [layoutOffset, setLayoutOffset] = useState(0);
 
@@ -120,7 +124,17 @@ export function TourProvider({
   }, [router]);
 
   const nextStep = useCallback(() => {
-    const next = currentStep + 1;
+    let next = currentStep + 1;
+
+    // Skip steps that require list items if the list is empty
+    while (
+      next < TOUR_STEPS.length &&
+      TOUR_STEPS[next].requiresItems &&
+      !hasListItems
+    ) {
+      next++;
+    }
+
     if (next >= TOUR_STEPS.length) {
       endTour();
       return;
@@ -132,7 +146,7 @@ export function TourProvider({
     if (nextTab !== currentTab) {
       onNavigateTab(nextTab);
     }
-  }, [currentStep, endTour, onNavigateTab]);
+  }, [currentStep, endTour, hasListItems, onNavigateTab]);
 
   const markAppReady = useCallback(() => {
     setAppReady(true);
@@ -162,6 +176,7 @@ export function TourProvider({
         markAppReady,
         layoutOffset,
         setLayoutOffset,
+        setHasListItems,
       }}
     >
       {children}

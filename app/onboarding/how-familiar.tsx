@@ -73,11 +73,6 @@ export default function HowFamiliarScreen() {
               key={option.level}
               onPress={() => {
                 setFamiliarityLevel(option.level);
-                // Auto-advance after a brief moment so the selection
-                // is visible before navigating
-                setTimeout(() => {
-                  router.push("/onboarding/pick-policy-areas" as any);
-                }, 180);
               }}
               style={({ pressed }) => ({
                 backgroundColor: isSelected ? "#E8F4FF" : "#fff",

@@ -232,8 +232,8 @@ export default function PickItemsScreen() {
         dotIndex: 5,
         continueLabel:
           totalSelected > 0
-            ? `Add ${totalSelected} Item${totalSelected > 1 ? "s" : ""}`
-            : "Continue",
+            ? `Finish (${totalSelected} Item${totalSelected > 1 ? "s" : ""})`
+            : "Finish",
         onContinue: () => router.push("/onboarding/finish" as any),
         onBack: () => router.back(),
         onSkip: () => router.push("/onboarding/finish" as any),
