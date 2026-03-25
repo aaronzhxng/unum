@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
+import { officialsService } from "../services/officials";
 
 // State name → abbreviation lookup
 const STATE_TO_ABBR: Record<string, string> = {
@@ -73,6 +74,17 @@ const PARTY_COLORS: Record<string, string> = {
   Independent: "#F5A623",
 };
 
+const PARTY_ABBR: Record<string, string> = {
+  Democratic: "D",
+  Republican: "R",
+  Independent: "I",
+  Democrat: "D",
+};
+
+const ABBR_TO_STATE: Record<string, string> = Object.fromEntries(
+  Object.entries(STATE_TO_ABBR).map(([state, abbr]) => [abbr, state]),
+);
+
 interface RepResult {
   bioguideId: string;
   name: string;
@@ -96,6 +108,7 @@ export default function PickRepScreen() {
   const [error, setError] = useState<string | null>(null);
   const [rep, setRep] = useState<RepResult | null>(null);
   const [repSelected, setRepSelected] = useState(false);
+  const [stateMismatch, setStateMismatch] = useState(false);
 
   const stateAbbrForLookup = priorityState
     ? STATE_TO_ABBR[priorityState]
@@ -125,24 +138,38 @@ export default function PickRepScreen() {
     setRep(null);
 
     try {
-      // Step 1: Zip → lat/lng via Census geocoder (no key needed)
-      const geoRes = await fetch(
-        `https://geocoding.geo.census.gov/geocoder/locations/address?street=&city=&state=&zip=${zip}&benchmark=Public_AR_Current&format=json`,
-      );
-      const geoData = await geoRes.json();
-      const coords = geoData?.result?.addressMatches?.[0]?.coordinates;
+      // Step 1: Zip → lat/lng via Zippopotam.us (free, no key, zip-friendly)
+      const geoRes = await fetch(`https://api.zippopotam.us/us/${zip}`);
 
-      if (!coords) {
+      if (!geoRes.ok) {
         setError("Couldn't locate that zip code. Try another.");
         setLoading(false);
         return;
       }
 
+      const geoData = await geoRes.json();
+      const place = geoData?.places?.[0];
+
+      if (!place) {
+        setError("Couldn't locate that zip code. Try another.");
+        setLoading(false);
+        return;
+      }
+
+      const lat = parseFloat(place.latitude);
+      const lng = parseFloat(place.longitude);
+      console.log("Zip coords:", lat, lng);
+
       // Step 2: lat/lng → congressional district via Census
       const districtRes = await fetch(
-        `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${coords.x}&y=${coords.y}&benchmark=Public_AR_Current&vintage=Current_Current&layers=54&format=json`,
+        `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Current&layers=54&format=json`,
       );
       const districtData = await districtRes.json();
+      console.log(
+        "District data:",
+        JSON.stringify(districtData?.result?.geographies, null, 2),
+      );
+
       const districts =
         districtData?.result?.geographies?.["119th Congressional Districts"];
 
@@ -154,29 +181,105 @@ export default function PickRepScreen() {
         return;
       }
 
-      const districtNum = parseInt(districts[0].CD119FP, 10);
-      const resolved = stateAbbrForLookup ?? districts[0].STUSAB;
-      setResolvedState(resolved);
-      console.log("District number:", districtNum);
-      console.log("Resolved state:", resolved);
-      console.log("Raw district data:", JSON.stringify(districts[0], null, 2));
-
-      // Step 3: Match against Railway officials
-      const railwayRes = await fetch(
-        `https://unum-production.up.railway.app/api/officials`,
+      const districtNum = parseInt(
+        districts[0].CD119 ?? districts[0].CD119FP,
+        10,
       );
-      const railwayData = await railwayRes.json();
+      const FIPS_TO_ABBR: Record<string, string> = {
+        "01": "AL",
+        "02": "AK",
+        "04": "AZ",
+        "05": "AR",
+        "06": "CA",
+        "08": "CO",
+        "09": "CT",
+        "10": "DE",
+        "12": "FL",
+        "13": "GA",
+        "15": "HI",
+        "16": "ID",
+        "17": "IL",
+        "18": "IN",
+        "19": "IA",
+        "20": "KS",
+        "21": "KY",
+        "22": "LA",
+        "23": "ME",
+        "24": "MD",
+        "25": "MA",
+        "26": "MI",
+        "27": "MN",
+        "28": "MS",
+        "29": "MO",
+        "30": "MT",
+        "31": "NE",
+        "32": "NV",
+        "33": "NH",
+        "34": "NJ",
+        "35": "NM",
+        "36": "NY",
+        "37": "NC",
+        "38": "ND",
+        "39": "OH",
+        "40": "OK",
+        "41": "OR",
+        "42": "PA",
+        "44": "RI",
+        "45": "SC",
+        "46": "SD",
+        "47": "TN",
+        "48": "TX",
+        "49": "UT",
+        "50": "VT",
+        "51": "VA",
+        "53": "WA",
+        "54": "WV",
+        "55": "WI",
+        "56": "WY",
+      };
 
-      const match = (railwayData.officials ?? []).find((o: any) => {
+      const fipsCode = districts[0].STATE;
+      const resolved = FIPS_TO_ABBR[fipsCode] ?? stateAbbrForLookup;
+      setResolvedState(resolved);
+
+      // Warn if zip state differs from priority state
+      if (stateAbbrForLookup && resolved !== stateAbbrForLookup) {
+        setStateMismatch(true);
+      } else {
+        setStateMismatch(false);
+      }
+      console.log("District:", districtNum, "State:", resolved);
+
+      // Step 3: Match against locally cached officials (from seed.db or SQLite cache)
+      const officialsData = await officialsService.getAll();
+
+      const officials = officialsData.officials as any[];
+      const match = officials.find((o) => {
         const termInfo = o.terms?.item?.[o.terms.item.length - 1];
         const isHouse =
           termInfo?.chamber === "House of Representatives" ||
           o.chamber === "House of Representatives";
-        const officialState = o.state ?? termInfo?.stateCode;
-        const officialDistrict = parseInt(o.district ?? termInfo?.district, 10);
+
+        // state is full name like "Texas", convert to abbr for comparison
+        const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
+
+        // district is stored as "4" or "04" in CD119
+        const officialDistrict = parseInt(
+          termInfo?.district ?? o.district ?? "0",
+          10,
+        );
+
+        console.log(
+          "Checking:",
+          o.name,
+          isHouse,
+          officialStateAbbr,
+          officialDistrict,
+        );
+
         return (
           isHouse &&
-          officialState === resolved &&
+          officialStateAbbr === resolved &&
           officialDistrict === districtNum
         );
       });
@@ -193,9 +296,10 @@ export default function PickRepScreen() {
         bioguideId: match.bioguideId,
         name: match.name,
         party:
+          match.partyName ??
           match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
           "Unknown",
-        role: `Representative · ${priorityState ?? resolved}`,
+        role: `Representative · ${ABBR_TO_STATE[resolved] ?? resolved}`,
         photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
       });
     } catch (e) {
@@ -314,6 +418,22 @@ export default function PickRepScreen() {
           </Text>
         )}
 
+        {stateMismatch && !error && (
+          <View
+            style={{
+              backgroundColor: "#FFF8E7",
+              borderRadius: 12,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: "#F5A623",
+            }}
+          >
+            <Text style={{ fontSize: 13, color: "#8B6914" }}>
+              This zip code is from a different state than the one you selected.
+            </Text>
+          </View>
+        )}
+
         {/* Rep card */}
         {rep && (
           <Pressable
@@ -376,7 +496,7 @@ export default function PickRepScreen() {
                 {rep.name}
               </Text>
               <Text style={{ fontSize: 13, color: "#535353", marginTop: 2 }}>
-                {rep.party} · {rep.role}
+                {PARTY_ABBR[rep.party] ?? rep.party} · {rep.role}{" "}
               </Text>
             </View>
 

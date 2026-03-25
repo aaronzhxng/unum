@@ -105,6 +105,17 @@ export const copySeedIfNeeded = async (): Promise<boolean> => {
     );
     const seedDate = seedMeta?.value ?? null;
 
+    // Read officials cache from seed if present
+    let officialsCache: { data: string; fetched_at: number } | null = null;
+    try {
+      officialsCache =
+        seedDb.getFirstSync<{ data: string; fetched_at: number }>(
+          `SELECT data, fetched_at FROM officials_list_cache WHERE id = 1`,
+        ) ?? null;
+    } catch {
+      // officials table may not exist in older seeds — non-fatal
+    }
+
     seedDb.closeSync();
 
     if (bills.length === 0) {
@@ -144,6 +155,19 @@ export const copySeedIfNeeded = async (): Promise<boolean> => {
     });
 
     stmt.finalizeSync();
+
+    // Copy officials cache from seed
+    if (officialsCache) {
+      try {
+        database.runSync(
+          `INSERT INTO officials_list_cache (id, data, fetched_at)
+           VALUES (1, ?, ?)
+           ON CONFLICT(id) DO NOTHING`,
+          [officialsCache.data, officialsCache.fetched_at],
+        );
+        console.log("✅ Officials cache copied from seed");
+      } catch {}
+    }
 
     // Store the seed date in meta so delta sync knows where to start from
     if (seedDate) {
