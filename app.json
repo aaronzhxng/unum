@@ -76,6 +76,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
     },
-    "assets": ["assets/seed.db"]
+    "assets": ["assets/seed.db"],
+    "metro": {
+      "blockList": ["scripts/.*"]
+    }
   }
 }
