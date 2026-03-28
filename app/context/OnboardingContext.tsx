@@ -27,6 +27,8 @@ interface OnboardingData {
   setUserRepBioguideId: (id: string | null) => void;
   overlayConfig: OverlayConfig | null;
   setOverlayConfig: (config: OverlayConfig | null) => void;
+  foundRepBioguideId: string | null;
+  setFoundRepBioguideId: (id: string | null) => void;
 }
 
 const OnboardingContext = createContext<OnboardingData>({
@@ -36,12 +38,14 @@ const OnboardingContext = createContext<OnboardingData>({
   priorityState: null,
   familiarityLevel: null,
   userRepBioguideId: null,
+  foundRepBioguideId: null,
   setSelectedOfficials: () => {},
   setSelectedBills: () => {},
   setSelectedPolicyAreas: () => {},
   setPriorityState: () => {},
   setFamiliarityLevel: () => {},
   setUserRepBioguideId: () => {},
+  setFoundRepBioguideId: () => {},
   overlayConfig: null,
   setOverlayConfig: () => {},
 });
@@ -63,6 +67,9 @@ export const OnboardingProvider = ({
   const [overlayConfig, setOverlayConfig] = useState<OverlayConfig | null>(
     null,
   );
+  const [foundRepBioguideId, setFoundRepBioguideId] = useState<string | null>(
+    null,
+  );
 
   return (
     <OnboardingContext.Provider
@@ -81,6 +88,8 @@ export const OnboardingProvider = ({
         setUserRepBioguideId,
         overlayConfig,
         setOverlayConfig,
+        foundRepBioguideId,
+        setFoundRepBioguideId,
       }}
     >
       {children}

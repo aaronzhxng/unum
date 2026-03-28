@@ -98,9 +98,11 @@ export default function PickRepScreen() {
   const {
     priorityState,
     setUserRepBioguideId,
+    setFoundRepBioguideId,
     setSelectedOfficials,
     selectedOfficials,
     setOverlayConfig,
+    familiarityLevel,
   } = useOnboarding();
 
   const [zip, setZip] = useState("");
@@ -114,6 +116,12 @@ export default function PickRepScreen() {
     ? STATE_TO_ABBR[priorityState]
     : null;
 
+  const formatName = (name: string): string => {
+    if (!name.includes(",")) return name;
+    const [last, first] = name.split(",").map((s) => s.trim());
+    return `${first} ${last}`;
+  };
+
   const [resolvedState, setResolvedState] = useState<string | null>(null);
 
   useFocusEffect(
@@ -121,11 +129,16 @@ export default function PickRepScreen() {
       setOverlayConfig({
         dotIndex: 4,
         continueLabel: "Continue",
+        continueDisabled: rep === null,
         onContinue: () => router.push("/onboarding/pick-items" as any),
         onBack: () => router.back(),
-        onSkip: () => router.push("/onboarding/pick-items" as any),
+        onSkip: () => {
+          setUserRepBioguideId(null);
+          setFoundRepBioguideId(null);
+          router.push("/onboarding/pick-items" as any);
+        },
       });
-    }, []),
+    }, [rep]),
   );
 
   const lookupRep = async () => {
@@ -158,17 +171,12 @@ export default function PickRepScreen() {
 
       const lat = parseFloat(place.latitude);
       const lng = parseFloat(place.longitude);
-      console.log("Zip coords:", lat, lng);
 
       // Step 2: lat/lng → congressional district via Census
       const districtRes = await fetch(
         `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Current&layers=54&format=json`,
       );
       const districtData = await districtRes.json();
-      console.log(
-        "District data:",
-        JSON.stringify(districtData?.result?.geographies, null, 2),
-      );
 
       const districts =
         districtData?.result?.geographies?.["119th Congressional Districts"];
@@ -248,7 +256,6 @@ export default function PickRepScreen() {
       } else {
         setStateMismatch(false);
       }
-      console.log("District:", districtNum, "State:", resolved);
 
       // Step 3: Match against locally cached officials (from seed.db or SQLite cache)
       const officialsData = await officialsService.getAll();
@@ -269,14 +276,6 @@ export default function PickRepScreen() {
           10,
         );
 
-        console.log(
-          "Checking:",
-          o.name,
-          isHouse,
-          officialStateAbbr,
-          officialDistrict,
-        );
-
         return (
           isHouse &&
           officialStateAbbr === resolved &&
@@ -294,14 +293,21 @@ export default function PickRepScreen() {
 
       setRep({
         bioguideId: match.bioguideId,
-        name: match.name,
+        name: formatName(match.name),
         party:
           match.partyName ??
           match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
           "Unknown",
-        role: `Representative · ${ABBR_TO_STATE[resolved] ?? resolved}`,
+        role: (() => {
+          const state = ABBR_TO_STATE[resolved] ?? resolved;
+          const district = match.district ? `, District ${match.district}` : "";
+          const full = `Representative, ${state}${district}`;
+          const abbr = `Rep, ${state}${district}`;
+          return full.length > 39 ? abbr : full;
+        })(),
         photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
       });
+      setFoundRepBioguideId(match.bioguideId);
     } catch (e) {
       console.error("Rep lookup error:", e);
       setError("Something went wrong. You can skip this step.");
@@ -349,8 +355,11 @@ export default function PickRepScreen() {
           Find your representative
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
-          Enter your zip code and we'll find the House representative for your
-          district.
+          {familiarityLevel === "low"
+            ? "Your zip code tells us exactly which congressman represents your particular neighborhood in the House of Representatives."
+            : familiarityLevel === "high"
+              ? "Look up your House rep by zip code."
+              : "Enter your zip code and we'll find the House representative for your district."}
           {resolvedState
             ? ` Your senators from ${priorityState} will be added automatically.`
             : ""}
@@ -368,16 +377,18 @@ export default function PickRepScreen() {
               setRep(null);
               setRepSelected(false);
             }}
-            placeholder="Enter zip code"
+            onSubmitEditing={lookupRep}
+            placeholder="Enter your zip code"
             placeholderTextColor="#aaa"
             keyboardType="number-pad"
+            returnKeyType="search"
             maxLength={5}
             style={{
               flex: 1,
               backgroundColor: "#fff",
               borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
+              paddingVertical: 16,
+              paddingHorizontal: 14,
               fontSize: 16,
               color: "#1a1a1a",
               shadowColor: "#000",
@@ -387,26 +398,11 @@ export default function PickRepScreen() {
               elevation: 2,
             }}
           />
-          <Pressable
-            onPress={lookupRep}
-            disabled={loading || zip.length !== 5}
-            style={({ pressed }) => ({
-              backgroundColor: zip.length === 5 ? "#008CFF" : "#ccc",
-              borderRadius: 16,
-              paddingHorizontal: 20,
-              justifyContent: "center",
-              alignItems: "center",
-              transform: [{ scale: pressed ? 0.97 : 1 }],
-            })}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 15 }}>
-                Find
-              </Text>
-            )}
-          </Pressable>
+          {loading && (
+            <View style={{ justifyContent: "center", paddingHorizontal: 8 }}>
+              <ActivityIndicator color="#008CFF" />
+            </View>
+          )}
         </View>
 
         {/* Error */}
@@ -442,7 +438,7 @@ export default function PickRepScreen() {
               flexDirection: "row",
               alignItems: "center",
               backgroundColor: repSelected ? "#E8F4FF" : "#fff",
-              borderRadius: 16,
+              borderRadius: 24,
               padding: 14,
               borderWidth: 2,
               borderColor: repSelected ? "#008CFF" : "transparent",
@@ -491,13 +487,37 @@ export default function PickRepScreen() {
                 </Text>
               </View>
               <Text
-                style={{ fontSize: 15, fontWeight: "600", color: "#1a1a1a" }}
+                style={{ fontSize: 15, fontWeight: "600", color: "#535353" }}
               >
                 {rep.name}
               </Text>
-              <Text style={{ fontSize: 13, color: "#535353", marginTop: 2 }}>
-                {PARTY_ABBR[rep.party] ?? rep.party} · {rep.role}{" "}
-              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 2,
+                }}
+              >
+                <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                  {PARTY_ABBR[rep.party] ?? rep.party}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "#000000",
+                    marginHorizontal: 4,
+                    fontWeight: "900",
+                  }}
+                >
+                  ·
+                </Text>
+                <Text
+                  style={{ fontSize: 13, color: "#7B7C81" }}
+                  numberOfLines={1}
+                >
+                  {rep.role}
+                </Text>
+              </View>
             </View>
 
             {/* Checkbox */}

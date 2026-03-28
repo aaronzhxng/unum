@@ -60,7 +60,12 @@ const STATES = [
 
 export default function PickStateScreen() {
   const router = useRouter();
-  const { priorityState, setPriorityState, setOverlayConfig } = useOnboarding();
+  const {
+    priorityState,
+    setPriorityState,
+    setOverlayConfig,
+    familiarityLevel,
+  } = useOnboarding();
   const [showList, setShowList] = useState(false);
 
   useFocusEffect(
@@ -68,9 +73,13 @@ export default function PickStateScreen() {
       setOverlayConfig({
         dotIndex: 3,
         continueLabel: priorityState ? `Set ${priorityState}` : "Continue",
+        continueDisabled: !priorityState,
         onContinue: () => router.push("/onboarding/pick-rep" as any),
         onBack: () => router.back(),
-        onSkip: () => router.push("/onboarding/pick-rep" as any),
+        onSkip: () => {
+          setPriorityState(null);
+          router.push("/onboarding/pick-rep" as any);
+        },
       });
     }, [priorityState]),
   );
@@ -92,8 +101,11 @@ export default function PickStateScreen() {
           Set a priority state
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
-          Get notified about new bills introduced by representatives from your
-          state.
+          {familiarityLevel === "low"
+            ? "Every state has two senators and several representatives in Congress. Pick yours to follow what they're working on. Their work is meant to amplify your state's needs on a national level."
+            : familiarityLevel === "high"
+              ? "Set a priority state to track legislative activity from your delegation."
+              : "Get notified about new bills introduced by senator and representatives from your state."}
         </Text>
       </View>
 

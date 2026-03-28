@@ -3,10 +3,18 @@ import React, { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
 import { billsService } from "../services/bills";
+import { officialsService } from "../services/officials";
 import { getDb } from "../utils/database";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+
+const PARTY_ABBR: Record<string, string> = {
+  Democratic: "D",
+  Republican: "R",
+  Independent: "I",
+  Democrat: "D",
+};
 
 const SUGGESTED_OFFICIALS = [
   {
@@ -242,25 +250,54 @@ export default function FinishScreen() {
         //    since seed.db is already in place from initializeDatabase().
         const items: any[] = [];
 
+        // Load all officials from cache for lookup
+        const officialsData = await officialsService.getAll();
+        const allOfficials = officialsData.officials as any[];
+
         for (const bioguideId of selectedOfficials) {
-          const official = SUGGESTED_OFFICIALS.find(
+          // Check static list first, then fall back to SQLite cache
+          const suggested = SUGGESTED_OFFICIALS.find(
             (o) => o.bioguideId === bioguideId,
           );
-          if (official) {
-            const fullState = STATE_ABBR[official.state] ?? official.state;
+
+          if (suggested) {
+            const fullState = STATE_ABBR[suggested.state] ?? suggested.state;
             const roleLabel =
-              official.role === "Senator"
+              suggested.role === "Senator"
                 ? `Senator · ${fullState}`
-                : `Representative · ${fullState}${official.district ? `, District ${official.district}` : ""}`;
+                : `Representative · ${fullState}${suggested.district ? `, District ${suggested.district}` : ""}`;
             items.push({
-              id: official.bioguideId,
+              id: suggested.bioguideId,
               type: "official",
-              name: official.name,
-              party: official.party,
+              name: suggested.name,
+              party: suggested.party,
               role: roleLabel,
-              photoUrl: official.photoUrl,
+              photoUrl: suggested.photoUrl,
               update: "",
             });
+          } else {
+            // Fall back to SQLite cache for personal officials (rep, senators)
+            const cached = allOfficials.find(
+              (o) => o.bioguideId === bioguideId,
+            );
+            if (cached) {
+              const isSenator =
+                cached.chamber === "Senate" ||
+                cached.terms?.item?.[cached.terms.item.length - 1]?.chamber ===
+                  "Senate";
+              const roleLabel = isSenator
+                ? `Senator · ${cached.state}`
+                : `Representative · ${cached.state}${cached.district ? `, District ${cached.district}` : ""}`;
+              items.push({
+                id: cached.bioguideId,
+                type: "official",
+                name: cached.name,
+                party: PARTY_ABBR[cached.partyName] ?? cached.partyName ?? "",
+                role: roleLabel,
+                photoUrl: `https://bioguide.congress.gov/bioguide/photo/${cached.bioguideId[0]}/${cached.bioguideId}.jpg`,
+                update: "",
+              });
+            }
           }
         }
 

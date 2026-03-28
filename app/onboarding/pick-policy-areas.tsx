@@ -40,8 +40,12 @@ const POLICY_AREAS = [
 
 export default function PickPolicyAreasScreen() {
   const router = useRouter();
-  const { selectedPolicyAreas, setSelectedPolicyAreas, setOverlayConfig } =
-    useOnboarding();
+  const {
+    selectedPolicyAreas,
+    setSelectedPolicyAreas,
+    setOverlayConfig,
+    familiarityLevel,
+  } = useOnboarding();
 
   const toggle = (area: string) => {
     setSelectedPolicyAreas(
@@ -59,9 +63,13 @@ export default function PickPolicyAreasScreen() {
           selectedPolicyAreas.length > 0
             ? `Add ${selectedPolicyAreas.length} Area${selectedPolicyAreas.length > 1 ? "s" : ""}`
             : "Continue",
+        continueDisabled: selectedPolicyAreas.length === 0,
         onContinue: () => router.push("/onboarding/pick-state" as any),
         onBack: () => router.back(),
-        onSkip: () => router.push("/onboarding/pick-state" as any),
+        onSkip: () => {
+          setSelectedPolicyAreas([]);
+          router.push("/onboarding/pick-state" as any);
+        },
       });
     }, [selectedPolicyAreas]),
   );
@@ -83,8 +91,11 @@ export default function PickPolicyAreasScreen() {
           Pick policy areas
         </Text>
         <Text style={{ fontSize: 15, color: "#535353" }}>
-          Get notified when major new bills are introduced in areas you care
-          about.
+          {familiarityLevel === "low"
+            ? "All bills have a policy area they are sorted into. Which ones matter to YOU most?"
+            : familiarityLevel === "high"
+              ? "Select the policy areas you want to actively follow."
+              : "Get notified when major new bills are introduced in areas you care about."}
         </Text>
       </View>
 

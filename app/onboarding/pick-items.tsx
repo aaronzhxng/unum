@@ -1,8 +1,9 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
+import { officialsService } from "../services/officials";
 import { getBillIcon } from "../utils/billIcons";
 
 const STATE_ABBR: Record<string, string> = {
@@ -56,6 +57,13 @@ const STATE_ABBR: Record<string, string> = {
   WV: "West Virginia",
   WI: "Wisconsin",
   WY: "Wyoming",
+};
+
+const PARTY_ABBR: Record<string, string> = {
+  Democratic: "D",
+  Republican: "R",
+  Independent: "I",
+  Democrat: "D",
 };
 
 const SUGGESTED_OFFICIALS = [
@@ -202,10 +210,27 @@ const POLICY_AREA_COLORS: Record<string, string> = {
   "Agriculture and Food": "#8B6914",
 };
 
+const STATE_TO_ABBR_REVERSE: Record<string, string> = Object.fromEntries(
+  Object.entries(STATE_ABBR).map(([abbr, state]) => [state, abbr]),
+);
+
+const formatName = (name: string): string => {
+  if (!name.includes(",")) return name;
+  const [last, first] = name.split(",").map((s) => s.trim());
+  return `${first} ${last}`;
+};
+
 function formatRole(official: (typeof SUGGESTED_OFFICIALS)[0]) {
   const fullState = STATE_ABBR[official.state] ?? official.state;
-  if (official.role === "Senator") return `Senator · ${fullState}`;
-  return `Representative · ${fullState}${official.district ? `, District ${official.district}` : ""}`;
+  const district = official.district ? `, District ${official.district}` : "";
+  if (official.role === "Senator") {
+    const full = `Senator, ${fullState}`;
+    const abbr = `Sen, ${fullState}`;
+    return full.length > 40 ? abbr : full;
+  }
+  const full = `Representative, ${fullState}${district}`;
+  const abbr = `Rep, ${fullState}${district}`;
+  return full.length > 39 ? abbr : full;
 }
 
 type Tab = "officials" | "bills";
@@ -218,13 +243,89 @@ export default function PickItemsScreen() {
     selectedBills,
     setSelectedBills,
     userRepBioguideId,
+    foundRepBioguideId,
+    priorityState,
     setOverlayConfig,
+    familiarityLevel,
   } = useOnboarding();
 
   const [activeTab, setActiveTab] = useState<Tab>("officials");
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [personalOfficials, setPersonalOfficials] = useState<
+    typeof SUGGESTED_OFFICIALS
+  >([]);
+  const [loadingPersonal, setLoadingPersonal] = useState(true);
 
   const totalSelected = selectedOfficials.length + selectedBills.length;
+
+  useEffect(() => {
+    const loadPersonalOfficials = async () => {
+      try {
+        const data = await officialsService.getAll();
+        const all = data.officials as any[];
+        const personal: typeof SUGGESTED_OFFICIALS = [];
+
+        // Add rep if found (use foundRepBioguideId — set whether or not user checked it)
+        const repId = foundRepBioguideId ?? userRepBioguideId;
+        if (repId) {
+          const rep = all.find((o) => o.bioguideId === repId);
+          if (rep) {
+            personal.push({
+              bioguideId: rep.bioguideId,
+              name: rep.name,
+              party: PARTY_ABBR[rep.partyName] ?? rep.partyName ?? "Unknown",
+              role: "Representative",
+              state: rep.state
+                ? (STATE_TO_ABBR_REVERSE[rep.state] ?? rep.state)
+                : "",
+              district: rep.district?.toString() ?? "",
+              photoUrl: `https://bioguide.congress.gov/bioguide/photo/${rep.bioguideId[0]}/${rep.bioguideId}.jpg`,
+            });
+          }
+        }
+
+        // Add senators from priority state
+        if (priorityState) {
+          const senators = all.filter(
+            (o) =>
+              o.state === priorityState &&
+              (o.chamber === "Senate" ||
+                o.terms?.item?.[o.terms.item.length - 1]?.chamber === "Senate"),
+          );
+          for (const sen of senators) {
+            if (!personal.find((p) => p.bioguideId === sen.bioguideId)) {
+              personal.push({
+                bioguideId: sen.bioguideId,
+                name: sen.name,
+                party: PARTY_ABBR[sen.partyName] ?? sen.partyName ?? "Unknown",
+                role: "Senator",
+                state: STATE_TO_ABBR_REVERSE[sen.state] ?? sen.state,
+                photoUrl: `https://bioguide.congress.gov/bioguide/photo/${sen.bioguideId[0]}/${sen.bioguideId}.jpg`,
+              });
+            }
+          }
+        }
+
+        setPersonalOfficials(personal);
+
+        // Only auto-select senators — rep selection carries over from pick-rep
+        // (if they checked the rep there, it's already in selectedOfficials)
+        const senatorIds = personal
+          .filter((o) => o.role === "Senator")
+          .map((o) => o.bioguideId)
+          .filter((id) => !selectedOfficials.includes(id));
+        if (senatorIds.length > 0) {
+          setSelectedOfficials([...selectedOfficials, ...senatorIds]);
+        }
+      } catch (e) {
+        console.error("Failed to load personal officials:", e);
+      } finally {
+        setLoadingPersonal(false);
+      }
+    };
+
+    loadPersonalOfficials();
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -236,7 +337,11 @@ export default function PickItemsScreen() {
             : "Finish",
         onContinue: () => router.push("/onboarding/finish" as any),
         onBack: () => router.back(),
-        onSkip: () => router.push("/onboarding/finish" as any),
+        onSkip: () => {
+          setSelectedOfficials([]);
+          setSelectedBills([]);
+          router.push("/onboarding/finish" as any);
+        },
       });
     }, [totalSelected]),
   );
@@ -272,11 +377,18 @@ export default function PickItemsScreen() {
             marginTop: 32,
           }}
         >
-          Build your first list
+          {familiarityLevel === "low"
+            ? "Build your first list"
+            : familiarityLevel === "high"
+              ? "Build your first list"
+              : "Build your first list"}
         </Text>
         <Text style={{ fontSize: 15, color: "#535353" }}>
-          Follow officials and bills you want to keep track of. You can always
-          add more later.
+          {familiarityLevel === "low"
+            ? "You can add some names you recognize — officials or bills you've heard about. You can always add more later."
+            : familiarityLevel === "high"
+              ? "Add officials and legislation to your watchlist. You can add more later."
+              : "Follow officials and bills you want to keep track of. You can always add more later."}
         </Text>
       </View>
 
@@ -323,13 +435,205 @@ export default function PickItemsScreen() {
         ))}
       </View>
 
-      {/* Officials tab */}
       {activeTab === "officials" && (
         <ScrollView
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 220 }}
           showsVerticalScrollIndicator={false}
         >
-          {SUGGESTED_OFFICIALS.map((official) => {
+          {/* Personalized officials — rep + senators */}
+          {personalOfficials.length > 0 && (
+            <>
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "600",
+                  color: "#535353",
+                  marginBottom: 10,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                Your Officials
+              </Text>
+              {personalOfficials.map((official) => {
+                const isSelected = selectedOfficials.includes(
+                  official.bioguideId,
+                );
+                const hasError = imageErrors.has(official.bioguideId);
+                const isUserRep = userRepBioguideId === official.bioguideId;
+                return (
+                  <Pressable
+                    key={official.bioguideId}
+                    onPress={() => toggleOfficial(official.bioguideId)}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: isSelected ? "#E8F4FF" : "#fff",
+                      borderRadius: 24,
+                      paddingVertical: 16,
+                      paddingHorizontal: 14,
+                      margin: 2,
+                      marginBottom: 12,
+                      borderWidth: 2,
+                      borderColor: isSelected ? "#008CFF" : "transparent",
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 4,
+                      elevation: 2,
+                    })}
+                  >
+                    <View
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: 26,
+                        overflow: "hidden",
+                        backgroundColor: "#eee",
+                        marginRight: 12,
+                      }}
+                    >
+                      {!hasError ? (
+                        <Image
+                          source={{ uri: official.photoUrl }}
+                          style={{ width: "100%", height: "120%" }}
+                          resizeMode="cover"
+                          onError={() =>
+                            setImageErrors(
+                              (prev) => new Set([...prev, official.bioguideId]),
+                            )
+                          }
+                        />
+                      ) : (
+                        <View
+                          style={{
+                            flex: 1,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            backgroundColor: "#BFBFBF",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: "white",
+                              fontWeight: "bold",
+                              fontSize: 18,
+                            }}
+                          >
+                            {formatName(official.name).charAt(0)}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      {isUserRep && (
+                        <View
+                          style={{
+                            alignSelf: "flex-start",
+                            backgroundColor: "#E8F4FF",
+                            borderRadius: 6,
+                            paddingHorizontal: 8,
+                            paddingVertical: 2,
+                            marginBottom: 4,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 11,
+                              color: "#008CFF",
+                              fontWeight: "600",
+                            }}
+                          >
+                            Your Representative
+                          </Text>
+                        </View>
+                      )}
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: "600",
+                          color: "#535353",
+                        }}
+                      >
+                        {formatName(official.name)}
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginTop: 2,
+                        }}
+                      >
+                        <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                          {official.party}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            color: "#000000",
+                            marginHorizontal: 4,
+                            fontWeight: "900",
+                          }}
+                        >
+                          ·
+                        </Text>
+                        <Text
+                          style={{ fontSize: 13, color: "#7B7C81" }}
+                          numberOfLines={1}
+                        >
+                          {formatRole(official)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 6,
+                        borderWidth: 2,
+                        borderColor: isSelected ? "#008CFF" : "#ccc",
+                        backgroundColor: isSelected ? "#008CFF" : "transparent",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {isSelected && (
+                        <Text
+                          style={{
+                            color: "white",
+                            fontSize: 13,
+                            fontWeight: "700",
+                          }}
+                        >
+                          ✓
+                        </Text>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "600",
+                  color: "#535353",
+                  marginBottom: 10,
+                  marginTop: 4,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                Popular Officials
+              </Text>
+            </>
+          )}
+
+          {/* Suggested officials — filter out any already in personal */}
+          {SUGGESTED_OFFICIALS.filter(
+            (o) =>
+              !personalOfficials.find((p) => p.bioguideId === o.bioguideId),
+          ).map((official) => {
             const isSelected = selectedOfficials.includes(official.bioguideId);
             const hasError = imageErrors.has(official.bioguideId);
             const isUserRep = userRepBioguideId === official.bioguideId;
@@ -342,9 +646,11 @@ export default function PickItemsScreen() {
                   flexDirection: "row",
                   alignItems: "center",
                   backgroundColor: isSelected ? "#E8F4FF" : "#fff",
-                  borderRadius: 16,
-                  padding: 12,
-                  marginBottom: 10,
+                  borderRadius: 24,
+                  paddingVertical: 16,
+                  paddingHorizontal: 14,
+                  margin: 2,
+                  marginBottom: 12,
                   borderWidth: 2,
                   borderColor: isSelected ? "#008CFF" : "transparent",
                   transform: [{ scale: pressed ? 0.98 : 1 }],
@@ -392,7 +698,7 @@ export default function PickItemsScreen() {
                           fontSize: 18,
                         }}
                       >
-                        {official.name.charAt(0)}
+                        {formatName(official.name).charAt(0)}
                       </Text>
                     </View>
                   )}
@@ -425,16 +731,38 @@ export default function PickItemsScreen() {
                     style={{
                       fontSize: 15,
                       fontWeight: "600",
-                      color: "#1a1a1a",
+                      color: "#535353",
                     }}
                   >
-                    {official.name}
+                    {formatName(official.name)}
                   </Text>
-                  <Text
-                    style={{ fontSize: 13, color: "#535353", marginTop: 2 }}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginTop: 2,
+                    }}
                   >
-                    {official.party} · {formatRole(official)}
-                  </Text>
+                    <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                      {official.party}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: "#000000",
+                        marginHorizontal: 4,
+                        fontWeight: "900",
+                      }}
+                    >
+                      ·
+                    </Text>
+                    <Text
+                      style={{ fontSize: 13, color: "#7B7C81" }}
+                      numberOfLines={1}
+                    >
+                      {formatRole(official)}
+                    </Text>
+                  </View>
                 </View>
 
                 <View
@@ -556,7 +884,7 @@ export default function PickItemsScreen() {
                         style={{
                           fontSize: 15,
                           fontWeight: "600",
-                          color: "#1a1a1a",
+                          color: "#535353",
                         }}
                         numberOfLines={2}
                       >

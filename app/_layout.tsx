@@ -9,6 +9,7 @@ import { TabBarProvider } from "./context/TabBarContext";
 import { initializeDatabase } from "./utils/database";
 import { pushToken } from "./utils/pushToken";
 import { storage } from "./utils/storage";
+import { syncListItemsFromBills } from "./utils/syncListItems";
 import { syncPreferencesToBackend } from "./utils/syncPreferences";
 
 const queryClient = new QueryClient({
@@ -32,6 +33,7 @@ export default function RootLayout() {
     const init = async () => {
       await initializeDatabase();
       storage.initializeDefaultList();
+      syncListItemsFromBills(); // fire and forget — non-blocking
       const token = await pushToken.register();
       if (token) {
         await syncPreferencesToBackend();

@@ -53,8 +53,7 @@ export default function WelcomeScreen() {
             lineHeight: 24,
           }}
         >
-          Unum lets you build lists of your elected officials, bills, and policy
-          areas of interest.
+          Unum lets you track bills and your elected officials in Congress.
         </Text>
       </View>
     </View>
