@@ -678,15 +678,38 @@ app.get("/api/officials/:bioguideId", async (req, res) => {
   }
 });
 
-// Get sponsored legislation
+// Get sponsored legislation - optimized to stop at 119th congress boundary
 app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
   try {
     const { bioguideId } = req.params;
-
     let allLegislation: any[] = [];
     let offset = 0;
     const limit = 250;
     let hasMore = true;
+    let allTimeCo = 0;
+
+    // First get total count from pagination
+    const firstPage = await axios.get(
+      `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { limit, offset },
+      },
+    );
+    allTimeCo = firstPage.data.pagination?.count ?? 0;
+    const firstPageItems = firstPage.data.sponsoredLegislation || [];
+
+    // Check if this page has any 119th congress items
+    const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
+    allLegislation = allLegislation.concat(filtered119);
+
+    // Stop early if we've already passed into older congresses
+    const hasOlder = firstPageItems.some(
+      (b: any) => b.congress !== undefined && b.congress < 119,
+    );
+
+    hasMore = !!firstPage.data.pagination?.next && !hasOlder;
+    offset += limit;
 
     while (hasMore) {
       const response = await axios.get(
@@ -697,16 +720,22 @@ app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
         },
       );
       const page = response.data.sponsoredLegislation || [];
-      allLegislation = allLegislation.concat(page);
-      hasMore = response.data.pagination?.next != null && page.length === limit;
+      const page119 = page.filter((b: any) => b.congress === 119);
+      allLegislation = allLegislation.concat(page119);
+
+      const hasOlderBills = page.some(
+        (b: any) => b.congress !== undefined && b.congress < 119,
+      );
+      hasMore =
+        !!response.data.pagination?.next &&
+        page.length === limit &&
+        !hasOlderBills;
       offset += limit;
     }
 
-    const filtered = allLegislation.filter((b: any) => b.congress === 119);
-
     res.json({
-      legislation: filtered,
-      count: allLegislation.length, // true all-time count
+      legislation: allLegislation,
+      count: allTimeCo,
     });
   } catch (error) {
     console.error("Error fetching sponsored legislation:", error);
@@ -714,15 +743,33 @@ app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
   }
 });
 
-// Get cosponsored legislation
+// Get cosponsored legislation - same optimization
 app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
   try {
     const { bioguideId } = req.params;
-
     let allLegislation: any[] = [];
     let offset = 0;
     const limit = 250;
     let hasMore = true;
+    let allTimeCount = 0;
+
+    const firstPage = await axios.get(
+      `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { limit, offset },
+      },
+    );
+    allTimeCount = firstPage.data.pagination?.count ?? 0;
+    const firstPageItems = firstPage.data.cosponsoredLegislation || [];
+    const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
+    allLegislation = allLegislation.concat(filtered119);
+
+    const hasOlder = firstPageItems.some(
+      (b: any) => b.congress !== undefined && b.congress < 119,
+    );
+    hasMore = !!firstPage.data.pagination?.next && !hasOlder;
+    offset += limit;
 
     while (hasMore) {
       const response = await axios.get(
@@ -733,16 +780,22 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
         },
       );
       const page = response.data.cosponsoredLegislation || [];
-      allLegislation = allLegislation.concat(page);
-      hasMore = response.data.pagination?.next != null && page.length === limit;
+      const page119 = page.filter((b: any) => b.congress === 119);
+      allLegislation = allLegislation.concat(page119);
+
+      const hasOlderBills = page.some(
+        (b: any) => b.congress !== undefined && b.congress < 119,
+      );
+      hasMore =
+        !!response.data.pagination?.next &&
+        page.length === limit &&
+        !hasOlderBills;
       offset += limit;
     }
 
-    const filtered = allLegislation.filter((b: any) => b.congress === 119);
-
     res.json({
-      legislation: filtered,
-      count: allLegislation.length, // true all-time count
+      legislation: allLegislation,
+      count: allTimeCount,
     });
   } catch (error) {
     console.error("Error fetching cosponsored legislation:", error);
@@ -758,8 +811,7 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
   try {
     const { bioguideId } = req.params;
 
-    // Helper to paginate through all legislation for a given endpoint
-    const fetchAll = async (path: string, key: string): Promise<any[]> => {
+    const fetchUntil119 = async (path: string, key: string): Promise<any[]> => {
       let all: any[] = [];
       let offset = 0;
       const limit = 250;
@@ -774,33 +826,28 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
           },
         );
         const page = response.data[key] || [];
+        const page119 = page.filter((b: any) => b.congress === 119);
+        all = all.concat(page119);
 
-        // Filter to 119th congress only
-        const filtered = page.filter((b: any) => b.congress === 119);
-        all = all.concat(filtered);
-
-        // Stop if we've gone past the 119th congress
-        const hasOlderBills = page.some((b: any) => b.congress < 119);
+        const hasOlderBills = page.some(
+          (b: any) => b.congress !== undefined && b.congress < 119,
+        );
         hasMore =
-          response.data.pagination?.next != null &&
+          !!response.data.pagination?.next &&
           page.length === limit &&
           !hasOlderBills;
         offset += limit;
       }
-
       return all;
     };
 
-    // Fetch both in parallel
     const [sponsored, cosponsored] = await Promise.all([
-      fetchAll("sponsored-legislation", "sponsoredLegislation"),
-      fetchAll("cosponsored-legislation", "cosponsoredLegislation"),
+      fetchUntil119("sponsored-legislation", "sponsoredLegislation"),
+      fetchUntil119("cosponsored-legislation", "cosponsoredLegislation"),
     ]);
 
-    // Count policy areas for 119th congress only
     const counts: { [key: string]: number } = {};
     for (const bill of [...sponsored, ...cosponsored]) {
-      if (bill.congress !== 119) continue;
       const area = bill.policyArea?.name;
       if (area) counts[area] = (counts[area] || 0) + 1;
     }
