@@ -76,6 +76,19 @@ const POLICY_AREA_COLORS: Record<string, string> = {
   "Water Resources Development": "#0277BD",
 };
 
+const LEADERSHIP_ROLES: Record<string, string> = {
+  J000299: "Speaker of the House",
+  S001176: "House Majority Leader",
+  J000294: "House Minority Leader",
+  E000294: "House Majority Whip",
+  C001101: "House Minority Whip",
+  T000461: "Senate Majority Leader",
+  S000148: "Senate Minority Leader",
+  B001261: "Senate Majority Whip",
+  D000563: "Senate Minority Whip",
+  G000386: "President Pro Tempore",
+};
+
 function LegislationCard({ item }: { item: any }) {
   const router = useRouter();
   const policyArea = item.policyArea?.name ?? null;
@@ -367,42 +380,51 @@ export default function OfficialDetail() {
     enabled: !!id,
   });
 
+  const cachedSponsored = officialBillsCache.get(`sponsored_v2_${id}`);
+  const cachedCosponsored = officialBillsCache.get(`cosponsored_v2_${id}`);
+  const cachedPolicyAreas = officialBillsCache.get(
+    `policy_areas_v4_${id}`,
+    30 * 24 * 60 * 60 * 1000,
+  );
+
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
     queryFn: async () => {
-      const cached = await officialBillsCache.get(`sponsored_v2_${id}`);
+      const cached = officialBillsCache.get(`sponsored_v2_${id}`);
       if (cached) return cached;
       const result = await officialsService.getSponsored(id as string);
-      await officialBillsCache.save(`sponsored_v2_${id}`, result);
+      officialBillsCache.save(`sponsored_v2_${id}`, result);
       return result;
     },
     enabled: !!id,
     retry: 1,
+    initialData: cachedSponsored ?? undefined,
   });
 
   const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
     queryKey: ["officialCosponsored", id],
     queryFn: async () => {
-      const cached = await officialBillsCache.get(`cosponsored_v2_${id}`);
+      const cached = officialBillsCache.get(`cosponsored_v2_${id}`);
       if (cached) return cached;
       const result = await officialsService.getCosponsored(id as string);
-      await officialBillsCache.save(`cosponsored_v2_${id}`, result);
+      officialBillsCache.save(`cosponsored_v2_${id}`, result);
       return result;
     },
     enabled: !!id,
     retry: 1,
+    initialData: cachedCosponsored ?? undefined,
   });
 
   const { data: policyAreasData, isLoading: policyAreasLoading } = useQuery({
     queryKey: ["officialPolicyAreas", id],
     queryFn: async () => {
-      const cached = await officialBillsCache.get(
+      const cached = officialBillsCache.get(
         `policy_areas_v4_${id}`,
         30 * 24 * 60 * 60 * 1000,
       );
       if (cached) return cached;
       const result = await officialsService.getPolicyAreas(id as string);
-      await officialBillsCache.save(
+      officialBillsCache.save(
         `policy_areas_v4_${id}`,
         result,
         30 * 24 * 60 * 60 * 1000,
@@ -411,6 +433,7 @@ export default function OfficialDetail() {
     },
     enabled: !!id,
     retry: 1,
+    initialData: cachedPolicyAreas ?? undefined,
   });
 
   const official = data?.member;
@@ -695,6 +718,11 @@ export default function OfficialDetail() {
             ? `Representative, ${official.state}${official.terms?.[official.terms.length - 1]?.district ? ` - District ${official.terms[official.terms.length - 1].district}` : ""}`
             : `Senator, ${official.state}`}
         </Text>
+        {LEADERSHIP_ROLES[official.bioguideId] && (
+          <Text style={componentStyles.roleTop}>
+            {LEADERSHIP_ROLES[official.bioguideId]}
+          </Text>
+        )}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           {/* Avatar */}
           <Pressable onPress={() => setShowPhotoModal(true)}>
