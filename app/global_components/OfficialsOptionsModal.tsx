@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Bell, BellOff } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
@@ -23,6 +24,7 @@ export default function OfficialsOptionsModal({
   onNotifVersionChange,
 }: Props) {
   const [notifEnabled, setNotifEnabled] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (showOptionsModal && selectedState && selectedState !== "All States") {
@@ -56,9 +58,9 @@ export default function OfficialsOptionsModal({
         style={componentStyles.modalOverlay}
         onPress={() => setShowOptionsModal(false)}
       >
-        <View style={componentStyles.dropdown}>
-          {/* Notifications for this State */}
-          {selectedState !== "All States" && (
+        {/* First dropdown — state-specific actions */}
+        {selectedState !== "All States" && (
+          <View style={[componentStyles.dropdown, { marginBottom: 12 }]}>
             <Pressable
               style={({ pressed }) =>
                 pressed
@@ -84,10 +86,7 @@ export default function OfficialsOptionsModal({
                 )}
               </View>
             </Pressable>
-          )}
 
-          {/* Set as Priority State */}
-          {selectedState !== "All States" && (
             <Pressable
               style={({ pressed }) =>
                 pressed
@@ -103,9 +102,27 @@ export default function OfficialsOptionsModal({
                 Set as Priority State
               </Text>
             </Pressable>
-          )}
+          </View>
+        )}
 
-          {/* Report an Error */}
+        {/* Second dropdown — Tips & Report */}
+        <View style={componentStyles.dropdown}>
+          <Pressable
+            style={({ pressed }) =>
+              pressed
+                ? componentStyles.dropdownItemPressed
+                : componentStyles.dropdownItem
+            }
+            onPress={() => {
+              setShowOptionsModal(false);
+              router.push("/tips" as any);
+            }}
+          >
+            <Text style={componentStyles.dropdownItemText}>
+              Tips & Resources
+            </Text>
+          </Pressable>
+
           <Pressable
             style={({ pressed }) =>
               pressed

@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Bell } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
@@ -75,6 +76,7 @@ export default function LegislationOptionsModal({
   onReportError,
 }: Props) {
   const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (showOptionsModal) {
@@ -118,12 +120,58 @@ export default function LegislationOptionsModal({
       >
         <ScrollView
           style={{ maxHeight: "90%" }}
-          contentContainerStyle={{ padding: 0 }}
+          contentContainerStyle={{
+            padding: 0,
+            justifyContent: "center",
+            flexGrow: 1,
+          }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Tips & Resources + Report an Error — shared dropdown, on top */}
+          <View style={[componentStyles.dropdown, { marginBottom: 12 }]}>
+            <Pressable
+              style={({ pressed }) =>
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem
+              }
+              onPress={() => {
+                setShowOptionsModal(false);
+                router.push("/tips" as any);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>
+                Tips & Resources
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) =>
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem
+              }
+              onPress={() => {
+                onReportError();
+                setShowOptionsModal(false);
+              }}
+            >
+              <Text
+                style={[componentStyles.dropdownItemText, { color: "#FF3B30" }]}
+              >
+                Report an Error
+              </Text>
+            </Pressable>
+          </View>
+
           {/* Policy Area Notifications */}
-          <View style={[componentStyles.dropdownMulti, { marginBottom: 12 }]}>
+          <View
+            style={[
+              componentStyles.dropdownMulti,
+              { marginBottom: 12, marginTop: 0 },
+            ]}
+          >
             <View
               style={{
                 flexDirection: "row",
@@ -269,13 +317,14 @@ export default function LegislationOptionsModal({
               })}
             </ScrollView>
           </View>
+
           {/* Cancel / Save Buttons */}
           <View
             style={{
               flexDirection: "row",
               gap: 12,
               paddingHorizontal: 16,
-              marginBottom: 12,
+              marginBottom: 24,
             }}
           >
             <Pressable
@@ -304,26 +353,6 @@ export default function LegislationOptionsModal({
                 style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}
               >
                 Save
-              </Text>
-            </Pressable>
-          </View>
-          {/* Report an Error */}
-          <View style={[componentStyles.dropdown, { marginTop: 32 }]}>
-            <Pressable
-              style={({ pressed }) =>
-                pressed
-                  ? componentStyles.dropdownItemPressed
-                  : componentStyles.dropdownItem
-              }
-              onPress={() => {
-                onReportError();
-                setShowOptionsModal(false);
-              }}
-            >
-              <Text
-                style={[componentStyles.dropdownItemText, { color: "#FF3B30" }]}
-              >
-                Report an Error
               </Text>
             </Pressable>
           </View>

@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Bell } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -35,6 +36,7 @@ export default function OptionsModal({
   onNotifVersionChange,
 }: Props) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (showOptionsModal && selectedListId) {
@@ -147,6 +149,25 @@ export default function OptionsModal({
                   color={notificationsEnabled ? "#008CFF" : "#535353"}
                 />
               </View>
+            </Pressable>
+          </View>
+
+          {/* Tips & Resources — separate card */}
+          <View style={[componentStyles.dropdown, { marginTop: 12 }]}>
+            <Pressable
+              style={({ pressed }) =>
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem
+              }
+              onPress={() => {
+                setShowOptionsModal(false);
+                router.push("/tips" as any);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>
+                Tips & Resources
+              </Text>
             </Pressable>
           </View>
         </Pressable>

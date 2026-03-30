@@ -100,7 +100,10 @@ export default function RootLayout() {
           <TabBarProvider>
             <Stack initialRouteName="index">
               <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="(tabs)"
+                options={{ headerShown: false, animation: "slide_from_left" }}
+              />
               <Stack.Screen
                 name="onboarding"
                 options={{ headerShown: false }}
@@ -111,7 +114,7 @@ export default function RootLayout() {
                 options={{
                   headerShown: false,
                   gestureEnabled: true,
-                  animation: "none",
+                  animation: "slide_from_right",
                 }}
               />
               <Stack.Screen
@@ -119,13 +122,20 @@ export default function RootLayout() {
                 options={{
                   headerShown: false,
                   gestureEnabled: true,
-                  animation: "none",
+                  animation: "slide_from_right",
                 }}
               />
               <Stack.Screen
                 name="voter-registration"
-                options={{ headerShown: false }}
+                options={{ headerShown: false, animation: "slide_from_right" }}
               />
+              <Stack.Screen
+                name="tips"
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right", // standard horizontal push
+                }}
+              />{" "}
             </Stack>
           </TabBarProvider>
         </PolicyAreasProvider>

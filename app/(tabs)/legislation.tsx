@@ -8,7 +8,15 @@ import {
   Search,
 } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
+import {
+  BackHandler,
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { useTabBar } from "../context/TabBarContext";
 import { useTour } from "../context/TourContext";
 import AddModal from "../global_components/AddModal";
@@ -289,6 +297,17 @@ export default function LegislationScreen() {
       year: "numeric",
     });
   };
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        router.push("/(tabs)/home" as any);
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     if (searchQuery.length < 3) {

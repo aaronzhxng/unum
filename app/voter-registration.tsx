@@ -237,7 +237,7 @@ export default function VoterRegistrationScreen() {
                 opacity: pressed ? 0.7 : 1,
               })}
             >
-              <Text style={{ fontSize: 15, color: "#FF3B30" }}>
+              <Text style={{ fontSize: 15, color: "#535353" }}>
                 Hide from home screen
               </Text>
             </Pressable>
@@ -251,7 +251,7 @@ export default function VoterRegistrationScreen() {
                 opacity: pressed ? 0.7 : 1,
               })}
             >
-              <Text style={{ fontSize: 15, color: "#535353" }}>
+              <Text style={{ fontSize: 15, color: "#FF3B30" }}>
                 Report an error
               </Text>
             </Pressable>

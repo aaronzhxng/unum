@@ -12,6 +12,7 @@ import {
 } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BackHandler,
   FlatList,
   Image,
   Modal,
@@ -237,6 +238,17 @@ export default function OfficialsScreen() {
   const currentOfficial = allOfficials.find(
     (o) => o.bioguideId === currentOfficialId,
   );
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        router.push("/(tabs)/home" as any);
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     if (!showNewListProgressModal) return;

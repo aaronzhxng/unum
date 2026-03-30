@@ -82,7 +82,7 @@ const LEADERSHIP_ROLES: Record<string, string> = {
   J000294: "House Minority Leader",
   E000294: "House Majority Whip",
   C001101: "House Minority Whip",
-  T000461: "Senate Majority Leader",
+  T000250: "Senate Majority Leader",
   S000148: "Senate Minority Leader",
   B001261: "Senate Majority Whip",
   D000563: "Senate Minority Whip",
