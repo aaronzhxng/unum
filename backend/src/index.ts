@@ -991,6 +991,23 @@ app.get("/api/debug/old-bills-with-policy", (req, res) => {
   res.json(rows);
 });
 
+const fs = require("fs");
+const path = require("path");
+
+app.post("/report-error", express.json(), (req, res) => {
+  const { message, screen } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  const timestamp = new Date().toISOString();
+  const entry = `[${timestamp}] Screen: ${screen || "unknown"}\n${message.trim()}\n${"─".repeat(60)}\n`;
+  const logPath = path.join("/data", "error-reports.txt");
+
+  fs.appendFileSync(logPath, entry, "utf8");
+  res.json({ success: true });
+});
+
 app.listen(PORT, () => {
   startCronScheduler();
 });

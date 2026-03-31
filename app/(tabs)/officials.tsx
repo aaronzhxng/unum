@@ -26,6 +26,7 @@ import AddModal from "../global_components/AddModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
+import ReportErrorModal from "../global_components/ReportErrorModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { officialsService } from "../services/officials";
@@ -129,10 +130,8 @@ export default function OfficialsScreen() {
 
   const [priorityState, setPriorityStateLocal] = useState<string | null>(null);
 
-  const handleReportError = () => {
-    // console.log("Report error for:", selectedList);
-    // TODO: Navigate to error reporting form or open modal
-  };
+  const [showReportModal, setShowReportModal] = useState(false);
+  const handleReportError = () => setShowReportModal(true);
 
   const handleNewListCreate = async (listName?: string) => {
     const name = listName ?? newListName;
@@ -496,6 +495,12 @@ export default function OfficialsScreen() {
             ),
           );
         }}
+      />
+
+      <ReportErrorModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        screen="officials" // change to "legislation" or "home" per file
       />
 
       {/* Location Selection Dropdown */}

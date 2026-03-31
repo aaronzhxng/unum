@@ -25,6 +25,7 @@ import LegislationOptionsModal from "../global_components/LegislationOptionsModa
 import SortDropdown from "../global_components/LegislationSortDropdown";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
+import ReportErrorModal from "../global_components/ReportErrorModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
@@ -98,7 +99,8 @@ export default function LegislationScreen() {
     return "Congress";
   };
 
-  const handleReportError = () => {};
+  const [showReportModal, setShowReportModal] = useState(false);
+  const handleReportError = () => setShowReportModal(true);
 
   const handleNewListCreate = async (listName?: string) => {
     const name = listName ?? newListName;
@@ -616,6 +618,12 @@ export default function LegislationScreen() {
         showOptionsModal={showOptionsModal}
         setShowOptionsModal={setShowOptionsModal}
         onReportError={handleReportError}
+      />
+
+      <ReportErrorModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        screen="legislation" // change to "legislation" or "home" per file
       />
 
       <LegislationFilterModal
