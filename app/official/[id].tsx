@@ -629,7 +629,10 @@ export default function OfficialDetail() {
       name: `${item.type}.${item.number} - ${item.title}`,
       title: undefined,
       date: item.introducedDate,
-      policyArea: item.policyArea?.name ?? item.policyArea ?? null,
+      policyArea:
+        typeof item.policyArea === "string"
+          ? item.policyArea
+          : (item.policyArea?.name ?? null),
     }));
 
   const topPolicyAreas: { name: string; count: number }[] =

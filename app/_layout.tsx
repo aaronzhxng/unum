@@ -7,10 +7,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
 import { initializeDatabase } from "./utils/database";
-import { pushToken } from "./utils/pushToken";
 import { storage } from "./utils/storage";
 import { syncListItemsFromBills } from "./utils/syncListItems";
-import { syncPreferencesToBackend } from "./utils/syncPreferences";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,10 +32,6 @@ export default function RootLayout() {
       await initializeDatabase();
       storage.initializeDefaultList();
       syncListItemsFromBills(); // fire and forget — non-blocking
-      const token = await pushToken.register();
-      if (token) {
-        await syncPreferencesToBackend();
-      }
       setIsReady(true);
     };
     init();

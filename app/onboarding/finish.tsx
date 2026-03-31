@@ -6,6 +6,7 @@ import { billsService } from "../services/bills";
 import { officialsService } from "../services/officials";
 import { getDb } from "../utils/database";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { pushToken } from "../utils/pushToken";
 import { storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 
@@ -359,6 +360,9 @@ export default function FinishScreen() {
         // 8. Wait at least 4 seconds from when finish screen appeared,
         //    then navigate. Runs in parallel with the work above.
         await new Promise((resolve) => setTimeout(resolve, 4000));
+
+        // Request push notification permission during onboarding
+        await pushToken.register();
 
         router.replace("/onboarding/tour" as any);
       } catch (error) {
