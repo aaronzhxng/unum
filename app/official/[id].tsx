@@ -245,7 +245,7 @@ export default function OfficialDetail() {
   ).current;
 
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [selectedSort, setSelectedSort] = useState("Most Active");
+  const [selectedSort, setSelectedSort] = useState("Most Popular");
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedChambers, setSelectedChambers] = useState<string[]>([]);
@@ -534,7 +534,7 @@ export default function OfficialDetail() {
               new Date(a.introducedDate ?? 0).getTime() -
               new Date(b.introducedDate ?? 0).getTime(),
           );
-        case "Most Active":
+        case "Most Popular":
         default:
           return sorted;
       }
@@ -1110,17 +1110,9 @@ export default function OfficialDetail() {
                           {`${filteredSponsored.length.toLocaleString()} in 119th · ${(sponsoredData?.count ?? 0).toLocaleString()} all-time`}
                         </Text>
                         {showFilterModal ? (
-                          <ChevronUp
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronUp size={16} color="#7B7C81" />
                         ) : (
-                          <ChevronDown
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronDown size={16} color="#7B7C81" />
                         )}
                       </Pressable>
                       <Pressable
@@ -1134,17 +1126,9 @@ export default function OfficialDetail() {
                           {selectedSort}
                         </Text>
                         {showSortDropdown ? (
-                          <ChevronUp
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronUp size={16} color="#7B7C81" />
                         ) : (
-                          <ChevronDown
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronDown size={16} color="#7B7C81" />
                         )}
                       </Pressable>
                     </View>
@@ -1223,17 +1207,9 @@ export default function OfficialDetail() {
                           {`${filteredCosponsored.length.toLocaleString()} in 119th · ${(cosponsoredData?.count ?? 0).toLocaleString()} all-time`}
                         </Text>
                         {showFilterModal ? (
-                          <ChevronUp
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronUp size={16} color="#7B7C81" />
                         ) : (
-                          <ChevronDown
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronDown size={16} color="#7B7C81" />
                         )}
                       </Pressable>
                       <Pressable
@@ -1247,17 +1223,9 @@ export default function OfficialDetail() {
                           {selectedSort}
                         </Text>
                         {showSortDropdown ? (
-                          <ChevronUp
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronUp size={16} color="#7B7C81" />
                         ) : (
-                          <ChevronDown
-                            size={24}
-                            color="#535353"
-                            style={{ marginRight: 24 }}
-                          />
+                          <ChevronDown size={16} color="#7B7C81" />
                         )}
                       </Pressable>
                     </View>

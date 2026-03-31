@@ -196,7 +196,7 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   legislationHeader: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     paddingBottom: 16,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -210,8 +210,10 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   legislationHeaderLeft: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
+    gap: 12,
   },
   button: {
     flexDirection: "row",
@@ -223,6 +225,7 @@ export const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#000",
     maxWidth: 84,
+    marginRight: 4,
   },
   modalOverlay: {
     flex: 1,

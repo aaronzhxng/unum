@@ -171,7 +171,7 @@ export default function LegislationScreen() {
   };
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["bills"],
+    queryKey: ["bills", "v2"],
     queryFn: billsService.getAll,
   });
 
@@ -261,7 +261,7 @@ export default function LegislationScreen() {
       filtered = filtered.filter((bill) => apiTypes.includes(bill.type));
     }
 
-    if (selectedSort === "Most Active") {
+    if (selectedSort === "Most Popular") {
       filtered.sort(
         (a, b) => (a._apiOrder ?? 999999) - (b._apiOrder ?? 999999),
       );

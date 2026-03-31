@@ -37,11 +37,11 @@ export default function SortDropdown({
                 : componentStyles.dropdownItem
             }
             onPress={() => {
-              setSelectedSort("Most Active");
+              setSelectedSort("Recent Action");
               setShowSortDropdown(false);
             }}
           >
-            <Text style={componentStyles.dropdownItemText}>Most Active</Text>
+            <Text style={componentStyles.dropdownItemText}>Recent Action</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) =>
@@ -50,11 +50,11 @@ export default function SortDropdown({
                 : componentStyles.dropdownItem
             }
             onPress={() => {
-              setSelectedSort("Recent Action");
+              setSelectedSort("Most Popular");
               setShowSortDropdown(false);
             }}
           >
-            <Text style={componentStyles.dropdownItemText}>Recent Action</Text>
+            <Text style={componentStyles.dropdownItemText}>Most Popular</Text>
           </Pressable>
           {/* <Pressable
             style={({ pressed }) =>
