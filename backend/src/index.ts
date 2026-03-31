@@ -1008,6 +1008,15 @@ app.post("/report-error", express.json(), (req, res) => {
   res.json({ success: true });
 });
 
+app.get("/api/debug/error-reports", (req, res) => {
+  const logPath = path.join("/data", "error-reports.txt");
+  if (!fs.existsSync(logPath)) {
+    return res.json({ reports: "No reports yet." });
+  }
+  const content = fs.readFileSync(logPath, "utf8");
+  res.send(`<pre>${content}</pre>`);
+});
+
 app.listen(PORT, () => {
   startCronScheduler();
 });
