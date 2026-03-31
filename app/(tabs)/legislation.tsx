@@ -177,6 +177,13 @@ export default function LegislationScreen() {
 
   const allBills: any[] = useMemo(() => data?.bills || [], [data?.bills]);
 
+  // const originalOrder = useRef<any[]>([]);
+  // useEffect(() => {
+  //   if (allBills.length > 0 && originalOrder.current.length === 0) {
+  //     originalOrder.current = allBills;
+  //   }
+  // }, [allBills]);
+
   const pendingCount = useMemo(() => {
     let filtered = allBills;
     if (pendingChambers.length > 0) {
@@ -254,9 +261,9 @@ export default function LegislationScreen() {
       filtered = filtered.filter((bill) => apiTypes.includes(bill.type));
     }
 
-    if (selectedSort === "Most Viewed") {
+    if (selectedSort === "Most Active") {
       filtered.sort(
-        (a, b) => (a._congressOrder ?? 999999) - (b._congressOrder ?? 999999),
+        (a, b) => (a._apiOrder ?? 999999) - (b._apiOrder ?? 999999),
       );
     } else if (selectedSort === "Recent Action") {
       filtered.sort(
@@ -862,6 +869,10 @@ const BillCard = React.memo(function BillCard({
         billCongressCache.set(billId, item.congress);
         router.navigate(`/bill/${billId}`);
       }}
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? 0.96 : 1 }],
+        borderRadius: 48,
+      })}
     >
       <View style={componentStyles.officialCard}>
         {/* Left column: badge + icon */}

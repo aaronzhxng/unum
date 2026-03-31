@@ -83,7 +83,7 @@ app.get("/api/bills", async (req, res) => {
       });
 
     const responseData = {
-      bills: merged,
+      bills: merged.map((bill, index) => ({ ...bill, _apiOrder: index })),
       pagination: { count: merged.length },
     };
 

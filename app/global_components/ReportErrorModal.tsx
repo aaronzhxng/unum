@@ -94,15 +94,18 @@ export default function ReportErrorModal({ visible, onClose, screen }: Props) {
                     transform: [{ scale: pressed ? 0.96 : 1 }],
                   })}
                 >
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      color: "#008CFF",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Done
-                  </Text>
+                  <View style={componentStyles.actionRow}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        color: "#008CFF",
+                        fontWeight: "600",
+                        marginBottom: 16,
+                      }}
+                    >
+                      Done
+                    </Text>
+                  </View>
                 </Pressable>
               </View>
             ) : (

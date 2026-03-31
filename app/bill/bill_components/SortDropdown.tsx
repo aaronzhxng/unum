@@ -23,7 +23,7 @@ export default function SortDropdown({
     actions: ["Newest First", "Oldest First"],
     cosponsors: ["Oldest First", "Newest First", "A-Z", "Z-A"],
     sponsored: [
-      "Most Viewed",
+      "Most Active",
       "Most Recent Action",
       "Newest First",
       "Oldest First",

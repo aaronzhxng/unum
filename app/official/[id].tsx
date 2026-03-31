@@ -245,7 +245,7 @@ export default function OfficialDetail() {
   ).current;
 
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [selectedSort, setSelectedSort] = useState("Most Viewed");
+  const [selectedSort, setSelectedSort] = useState("Most Active");
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedChambers, setSelectedChambers] = useState<string[]>([]);
@@ -534,7 +534,7 @@ export default function OfficialDetail() {
               new Date(a.introducedDate ?? 0).getTime() -
               new Date(b.introducedDate ?? 0).getTime(),
           );
-        case "Most Viewed":
+        case "Most Active":
         default:
           return sorted;
       }
