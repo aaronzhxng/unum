@@ -110,17 +110,32 @@ function parseEducationFromWikitext(wikitext) {
 }
 
 async function test() {
-  const names = [
-    "Bernie Sanders",
-    "Alexandria Ocasio-Cortez",
-    "Ted Cruz",
-    "Mitch McConnell",
-    "Nancy Pelosi",
-    "Rand Paul",
-  ];
+  const names = ["Jack Reed", "Robert Garcia", "James A. Himes"];
   for (const name of names) {
-    const education = await getEducationForMember(name);
-    console.log(`${name}:`, education);
+    const fullData = await fetchWikipediaFull(name);
+    const pages = fullData?.query?.pages;
+    const page = Object.values(pages)[0];
+    console.log(`\n--- ${name} ---`);
+    console.log("Page title:", page?.title);
+    console.log("Missing:", page?.missing);
+    const wikitext =
+      page?.revisions?.[0]?.slots?.main?.["*"] ?? page?.revisions?.[0]?.["*"];
+    if (wikitext) {
+      const eduIdx = wikitext.toLowerCase().indexOf("education");
+      const almaIdx = wikitext.toLowerCase().indexOf("alma_mater");
+      console.log("education field at:", eduIdx);
+      console.log("alma_mater field at:", almaIdx);
+      if (eduIdx > -1)
+        console.log(
+          "education context:",
+          wikitext.substring(eduIdx - 2, eduIdx + 200),
+        );
+      if (almaIdx > -1)
+        console.log(
+          "alma_mater context:",
+          wikitext.substring(almaIdx - 2, almaIdx + 200),
+        );
+    }
     await delay(300);
   }
 }
@@ -151,20 +166,43 @@ async function getMemberName(bioguideId) {
 async function getEducationForMember(name) {
   if (!name) return [];
 
-  const fullData = await fetchWikipediaFull(name);
-  if (!fullData) return [];
+  // Generate name variants to try
+  const variants = [name];
 
-  const pages = fullData?.query?.pages;
-  if (!pages) return [];
+  // Remove middle initial: "Kirsten E. Gillibrand" -> "Kirsten Gillibrand"
+  const noMiddle = name.replace(/\b[A-Z]\.\s+/g, "");
+  if (noMiddle !== name) variants.push(noMiddle);
 
-  const page = Object.values(pages)[0];
-  if (!page || page.missing !== undefined) return [];
+  // Remove suffix: "Randy K. Weber, Sr." -> "Randy Weber"
+  const noSuffix = noMiddle.replace(/,?\s*(Sr\.|Jr\.|III|II|IV)$/i, "").trim();
+  if (noSuffix !== noMiddle) variants.push(noSuffix);
 
-  const wikitext =
-    page?.revisions?.[0]?.slots?.main?.["*"] ?? page?.revisions?.[0]?.["*"];
+  // Remove comma-separated suffix without middle: "Randy Weber, Sr." -> "Randy Weber"
+  const noSuffixOriginal = name
+    .replace(/,?\s*(Sr\.|Jr\.|III|II|IV)$/i, "")
+    .trim();
+  if (!variants.includes(noSuffixOriginal)) variants.push(noSuffixOriginal);
 
-  if (!wikitext) return [];
-  return parseEducationFromWikitext(wikitext);
+  for (const variant of variants) {
+    const fullData = await fetchWikipediaFull(variant);
+    if (!fullData) continue;
+
+    const pages = fullData?.query?.pages;
+    if (!pages) continue;
+
+    const page = Object.values(pages)[0];
+    if (!page || page.missing !== undefined) continue;
+
+    const wikitext =
+      page?.revisions?.[0]?.slots?.main?.["*"] ?? page?.revisions?.[0]?.["*"];
+
+    if (!wikitext) continue;
+
+    const education = parseEducationFromWikitext(wikitext);
+    if (education.length > 0) return education;
+  }
+
+  return [];
 }
 
 async function main() {
@@ -187,6 +225,12 @@ async function main() {
   // Second pass: get education from Wikipedia
   console.log("Fetching education from Wikipedia...");
   for (const id of bioguideIds) {
+    // Skip if already has education data
+    if (result[id].education && result[id].education.length > 0) {
+      completed++;
+      withEducation++;
+      continue;
+    }
     try {
       const name = names[id];
       const education = await getEducationForMember(name);
@@ -200,7 +244,6 @@ async function main() {
       }
     } catch (err) {
       console.error(`Failed for ${id}:`, err.message);
-      result[id] = { ...result[id], education: [] };
     }
     await delay(200);
   }
