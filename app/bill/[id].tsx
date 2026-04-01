@@ -29,6 +29,9 @@ import JargonFootnotes from "../../components/JargonFootnotes";
 import AddModal from "../global_components/AddModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
+import ScreenTourOverlay, {
+  ScreenTourStep,
+} from "../global_components/ScreenTourOverlay";
 import { billsService } from "../services/bills";
 import { billCache } from "../utils/billCache";
 import { billCongressCache } from "../utils/billCongressCache";
@@ -36,6 +39,7 @@ import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { screenTour } from "../utils/screenTour";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import ActionHistory from "./bill_components/ActionHistory";
 import Cosponsors from "./bill_components/Cosponsors";
@@ -186,6 +190,17 @@ export default function BillDetail() {
     useState(false);
   const [newListProgress, setNewListProgress] = useState(0);
   const [createdListName, setCreatedListName] = useState("");
+
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [tourLayouts, setTourLayouts] = useState<
+    ({ x: number; y: number; width: number; height: number } | null)[]
+  >([null, null, null, null]);
+
+  const statusRef = useRef<View>(null);
+  const sponsorRef = useRef<View>(null);
+  const summaryRef = useRef<View>(null);
+  const billTabBarRef = useRef<View>(null);
 
   const followedOfficials = useMemo(() => {
     const db = getDb();
@@ -422,6 +437,87 @@ export default function BillDetail() {
     );
     return () => subscription.remove();
   }, []);
+
+  useEffect(() => {
+    const checkTour = async () => {
+      // await AsyncStorage.removeItem("bill_tour_seen"); // temporary test line
+      const isRelaunch = await screenTour.isRelaunchBillTour();
+      if (isRelaunch) {
+        await screenTour.clearRelaunchBillTour();
+        await screenTour.markBillTourSeen();
+        setTimeout(() => setTourActive(true), 800);
+        return;
+      }
+      const seen = await screenTour.hasSeenBillTour();
+      if (!seen) {
+        await screenTour.markBillTourSeen();
+        setTimeout(() => setTourActive(true), 800);
+      }
+    };
+    checkTour();
+  }, []);
+
+  useEffect(() => {
+    if (!tourActive) return;
+    const delay = 300;
+    setTimeout(() => {
+      statusRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[0] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+    setTimeout(() => {
+      sponsorRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[1] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+    setTimeout(() => {
+      summaryRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[2] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+    setTimeout(() => {
+      billTabBarRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[3] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+  }, [tourActive]);
+
+  useEffect(() => {
+    if (!tourActive) return;
+    const refs = [statusRef, sponsorRef, summaryRef, billTabBarRef];
+    const ref = refs[tourStep];
+    setTimeout(() => {
+      ref?.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0) {
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[tourStep] = { x, y, width, height };
+            return next;
+          });
+        }
+      });
+    }, 300);
+  }, [tourStep, tourActive]);
 
   const parseAPIDate = (dateStr: string) => {
     const [year, month, day] = dateStr.split("-").map(Number);
@@ -667,6 +763,35 @@ export default function BillDetail() {
 
   // console.log("BillDetail rendering UI:", Date.now());
 
+  const billTourSteps: ScreenTourStep[] = [
+    {
+      title: "Bill Status",
+      description:
+        "The status shows the latest action on this bill — whether it's been introduced, passed a chamber, or signed into law.",
+      targetLayout: tourLayouts[0],
+    },
+    {
+      title: "Sponsor",
+      description:
+        "Every bill has a primary sponsor who introduced it. Tap their card to view their full profile.",
+      horizontalInset: 16,
+      targetLayout: tourLayouts[1],
+    },
+    {
+      title: "Summary",
+      description:
+        "Congress.gov's plain-language summary of what this bill does. Tap 'View on congress.gov' to read the full text.",
+      targetLayout: tourLayouts[2],
+    },
+    {
+      title: "Voting, Actions & Cosponsors",
+      description:
+        "The Voting, Actions, and Cosponsors tabs show how members voted, the full legislative history, and every official who co-signed the bill.",
+      horizontalInset: 16,
+      targetLayout: tourLayouts[3],
+    },
+  ];
+
   return (
     <View style={componentStyles.screen}>
       {/* Header Bar */}
@@ -762,7 +887,11 @@ export default function BillDetail() {
       </View>
 
       {/* Tab Bar - fixed */}
-      <View style={componentStyles.tabsNegative}>
+      <View
+        ref={billTabBarRef} // or billTabBarRef
+        collapsable={false}
+        style={componentStyles.tabsNegative}
+      >
         <View style={componentStyles.tabs}>
           {(["Details", "Voting", "Actions", "Cosponsors"] as const).map(
             (label, index) => (
@@ -823,7 +952,11 @@ export default function BillDetail() {
             }}
           />
           <ScrollView keyboardShouldPersistTaps="handled">
-            <View style={componentStyles.details}>
+            <View
+              ref={statusRef}
+              collapsable={false}
+              style={componentStyles.details}
+            >
               <View style={{ flex: 1, flexDirection: "column" }}>
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
@@ -877,7 +1010,11 @@ export default function BillDetail() {
             </View>
 
             {/* Sponsor Card */}
-            <View style={{ marginBottom: 8 }}>
+            <View
+              ref={sponsorRef}
+              collapsable={false}
+              style={{ marginBottom: 8 }}
+            >
               <Text
                 style={[
                   componentStyles.detailTitle,
@@ -896,7 +1033,11 @@ export default function BillDetail() {
             </View>
 
             {/* Summary */}
-            <View style={componentStyles.section}>
+            <View
+              ref={summaryRef}
+              collapsable={false}
+              style={componentStyles.section}
+            >
               <View
                 style={{
                   flexDirection: "row",
@@ -1457,6 +1598,18 @@ export default function BillDetail() {
           </View>
         </Pressable>
       </Modal>
+
+      {tourActive && tourLayouts[tourStep] && (
+        <ScreenTourOverlay
+          steps={billTourSteps}
+          currentStep={tourStep}
+          onNext={() => setTourStep((s) => s + 1)}
+          onEnd={() => {
+            setTourActive(false);
+            setTourStep(0);
+          }}
+        />
+      )}
     </View>
   );
 

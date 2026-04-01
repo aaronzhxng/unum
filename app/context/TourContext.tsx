@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, {
   createContext,
@@ -6,6 +7,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { screenTour } from "../utils/screenTour";
 
 export type TourStep = {
   tab: number;
@@ -72,7 +74,8 @@ type TourContextType = {
   steps: TourStep[];
   targetLayout: TargetLayout;
   layoutOffset: number;
-  startTour: () => void;
+  startTour: (relaunch?: boolean) => void;
+  isRelaunch: boolean;
   endTour: () => void;
   nextStep: () => void;
   setTargetLayout: (layout: TargetLayout) => void;
@@ -105,23 +108,35 @@ export function TourProvider({
   const router = useRouter();
   const [layoutOffset, setLayoutOffset] = useState(0);
 
-  const startTour = useCallback(() => {
-    if (appReady) {
-      setCurrentStep(0);
-      setTargetLayout(null);
-      setIsActive(true);
-      onNavigateTab(0);
-    } else {
-      setPendingStart(true);
-    }
-  }, [appReady, onNavigateTab]);
+  const startTour = useCallback(
+    (relaunch = false) => {
+      setIsRelaunch(relaunch);
+      if (appReady) {
+        setCurrentStep(0);
+        setTargetLayout(null);
+        setIsActive(true);
+        onNavigateTab(0);
+      } else {
+        setPendingStart(true);
+      }
+    },
+    [appReady, onNavigateTab],
+  );
 
-  const endTour = useCallback(() => {
+  const [isRelaunch, setIsRelaunch] = useState(false);
+
+  const endTour = useCallback(async () => {
     setIsActive(false);
     setCurrentStep(0);
     setTargetLayout(null);
-    router.replace("/(tabs)/home" as any);
-  }, [router]);
+    if (isRelaunch) {
+      await screenTour.triggerRelaunchOfficialTour();
+      await AsyncStorage.setItem("pending_bill_tour_after_official", "true");
+      router.push("/official/O000172" as any);
+    } else {
+      router.replace("/(tabs)/home" as any);
+    }
+  }, [router, isRelaunch]);
 
   const nextStep = useCallback(() => {
     let next = currentStep + 1;
@@ -177,6 +192,7 @@ export function TourProvider({
         layoutOffset,
         setLayoutOffset,
         setHasListItems,
+        isRelaunch,
       }}
     >
       {children}

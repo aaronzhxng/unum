@@ -70,8 +70,12 @@ function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
       const pending = await AsyncStorage.getItem("pending_tour");
       if (pending === "true") {
         await AsyncStorage.removeItem("pending_tour");
+        const isRelaunch =
+          (await AsyncStorage.getItem("pending_tour_relaunch")) === "true";
+        if (isRelaunch) {
+          await AsyncStorage.removeItem("pending_tour_relaunch");
+        }
 
-        // Check if the active list has any items before starting
         const listsRaw = await AsyncStorage.getItem("user_lists");
         let itemCount = 0;
         if (listsRaw) {
@@ -80,8 +84,6 @@ function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
             itemCount = lists?.[0]?.items?.length ?? 0;
           } catch {}
         }
-
-        // Also check SQLite since lists may have migrated there
         try {
           const db = getDb();
           const row = db.getFirstSync(
@@ -91,7 +93,7 @@ function TourConsumer({ tabBarRef }: { tabBarRef: { current: any } }) {
         } catch {}
 
         setHasListItems(itemCount > 0);
-        setTimeout(() => startTour(), 500);
+        setTimeout(() => startTour(isRelaunch), 500);
       }
     };
     checkPendingTour();

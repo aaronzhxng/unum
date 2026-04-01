@@ -47,6 +47,7 @@ export default function TipsScreen() {
 
   const handleRelaunchTour = async () => {
     await AsyncStorage.setItem("pending_tour", "true");
+    await AsyncStorage.setItem("pending_tour_relaunch", "true");
     router.replace("/(tabs)/home" as any);
   };
 

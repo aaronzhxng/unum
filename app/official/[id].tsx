@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter, type Router } from "expo-router";
 import {
   Bell,
@@ -21,8 +23,6 @@ import {
   Text,
   View,
 } from "react-native";
-
-import { useQuery } from "@tanstack/react-query";
 import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
 import officialsStatic from "../data/officials-static.json";
@@ -30,13 +30,18 @@ import AddModal from "../global_components/AddModal";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
+import ScreenTourOverlay, {
+  ScreenTourStep,
+} from "../global_components/ScreenTourOverlay";
 import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
+import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { officialBillsCache } from "../utils/officialBillsCache";
+import { screenTour } from "../utils/screenTour";
 import { storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import OptionsModal from "./official_components/OptionsModal";
@@ -287,6 +292,17 @@ export default function OfficialDetail() {
   const [imageError, setImageError] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [tourLayouts, setTourLayouts] = useState<
+    ({ x: number; y: number; width: number; height: number } | null)[]
+  >([null, null, null, null]);
+
+  const headerRef = useRef<View>(null);
+  const signedIntoLawRef = useRef<View>(null);
+  const policyAreasRef = useRef<View>(null);
+  const tabBarRef = useRef<View>(null);
+
   useEffect(() => {
     setImageError(false);
   }, [id]);
@@ -319,6 +335,87 @@ export default function OfficialDetail() {
     );
     return () => subscription.remove();
   }, []);
+
+  useEffect(() => {
+    const checkTour = async () => {
+      // await AsyncStorage.removeItem("official_tour_seen"); // temporary test line
+      const isRelaunch = await screenTour.isRelaunchOfficialTour();
+      if (isRelaunch) {
+        await screenTour.clearRelaunchOfficialTour();
+        await screenTour.markOfficialTourSeen();
+        setTimeout(() => setTourActive(true), 800);
+        return;
+      }
+      const seen = await screenTour.hasSeenOfficialTour();
+      if (!seen) {
+        await screenTour.markOfficialTourSeen();
+        setTimeout(() => setTourActive(true), 800);
+      }
+    };
+    checkTour();
+  }, []);
+
+  useEffect(() => {
+    if (!tourActive) return;
+    const delay = 300;
+    setTimeout(() => {
+      headerRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[0] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+    setTimeout(() => {
+      signedIntoLawRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[1] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+    setTimeout(() => {
+      policyAreasRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[2] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+    setTimeout(() => {
+      tabBarRef.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0)
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[3] = { x, y, width, height };
+            return next;
+          });
+      });
+    }, delay);
+  }, [tourActive]);
+
+  useEffect(() => {
+    if (!tourActive) return;
+    const refs = [headerRef, signedIntoLawRef, policyAreasRef, tabBarRef];
+    const ref = refs[tourStep];
+    setTimeout(() => {
+      ref?.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0) {
+          setTourLayouts((prev) => {
+            const next = [...prev];
+            next[tourStep] = { x, y, width, height };
+            return next;
+          });
+        }
+      });
+    }, 300);
+  }, [tourStep, tourActive]);
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
@@ -676,6 +773,35 @@ export default function OfficialDetail() {
   //   );
   // }
 
+  const officialTourSteps: ScreenTourStep[] = [
+    {
+      title: "Official Profile",
+      description:
+        "Each official's profile shows their party, role, and state. Tap Website or Contact to reach them directly.",
+      targetLayout: tourLayouts[0],
+    },
+    {
+      title: "Bills Signed Into Law",
+      description:
+        "This section shows legislation this official sponsored that became public law during the 119th Congress.",
+      horizontalInset: 16,
+      targetLayout: tourLayouts[1],
+    },
+    {
+      title: "Top Policy Areas",
+      description:
+        "A breakdown of which policy areas this official sponsors and cosponsors the most legislation in.",
+      targetLayout: tourLayouts[2],
+    },
+    {
+      title: "Sponsor & Cosponsor Tabs",
+      description:
+        "The Sponsor and Cosponsor tabs list every bill this official has introduced or co-signed in the current Congress. Tap either tab to explore.",
+      horizontalInset: 16,
+      targetLayout: tourLayouts[3],
+    },
+  ];
+
   return (
     <View style={componentStyles.screen}>
       {/* Header Bar */}
@@ -713,7 +839,7 @@ export default function OfficialDetail() {
       </View>
 
       {/* Official Header - fixed above tabs */}
-      <View style={componentStyles.header}>
+      <View ref={headerRef} collapsable={false} style={componentStyles.header}>
         <Text style={componentStyles.roleTop}>
           {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
           {official.terms?.[official.terms.length - 1]?.chamber ===
@@ -821,7 +947,11 @@ export default function OfficialDetail() {
       </View>
 
       {/* Tab Bar - fixed */}
-      <View style={componentStyles.tabsNegative}>
+      <View
+        ref={tabBarRef} // or billTabBarRef
+        collapsable={false}
+        style={componentStyles.tabsNegative}
+      >
         <View style={componentStyles.tabs}>
           {["Profile", "Sponsor", "Cosponsor"].map((label, index) => (
             <Pressable
@@ -871,6 +1001,8 @@ export default function OfficialDetail() {
           <ScrollView keyboardShouldPersistTaps="handled">
             {/* Bills Signed Into Law */}
             <View
+              ref={signedIntoLawRef}
+              collapsable={false}
               style={{
                 paddingHorizontal: 32,
                 marginBottom: 8,
@@ -928,7 +1060,11 @@ export default function OfficialDetail() {
             )}
 
             {/* Top Policy Areas */}
-            <View style={componentStyles.section}>
+            <View
+              ref={policyAreasRef}
+              collapsable={false}
+              style={componentStyles.section}
+            >
               <View style={componentStyles.termRow}>
                 <Text style={componentStyles.sectionTitle}>
                   Top Policy Areas
@@ -1484,6 +1620,32 @@ export default function OfficialDetail() {
           </View>
         </Pressable>
       </Modal>
+
+      {tourActive && tourLayouts[tourStep] && (
+        <ScreenTourOverlay
+          steps={officialTourSteps}
+          currentStep={tourStep}
+          onNext={async () => {
+            if (tourStep < officialTourSteps.length - 1) {
+              setTourStep((s) => s + 1);
+            }
+          }}
+          onEnd={async () => {
+            setTourActive(false);
+            setTourStep(0);
+            // If this was a relaunch, now trigger the bill tour
+            const wasRelaunch = await AsyncStorage.getItem(
+              "pending_bill_tour_after_official",
+            );
+            if (wasRelaunch === "true") {
+              await AsyncStorage.removeItem("pending_bill_tour_after_official");
+              billCongressCache.set("hr22", 119);
+              await screenTour.triggerRelaunchBillTour();
+              router.push("/bill/hr22" as any);
+            }
+          }}
+        />
+      )}
     </View>
   );
 }
