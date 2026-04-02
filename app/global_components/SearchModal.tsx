@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import Modal from "react-native-modal";
+import officialNicknames from "../data/nicknames.json";
 import { styles as componentStyles } from "../global_styles/styles";
 import { getBillIcon } from "../utils/billIcons";
 import AddModal from "./AddModal";
@@ -106,28 +107,35 @@ export default function SearchModal({
 
     const lowercaseQuery = searchQuery.toLowerCase().trim();
     const queryWords = lowercaseQuery.split(/\s+/);
+    const nicknameMap = officialNicknames as Record<string, string[]>;
 
     const matchesAll = (text: string) => {
       const lower = text.toLowerCase();
       return queryWords.every((word) => lower.includes(word));
     };
 
+    const matchesNickname = (item: any): boolean => {
+      const id = item.bioguideId ?? item.id;
+      if (!id) return false;
+      const nicknames = nicknameMap[id];
+      if (!nicknames) return false;
+      return nicknames.some(
+        (nick) =>
+          nick.toLowerCase().includes(lowercaseQuery) ||
+          lowercaseQuery.includes(nick.toLowerCase()),
+      );
+    };
+
     const scoreItem = (item: any): number => {
       const name = (item.name ?? item.title ?? "").toLowerCase();
       const title = (item.title ?? "").toLowerCase();
 
-      // Exact match on name or title
       if (name === lowercaseQuery || title === lowercaseQuery) return 100;
-
-      // Name or title starts with the full query
       if (name.startsWith(lowercaseQuery) || title.startsWith(lowercaseQuery))
         return 90;
-
-      // Name or title contains the full query as a phrase
       if (name.includes(lowercaseQuery) || title.includes(lowercaseQuery))
         return 80;
 
-      // Bill type + number exact match e.g. "HR 22" or "HR.22"
       const billId =
         `${item.billType ?? item.type ?? ""} ${item.number ?? ""}`.toLowerCase();
       const billIdDot =
@@ -139,15 +147,14 @@ export default function SearchModal({
       )
         return 85;
 
-      // All query words appear in name/title in order (acronym-style: "SAVE Act")
+      if (matchesNickname(item)) return 75;
+
       const wordPositions = queryWords.map((w) => name.indexOf(w));
       const allFound = wordPositions.every((p) => p !== -1);
       const inOrder =
         allFound &&
         wordPositions.every((p, i) => i === 0 || p > wordPositions[i - 1]);
       if (inOrder) return 70;
-
-      // All query words appear but not in order
       if (allFound) return 50;
 
       return 0;
@@ -168,12 +175,12 @@ export default function SearchModal({
           return true;
         if (matchesAll(`${item.billType ?? item.type}.${item.number}`))
           return true;
+        if (matchesNickname(item)) return true;
         return false;
       })
       .map((item) => ({ item, score: scoreItem(item) }))
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
-        // Tiebreak by most recent action date
         const dateA = a.item.latestAction?.actionDate ?? a.item.date ?? "";
         const dateB = b.item.latestAction?.actionDate ?? b.item.date ?? "";
         return dateB.localeCompare(dateA);
