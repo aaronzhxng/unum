@@ -41,6 +41,7 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
+    "express-rate-limit": "^8.3.2",
     "html-entities": "^2.6.0",
     "lucide-react-native": "^0.562.0",
     "node-cron": "^4.2.1",

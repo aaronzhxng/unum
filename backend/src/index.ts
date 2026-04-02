@@ -2,6 +2,7 @@ import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { runCronJob, startCronScheduler } from "./cron";
 import db from "./db";
 
@@ -12,6 +13,17 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+app.use(globalLimiter);
+
+const reportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+});
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -994,7 +1006,7 @@ app.get("/api/debug/old-bills-with-policy", (req, res) => {
 const fs = require("fs");
 const path = require("path");
 
-app.post("/report-error", express.json(), (req, res) => {
+app.post("/report-error", reportLimiter, express.json(), (req, res) => {
   const { message, screen } = req.body;
   if (!message || !message.trim()) {
     return res.status(400).json({ error: "Message is required" });
