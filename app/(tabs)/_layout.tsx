@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Pressable, Text, View } from "react-native";
+import { Dimensions, Platform, Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
@@ -118,7 +118,8 @@ function TourOverlay() {
   const step = steps[currentStep];
   const isLast = currentStep === steps.length - 1;
 
-  const statusBarHeight = Constants.statusBarHeight ?? 0;
+  const statusBarHeight =
+    Platform.OS === "android" ? (Constants.statusBarHeight ?? 0) : 0;
   const adjustedY = targetLayout.y + statusBarHeight;
 
   const TOOLTIP_HEIGHT = 140;
@@ -143,7 +144,7 @@ function TourOverlay() {
   return (
     <>
       <View
-        pointerEvents="box-none"
+        pointerEvents="box-only"
         style={{
           position: "absolute",
           top: 0,
@@ -232,17 +233,23 @@ function TourOverlay() {
             alignItems: "center",
           }}
         >
-          <Pressable onPress={endTour}>
+          <Pressable
+            onPress={endTour}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            })}
+          >
             <Text style={{ fontSize: 14, color: "#7B7C81" }}>Skip tour</Text>
           </Pressable>
           <Pressable
             onPress={nextStep}
-            style={{
+            style={({ pressed }) => ({
               backgroundColor: "#008CFF",
               paddingHorizontal: 20,
               paddingVertical: 10,
               borderRadius: 20,
-            }}
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            })}
           >
             <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
               {isLast ? "Done" : "Next"}

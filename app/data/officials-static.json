@@ -172,7 +172,7 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Harvard University (BA)", "Georgetown University (JD, MS)"]
   },
   "S001203": {
     "committees": [
@@ -248,7 +248,7 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Harvard University (BA)", "Harvard University (JD)"]
   },
   "S001227": {
     "committees": [
@@ -290,7 +290,7 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Brooklyn College (attended)", "University of Chicago (BA)"]
   },
   "R000605": {
     "committees": [
@@ -347,7 +347,10 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "United States Military Academy (BS)",
+      "Harvard University (MPP, JD)"
+    ]
   },
   "P000595": {
     "committees": [
@@ -534,7 +537,7 @@
       "Senate Committee on Small Business and Entrepreneurship"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Stanford University (BA)", "Princeton University (MPA)"]
   },
   "L000571": {
     "committees": [
@@ -865,7 +868,7 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Georgetown University (BA)", "Georgetown University (JD)"]
   },
   "D000622": {
     "committees": [
@@ -876,10 +879,10 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Hawaiʻi at Mānoa&nbsp;(BA)",
-      "George Washington University&nbsp;(MIA)",
+      "University of Hawaii at Mānoa (BA)",
+      "George Washington University (MIA)",
       "Northern Illinois University",
-      "Capella University&nbsp;(PhD)"
+      "Capella University (PhD)"
     ]
   },
   "D000618": {
@@ -981,7 +984,7 @@
       "Senate Select Committee on Ethics"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Amherst College (BA)", "Yale University (MAR, JD)"]
   },
   "C001035": {
     "committees": [
@@ -1960,7 +1963,7 @@
       "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
     ],
     "caucuses": [],
-    "education": ["University of Wyoming ()"]
+    "education": ["University of Wyoming (BA)"]
   },
   "F000478": {
     "committees": [

@@ -1,6 +1,6 @@
 import Constants from "expo-constants";
 import React from "react";
-import { Dimensions, Pressable, Text, View } from "react-native";
+import { Dimensions, Platform, Pressable, Text, View } from "react-native";
 
 export type ScreenTourStep = {
   title: string;
@@ -33,7 +33,8 @@ export default function ScreenTourOverlay({
 
   if (!targetLayout) return null;
 
-  const statusBarHeight = Constants.statusBarHeight ?? 0;
+  const statusBarHeight =
+    Platform.OS === "android" ? (Constants.statusBarHeight ?? 0) : 0;
   const adjustedY = targetLayout.y + statusBarHeight;
   const TOOLTIP_HEIGHT = 160;
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -54,7 +55,7 @@ export default function ScreenTourOverlay({
     <>
       {/* Dim overlay */}
       <View
-        pointerEvents="box-none"
+        pointerEvents="box-only"
         style={{
           position: "absolute",
           top: 0,
@@ -144,17 +145,23 @@ export default function ScreenTourOverlay({
             alignItems: "center",
           }}
         >
-          <Pressable onPress={onEnd}>
+          <Pressable
+            onPress={onEnd}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            })}
+          >
             <Text style={{ fontSize: 14, color: "#7B7C81" }}>Skip tour</Text>
           </Pressable>
           <Pressable
             onPress={isLast ? onEnd : onNext}
-            style={{
+            style={({ pressed }) => ({
               backgroundColor: "#008CFF",
               paddingHorizontal: 20,
               paddingVertical: 10,
               borderRadius: 20,
-            }}
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            })}
           >
             <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
               {isLast ? "Done" : "Next"}

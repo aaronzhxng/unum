@@ -97,7 +97,6 @@ const LEGISLATION_TYPE_OPTIONS: FilterOption[] = [
   { id: "joint_resolution", label: "Joint Resolutions" },
   { id: "concurrent_resolution", label: "Concurrent Resolutions" },
   { id: "resolution", label: "Simple Resolutions" },
-  { id: "amendment", label: "Amendments" },
   { id: "nomination", label: "Nominations" },
   { id: "treaty", label: "Treaty Documents" },
 ];
@@ -248,124 +247,6 @@ export default function LegislationFilterModal({
             })}
           </View>
 
-          {/* Policy Area */}
-          <View
-            style={[
-              componentStyles.dropdownMulti,
-              { marginTop: 12, height: 200 },
-            ]}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingHorizontal: 16,
-                marginBottom: 8,
-              }}
-            >
-              <Text style={componentStyles.dropdownItemTextLabel}>
-                Policy Area
-              </Text>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 24 }}
-              >
-                <Text
-                  style={[
-                    componentStyles.dropdownItemTextLabel,
-                    { fontSize: 14, marginLeft: 48 },
-                  ]}
-                >
-                  {" "}
-                  {selectedPolicyAreas.length === nonAllPolicyAreas.length
-                    ? "All selected"
-                    : `${selectedPolicyAreas.length} selected`}
-                </Text>
-                {selectedPolicyAreas.length > 0 && (
-                  <Pressable onPress={() => setSelectedPolicyAreas([])}>
-                    <Text
-                      style={[
-                        componentStyles.dropdownItemTextLabel,
-                        { fontSize: 14, color: "#008CFF" },
-                      ]}
-                    >
-                      Clear
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-            </View>
-
-            <ScrollView
-              style={{ maxHeight: 200 }}
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={true}
-            >
-              {POLICY_AREA_OPTIONS.map((option) => {
-                const isAllOption = option.id === "all";
-                const allSelected =
-                  selectedPolicyAreas.length === nonAllPolicyAreas.length;
-                const isChecked = isAllOption
-                  ? allSelected
-                  : selectedPolicyAreas.includes(option.id);
-
-                return (
-                  <Pressable
-                    key={option.id}
-                    style={[
-                      componentStyles.dropdownItem,
-                      {
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      },
-                    ]}
-                    onPress={() => {
-                      if (isAllOption) {
-                        if (allSelected) {
-                          setSelectedPolicyAreas([]);
-                        } else {
-                          setSelectedPolicyAreas(
-                            nonAllPolicyAreas.map((o) => o.id),
-                          );
-                        }
-                      } else {
-                        togglePolicyArea(option.id);
-                      }
-                    }}
-                  >
-                    <Text style={componentStyles.dropdownItemText}>
-                      {option.label}
-                    </Text>
-                    <View
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderWidth: 2,
-                        borderColor: isChecked ? "#008CFF" : "#7B7C81",
-                        borderRadius: 4,
-                        backgroundColor: isChecked ? "#008CFF" : "transparent",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      {isChecked && (
-                        <View
-                          style={{
-                            width: 12,
-                            height: 12,
-                            backgroundColor: "#008CFF",
-                            borderRadius: 2,
-                          }}
-                        />
-                      )}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
-
           {/* Legislation Type */}
           <View
             style={[
@@ -451,6 +332,124 @@ export default function LegislationFilterModal({
                         }
                       } else {
                         toggleLegislationType(option.id);
+                      }
+                    }}
+                  >
+                    <Text style={componentStyles.dropdownItemText}>
+                      {option.label}
+                    </Text>
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderWidth: 2,
+                        borderColor: isChecked ? "#008CFF" : "#7B7C81",
+                        borderRadius: 4,
+                        backgroundColor: isChecked ? "#008CFF" : "transparent",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {isChecked && (
+                        <View
+                          style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: "#008CFF",
+                            borderRadius: 2,
+                          }}
+                        />
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Policy Area */}
+          <View
+            style={[
+              componentStyles.dropdownMulti,
+              { marginTop: 12, height: 200 },
+            ]}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 16,
+                marginBottom: 8,
+              }}
+            >
+              <Text style={componentStyles.dropdownItemTextLabel}>
+                Policy Area
+              </Text>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 24 }}
+              >
+                <Text
+                  style={[
+                    componentStyles.dropdownItemTextLabel,
+                    { fontSize: 14, marginLeft: 48 },
+                  ]}
+                >
+                  {" "}
+                  {selectedPolicyAreas.length === nonAllPolicyAreas.length
+                    ? "All selected"
+                    : `${selectedPolicyAreas.length} selected`}
+                </Text>
+                {selectedPolicyAreas.length > 0 && (
+                  <Pressable onPress={() => setSelectedPolicyAreas([])}>
+                    <Text
+                      style={[
+                        componentStyles.dropdownItemTextLabel,
+                        { fontSize: 14, color: "#008CFF" },
+                      ]}
+                    >
+                      Clear
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+
+            <ScrollView
+              style={{ maxHeight: 200 }}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={true}
+            >
+              {POLICY_AREA_OPTIONS.map((option) => {
+                const isAllOption = option.id === "all";
+                const allSelected =
+                  selectedPolicyAreas.length === nonAllPolicyAreas.length;
+                const isChecked = isAllOption
+                  ? allSelected
+                  : selectedPolicyAreas.includes(option.id);
+
+                return (
+                  <Pressable
+                    key={option.id}
+                    style={[
+                      componentStyles.dropdownItem,
+                      {
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      },
+                    ]}
+                    onPress={() => {
+                      if (isAllOption) {
+                        if (allSelected) {
+                          setSelectedPolicyAreas([]);
+                        } else {
+                          setSelectedPolicyAreas(
+                            nonAllPolicyAreas.map((o) => o.id),
+                          );
+                        }
+                      } else {
+                        togglePolicyArea(option.id);
                       }
                     }}
                   >

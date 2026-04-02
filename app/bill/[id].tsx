@@ -107,6 +107,49 @@ const STATE_NAMES: { [key: string]: string } = {
   WY: "Wyoming",
 };
 
+const BILL_STAGES: Record<string, string[]> = {
+  // Standard bills
+  HR: [
+    "Introduced",
+    "Passed House",
+    "Passed Senate",
+    "To President",
+    "Became Law",
+  ],
+  S: [
+    "Introduced",
+    "Passed Senate",
+    "Passed House",
+    "To President",
+    "Became Law",
+  ],
+  // Joint resolutions — same path as bills, can become law
+  HJRES: [
+    "Introduced",
+    "Passed House",
+    "Passed Senate",
+    "To President",
+    "Became Law",
+  ],
+  SJRES: [
+    "Introduced",
+    "Passed Senate",
+    "Passed House",
+    "To President",
+    "Became Law",
+  ],
+  // Simple resolutions — single chamber only
+  HRES: ["Introduced", "Passed House"],
+  SRES: ["Introduced", "Passed Senate"],
+  // Concurrent resolutions — both chambers, no president
+  HCONRES: ["Introduced", "Passed House", "Passed Senate", "Agreed To"],
+  SCONRES: ["Introduced", "Passed Senate", "Passed House", "Agreed To"],
+  // Nominations
+  PN: ["Received", "In Committee", "Confirmed"],
+  // Treaties
+  TREATY: ["Received", "In Committee", "Ratified"],
+};
+
 export default function BillDetail() {
   // console.log("BillDetail render:", Date.now());
   const pagerRef = useRef<PagerView>(null);
@@ -212,6 +255,173 @@ export default function BillDetail() {
       name: r.name,
     }));
   }, []);
+
+  type StageStatus = "empty" | "half" | "full";
+
+  const getBillStages = (bill: any): StageStatus[] => {
+    const action = (bill.latestAction?.text ?? "").toLowerCase();
+    const type = bill.type?.toUpperCase();
+
+    // Simple resolutions — single chamber
+    if (type === "HRES" || type === "SRES") {
+      if (action.includes("passed") || action.includes("agreed to"))
+        return ["full", "full"];
+      return ["full", "half"];
+    }
+
+    // Concurrent resolutions — both chambers, no president
+    if (type === "HCONRES") {
+      if (
+        action.includes("passed senate") ||
+        action.includes("agreed to in senate")
+      )
+        return ["full", "full", "full"];
+      if (
+        action.includes("passed house") ||
+        action.includes("agreed to in house")
+      )
+        return ["full", "full", "half"];
+      return ["full", "half", "empty"];
+    }
+    if (type === "SCONRES") {
+      if (
+        action.includes("passed house") ||
+        action.includes("agreed to in house")
+      )
+        return ["full", "full", "full"];
+      if (
+        action.includes("passed senate") ||
+        action.includes("agreed to in senate")
+      )
+        return ["full", "full", "half"];
+      return ["full", "half", "empty"];
+    }
+
+    // Nominations
+    if (type === "PN") {
+      if (action.includes("confirmed")) return ["full", "full", "full"];
+      if (action.includes("committee") || action.includes("hearing"))
+        return ["full", "full", "half"];
+      return ["full", "half", "empty"];
+    }
+
+    // Treaties
+    if (type === "TREATY") {
+      if (action.includes("ratified")) return ["full", "full", "full"];
+      if (action.includes("committee") || action.includes("hearing"))
+        return ["full", "full", "half"];
+      return ["full", "half", "empty"];
+    }
+
+    // Standard bills and joint resolutions
+    if (
+      action.includes("became public law") ||
+      action.includes("signed by president") ||
+      action.includes("veto overridden")
+    )
+      return ["full", "full", "full", "full"];
+
+    if (
+      action.includes("presented to president") ||
+      action.includes("to president") ||
+      action.includes("vetoed by president")
+    )
+      return ["full", "full", "full", "half"];
+
+    if (type?.startsWith("H")) {
+      if (action.includes("passed senate") || action.includes("senate passed"))
+        return ["full", "full", "full", "half"];
+      if (
+        (action.includes("referred to") && action.includes("senate")) ||
+        (action.includes("senate") && !action.includes("passed house"))
+      )
+        return ["full", "full", "half", "empty"];
+      if (
+        action.includes("passed house") ||
+        action.includes("passed/agreed to in house") ||
+        action.includes("on passage")
+      )
+        return ["full", "full", "half", "empty"];
+      return ["full", "half", "empty", "empty"];
+    }
+
+    if (type?.startsWith("S")) {
+      if (action.includes("passed house") || action.includes("house passed"))
+        return ["full", "full", "full", "half"];
+      if (
+        (action.includes("referred to") && action.includes("house")) ||
+        (action.includes("house") && !action.includes("passed senate"))
+      )
+        return ["full", "full", "half", "empty"];
+      if (
+        action.includes("passed senate") ||
+        action.includes("passed/agreed to in senate")
+      )
+        return ["full", "full", "half", "empty"];
+      return ["full", "half", "empty", "empty"];
+    }
+
+    return ["full", "half", "empty", "empty"];
+  };
+
+  const getStageLabels = (bill: any, stages: StageStatus[]): string[] => {
+    const type = bill.type?.toUpperCase();
+
+    if (type === "HRES")
+      return ["Introduced", stages[1] === "full" ? "Passed House" : "In House"];
+
+    if (type === "SRES")
+      return [
+        "Introduced",
+        stages[1] === "full" ? "Passed Senate" : "In Senate",
+      ];
+
+    if (type === "HCONRES")
+      return [
+        "Introduced",
+        stages[1] === "full" ? "Passed House" : "In House",
+        stages[2] === "full" ? "Passed Senate" : "In Senate",
+      ];
+
+    if (type === "SCONRES")
+      return [
+        "Introduced",
+        stages[1] === "full" ? "Passed Senate" : "In Senate",
+        stages[2] === "full" ? "Passed House" : "In House",
+      ];
+
+    if (type === "PN")
+      return [
+        "Received",
+        stages[1] === "full" ? "In Committee" : "In Committee",
+        stages[2] === "full" ? "Confirmed" : "Pending",
+      ];
+
+    if (type === "TREATY")
+      return [
+        "Received",
+        stages[1] === "full" ? "In Committee" : "In Committee",
+        stages[2] === "full" ? "Ratified" : "Pending",
+      ];
+
+    const signedLabel =
+      stages[3] === "full" ? "Signed Into Law" : "To President";
+
+    if (type?.startsWith("S"))
+      return [
+        "Introduced",
+        stages[1] === "full" ? "Passed Senate" : "In Senate",
+        stages[2] === "full" ? "Passed House" : "In House",
+        signedLabel,
+      ];
+
+    return [
+      "Introduced",
+      stages[1] === "full" ? "Passed House" : "In House",
+      stages[2] === "full" ? "Passed Senate" : "In Senate",
+      signedLabel,
+    ];
+  };
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
@@ -952,6 +1162,73 @@ export default function BillDetail() {
             }}
           />
           <ScrollView keyboardShouldPersistTaps="handled">
+            {/* Bill Progress - Option B */}
+            {(() => {
+              const stages = getBillStages(bill);
+              const labels = getStageLabels(bill, stages);
+              return (
+                <View
+                  style={{
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    marginBottom: 20,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", marginBottom: 4 }}>
+                    {labels.map((label, index) => {
+                      if (!label)
+                        return <View key={index} style={{ flex: 1 }} />;
+                      const status = stages[index];
+                      return (
+                        <Text
+                          key={index}
+                          style={{
+                            flex: 1,
+                            fontSize: 10,
+                            color: status === "empty" ? "#7B7C81" : "#1a1a1a",
+                            fontWeight: status === "empty" ? "400" : "600",
+                            textAlign: "left",
+                            lineHeight: 13,
+                          }}
+                          numberOfLines={2}
+                        >
+                          {label}
+                        </Text>
+                      );
+                    })}
+                  </View>
+                  <View style={{ flexDirection: "row", gap: 3 }}>
+                    {stages.map((status, index) => (
+                      <View
+                        key={index}
+                        style={{
+                          flex: 1,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: "#e0e0e0",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <View
+                          style={{
+                            height: "100%",
+                            width:
+                              status === "full"
+                                ? "100%"
+                                : status === "half"
+                                  ? "50%"
+                                  : "0%",
+                            backgroundColor: "#008CFF",
+                            borderRadius: 3,
+                          }}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              );
+            })()}
+
             <View
               ref={statusRef}
               collapsable={false}
@@ -1067,12 +1344,31 @@ export default function BillDetail() {
               {bill.summaries && bill.summaries.length > 0 ? (
                 <>
                   <Text style={componentStyles.summary}>
-                    {decode(
-                      bill.summaries[0].text.replace(/<[^>]*>/g, ""),
-                    ).replace(
-                      /([A-Z][^.!?]*(?:Act|Resolution|Bill)(?: of \d{4})?)\s*(This|The|A |An )/,
-                      "$1\n\n$2",
-                    )}
+                    {(() => {
+                      const raw = decode(bill.summaries[0].text)
+                        .replace(/<[^>]*>/g, "")
+                        .replace(/\u00A0/g, " ")
+                        // Fix missing space after period before capital
+                        .replace(/([a-z0-9])\.([A-Z])/g, "$1. $2")
+                        // Fix missing space after colon
+                        .replace(/([a-z0-9]):([A-Za-z])/g, "$1: $2")
+                        // Fix missing space after semicolon
+                        .replace(/([a-z0-9]);([A-Za-z])/g, "$1; $2")
+                        // Fix missing space after comma
+                        .replace(/([a-z0-9]),([A-Za-z])/g, "$1, $2")
+                        // Fix "andthe", "andrelated" etc
+                        .replace(/\band([a-z])/g, "and $1")
+                        // Collapse whitespace
+                        .replace(/[ \t]+/g, " ")
+                        .replace(/\n[ \t]+/g, "\n")
+                        .trim()
+                        // Paragraph break after title — covers any line ending before "This/The/It/Specifically"
+                        .replace(
+                          /(^.{10,120}?(?:Act|Bill|Resolution|2025|2026|2027|2024|2023)[\s,]*)(This bill|The bill|It |Specifically,|These bills)/,
+                          "$1\n\n$2",
+                        );
+                      return raw;
+                    })()}
                   </Text>
                   <Text
                     style={{ fontSize: 12, color: "#7B7C81", marginTop: 8 }}

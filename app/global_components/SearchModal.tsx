@@ -104,32 +104,81 @@ export default function SearchModal({
       return;
     }
 
-    const lowercaseQuery = searchQuery.toLowerCase();
-    const queryWords = lowercaseQuery.trim().split(/\s+/);
+    const lowercaseQuery = searchQuery.toLowerCase().trim();
+    const queryWords = lowercaseQuery.split(/\s+/);
 
     const matchesAll = (text: string) => {
       const lower = text.toLowerCase();
       return queryWords.every((word) => lower.includes(word));
     };
 
-    const filtered = items.filter((item) => {
-      if (item.name && matchesAll(item.name)) return true;
-      if (item.role && matchesAll(item.role)) return true;
-      if (item.party && matchesAll(item.party)) return true;
+    const scoreItem = (item: any): number => {
+      const name = (item.name ?? item.title ?? "").toLowerCase();
+      const title = (item.title ?? "").toLowerCase();
 
-      const latestActionText =
-        typeof item.latestAction === "string"
-          ? item.latestAction
-          : item.latestAction?.text;
-      if (latestActionText && matchesAll(latestActionText)) return true;
+      // Exact match on name or title
+      if (name === lowercaseQuery || title === lowercaseQuery) return 100;
 
-      if (item.title && matchesAll(item.title)) return true;
+      // Name or title starts with the full query
+      if (name.startsWith(lowercaseQuery) || title.startsWith(lowercaseQuery))
+        return 90;
 
-      if (matchesAll(`${item.type} ${item.number}`)) return true;
-      if (matchesAll(`${item.type}.${item.number}`)) return true;
+      // Name or title contains the full query as a phrase
+      if (name.includes(lowercaseQuery) || title.includes(lowercaseQuery))
+        return 80;
 
-      return false;
-    });
+      // Bill type + number exact match e.g. "HR 22" or "HR.22"
+      const billId =
+        `${item.billType ?? item.type ?? ""} ${item.number ?? ""}`.toLowerCase();
+      const billIdDot =
+        `${item.billType ?? item.type ?? ""}.${item.number ?? ""}`.toLowerCase();
+      if (billId === lowercaseQuery || billIdDot === lowercaseQuery) return 95;
+      if (
+        billId.startsWith(lowercaseQuery) ||
+        billIdDot.startsWith(lowercaseQuery)
+      )
+        return 85;
+
+      // All query words appear in name/title in order (acronym-style: "SAVE Act")
+      const wordPositions = queryWords.map((w) => name.indexOf(w));
+      const allFound = wordPositions.every((p) => p !== -1);
+      const inOrder =
+        allFound &&
+        wordPositions.every((p, i) => i === 0 || p > wordPositions[i - 1]);
+      if (inOrder) return 70;
+
+      // All query words appear but not in order
+      if (allFound) return 50;
+
+      return 0;
+    };
+
+    const filtered = items
+      .filter((item) => {
+        if (item.name && matchesAll(item.name)) return true;
+        if (item.title && matchesAll(item.title)) return true;
+        if (item.role && matchesAll(item.role)) return true;
+        if (item.party && matchesAll(item.party)) return true;
+        const latestActionText =
+          typeof item.latestAction === "string"
+            ? item.latestAction
+            : item.latestAction?.text;
+        if (latestActionText && matchesAll(latestActionText)) return true;
+        if (matchesAll(`${item.billType ?? item.type} ${item.number}`))
+          return true;
+        if (matchesAll(`${item.billType ?? item.type}.${item.number}`))
+          return true;
+        return false;
+      })
+      .map((item) => ({ item, score: scoreItem(item) }))
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        // Tiebreak by most recent action date
+        const dateA = a.item.latestAction?.actionDate ?? a.item.date ?? "";
+        const dateB = b.item.latestAction?.actionDate ?? b.item.date ?? "";
+        return dateB.localeCompare(dateA);
+      })
+      .map(({ item }) => item);
 
     setFilteredItems(filtered);
     onSearch(searchQuery);
