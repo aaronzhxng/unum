@@ -6,6 +6,25 @@ import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { styles as componentStyles } from "./global_styles/styles";
 
+const CREDITS_SECTIONS = [
+  {
+    title: "App Icon",
+    content: `The Unum app icon uses the "Olive" icon from the Game Icons set.\n\nGame Icons — gameicons.net\nLicense: Creative Commons Attribution 3.0 (CC BY 3.0)\nDesigned by Lorc, Delapouite & contributors`,
+  },
+  {
+    title: "Icons & UI",
+    content: `Navigation and interface icons are from Lucide.\n\nLucide — lucide.dev\nLicense: MIT License\nCopyright (c) 2020 Lucide Contributors`,
+  },
+  {
+    title: "Data Sources",
+    content: `Legislative data is sourced from the Congress.gov API, provided by the Library of Congress.\n\nMember photos are provided by the Biographical Directory of the United States Congress (bioguide.congress.gov).\n\nGeocoding is provided by the U.S. Census Bureau Geocoding Services and Zippopotam.us.`,
+  },
+  {
+    title: "Privacy Policy",
+    content: `Last updated: ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}\n\nUnum is a civic literacy app. We are committed to protecting your privacy.\n\nInformation we collect:\nWe collect push notification tokens solely to deliver bill and official update notifications you opt into. These tokens are stored on our secure server and are never sold or shared with third parties.\n\nInformation we do not collect:\nWe do not collect your name, email address, or any personally identifiable information. We do not use third-party analytics or advertising SDKs. We do not track your location beyond the zip code you optionally provide during onboarding to identify your congressional district.\n\nData storage:\nAll your lists, followed bills, and app preferences are stored locally on your device. Your zip code and notification preferences are stored on our secure server (Railway) solely to deliver relevant notifications.\n\nThird-party services:\nUnum uses Firebase Cloud Messaging (FCM) to deliver push notifications. Firebase is governed by Google's Privacy Policy (policies.google.com/privacy). Legislative data is fetched from the Congress.gov API (api.congress.gov).\n\nChildren's privacy:\nUnum is not directed at children under 13 and does not knowingly collect information from children.\n\nContact:\nFor privacy questions, contact us at unuminitiative.com or through the Report an Error feature in the app.\n\nChanges to this policy:\nWe may update this privacy policy from time to time. Continued use of the app constitutes acceptance of any changes.`,
+  },
+];
+
 const TIPS_SECTIONS = [
   {
     title: "How to Use Unum",
@@ -108,10 +127,8 @@ export default function TipsScreen() {
             style={{ transform: [{ rotate: "-90deg" }] }}
           />
         </Pressable>
-
         {/* Section label */}
         <Text style={localStyles.sectionLabel}>CIVICS REFERENCE</Text>
-
         {/* Accordion sections — styled like amendmentsSection */}
         {TIPS_SECTIONS.map((section, index) => (
           <Pressable
@@ -140,7 +157,37 @@ export default function TipsScreen() {
             )}
           </Pressable>
         ))}
-
+        {/* Credits & Licenses */}
+        <Text style={localStyles.sectionLabel}>CREDITS & LICENSES</Text>
+        {CREDITS_SECTIONS.map((section, index) => (
+          <Pressable
+            key={`credit-${index}`}
+            style={({ pressed }) => [
+              localStyles.accordionCard,
+              pressed && { opacity: 0.85 },
+            ]}
+            onPress={() => {
+              const globalIndex = TIPS_SECTIONS.length + index;
+              setExpandedIndex(
+                expandedIndex === globalIndex ? null : globalIndex,
+              );
+            }}
+          >
+            <View style={localStyles.accordionHeader}>
+              <Text style={localStyles.accordionTitle}>{section.title}</Text>
+              {expandedIndex === TIPS_SECTIONS.length + index ? (
+                <ChevronUp size={20} color="#7B7C81" />
+              ) : (
+                <ChevronDown size={20} color="#7B7C81" />
+              )}
+            </View>
+            {expandedIndex === TIPS_SECTIONS.length + index && (
+              <View style={localStyles.accordionContent}>
+                <Text style={localStyles.accordionText}>{section.content}</Text>
+              </View>
+            )}
+          </Pressable>
+        ))}
         <View style={{ height: 48 }} />
       </ScrollView>
     </View>
