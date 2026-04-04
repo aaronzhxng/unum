@@ -466,11 +466,25 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
         .map((a: any) => ({
           date: a.actionDate,
           text: a.text,
-          chamber: a.sourceSystem?.name?.toLowerCase().includes("house")
-            ? "House"
-            : a.sourceSystem?.name?.toLowerCase().includes("senate")
-              ? "Senate"
-              : "",
+          chamber: (() => {
+            const src = a.sourceSystem?.name?.toLowerCase() ?? "";
+            const txt = (a.text ?? "").toLowerCase();
+            if (
+              src.includes("house") ||
+              txt.includes("in the house") ||
+              txt.includes("in house") ||
+              a.sourceSystem?.code === 2
+            )
+              return "House";
+            if (
+              src.includes("senate") ||
+              txt.includes("in the senate") ||
+              txt.includes("in senate") ||
+              a.sourceSystem?.code === 1
+            )
+              return "Senate";
+            return "";
+          })(),
         }));
       return res.json({ votes: [], voiceVotes });
     }
@@ -581,6 +595,16 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
         const recordedVoteBlocks = [
           ...xml.matchAll(/<recorded-vote>([\s\S]*?)<\/recorded-vote>/gi),
         ];
+        console.log(
+          "House recorded-vote blocks found:",
+          recordedVoteBlocks.length,
+        );
+        if (recordedVoteBlocks.length > 0) {
+          console.log(
+            "First block sample:",
+            recordedVoteBlocks[0][1].slice(0, 200),
+          );
+        }
         for (const block of recordedVoteBlocks) {
           const inner = block[1];
           const nameAttr =

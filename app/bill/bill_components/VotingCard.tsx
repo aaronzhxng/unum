@@ -178,14 +178,42 @@ const SingleVoteCard = ({
     <View style={[componentStyles.section, { gap: 12 }]}>
       {/* Header */}
       <View style={{ gap: 4 }}>
-        <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>
-          {vote.chamber} ·{" "}
-          {new Date(vote.date).toLocaleDateString("en-US", {
-            month: "2-digit",
-            day: "2-digit",
-            year: "numeric",
-          })}
-        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
+          <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>
+            {vote.chamber} ·{" "}
+            {new Date(vote.date).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            })}
+          </Text>
+          {vote.members && vote.members.length > 0 && (
+            <TouchableOpacity
+              onPress={onSeeAll}
+              style={{
+                backgroundColor: "#fafafa",
+                borderColor: "#7B7C81",
+                borderWidth: 1,
+                paddingVertical: 8,
+                paddingHorizontal: 14,
+                borderRadius: 8,
+              }}
+            >
+              <Text
+                style={{ fontSize: 13, color: "#1a1a1a", fontWeight: "600" }}
+              >
+                See all votes ({vote.members.length})
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {vote.question || vote.result
           ? (() => {
               const embeddedMatch = vote.result?.match(/\(([^)]+)\)/);
@@ -245,6 +273,7 @@ const SingleVoteCard = ({
                 backgroundColor: "#F0F7FF",
                 borderRadius: 8,
                 padding: 10,
+                marginVertical: 12,
               }}
             >
               <Text
@@ -288,18 +317,6 @@ const SingleVoteCard = ({
             </View>
           );
         })()}
-
-      {/* See all votes */}
-      {vote.members && vote.members.length > 0 && (
-        <TouchableOpacity
-          onPress={onSeeAll}
-          style={{ alignSelf: "flex-start" }}
-        >
-          <Text style={{ fontSize: 13, color: "#008CFF", fontWeight: "600" }}>
-            See all votes ({vote.members.length})
-          </Text>
-        </TouchableOpacity>
-      )}
 
       {/* Bars */}
       <PartyBar
@@ -410,7 +427,7 @@ const VotingCard: React.FC<VotingCardProps> = ({
 
   if (!votes || votes.length === 0) {
     return (
-      <View style={{ padding: 20, gap: 12 }}>
+      <View>
         {voiceVotes.length > 0 ? (
           <>
             {voiceVotes.map((vv, i) => (
@@ -440,7 +457,12 @@ const VotingCard: React.FC<VotingCardProps> = ({
               </View>
             ))}
             <Text
-              style={{ fontSize: 12, color: "#7B7C81", paddingHorizontal: 4 }}
+              style={{
+                fontSize: 12,
+                color: "#7B7C81",
+                textAlign: "center",
+                marginTop: 24,
+              }}
             >
               No roll call vote was recorded for this bill.
             </Text>
