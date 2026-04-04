@@ -10,7 +10,8 @@
     "icon": "./assets/app_icons/app_icon.png",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aaronzhxng.unum",
+      "bundleIdentifier": "com.unuminitiative.unum",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -18,13 +19,14 @@
     "android": {
       "allowBackup": false,
       "googleServicesFile": "./google-services.json",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/app_icons/app_icon.png",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.aaronzhxng.unum"
+      "package": "com.unuminitiative.unum"
     },
     "androidStatusBar": {
       "barStyle": "dark-content",
