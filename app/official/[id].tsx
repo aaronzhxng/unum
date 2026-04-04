@@ -27,6 +27,7 @@ import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
 import officialsStatic from "../data/officials-static.json";
 import AddModal from "../global_components/AddModal";
+import ErrorScreen from "../global_components/ErrorScreen";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
@@ -471,7 +472,7 @@ export default function OfficialDetail() {
     setShowFilterModal(false);
   };
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["official", id],
     queryFn: () => officialsService.getById(id as string),
     enabled: !!id,
@@ -767,9 +768,7 @@ export default function OfficialDetail() {
 
   if (error || !official) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Error loading official</Text>
-      </View>
+      <ErrorScreen onRetry={refetch} message="Could not load this official" />
     );
   }
 

@@ -16,6 +16,7 @@ interface OfficialsResponse {
 }
 
 const OFFICIALS_LIST_STALE_MS = 60 * 60 * 1000; // 1 hour
+const OFFICIALS_CACHE_VERSION = 2; // bump this to force a cache clear
 
 // ─── Cache helpers ────────────────────────────────────────────────────────────
 
@@ -25,11 +26,16 @@ const getCachedOfficialsList = (): {
 } | null => {
   try {
     const db = getDb();
-    const row = db.getFirstSync<{ data: string; fetched_at: number }>(
-      `SELECT data, fetched_at FROM officials_list_cache WHERE id = 1`,
-    );
+    const row = db.getFirstSync<{
+      data: string;
+      fetched_at: number;
+      version?: number;
+    }>(`SELECT data, fetched_at FROM officials_list_cache WHERE id = 1`);
     if (!row) return null;
-    return { data: JSON.parse(row.data), fetchedAt: row.fetched_at };
+    // Force cache clear if version doesn't match
+    const parsed = JSON.parse(row.data);
+    if (parsed.__cacheVersion !== OFFICIALS_CACHE_VERSION) return null;
+    return { data: parsed, fetchedAt: row.fetched_at };
   } catch {
     return null;
   }
@@ -38,10 +44,11 @@ const getCachedOfficialsList = (): {
 const saveOfficialsListCache = (response: OfficialsResponse): void => {
   try {
     const db = getDb();
+    const stamped = { ...response, __cacheVersion: OFFICIALS_CACHE_VERSION };
     db.runSync(
       `INSERT INTO officials_list_cache (id, data, fetched_at) VALUES (1, ?, ?)
        ON CONFLICT(id) DO UPDATE SET data = excluded.data, fetched_at = excluded.fetched_at`,
-      [JSON.stringify(response), Date.now()],
+      [JSON.stringify(stamped), Date.now()],
     );
   } catch (error) {
     console.error("Error saving officials list cache:", error);

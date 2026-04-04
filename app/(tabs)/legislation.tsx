@@ -20,6 +20,7 @@ import {
 import { useTabBar } from "../context/TabBarContext";
 import { useTour } from "../context/TourContext";
 import AddModal from "../global_components/AddModal";
+import ErrorScreen from "../global_components/ErrorScreen";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LegislationOptionsModal from "../global_components/LegislationOptionsModal";
 import SortDropdown from "../global_components/LegislationSortDropdown";
@@ -170,7 +171,7 @@ export default function LegislationScreen() {
     setShowFilterModal(true);
   };
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["bills", "v2"],
     queryFn: billsService.getAll,
   });
@@ -414,13 +415,7 @@ export default function LegislationScreen() {
   }
 
   if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: "#7B7C81" }}>
-          Something went wrong. Please try again.
-        </Text>
-      </View>
-    );
+    return <ErrorScreen onRetry={refetch} />;
   }
 
   return (

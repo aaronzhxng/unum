@@ -23,6 +23,7 @@ import {
 } from "react-native";
 import { useTour } from "../context/TourContext";
 import AddModal from "../global_components/AddModal";
+import ErrorScreen from "../global_components/ErrorScreen";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
@@ -204,7 +205,7 @@ export default function OfficialsScreen() {
 
   const router = useRouter();
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["officials"],
     queryFn: officialsService.getAll,
   });
@@ -350,13 +351,7 @@ export default function OfficialsScreen() {
   }
 
   if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: "#7B7C81" }}>
-          Something went wrong. Please try again.
-        </Text>
-      </View>
-    );
+    return <ErrorScreen onRetry={refetch} />;
   }
 
   return (
