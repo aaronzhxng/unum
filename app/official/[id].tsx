@@ -473,16 +473,7 @@ export default function OfficialDetail() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["official", id],
-    queryFn: async () => {
-      const result = await officialsService.getById(id as string);
-      console.log(
-        "getById result for",
-        id,
-        ":",
-        JSON.stringify(result)?.slice(0, 200),
-      );
-      return result;
-    },
+    queryFn: () => officialsService.getById(id as string),
     enabled: !!id,
   });
 
@@ -775,14 +766,6 @@ export default function OfficialDetail() {
   }
 
   if (error || !official) {
-    console.error(
-      "Official detail error:",
-      error,
-      "official:",
-      official,
-      "id:",
-      id,
-    );
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Error loading official</Text>

@@ -49,7 +49,7 @@ app.get("/api/bills", async (req, res) => {
       const limit = 250;
 
       while (true) {
-        const params: any = { limit, offset, sort };
+        const params: any = { limit, offset, sort, format: "json" };
         if (since) params.fromDateTime = `${since}T00:00:00Z`;
 
         const response = await axios.get(
@@ -158,7 +158,10 @@ app.get("/api/bills/search", async (req, res) => {
 
       const response = await axios.get(
         `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}`,
-        { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+        {
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { format: "json" },
+        },
       );
 
       if (response.data?.bill) {
@@ -173,6 +176,7 @@ app.get("/api/bills/search", async (req, res) => {
       params: {
         limit: 50,
         query,
+        format: "json",
       },
     });
 
@@ -264,7 +268,10 @@ app.get("/api/bills/:billId", async (req, res) => {
 
     const response = await axios.get(
       `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}`,
-      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { format: "json" },
+      },
     );
 
     res.json(response.data);
@@ -288,7 +295,10 @@ app.get("/api/bills/:billId/summaries", async (req, res) => {
 
     const response = await axios.get(
       `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/summaries`,
-      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { format: "json" },
+      },
     );
 
     res.json(response.data);
@@ -320,7 +330,7 @@ app.get("/api/bills/:billId/actions", async (req, res) => {
         `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { offset, limit },
+          params: { offset, limit, format: "json" },
         },
       );
       allActions = allActions.concat(response.data.actions || []);
@@ -357,7 +367,7 @@ app.get("/api/bills/:billId/amendments", async (req, res) => {
         `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/amendments`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { offset, limit },
+          params: { offset, limit, format: "json" },
         },
       );
       allAmendments = allAmendments.concat(response.data.amendments || []);
@@ -383,7 +393,10 @@ app.get("/api/amendments/:amendmentType/:amendmentNumber", async (req, res) => {
 
     const response = await axios.get(
       `https://api.congress.gov/v3/amendment/${congress}/${amendmentType.toLowerCase()}/${amendmentNumber}`,
-      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { format: "json" },
+      },
     );
 
     res.json(response.data);
@@ -415,7 +428,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
         `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { offset, limit },
+          params: { offset, limit, format: "json" },
         },
       );
       allActions = allActions.concat(response.data.actions || []);
@@ -617,7 +630,7 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
         `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/cosponsors`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { offset, limit },
+          params: { offset, limit, format: "json" },
         },
       );
       allCosponsors = allCosponsors.concat(response.data.cosponsors || []);
@@ -655,7 +668,7 @@ app.get("/api/officials", async (req, res) => {
     while (hasMore) {
       const response = await axios.get("https://api.congress.gov/v3/member", {
         headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit, offset, currentMember: true },
+        params: { limit, offset, currentMember: true, format: "json" },
       });
       const members = response.data.members || [];
       allMembers = allMembers.concat(
@@ -680,8 +693,11 @@ app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
     const { bioguideId } = req.params;
     const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}?format=json`,
-      { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+      `https://api.congress.gov/v3/member/${bioguideId}`,
+      {
+        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+        params: { format: "json" },
+      },
     );
     res.json(response.data);
   } catch (error) {
@@ -705,7 +721,7 @@ app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
       `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
       {
         headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit, offset },
+        params: { limit, offset, format: "json" },
       },
     );
     allTimeCo = firstPage.data.pagination?.count ?? 0;
@@ -728,7 +744,7 @@ app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
         `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { limit, offset },
+          params: { limit, offset, format: "json" },
         },
       );
       const page = response.data.sponsoredLegislation || [];
@@ -769,7 +785,7 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
       `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
       {
         headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit, offset },
+        params: { limit, offset, format: "json" },
       },
     );
     allTimeCount = firstPage.data.pagination?.count ?? 0;
@@ -788,7 +804,7 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
         `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { limit, offset },
+          params: { limit, offset, format: "json" },
         },
       );
       const page = response.data.cosponsoredLegislation || [];
@@ -815,10 +831,6 @@ app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
   }
 });
 
-// ─── UPDATED policy-areas endpoint ───────────────────────────────────────────
-// Replace the existing /api/officials/:bioguideId/policy-areas endpoint
-// in backend/src/index.ts with this version.
-
 app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
   try {
     const { bioguideId } = req.params;
@@ -834,7 +846,7 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
           `https://api.congress.gov/v3/member/${bioguideId}/${path}`,
           {
             headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-            params: { limit, offset },
+            params: { limit, offset, format: "json" },
           },
         );
         const page = response.data[key] || [];
@@ -910,12 +922,6 @@ app.get("/api/push-tokens/list", (req, res) => {
   res.json(rows);
 });
 
-// app.post("/api/debug/token", (req, res) => {
-//   const { token, error } = req.body;
-//   console.log("DEBUG TOKEN:", token ?? "null", "ERROR:", error ?? "none");
-//   res.json({ success: true });
-// });
-
 app.post("/api/push-tokens", (req, res) => {
   try {
     const {
@@ -957,9 +963,7 @@ app.post("/api/push-tokens", (req, res) => {
 
 const prewarmCache = async () => {
   try {
-    // console.log("🔄 Pre-warming bills cache...");
     await axios.get(`http://localhost:${PORT}/api/bills`);
-    // console.log("✅ Bills cache warmed");
   } catch (error) {
     console.error("Cache pre-warm failed:", error);
   }

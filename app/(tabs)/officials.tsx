@@ -350,7 +350,6 @@ export default function OfficialsScreen() {
   }
 
   if (error) {
-    console.error("Officials list error:", error);
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text style={{ color: "#7B7C81" }}>
