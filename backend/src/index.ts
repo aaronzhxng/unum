@@ -452,8 +452,28 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       }
     }
 
-    if (recordedVotes.length === 0) return res.json({ votes: [] });
-
+    if (recordedVotes.length === 0) {
+      const voiceVotes = allActions
+        .filter(
+          (a: any) =>
+            !a.recordedVotes?.length &&
+            a.text &&
+            (a.text.toLowerCase().includes("voice vote") ||
+              a.text.toLowerCase().includes("agreed to") ||
+              a.text.toLowerCase().includes("passed without") ||
+              a.text.toLowerCase().includes("unanimous consent")),
+        )
+        .map((a: any) => ({
+          date: a.actionDate,
+          text: a.text,
+          chamber: a.sourceSystem?.name?.toLowerCase().includes("house")
+            ? "House"
+            : a.sourceSystem?.name?.toLowerCase().includes("senate")
+              ? "Senate"
+              : "",
+        }));
+      return res.json({ votes: [], voiceVotes });
+    }
     const seen = new Set<string>();
     const uniqueVotes = recordedVotes.filter((v) => {
       const key = `${v.chamber}-${v.rollNumber}`;
@@ -529,6 +549,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
         question = get("vote_question");
         title = get("vote_title") || title;
       } else {
+        // Party totals
         const totalBlocks = [
           ...xml.matchAll(/<totals-by-party>([\s\S]*?)<\/totals-by-party>/gi),
         ];
@@ -555,6 +576,34 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
           else if (party === "Independent")
             ind = { yea, nay, present, notVoting };
         }
+
+        // Individual member votes — House XML uses <recorded-vote> with <legislator> and <vote>
+        const recordedVoteBlocks = [
+          ...xml.matchAll(/<recorded-vote>([\s\S]*?)<\/recorded-vote>/gi),
+        ];
+        for (const block of recordedVoteBlocks) {
+          const inner = block[1];
+          const nameAttr =
+            inner.match(
+              /<legislator[^>]*unaccented-name="([^"]*)"[^>]*>/i,
+            )?.[1] ?? "";
+          const party =
+            inner
+              .match(/<legislator[^>]*party="([^"]*)"[^>]*>/i)?.[1]
+              ?.trim() ?? "";
+          const voteCast =
+            inner.match(/<vote>(.*?)<\/vote>/i)?.[1]?.trim() ?? "";
+
+          // House XML stores full "Last, First" in unaccented-name attribute
+          const nameParts = nameAttr.split(",").map((s: string) => s.trim());
+          const lastName = nameParts[0] ?? "";
+          const firstName = nameParts[1] ?? "";
+
+          if (lastName) {
+            members.push({ firstName, lastName, party, vote: voteCast });
+          }
+        }
+
         result = get("vote-result");
         question = get("vote-question");
         title = get("vote-desc") || get("legis-name") || title;
@@ -602,7 +651,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       .filter((r) => r.status === "fulfilled")
       .map((r) => (r as PromiseFulfilledResult<any>).value);
 
-    res.json({ votes });
+    res.json({ votes, voiceVotes: [] });
   } catch (error) {
     console.error("Error fetching votes:", error);
     res.status(500).json({ error: "Failed to fetch vote data" });

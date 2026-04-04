@@ -40,8 +40,15 @@ interface FollowedOfficial {
   name: string; // "Last, First" format
 }
 
+interface VoiceVote {
+  date: string;
+  text: string;
+  chamber: string;
+}
+
 interface VotingCardProps {
   votes: VoteData[];
+  voiceVotes?: VoiceVote[];
   isLoading?: boolean;
   followedOfficials?: FollowedOfficial[];
 }
@@ -384,6 +391,7 @@ const SingleVoteCard = ({
 
 const VotingCard: React.FC<VotingCardProps> = ({
   votes,
+  voiceVotes = [],
   isLoading,
   followedOfficials,
 }) => {
@@ -402,10 +410,48 @@ const VotingCard: React.FC<VotingCardProps> = ({
 
   if (!votes || votes.length === 0) {
     return (
-      <View style={{ padding: 40, alignItems: "center" }}>
-        <Text style={{ color: "#7B7C81" }}>
-          No recorded votes for this bill.
-        </Text>
+      <View style={{ padding: 20, gap: 12 }}>
+        {voiceVotes.length > 0 ? (
+          <>
+            {voiceVotes.map((vv, i) => (
+              <View key={i} style={[componentStyles.section, { gap: 6 }]}>
+                <Text style={[componentStyles.detailTitle, { fontSize: 14 }]}>
+                  {[
+                    vv.chamber,
+                    vv.date
+                      ? new Date(vv.date + "T12:00:00").toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          },
+                        )
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Text>
+                <Text
+                  style={[componentStyles.detailInfo, { color: "#535353" }]}
+                >
+                  {vv.text}
+                </Text>
+              </View>
+            ))}
+            <Text
+              style={{ fontSize: 12, color: "#7B7C81", paddingHorizontal: 4 }}
+            >
+              No roll call vote was recorded for this bill.
+            </Text>
+          </>
+        ) : (
+          <View style={{ padding: 20, alignItems: "center" }}>
+            <Text style={{ color: "#7B7C81" }}>
+              No voting information available.
+            </Text>
+          </View>
+        )}
       </View>
     );
   }

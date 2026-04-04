@@ -1643,6 +1643,7 @@ export default function BillDetail() {
               {votingVisited && (
                 <VotingCard
                   votes={votesData?.votes ?? []}
+                  voiceVotes={votesData?.voiceVotes ?? []}
                   isLoading={votesLoading}
                   followedOfficials={followedOfficials}
                 />
