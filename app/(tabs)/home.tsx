@@ -92,6 +92,8 @@ export default function HomeScreen() {
   const [currentListId, setCurrentListId] = useState<string>("");
   const [notifVersion, setNotifVersion] = useState(0);
 
+  const [suggestedBillsDismissed, setSuggestedBillsDismissed] = useState(false);
+
   // In the loadItems function, track which list is loaded:
   const [isLoading, setIsLoading] = useState(true);
 
@@ -279,14 +281,6 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    const db = getDb();
-    const row = db.getFirstSync<{ value: string }>(
-      `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
-    );
-    if (row?.value === "true") setVoterCardDismissed(true);
-  }, []);
-
-  useEffect(() => {
     refreshLists();
   }, []);
 
@@ -369,6 +363,14 @@ export default function HomeScreen() {
   }, [isActive, currentStep]);
 
   useEffect(() => {
+    const db = getDb();
+    const row = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'suggested_bills_dismissed'`,
+    );
+    if (row?.value === "true") setSuggestedBillsDismissed(true);
+  }, []);
+
+  useEffect(() => {
     if (!isLoading && items !== undefined) {
       markAppReady();
     }
@@ -382,7 +384,11 @@ export default function HomeScreen() {
         const row = db.getFirstSync<{ value: string }>(
           `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
         );
-        if (row?.value === "true") setVoterCardDismissed(true);
+        setVoterCardDismissed(row?.value === "true");
+        const suggestedRow = db.getFirstSync<{ value: string }>(
+          `SELECT value FROM meta WHERE key = 'suggested_bills_dismissed'`,
+        );
+        setSuggestedBillsDismissed(suggestedRow?.value === "true");
         const allLists = await storage.getLists();
         setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
         const currentList =
@@ -556,77 +562,177 @@ export default function HomeScreen() {
       {items.length === 0 ? (
         <View style={{ flex: 1 }}>
           {!voterCardDismissed && <VoterCard onDismiss={dismissVoterCard} />}
-          {featuredData?.bills && featuredData.bills.length > 0 && (
-            <View style={{ marginBottom: 8 }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "500",
-                  color: "#000",
-                  marginHorizontal: 16,
-                  marginBottom: 8,
-                  marginTop: 8,
-                }}
-              >
-                Suggested bills of the week
-              </Text>
-              {featuredData.bills.map((bill: any) => (
-                <Pressable
-                  key={bill.billId}
-                  onPress={() => router.navigate(`/bill/${bill.billId}`)}
-                  style={({ pressed }) => ({
-                    transform: [{ scale: pressed ? 0.98 : 1 }],
-                  })}
+          {!suggestedBillsDismissed &&
+            featuredData?.bills &&
+            featuredData.bills.length > 0 && (
+              <View style={{ marginBottom: 8 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "500",
+                    color: "1a1a1a",
+                    marginBottom: 8,
+                    marginTop: 8,
+                  }}
                 >
-                  <View
-                    style={[
-                      componentStyles.officialCard,
-                      {
-                        marginHorizontal: 16,
-                        marginBottom: 8,
-                        flexDirection: "column",
-                        gap: 6,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: "600",
-                        color: "#000000",
-                      }}
-                      numberOfLines={2}
+                  Suggested bills of the week
+                </Text>
+                {featuredData.bills.map((bill: any) => (
+                  <View key={bill.billId} style={{ marginBottom: 12 }}>
+                    <Pressable
+                      onPress={() => router.navigate(`/bill/${bill.billId}`)}
+                      style={({ pressed }) => ({
+                        transform: [{ scale: pressed ? 0.98 : 1 }],
+                      })}
                     >
-                      {bill.type}.{bill.number} — {bill.title}
-                    </Text>
-                    {bill.latestActionDate && (
-                      <Text style={componentStyles.subtitle}>
-                        {new Date(
-                          bill.latestActionDate + "T12:00:00",
-                        ).toLocaleDateString("en-US", {
-                          month: "2-digit",
-                          day: "2-digit",
-                          year: "numeric",
-                        })}
-                        {bill.policyArea ? ` · ${bill.policyArea}` : ""}
-                      </Text>
-                    )}
+                      <View
+                        style={[
+                          componentStyles.officialCard,
+                          {
+                            backgroundColor: "#E8F4FF",
+                            borderWidth: 1,
+                            borderColor: "#008CFF33",
+                            shadowOpacity: 0,
+                            elevation: 0,
+                          },
+                        ]}
+                      >
+                        {/* Left column: badge + icon */}
+                        <View
+                          style={{
+                            alignItems: "center",
+                            flexShrink: 0,
+                            width: 64,
+                            marginRight: 12,
+                          }}
+                        >
+                          <View
+                            style={{
+                              backgroundColor:
+                                POLICY_AREA_COLORS[bill.policyArea] ??
+                                "#008CFF",
+                              borderRadius: 6,
+                              paddingHorizontal: 6,
+                              paddingVertical: 4,
+                              marginBottom: 6,
+                              alignItems: "center",
+                              width: "100%",
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: "#fff",
+                                fontSize: 12,
+                                fontWeight: "700",
+                              }}
+                              numberOfLines={1}
+                            >
+                              {`${bill.type}.${bill.number}`}
+                            </Text>
+                          </View>
+                          <Image
+                            source={
+                              bill.policyArea
+                                ? getBillIcon(bill.policyArea)
+                                : getBillIcon()
+                            }
+                            style={{ width: 50, height: 50, borderRadius: 6 }}
+                            resizeMode="contain"
+                          />
+                        </View>
+
+                        {/* Right column: info */}
+                        <View
+                          style={{
+                            flex: 1,
+                            alignSelf: "stretch",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <View>
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                flexWrap: "nowrap",
+                                marginBottom: 4,
+                              }}
+                            >
+                              {bill.latestActionDate && (
+                                <Text
+                                  style={[
+                                    componentStyles.subtitle,
+                                    { flexShrink: 0 },
+                                  ]}
+                                  numberOfLines={1}
+                                >
+                                  {new Date(
+                                    bill.latestActionDate + "T12:00:00",
+                                  ).toLocaleDateString("en-US", {
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    year: "numeric",
+                                  })}
+                                </Text>
+                              )}
+                              {bill.policyArea && (
+                                <>
+                                  <Text style={componentStyles.separator}>
+                                    ·
+                                  </Text>
+                                  <Text
+                                    style={{
+                                      fontSize: 12,
+                                      color:
+                                        POLICY_AREA_COLORS[bill.policyArea] ??
+                                        "#008CFF",
+                                      fontWeight: "600",
+                                      flexShrink: 1,
+                                    }}
+                                    numberOfLines={1}
+                                  >
+                                    {bill.policyArea}
+                                  </Text>
+                                </>
+                              )}
+                            </View>
+                            <Text
+                              style={componentStyles.name}
+                              numberOfLines={2}
+                            >
+                              {bill.title}
+                            </Text>
+                          </View>
+                          {bill.latestAction && (
+                            <Text
+                              style={componentStyles.subtitle}
+                              numberOfLines={1}
+                            >
+                              {bill.latestAction}
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+                    </Pressable>
+
+                    {/* Editorial note below the card */}
                     {bill.note && (
                       <Text
                         style={{
-                          fontSize: 14,
-                          color: "#535353",
+                          fontSize: 12,
+                          color: "#7B7C81",
                           fontStyle: "italic",
+                          marginTop: 0,
+                          marginLeft: 16,
                         }}
                       >
                         {bill.note}
                       </Text>
                     )}
                   </View>
-                </Pressable>
-              ))}
-            </View>
-          )}
+                ))}
+              </View>
+            )}
           <View
             style={{
               flex: 1,
@@ -715,77 +821,185 @@ export default function HomeScreen() {
                 {!voterCardDismissed && !isEditMode && (
                   <VoterCard onDismiss={dismissVoterCard} />
                 )}
-                {featuredData?.bills && featuredData.bills.length > 0 && (
-                  <View style={{ marginBottom: 8 }}>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontWeight: "500",
-                        color: "#000",
-                        marginHorizontal: 16,
-                        marginBottom: 8,
-                        marginTop: 8,
-                      }}
-                    >
-                      Suggested bills of the week
-                    </Text>
-                    {featuredData.bills.map((bill: any) => (
-                      <Pressable
-                        key={bill.billId}
-                        onPress={() => router.navigate(`/bill/${bill.billId}`)}
-                        style={({ pressed }) => ({
-                          transform: [{ scale: pressed ? 0.98 : 1 }],
-                        })}
+                {!suggestedBillsDismissed &&
+                  featuredData?.bills &&
+                  featuredData.bills.length > 0 && (
+                    <View style={{ marginBottom: 8 }}>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "500",
+                          color: "#1a1a1a",
+                          marginHorizontal: 16,
+                          marginBottom: 8,
+                          marginTop: 8,
+                        }}
                       >
-                        <View
-                          style={[
-                            componentStyles.officialCard,
-                            {
-                              marginHorizontal: 16,
-                              marginBottom: 8,
-                              flexDirection: "column",
-                              gap: 6,
-                            },
-                          ]}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 15,
-                              fontWeight: "600",
-                              color: "#000000",
-                            }}
-                            numberOfLines={2}
+                        Suggested bills of the week
+                      </Text>
+                      {featuredData.bills.map((bill: any) => (
+                        <View key={bill.billId} style={{ marginBottom: 12 }}>
+                          <Pressable
+                            onPress={() =>
+                              router.navigate(`/bill/${bill.billId}`)
+                            }
+                            style={({ pressed }) => ({
+                              transform: [{ scale: pressed ? 0.98 : 1 }],
+                            })}
                           >
-                            {bill.type}.{bill.number} — {bill.title}
-                          </Text>
-                          {bill.latestActionDate && (
-                            <Text style={componentStyles.subtitle}>
-                              {new Date(
-                                bill.latestActionDate + "T12:00:00",
-                              ).toLocaleDateString("en-US", {
-                                month: "2-digit",
-                                day: "2-digit",
-                                year: "numeric",
-                              })}
-                              {bill.policyArea ? ` · ${bill.policyArea}` : ""}
-                            </Text>
-                          )}
+                            <View
+                              style={[
+                                componentStyles.officialCard,
+                                {
+                                  backgroundColor: "#E8F4FF",
+                                  borderWidth: 1,
+                                  borderColor: "#008CFF33",
+                                  shadowOpacity: 0,
+                                  elevation: 0,
+                                },
+                              ]}
+                            >
+                              {/* Left column: badge + icon */}
+                              <View
+                                style={{
+                                  alignItems: "center",
+                                  flexShrink: 0,
+                                  width: 64,
+                                  marginRight: 12,
+                                }}
+                              >
+                                <View
+                                  style={{
+                                    backgroundColor:
+                                      POLICY_AREA_COLORS[bill.policyArea] ??
+                                      "#008CFF",
+                                    borderRadius: 6,
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 4,
+                                    marginBottom: 6,
+                                    alignItems: "center",
+                                    width: "100%",
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      color: "#fff",
+                                      fontSize: 12,
+                                      fontWeight: "700",
+                                    }}
+                                    numberOfLines={1}
+                                  >
+                                    {`${bill.type}.${bill.number}`}
+                                  </Text>
+                                </View>
+                                <Image
+                                  source={
+                                    bill.policyArea
+                                      ? getBillIcon(bill.policyArea)
+                                      : getBillIcon()
+                                  }
+                                  style={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: 6,
+                                  }}
+                                  resizeMode="contain"
+                                />
+                              </View>
+
+                              {/* Right column: info */}
+                              <View
+                                style={{
+                                  flex: 1,
+                                  alignSelf: "stretch",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <View>
+                                  <View
+                                    style={{
+                                      flexDirection: "row",
+                                      alignItems: "center",
+                                      flexWrap: "nowrap",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    {bill.latestActionDate && (
+                                      <Text
+                                        style={[
+                                          componentStyles.subtitle,
+                                          { flexShrink: 0 },
+                                        ]}
+                                        numberOfLines={1}
+                                      >
+                                        {new Date(
+                                          bill.latestActionDate + "T12:00:00",
+                                        ).toLocaleDateString("en-US", {
+                                          month: "2-digit",
+                                          day: "2-digit",
+                                          year: "numeric",
+                                        })}
+                                      </Text>
+                                    )}
+                                    {bill.policyArea && (
+                                      <>
+                                        <Text style={componentStyles.separator}>
+                                          ·
+                                        </Text>
+                                        <Text
+                                          style={{
+                                            fontSize: 12,
+                                            color:
+                                              POLICY_AREA_COLORS[
+                                                bill.policyArea
+                                              ] ?? "#008CFF",
+                                            fontWeight: "600",
+                                            flexShrink: 1,
+                                          }}
+                                          numberOfLines={1}
+                                        >
+                                          {bill.policyArea}
+                                        </Text>
+                                      </>
+                                    )}
+                                  </View>
+                                  <Text
+                                    style={componentStyles.name}
+                                    numberOfLines={2}
+                                  >
+                                    {bill.title}
+                                  </Text>
+                                </View>
+                                {bill.latestAction && (
+                                  <Text
+                                    style={componentStyles.subtitle}
+                                    numberOfLines={1}
+                                  >
+                                    {bill.latestAction}
+                                  </Text>
+                                )}
+                              </View>
+                            </View>
+                          </Pressable>
+
+                          {/* Editorial note below the card */}
                           {bill.note && (
                             <Text
                               style={{
-                                fontSize: 14,
-                                color: "#535353",
+                                fontSize: 12,
+                                color: "#7B7C81",
                                 fontStyle: "italic",
+                                marginTop: 0,
+                                marginLeft: 16,
                               }}
                             >
                               {bill.note}
                             </Text>
                           )}
                         </View>
-                      </Pressable>
-                    ))}
-                  </View>
-                )}
+                      ))}
+                    </View>
+                  )}
               </View>
             )}
             renderItem={({ item }) => (
@@ -910,7 +1124,7 @@ export default function HomeScreen() {
               borderRadius: 12,
               paddingTop: 24,
               paddingHorizontal: 24,
-              shadowColor: "#000",
+              shadowColor: "#1a1a1a",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.12,
               shadowRadius: 12,
@@ -921,7 +1135,7 @@ export default function HomeScreen() {
               style={{
                 fontSize: 16,
                 fontWeight: "600",
-                color: "#000000",
+                color: "#1a1a1a",
                 marginBottom: 8,
               }}
             >
@@ -1062,7 +1276,7 @@ export default function HomeScreen() {
               marginHorizontal: 16,
               borderRadius: 16,
               padding: 24,
-              shadowColor: "#000",
+              shadowColor: "#1a1a1a",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.12,
               shadowRadius: 12,
@@ -1568,7 +1782,7 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
               backgroundColor: "#fff",
               borderRadius: 12,
               padding: 4,
-              shadowColor: "#000",
+              shadowColor: "#1a1a1a",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.12,
               shadowRadius: 12,

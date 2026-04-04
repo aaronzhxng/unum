@@ -2,9 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronDown, ChevronLeft, ChevronUp } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { styles as componentStyles } from "./global_styles/styles";
+import { getDb } from "./utils/database";
 
 const CREDITS_SECTIONS = [
   {
@@ -63,6 +64,21 @@ const TIPS_SECTIONS = [
 export default function TipsScreen() {
   const router = useRouter();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [suggestedBillsDismissed, setSuggestedBillsDismissed] = useState(false);
+  const [voterCardDismissed, setVoterCardDismissed] = useState(false);
+
+  useEffect(() => {
+    const db = getDb();
+    const suggestedRow = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'suggested_bills_dismissed'`,
+    );
+    if (suggestedRow?.value === "true") setSuggestedBillsDismissed(true);
+
+    const voterRow = db.getFirstSync<{ value: string }>(
+      `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
+    );
+    if (voterRow?.value === "true") setVoterCardDismissed(true);
+  }, []);
 
   const handleRelaunchTour = async () => {
     await AsyncStorage.setItem("pending_tour", "true");
@@ -126,6 +142,69 @@ export default function TipsScreen() {
             color="#7B7C81"
             style={{ transform: [{ rotate: "-90deg" }] }}
           />
+        </Pressable>
+        <Text style={localStyles.sectionLabel}>PREFERENCES</Text>
+        <Pressable
+          onPress={() => {
+            const db = getDb();
+            const current = db.getFirstSync<{ value: string }>(
+              `SELECT value FROM meta WHERE key = 'suggested_bills_dismissed'`,
+            );
+            const nowDismissed = current?.value !== "true";
+            db.runSync(
+              `INSERT INTO meta (key, value) VALUES ('suggested_bills_dismissed', ?)
+       ON CONFLICT(key) DO UPDATE SET value = ?`,
+              [
+                nowDismissed ? "true" : "false",
+                nowDismissed ? "true" : "false",
+              ],
+            );
+            setSuggestedBillsDismissed(nowDismissed);
+          }}
+          style={({ pressed }) => [
+            localStyles.accordionCard,
+            pressed && { opacity: 0.85 },
+          ]}
+        >
+          <View style={localStyles.accordionHeader}>
+            <Text style={localStyles.accordionTitle}>
+              Show suggested bills of the week
+            </Text>
+            <Text style={{ fontSize: 15, color: "#008CFF", fontWeight: "600" }}>
+              {suggestedBillsDismissed ? "Off" : "On"}
+            </Text>
+          </View>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            const db = getDb();
+            const current = db.getFirstSync<{ value: string }>(
+              `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
+            );
+            const nowDismissed = current?.value !== "true";
+            db.runSync(
+              `INSERT INTO meta (key, value) VALUES ('voter_card_dismissed', ?)
+       ON CONFLICT(key) DO UPDATE SET value = ?`,
+              [
+                nowDismissed ? "true" : "false",
+                nowDismissed ? "true" : "false",
+              ],
+            );
+            setVoterCardDismissed(nowDismissed);
+          }}
+          style={({ pressed }) => [
+            localStyles.accordionCard,
+            pressed && { opacity: 0.85 },
+          ]}
+        >
+          <View style={localStyles.accordionHeader}>
+            <Text style={localStyles.accordionTitle}>
+              Show voter registration card
+            </Text>
+            <Text style={{ fontSize: 15, color: "#008CFF", fontWeight: "600" }}>
+              {voterCardDismissed ? "Off" : "On"}
+            </Text>
+          </View>
         </Pressable>
         {/* Section label */}
         <Text style={localStyles.sectionLabel}>CIVICS REFERENCE</Text>

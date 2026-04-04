@@ -1017,7 +1017,7 @@ export default function OfficialDetail() {
               }}
             >
               <Text style={{ fontSize: 16, fontWeight: "700" }}>
-                Bills Signed Into Law
+                Bills Signed Into Law (2025 -)
               </Text>
             </View>
             {!sponsoredLoading && !cosponsoredLoading ? (
@@ -1074,7 +1074,7 @@ export default function OfficialDetail() {
             >
               <View style={componentStyles.termRow}>
                 <Text style={componentStyles.sectionTitle}>
-                  Top Policy Areas
+                  Top Policy Areas (2025 - )
                 </Text>
               </View>
               {topPolicyAreas.length > 0 ? (

@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft, ExternalLink, MoreVertical } from "lucide-react-native";
+import { ChevronLeft, ExternalLink } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Linking,
@@ -44,15 +44,6 @@ export default function VoterRegistrationScreen() {
             Voter Registration
           </Text>
         </View>
-        <Pressable
-          onPress={() => setShowMenu(true)}
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.75 : 1 }],
-            marginRight: 8,
-          })}
-        >
-          <MoreVertical size={24} color="#535353" />
-        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 80 }}>
