@@ -109,4 +109,8 @@ export const officialsService = {
   getPolicyAreas: async (bioguideId: string): Promise<any> => {
     return apiClient.get(`/officials/${bioguideId}/policy-areas`);
   },
+
+  getBio: async (bioguideId: string): Promise<any> => {
+    return apiClient.get(`/officials/${bioguideId}/bio`);
+  },
 };

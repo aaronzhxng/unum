@@ -533,6 +533,14 @@ export default function OfficialDetail() {
     initialData: cachedPolicyAreas ?? undefined,
   });
 
+  // Add after the policyAreasData query
+  const { data: bioData, isLoading: bioLoading } = useQuery({
+    queryKey: ["officialBio", id],
+    queryFn: () => officialsService.getBio(id as string),
+    enabled: !!id,
+    retry: 1,
+  });
+
   const official = data?.member;
 
   const staticData = (officialsStatic as any)[id as string] ?? {
@@ -794,7 +802,7 @@ export default function OfficialDetail() {
       targetLayout: tourLayouts[2],
     },
     {
-      title: "Sponsor & Cosponsor Tabs",
+      title: "Bio, Sponsor, & Cosponsor Tabs",
       description:
         "The Sponsor and Cosponsor tabs list every bill this official has introduced or co-signed in the current Congress. Tap either tab to explore.",
       horizontalInset: 16,
@@ -953,7 +961,7 @@ export default function OfficialDetail() {
         style={componentStyles.tabsNegative}
       >
         <View style={componentStyles.tabs}>
-          {["Profile", "Sponsor", "Cosponsor"].map((label, index) => (
+          {["Profile", "Bio", "Sponsor", "Cosponsor"].map((label, index) => (
             <Pressable
               key={label}
               onPress={() => {
@@ -1155,68 +1163,140 @@ export default function OfficialDetail() {
                 ))}
               </View>
             )}
+          </ScrollView>
+        </View>
 
-            {/* Education */}
-            {staticData.education.length > 0 && (
-              <View style={componentStyles.section}>
-                <View style={componentStyles.termRow}>
-                  <Text style={componentStyles.sectionTitle}>Education</Text>
+        {/* Page 1: Bio */}
+        <View key="1" style={{ flex: 1 }}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <View style={{ marginHorizontal: 16, marginBottom: 96 }}>
+              {/* Biography */}
+              {bioLoading ? (
+                <View style={{ paddingTop: 40, alignItems: "center" }}>
+                  <LoadingSpinner />
+                  <Text style={{ color: "#7B7C81", marginTop: 16 }}>
+                    Loading biography...
+                  </Text>
                 </View>
-                {staticData.education.map((edu: string, index: number) => (
-                  <View key={index} style={componentStyles.termRow}>
-                    <Text style={componentStyles.term}>{edu}</Text>
+              ) : bioData?.profileText ? (
+                <View style={componentStyles.section}>
+                  <View style={componentStyles.termRow}>
+                    <Text style={componentStyles.sectionTitle}>Biography</Text>
                   </View>
-                ))}
-              </View>
-            )}
-
-            {/* Congressional History */}
-            <View style={[componentStyles.section, { marginBottom: 96 }]}>
-              <View style={componentStyles.termRow}>
-                <Text style={componentStyles.sectionTitle}>
-                  Congressional History
-                </Text>
-              </View>
-              {official.terms && official.terms.length > 0 ? (
-                [...official.terms]
-                  .sort((a: any, b: any) => b.startYear - a.startYear)
-                  .map((term: any, index: number) => (
-                    <View key={index} style={componentStyles.termRow}>
-                      <Text
-                        style={[componentStyles.term, { flex: 1 }]}
-                        numberOfLines={1}
-                      >
-                        {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
-                        {official.state}
-                        {term.district ? `, District ${term.district}` : ""}
-                      </Text>
-                      <Text
-                        style={[
-                          componentStyles.term,
-                          { flex: 0, textAlign: "right" },
-                        ]}
-                      >
-                        {term.startYear}
-                        {term.endYear ? ` – ${term.endYear}` : " – Present"}
-                      </Text>
-                    </View>
-                  ))
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: "#535353",
+                      lineHeight: 22,
+                      paddingBottom: 16,
+                    }}
+                  >
+                    {bioData.profileText}
+                  </Text>
+                  {bioData.birthDate && (
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: "#7B7C81",
+                        paddingBottom: 16,
+                      }}
+                    >
+                      Born {bioData.birthDate}
+                    </Text>
+                  )}
+                </View>
               ) : (
-                <View style={componentStyles.termRow}>
-                  <Text style={componentStyles.term}>
-                    {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
-                    {official.terms?.[0]?.chamber === "House of Representatives"
-                      ? `Representative, ${official.state}${official.terms?.[0]?.district ? ` - District ${official.terms[0].district}` : ""}`
-                      : `Senator, ${official.state}`}
+                <View style={{ padding: 32, alignItems: "center" }}>
+                  <Text style={{ color: "#7B7C81", fontSize: 14 }}>
+                    Biography not available.
                   </Text>
                 </View>
               )}
+
+              {/* Education */}
+              {staticData.education.length > 0 && (
+                <View style={componentStyles.section}>
+                  <View style={componentStyles.termRow}>
+                    <Text style={componentStyles.sectionTitle}>Education</Text>
+                  </View>
+                  {staticData.education.map((edu: string, index: number) => (
+                    <View key={index} style={componentStyles.termRow}>
+                      <Text style={componentStyles.term}>{edu}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Books */}
+              {bioData?.creativeWork?.length > 0 && (
+                <View style={componentStyles.section}>
+                  <View style={componentStyles.termRow}>
+                    <Text style={componentStyles.sectionTitle}>
+                      Published Works
+                    </Text>
+                  </View>
+                  {bioData.creativeWork.map((work: any, index: number) => (
+                    <View key={index} style={componentStyles.termRow}>
+                      <Text
+                        style={[componentStyles.term, { fontStyle: "italic" }]}
+                      >
+                        {work.name ??
+                          work.freeFormCitationText?.replace(/<[^>]*>/g, "") ??
+                          ""}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Congressional History */}
+              <View style={componentStyles.section}>
+                <View style={componentStyles.termRow}>
+                  <Text style={componentStyles.sectionTitle}>
+                    Congressional History
+                  </Text>
+                </View>
+                {official.terms && official.terms.length > 0 ? (
+                  [...official.terms]
+                    .sort((a: any, b: any) => b.startYear - a.startYear)
+                    .map((term: any, index: number) => (
+                      <View key={index} style={componentStyles.termRow}>
+                        <Text
+                          style={[componentStyles.term, { flex: 1 }]}
+                          numberOfLines={1}
+                        >
+                          {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
+                          {official.state}
+                          {term.district ? `, District ${term.district}` : ""}
+                        </Text>
+                        <Text
+                          style={[
+                            componentStyles.term,
+                            { flex: 0, textAlign: "right" },
+                          ]}
+                        >
+                          {term.startYear}
+                          {term.endYear ? ` – ${term.endYear}` : " – Present"}
+                        </Text>
+                      </View>
+                    ))
+                ) : (
+                  <View style={componentStyles.termRow}>
+                    <Text style={componentStyles.term}>
+                      {official.terms?.[0]?.chamber ===
+                      "House of Representatives"
+                        ? `Representative, ${official.state}`
+                        : `Senator, ${official.state}`}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </ScrollView>
         </View>
 
         {/* Page 1: Sponsored */}
-        <View key="1" style={{ flex: 1, marginHorizontal: 16 }}>
+        <View key="2" style={{ flex: 1, marginHorizontal: 16 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ marginBottom: 96 }}>
               {sponsoredLoading ? (
@@ -1313,7 +1393,7 @@ export default function OfficialDetail() {
         </View>
 
         {/* Page 2: Cosponsored */}
-        <View key="2" style={{ flex: 1, marginHorizontal: 16 }}>
+        <View key="3" style={{ flex: 1, marginHorizontal: 16 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ marginBottom: 96 }}>
               {cosponsoredLoading ? (
@@ -1415,7 +1495,7 @@ export default function OfficialDetail() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
-        searchContext={activeTab === 1 ? "Sponsored" : "Cosponsored"}
+        searchContext={activeTab === 2 ? "Sponsored" : "Cosponsored"}
         items={toSearchable(
           activeTab === 1 ? filteredSponsored : filteredCosponsored,
         )}

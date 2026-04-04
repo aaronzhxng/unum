@@ -1003,6 +1003,28 @@ app.get("/api/debug/old-bills-with-policy", (req, res) => {
   res.json(rows);
 });
 
+// Get official biography from Bioguide
+app.get("/api/officials/:bioguideId/bio", async (req, res) => {
+  try {
+    const { bioguideId } = req.params;
+    const response = await axios.get(
+      `https://bioguide.congress.gov/search/bio/${bioguideId}.json`,
+      { timeout: 8000 },
+    );
+    const data = response.data?.data;
+    if (!data) return res.status(404).json({ error: "Bio not found" });
+    res.json({
+      profileText: data.profileText ?? null,
+      birthDate: data.birthDate ?? null,
+      nickName: data.nickName ?? null,
+      creativeWork: data.creativeWork ?? [],
+    });
+  } catch (error) {
+    console.error("Error fetching bio:", error);
+    res.status(500).json({ error: "Failed to fetch biography" });
+  }
+});
+
 const fs = require("fs");
 const path = require("path");
 
