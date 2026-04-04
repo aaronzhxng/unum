@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   Modal,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -195,23 +196,24 @@ const SingleVoteCard = ({
             })}
           </Text>
           {vote.members && vote.members.length > 0 && (
-            <TouchableOpacity
+            <Pressable
               onPress={onSeeAll}
-              style={{
+              style={({ pressed }) => ({
                 backgroundColor: "#fafafa",
                 borderColor: "#7B7C81",
                 borderWidth: 1,
                 paddingVertical: 8,
                 paddingHorizontal: 14,
                 borderRadius: 8,
-              }}
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
             >
               <Text
                 style={{ fontSize: 13, color: "#1a1a1a", fontWeight: "600" }}
               >
                 See all votes ({vote.members.length})
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
         {vote.question || vote.result
@@ -249,18 +251,30 @@ const SingleVoteCard = ({
             const parts = official.name.split(",").map((s) => s.trim());
             const lastName = parts[0] ?? "";
             const firstName = parts[1]?.split(" ")[0] ?? "";
-            const match = vote.members!.find(
-              (m) =>
-                m.lastName.toLowerCase() === lastName.toLowerCase() &&
-                (firstName === "" ||
-                  m.firstName
-                    .toLowerCase()
-                    .startsWith(firstName.toLowerCase())),
-            );
+            const match = vote.members!.find((m) => {
+              // Strip state disambiguator e.g. "Adams (NC)" → "Adams"
+              const memberLastName = m.lastName
+                .replace(/\s*\([^)]+\)$/, "")
+                .trim();
+              const lastNameMatch =
+                memberLastName.toLowerCase() === lastName.toLowerCase();
+              if (!lastNameMatch) return false;
+              // If House XML has no firstName, last name match is enough
+              if (m.firstName === "") return true;
+              return (
+                firstName === "" ||
+                m.firstName.toLowerCase().startsWith(firstName.toLowerCase())
+              );
+            });
             if (!match) return [];
             return [
               {
-                name: `${match.firstName} ${match.lastName}`,
+                name: [
+                  match.firstName,
+                  match.lastName.replace(/\s*\([^)]+\)$/, "").trim(),
+                ]
+                  .filter(Boolean)
+                  .join(" "),
                 vote: match.vote,
                 party: match.party,
               },
@@ -284,7 +298,7 @@ const SingleVoteCard = ({
                   marginBottom: 6,
                 }}
               >
-                Your officials
+                Your followed officials
               </Text>
               {matches.map((m, i) => (
                 <View
@@ -609,12 +623,19 @@ const VotingCard: React.FC<VotingCardProps> = ({
                         const parts = o.name.split(",").map((s) => s.trim());
                         const lastName = parts[0] ?? "";
                         const firstName = parts[1]?.split(" ")[0] ?? "";
+                        const memberLastName = m.lastName
+                          .replace(/\s*\([^)]+\)$/, "")
+                          .trim();
+                        const lastNameMatch =
+                          memberLastName.toLowerCase() ===
+                          lastName.toLowerCase();
+                        if (!lastNameMatch) return false;
+                        if (m.firstName === "") return true;
                         return (
-                          m.lastName.toLowerCase() === lastName.toLowerCase() &&
-                          (firstName === "" ||
-                            m.firstName
-                              .toLowerCase()
-                              .startsWith(firstName.toLowerCase()))
+                          firstName === "" ||
+                          m.firstName
+                            .toLowerCase()
+                            .startsWith(firstName.toLowerCase())
                         );
                       });
                       return (

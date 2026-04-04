@@ -197,8 +197,52 @@ const POLICY_AREAS_STATIC: Record<
   string
 > = require("./policyAreas.json");
 
+let FEATURED_BILLS: {
+  billId: string;
+  note: string;
+}[] = require("./featuredBills.json");
+
 app.get("/api/bills/policy-areas", (req, res) => {
   res.json(POLICY_AREAS_STATIC);
+});
+
+app.get("/api/bills/featured", async (req, res) => {
+  try {
+    const results = await Promise.allSettled(
+      FEATURED_BILLS.map(async (entry) => {
+        const match = entry.billId.match(/^([a-z]+)(\d+)$/i);
+        if (!match) return null;
+        const billType = match[1].toLowerCase();
+        const billNumber = match[2];
+        const response = await axios.get(
+          `https://api.congress.gov/v3/bill/119/${billType}/${billNumber}`,
+          {
+            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+            params: { format: "json" },
+          },
+        );
+        const bill = response.data?.bill;
+        if (!bill) return null;
+        return {
+          billId: entry.billId,
+          note: entry.note,
+          title: bill.title,
+          type: bill.type,
+          number: bill.number,
+          policyArea: bill.policyArea?.name ?? null,
+          latestAction: bill.latestAction?.text ?? null,
+          latestActionDate: bill.latestAction?.actionDate ?? null,
+        };
+      }),
+    );
+    const bills = results
+      .filter((r) => r.status === "fulfilled" && r.value !== null)
+      .map((r) => (r as PromiseFulfilledResult<any>).value);
+    res.json({ bills });
+  } catch (error) {
+    console.error("Error fetching featured bills:", error);
+    res.status(500).json({ error: "Failed to fetch featured bills" });
+  }
 });
 
 app.get("/api/bills/enrich-status", (req, res) => {

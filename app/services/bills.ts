@@ -350,4 +350,8 @@ export const billsService = {
   getPolicyAreas: async (): Promise<Record<string, string>> => {
     return apiClient.get<Record<string, string>>("/bills/policy-areas");
   },
+
+  getFeatured: async (): Promise<any> => {
+    return apiClient.get("/bills/featured");
+  },
 };

@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import {
@@ -20,6 +21,7 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
+import { billsService } from "../services/bills";
 import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
@@ -408,6 +410,12 @@ export default function HomeScreen() {
     }, [selectedList]),
   );
 
+  const { data: featuredData } = useQuery({
+    queryKey: ["featuredBills"],
+    queryFn: () => billsService.getFeatured(),
+    staleTime: 1000 * 60 * 60, // cache for 1 hour
+  });
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -548,6 +556,77 @@ export default function HomeScreen() {
       {items.length === 0 ? (
         <View style={{ flex: 1 }}>
           {!voterCardDismissed && <VoterCard onDismiss={dismissVoterCard} />}
+          {featuredData?.bills && featuredData.bills.length > 0 && (
+            <View style={{ marginBottom: 8 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "500",
+                  color: "#000",
+                  marginHorizontal: 16,
+                  marginBottom: 8,
+                  marginTop: 8,
+                }}
+              >
+                Suggested bills of the week
+              </Text>
+              {featuredData.bills.map((bill: any) => (
+                <Pressable
+                  key={bill.billId}
+                  onPress={() => router.navigate(`/bill/${bill.billId}`)}
+                  style={({ pressed }) => ({
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                  })}
+                >
+                  <View
+                    style={[
+                      componentStyles.officialCard,
+                      {
+                        marginHorizontal: 16,
+                        marginBottom: 8,
+                        flexDirection: "column",
+                        gap: 6,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "600",
+                        color: "#000000",
+                      }}
+                      numberOfLines={2}
+                    >
+                      {bill.type}.{bill.number} — {bill.title}
+                    </Text>
+                    {bill.latestActionDate && (
+                      <Text style={componentStyles.subtitle}>
+                        {new Date(
+                          bill.latestActionDate + "T12:00:00",
+                        ).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          day: "2-digit",
+                          year: "numeric",
+                        })}
+                        {bill.policyArea ? ` · ${bill.policyArea}` : ""}
+                      </Text>
+                    )}
+                    {bill.note && (
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          color: "#535353",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        {bill.note}
+                      </Text>
+                    )}
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          )}
           <View
             style={{
               flex: 1,
@@ -631,11 +710,84 @@ export default function HomeScreen() {
             data={items}
             keyExtractor={(item, index) => item.id || index.toString()}
             contentContainerStyle={componentStyles.listContent}
-            ListHeaderComponent={
-              !voterCardDismissed && !isEditMode
-                ? () => <VoterCard onDismiss={dismissVoterCard} />
-                : null
-            }
+            ListHeaderComponent={() => (
+              <View>
+                {!voterCardDismissed && !isEditMode && (
+                  <VoterCard onDismiss={dismissVoterCard} />
+                )}
+                {featuredData?.bills && featuredData.bills.length > 0 && (
+                  <View style={{ marginBottom: 8 }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: "500",
+                        color: "#000",
+                        marginHorizontal: 16,
+                        marginBottom: 8,
+                        marginTop: 8,
+                      }}
+                    >
+                      Suggested bills of the week
+                    </Text>
+                    {featuredData.bills.map((bill: any) => (
+                      <Pressable
+                        key={bill.billId}
+                        onPress={() => router.navigate(`/bill/${bill.billId}`)}
+                        style={({ pressed }) => ({
+                          transform: [{ scale: pressed ? 0.98 : 1 }],
+                        })}
+                      >
+                        <View
+                          style={[
+                            componentStyles.officialCard,
+                            {
+                              marginHorizontal: 16,
+                              marginBottom: 8,
+                              flexDirection: "column",
+                              gap: 6,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 15,
+                              fontWeight: "600",
+                              color: "#000000",
+                            }}
+                            numberOfLines={2}
+                          >
+                            {bill.type}.{bill.number} — {bill.title}
+                          </Text>
+                          {bill.latestActionDate && (
+                            <Text style={componentStyles.subtitle}>
+                              {new Date(
+                                bill.latestActionDate + "T12:00:00",
+                              ).toLocaleDateString("en-US", {
+                                month: "2-digit",
+                                day: "2-digit",
+                                year: "numeric",
+                              })}
+                              {bill.policyArea ? ` · ${bill.policyArea}` : ""}
+                            </Text>
+                          )}
+                          {bill.note && (
+                            <Text
+                              style={{
+                                fontSize: 14,
+                                color: "#535353",
+                                fontStyle: "italic",
+                              }}
+                            >
+                              {bill.note}
+                            </Text>
+                          )}
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
             renderItem={({ item }) => (
               <Card
                 item={item}
@@ -650,8 +802,6 @@ export default function HomeScreen() {
           />
         </View>
       )}
-
-      {/* Bottom Cancel / Remove bar and modals stay the same */}
 
       {/* Bottom Cancel / Remove bar (edit mode only) */}
       {isEditMode && (
