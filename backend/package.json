@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "tsc && cp src/policyAreas.json dist/policyAreas.json",
+    "build": "tsc && cp src/policyAreas.json dist/policyAreas.json && cp src/featuredBills.json dist/featuredBills.json",
     "start": "node dist/index.js"
   },
   "keywords": [],
