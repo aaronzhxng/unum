@@ -228,7 +228,7 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Missouri–Kansas City (BBA)",
+      "University of Missouri-Kansas City (BBA)",
       "Southern Methodist University (JD)"
     ]
   },
@@ -327,7 +327,7 @@
       "United States Senate Caucus on International Narcotics Control"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["the University of Wisconsin (attended)"]
   },
   "R000618": {
     "committees": [
@@ -419,7 +419,7 @@
       "Senate Committee on Health, Education, Labor, and Pensions"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Exeter College (attended)"]
   },
   "M001153": {
     "committees": [
@@ -684,7 +684,7 @@
     ],
     "caucuses": [],
     "education": [
-      "Copiah–Lincoln Community College (AA)",
+      "Copiah-Lincoln Community College (AA)",
       "University of Southern Mississippi (BA)"
     ]
   },
@@ -832,7 +832,7 @@
       "Senate Select Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["University of Nebraska–Lincoln (BS)"]
+    "education": ["University of Nebraska-Lincoln (BS)"]
   },
   "F000479": {
     "committees": [
@@ -879,7 +879,7 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Hawaii at Mānoa (BA)",
+      "University of Hawaiʻi at Mānoa (BA)",
       "George Washington University (MIA)",
       "Northern Illinois University",
       "Capella University (PhD)"
@@ -1164,7 +1164,7 @@
       "Senate Committee on Health, Education, Labor, and Pensions"
     ],
     "caucuses": [],
-    "education": ["Smith College (BA)", "University of Wisconsin–Madison (JD)"]
+    "education": ["Smith College (BA)", "University of Wisconsin-Madison (JD)"]
   },
   "A000382": {
     "committees": [
@@ -1432,7 +1432,7 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Okaloosa Walton Community College (attended)"]
   },
   "M001237": {
     "committees": [
@@ -1451,7 +1451,7 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Campbell University (attended)"]
   },
   "M001235": {
     "committees": ["House Committee on Appropriations"],
@@ -2028,7 +2028,7 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Troy State University (attended)"]
   },
   "F000472": {
     "committees": [
@@ -2036,7 +2036,7 @@
       "House Committee on Appropriations"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["the Air Command and Staff College (attended)"]
   },
   "B000825": {
     "committees": [
@@ -2091,7 +2091,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Tuskegee University (attended)"]
   },
   "D000399": {
     "committees": [
@@ -2363,7 +2363,7 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Blue Ridge Community College (attended)"]
   },
   "D000230": {
     "committees": [
@@ -2435,7 +2435,7 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["San Antonio Junior College (attended)"]
   },
   "M001136": {
     "committees": [
@@ -2443,7 +2443,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Lansing Community College (attended)"]
   },
   "H001091": {
     "committees": [
@@ -2461,7 +2461,7 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Harvard University (attended)"]
   },
   "T000481": {
     "committees": [
@@ -2489,12 +2489,15 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Palm Beach Atlantic University (attended)",
+      "American Military University (attended)"
+    ]
   },
   "R000609": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": ["Jacksonville Junior College (attended)"]
   },
   "L000585": {
     "committees": [
@@ -2553,7 +2556,10 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Western Illinois University (attended)",
+      "Moody Bible College Institute (attended)"
+    ]
   },
   "N000002": {
     "committees": [
@@ -2571,7 +2577,7 @@
   "D000600": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": ["the University of South Florida (attended)"]
   },
   "S001220": {
     "committees": [
@@ -2629,7 +2635,7 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Arizona Western College (attended)"]
   },
   "C001133": {
     "committees": [
@@ -3059,7 +3065,7 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["New York University (attended)"]
   },
   "S000929": {
     "committees": ["Joint Economic Committee"],
@@ -3132,7 +3138,7 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Trident Technical College (attended)"]
   },
   "L000273": {
     "committees": [
@@ -3145,7 +3151,7 @@
   "H001086": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": ["East Tennessee State University (attended)"]
   },
   "G000597": {
     "committees": [
@@ -3384,7 +3390,7 @@
   "J000302": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": ["Pennsylvania State University (attended)"]
   },
   "M001204": {
     "committees": [
@@ -3392,7 +3398,9 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "New York Maritime University (now SUNY Maritime College) (attended)"
+    ]
   },
   "H001085": {
     "committees": [
@@ -3411,7 +3419,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Montgomery County College (attended)",
+      "Fels Institute of Government (attended)"
+    ]
   },
   "V000133": {
     "committees": [
@@ -3555,7 +3566,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Boston University (attended)"]
   },
   "T000482": {
     "committees": ["House Committee on Energy and Commerce"],
@@ -3568,7 +3579,7 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Haskell Indian Nations University (attended)"]
   },
   "B001307": {
     "committees": [
@@ -3683,7 +3694,7 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Riverside Community College (attended)"]
   },
   "N000190": {
     "committees": [
@@ -3737,7 +3748,10 @@
   "E000297": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "New York University (attended)",
+      "Rutgers University (attended)"
+    ]
   },
   "G000583": {
     "committees": [
@@ -4067,7 +4081,10 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Mount San Antonio College (attended)",
+      "Rio Hondo College (attended)"
+    ]
   },
   "W000821": {
     "committees": [
@@ -4092,7 +4109,10 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "George Mason University (attended)",
+      "Loyola Marymount University (attended)"
+    ]
   },
   "P000609": {
     "committees": [
@@ -4100,7 +4120,7 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Northwest Alabama Junior College (attended)"]
   },
   "N000188": {
     "committees": [
@@ -4143,7 +4163,7 @@
   "C001067": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": ["Oberlin College (attended)"]
   },
   "T000469": {
     "committees": [
@@ -4222,7 +4242,7 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Alvin Community College in Alvin (attended)"]
   },
   "J000295": {
     "committees": ["House Committee on Appropriations"],
@@ -4698,7 +4718,7 @@
   "S000522": {
     "committees": ["House Committee on Foreign Affairs"],
     "caucuses": [],
-    "education": []
+    "education": ["Worcester College (attended)"]
   },
   "S000185": {
     "committees": [
@@ -4711,7 +4731,7 @@
   "R000395": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": ["Western Kentucky University (attended)"]
   },
   "B000490": {
     "committees": ["House Committee on Appropriations"],

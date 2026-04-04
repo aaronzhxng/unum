@@ -73,9 +73,7 @@ export const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: "row",
-    gap: 36,
-    paddingLeft: 32,
-    paddingRight: 32,
+    justifyContent: "space-around",
     borderBottomWidth: 2,
     borderBottomColor: "#bfbfbf",
   },

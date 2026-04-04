@@ -17,7 +17,7 @@ const CREDITS_SECTIONS = [
   },
   {
     title: "Data Sources",
-    content: `Legislative data is sourced from the Congress.gov API, provided by the Library of Congress.\n\nMember photos are provided by the Biographical Directory of the United States Congress (bioguide.congress.gov).\n\nGeocoding is provided by the U.S. Census Bureau Geocoding Services and Zippopotam.us.`,
+    content: `Legislative data is sourced from the Congress.gov API, provided by the Library of Congress.\n\nMember photos are provided by the Biographical Directory of the United States Congress (bioguide.congress.gov).\n\nGeocoding is provided by the U.S. Census Bureau Geocoding Services and Zippopotam.us.\n\nEducation data sourced in part from Wikipedia contributors under CC BY-SA.`,
   },
   {
     title: "Privacy Policy",

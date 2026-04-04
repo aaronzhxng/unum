@@ -473,7 +473,16 @@ export default function OfficialDetail() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["official", id],
-    queryFn: () => officialsService.getById(id as string),
+    queryFn: async () => {
+      const result = await officialsService.getById(id as string);
+      console.log(
+        "getById result for",
+        id,
+        ":",
+        JSON.stringify(result)?.slice(0, 200),
+      );
+      return result;
+    },
     enabled: !!id,
   });
 
@@ -766,6 +775,14 @@ export default function OfficialDetail() {
   }
 
   if (error || !official) {
+    console.error(
+      "Official detail error:",
+      error,
+      "official:",
+      official,
+      "id:",
+      id,
+    );
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Error loading official</Text>
@@ -1150,6 +1167,48 @@ export default function OfficialDetail() {
               </View>
             )}
 
+            {/* Congressional History */}
+            <View style={[componentStyles.section, { marginBottom: 96 }]}>
+              <View style={componentStyles.termRow}>
+                <Text style={componentStyles.sectionTitle}>
+                  Congressional History
+                </Text>
+              </View>
+              {official.terms && official.terms.length > 0 ? (
+                [...official.terms]
+                  .sort((a: any, b: any) => b.startYear - a.startYear)
+                  .map((term: any, index: number) => (
+                    <View key={index} style={componentStyles.termRow}>
+                      <Text
+                        style={[componentStyles.term, { flex: 1 }]}
+                        numberOfLines={1}
+                      >
+                        {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
+                        {official.state}
+                        {term.district ? `, District ${term.district}` : ""}
+                      </Text>
+                      <Text
+                        style={[
+                          componentStyles.term,
+                          { flex: 0, textAlign: "right" },
+                        ]}
+                      >
+                        {term.startYear}
+                        {term.endYear ? ` – ${term.endYear}` : " – Present"}
+                      </Text>
+                    </View>
+                  ))
+              ) : (
+                <View style={componentStyles.termRow}>
+                  <Text style={componentStyles.term}>
+                    {official.terms?.[0]?.chamber === "House of Representatives"
+                      ? `Representative, ${official.state}`
+                      : `Senator, ${official.state}`}
+                  </Text>
+                </View>
+              )}
+            </View>
+
             {/* Caucuses */}
             {staticData.caucuses.length > 0 && (
               <View style={componentStyles.section}>
@@ -1169,50 +1228,7 @@ export default function OfficialDetail() {
         {/* Page 1: Bio */}
         <View key="1" style={{ flex: 1 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <View style={{ marginHorizontal: 16, marginBottom: 96 }}>
-              {/* Biography */}
-              {bioLoading ? (
-                <View style={{ paddingTop: 40, alignItems: "center" }}>
-                  <LoadingSpinner />
-                  <Text style={{ color: "#7B7C81", marginTop: 16 }}>
-                    Loading biography...
-                  </Text>
-                </View>
-              ) : bioData?.profileText ? (
-                <View style={componentStyles.section}>
-                  <View style={componentStyles.termRow}>
-                    <Text style={componentStyles.sectionTitle}>Biography</Text>
-                  </View>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: "#535353",
-                      lineHeight: 22,
-                      paddingBottom: 16,
-                    }}
-                  >
-                    {bioData.profileText}
-                  </Text>
-                  {bioData.birthDate && (
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: "#7B7C81",
-                        paddingBottom: 16,
-                      }}
-                    >
-                      Born {bioData.birthDate}
-                    </Text>
-                  )}
-                </View>
-              ) : (
-                <View style={{ padding: 32, alignItems: "center" }}>
-                  <Text style={{ color: "#7B7C81", fontSize: 14 }}>
-                    Biography not available.
-                  </Text>
-                </View>
-              )}
-
+            <View style={{ marginBottom: 96, paddingTop: 4 }}>
               {/* Education */}
               {staticData.education.length > 0 && (
                 <View style={componentStyles.section}>
@@ -1227,6 +1243,75 @@ export default function OfficialDetail() {
                 </View>
               )}
 
+              {/* Biography */}
+              {bioLoading ? (
+                <View
+                  style={{
+                    paddingTop: 12,
+                    paddingBottom: 36,
+                    alignItems: "center",
+                  }}
+                >
+                  <LoadingSpinner />
+                  <Text style={{ color: "#7B7C81", marginBottom: 24 }}>
+                    Loading biography...
+                  </Text>
+                </View>
+              ) : bioData?.profileText ? (
+                <View style={componentStyles.section}>
+                  <View style={componentStyles.termRow}>
+                    <Text style={componentStyles.sectionTitle}>Biography</Text>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      gap: 8,
+                      paddingBottom: 16,
+                      marginTop: 12,
+                    }}
+                  >
+                    {bioData.profileText
+                      .split(";")
+                      .map((s: string) => s.trim())
+                      .filter((s: string) => s.length > 0)
+                      .filter((s: string, i: number) => {
+                        if (i !== 0) return true;
+                        const lower = s.toLowerCase();
+                        return (
+                          !lower.startsWith("a representative from") &&
+                          !lower.startsWith("a senator from")
+                        );
+                      })
+                      .map((s: string, i: number, arr: string[]) => {
+                        const capitalized =
+                          s.charAt(0).toUpperCase() + s.slice(1);
+                        return (
+                          <View
+                            key={i}
+                            style={{
+                              backgroundColor: "#f0f0f0",
+                              borderRadius: 20,
+                              paddingHorizontal: 12,
+                              paddingVertical: 6,
+                            }}
+                          >
+                            <Text style={{ fontSize: 13, color: "#535353" }}>
+                              {capitalized}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                  </View>
+                </View>
+              ) : (
+                <View style={{ padding: 32, alignItems: "center" }}>
+                  <Text style={{ color: "#7B7C81", fontSize: 14 }}>
+                    Biography not available.
+                  </Text>
+                </View>
+              )}
+
               {/* Books */}
               {bioData?.creativeWork?.length > 0 && (
                 <View style={componentStyles.section}>
@@ -1235,62 +1320,28 @@ export default function OfficialDetail() {
                       Published Works
                     </Text>
                   </View>
-                  {bioData.creativeWork.map((work: any, index: number) => (
-                    <View key={index} style={componentStyles.termRow}>
-                      <Text
-                        style={[componentStyles.term, { fontStyle: "italic" }]}
-                      >
-                        {work.name ??
-                          work.freeFormCitationText?.replace(/<[^>]*>/g, "") ??
-                          ""}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* Congressional History */}
-              <View style={componentStyles.section}>
-                <View style={componentStyles.termRow}>
-                  <Text style={componentStyles.sectionTitle}>
-                    Congressional History
-                  </Text>
-                </View>
-                {official.terms && official.terms.length > 0 ? (
-                  [...official.terms]
-                    .sort((a: any, b: any) => b.startYear - a.startYear)
-                    .map((term: any, index: number) => (
+                  {bioData.creativeWork.map((work: any, index: number) => {
+                    const raw =
+                      work.name ??
+                      work.freeFormCitationText?.replace(/<[^>]*>/g, "") ??
+                      "";
+                    const cleaned = raw.replace(/^_{1,3}\.\s*/, "").trim();
+                    if (!cleaned) return null;
+                    return (
                       <View key={index} style={componentStyles.termRow}>
-                        <Text
-                          style={[componentStyles.term, { flex: 1 }]}
-                          numberOfLines={1}
-                        >
-                          {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
-                          {official.state}
-                          {term.district ? `, District ${term.district}` : ""}
-                        </Text>
                         <Text
                           style={[
                             componentStyles.term,
-                            { flex: 0, textAlign: "right" },
+                            { fontStyle: "italic" },
                           ]}
                         >
-                          {term.startYear}
-                          {term.endYear ? ` – ${term.endYear}` : " – Present"}
+                          {cleaned}
                         </Text>
                       </View>
-                    ))
-                ) : (
-                  <View style={componentStyles.termRow}>
-                    <Text style={componentStyles.term}>
-                      {official.terms?.[0]?.chamber ===
-                      "House of Representatives"
-                        ? `Representative, ${official.state}`
-                        : `Senator, ${official.state}`}
-                    </Text>
-                  </View>
-                )}
-              </View>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           </ScrollView>
         </View>

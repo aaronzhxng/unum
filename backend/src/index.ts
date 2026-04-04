@@ -680,7 +680,7 @@ app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
     const { bioguideId } = req.params;
     const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}`,
+      `https://api.congress.gov/v3/member/${bioguideId}?format=json`,
       { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
     );
     res.json(response.data);

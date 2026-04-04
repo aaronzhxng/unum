@@ -111,6 +111,17 @@ export const officialsService = {
   },
 
   getBio: async (bioguideId: string): Promise<any> => {
-    return apiClient.get(`/officials/${bioguideId}/bio`);
+    const response = await fetch(
+      `https://bioguide.congress.gov/search/bio/${bioguideId}.json`,
+    );
+    if (!response.ok) throw new Error("Failed to fetch bio");
+    const json = await response.json();
+    const data = json?.data;
+    return {
+      profileText: data?.profileText ?? null,
+      birthDate: data?.birthDate ?? null,
+      nickName: data?.nickName ?? null,
+      creativeWork: data?.creativeWork ?? [],
+    };
   },
 };
