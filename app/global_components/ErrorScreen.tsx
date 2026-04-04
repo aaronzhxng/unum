@@ -61,16 +61,14 @@ export default function ErrorScreen({ onRetry, message }: ErrorScreenProps) {
         <Pressable
           onPress={onRetry}
           style={({ pressed }) => ({
-            backgroundColor: pressed ? "#e0f0ff" : "#f0f8ff",
-            borderRadius: 20,
-            paddingHorizontal: 24,
-            paddingVertical: 10,
-            borderWidth: 1,
-            borderColor: "#008CFF",
+            backgroundColor: "#00AFFF",
+            borderRadius: 12,
+            paddingHorizontal: 32,
+            paddingVertical: 12,
             transform: [{ scale: pressed ? 0.96 : 1 }],
           })}
         >
-          <Text style={{ color: "#008CFF", fontSize: 14, fontWeight: "600" }}>
+          <Text style={{ color: "#FFFFFF", fontWeight: "500", fontSize: 16 }}>
             Try Again
           </Text>
         </Pressable>

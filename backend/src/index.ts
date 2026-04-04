@@ -9,6 +9,7 @@ import db from "./db";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1); // trust Railway's proxy
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());

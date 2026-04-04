@@ -1262,7 +1262,19 @@ export default function OfficialDetail() {
                         const lower = s.toLowerCase();
                         return (
                           !lower.startsWith("a representative from") &&
-                          !lower.startsWith("a senator from")
+                          !lower.startsWith("a senator from") &&
+                          !lower.startsWith(
+                            "a senator and representative from",
+                          ) &&
+                          !lower.startsWith(
+                            "a representative and senator from",
+                          ) &&
+                          !lower.startsWith(
+                            "a senator and a representative from",
+                          ) &&
+                          !lower.startsWith(
+                            "a representative and a senator from",
+                          )
                         );
                       })
                       .map((s: string, i: number, arr: string[]) => {
