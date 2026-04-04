@@ -189,7 +189,9 @@ const runDeltaSync = async (): Promise<void> => {
     const today = new Date().toISOString().split("T")[0];
     setLastSyncDate(today);
   } catch (error) {
-    console.error("Delta sync failed:", error);
+    // Delta sync is background-only — failures are expected when Congress.gov
+    // is temporarily unavailable. Bills load from SQLite cache regardless.
+    if (__DEV__) console.warn("Delta sync failed (non-critical):", error);
   } finally {
     syncInProgress = false;
   }
