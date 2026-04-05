@@ -199,6 +199,7 @@ const POLICY_AREAS_STATIC: Record<
 
 let FEATURED_BILLS: {
   weekOf: string;
+  weekEnd: string;
   bills: { billId: string; note: string }[];
 } = require("./featuredBills.json");
 
@@ -238,7 +239,11 @@ app.get("/api/bills/featured", async (req, res) => {
     const bills = results
       .filter((r) => r.status === "fulfilled" && r.value !== null)
       .map((r) => (r as PromiseFulfilledResult<any>).value);
-    res.json({ bills, weekOf: FEATURED_BILLS.weekOf });
+    res.json({
+      bills,
+      weekOf: FEATURED_BILLS.weekOf,
+      weekEnd: FEATURED_BILLS.weekEnd,
+    });
   } catch (error) {
     console.error("Error fetching featured bills:", error);
     res.status(500).json({ error: "Failed to fetch featured bills" });

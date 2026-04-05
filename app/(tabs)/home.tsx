@@ -576,8 +576,23 @@ export default function HomeScreen() {
                     marginTop: 8,
                   }}
                 >
-                  Newsworthy bills of the week
-                  {featuredData?.weekOf ? ` (${featuredData.weekOf})` : ""}
+                  {(() => {
+                    if (!featuredData?.weekOf) return "Newsworthy bills";
+                    const parseDate = (str: string) => {
+                      const [y, m, d] = str.split("-").map(Number);
+                      return new Date(y, m - 1, d);
+                    };
+                    const fmt = (d: Date) =>
+                      d.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    const start = parseDate(featuredData.weekOf);
+                    const end = featuredData.weekEnd
+                      ? parseDate(featuredData.weekEnd)
+                      : null;
+                    return `Newsworthy bills (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
+                  })()}
                 </Text>
                 {featuredData.bills.map((bill: any) => (
                   <View key={bill.billId} style={{ marginBottom: 12 }}>
@@ -831,13 +846,29 @@ export default function HomeScreen() {
                         style={{
                           fontSize: 14,
                           fontWeight: "500",
-                          color: "#1a1a1a",
+                          color: "#000",
                           marginHorizontal: 16,
                           marginBottom: 8,
                           marginTop: 8,
                         }}
                       >
-                        Suggested bills of the week
+                        {(() => {
+                          if (!featuredData?.weekOf) return "Newsworthy bills";
+                          const parseDate = (str: string) => {
+                            const [y, m, d] = str.split("-").map(Number);
+                            return new Date(y, m - 1, d);
+                          };
+                          const fmt = (d: Date) =>
+                            d.toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            });
+                          const start = parseDate(featuredData.weekOf);
+                          const end = featuredData.weekEnd
+                            ? parseDate(featuredData.weekEnd)
+                            : null;
+                          return `Newsworthy bills (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
+                        })()}
                       </Text>
                       {featuredData.bills.map((bill: any) => (
                         <View key={bill.billId} style={{ marginBottom: 12 }}>
