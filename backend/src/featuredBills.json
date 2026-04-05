@@ -1,10 +1,13 @@
-[
-  {
-    "billId": "hr22",
-    "note": "Congress is expected to vote on this Thursday."
-  },
-  {
-    "billId": "hr7147",
-    "note": "This Bill is the appropriations act for the Department of Homeland security after the partial DHS shutdown that began February 14, 2026."
-  }
-]
+{
+  "weekOf": "April 7, 2025",
+  "bills": [
+    {
+      "billId": "hr22",
+      "note": "Congress is expected to vote on this Thursday."
+    },
+    {
+      "billId": "hr7147",
+      "note": "This Bill is the appropriations act for the Department of Homeland security after the partial DHS shutdown that began February 14, 2026."
+    }
+  ]
+}

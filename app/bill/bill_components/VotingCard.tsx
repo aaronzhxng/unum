@@ -38,7 +38,8 @@ interface VoteData {
 
 interface FollowedOfficial {
   bioguideId: string;
-  name: string; // "Last, First" format
+  name: string;
+  isSenator?: boolean;
 }
 
 interface VoiceVote {
@@ -251,15 +252,16 @@ const SingleVoteCard = ({
             const parts = official.name.split(",").map((s) => s.trim());
             const lastName = parts[0] ?? "";
             const firstName = parts[1]?.split(" ")[0] ?? "";
+            const isSenateVote = vote.chamber?.toLowerCase() === "senate";
+            if (official.isSenator && !isSenateVote) return [];
+
             const match = vote.members!.find((m) => {
-              // Strip state disambiguator e.g. "Adams (NC)" → "Adams"
               const memberLastName = m.lastName
                 .replace(/\s*\([^)]+\)$/, "")
                 .trim();
               const lastNameMatch =
                 memberLastName.toLowerCase() === lastName.toLowerCase();
               if (!lastNameMatch) return false;
-              // If House XML has no firstName, last name match is enough
               if (m.firstName === "") return true;
               return (
                 firstName === "" ||
@@ -619,7 +621,10 @@ const VotingCard: React.FC<VotingCardProps> = ({
                       {group.label} ({group.members.length})
                     </Text>
                     {group.members.map((m, i) => {
+                      const isSenateVote =
+                        selectedVote?.chamber?.toLowerCase() === "senate";
                       const isFollowed = followedOfficials?.some((o) => {
+                        if (o.isSenator && !isSenateVote) return false;
                         const parts = o.name.split(",").map((s) => s.trim());
                         const lastName = parts[0] ?? "";
                         const firstName = parts[1]?.split(" ")[0] ?? "";

@@ -247,12 +247,20 @@ export default function BillDetail() {
 
   const followedOfficials = useMemo(() => {
     const db = getDb();
-    const rows = db.getAllSync<{ item_id: string; name: string }>(
-      `SELECT DISTINCT item_id, name FROM list_items WHERE item_type = 'official'`,
+    const rows = db.getAllSync<{
+      item_id: string;
+      name: string;
+      role: string | null;
+    }>(
+      `SELECT DISTINCT item_id, name, role FROM list_items WHERE item_type = 'official'`,
     );
     return rows.map((r) => ({
       bioguideId: r.item_id,
       name: r.name,
+      isSenator:
+        r.role?.toLowerCase().includes("senator") ||
+        r.role?.toLowerCase().includes("sen,") ||
+        false,
     }));
   }, []);
 

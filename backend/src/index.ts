@@ -198,9 +198,9 @@ const POLICY_AREAS_STATIC: Record<
 > = require("./policyAreas.json");
 
 let FEATURED_BILLS: {
-  billId: string;
-  note: string;
-}[] = require("./featuredBills.json");
+  weekOf: string;
+  bills: { billId: string; note: string }[];
+} = require("./featuredBills.json");
 
 app.get("/api/bills/policy-areas", (req, res) => {
   res.json(POLICY_AREAS_STATIC);
@@ -209,7 +209,7 @@ app.get("/api/bills/policy-areas", (req, res) => {
 app.get("/api/bills/featured", async (req, res) => {
   try {
     const results = await Promise.allSettled(
-      FEATURED_BILLS.map(async (entry) => {
+      FEATURED_BILLS.bills.map(async (entry) => {
         const match = entry.billId.match(/^([a-z]+)(\d+)$/i);
         if (!match) return null;
         const billType = match[1].toLowerCase();
@@ -238,7 +238,7 @@ app.get("/api/bills/featured", async (req, res) => {
     const bills = results
       .filter((r) => r.status === "fulfilled" && r.value !== null)
       .map((r) => (r as PromiseFulfilledResult<any>).value);
-    res.json({ bills });
+    res.json({ bills, weekOf: FEATURED_BILLS.weekOf });
   } catch (error) {
     console.error("Error fetching featured bills:", error);
     res.status(500).json({ error: "Failed to fetch featured bills" });

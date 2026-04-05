@@ -570,12 +570,14 @@ export default function HomeScreen() {
                   style={{
                     fontSize: 14,
                     fontWeight: "500",
-                    color: "1a1a1a",
+                    color: "#1a1a1a",
+                    marginHorizontal: 16,
                     marginBottom: 8,
                     marginTop: 8,
                   }}
                 >
-                  Suggested bills of the week
+                  Newsworthy bills of the week
+                  {featuredData?.weekOf ? ` (${featuredData.weekOf})` : ""}
                 </Text>
                 {featuredData.bills.map((bill: any) => (
                   <View key={bill.billId} style={{ marginBottom: 12 }}>

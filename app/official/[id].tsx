@@ -1542,7 +1542,7 @@ export default function OfficialDetail() {
         onSearch={setSearchQuery}
         searchContext={activeTab === 2 ? "Sponsored" : "Cosponsored"}
         items={toSearchable(
-          activeTab === 1 ? filteredSponsored : filteredCosponsored,
+          activeTab === 2 ? filteredSponsored : filteredCosponsored,
         )}
         onItemPress={(item) => {
           router.navigate(`/bill/${item.billType.toLowerCase()}${item.number}`);
