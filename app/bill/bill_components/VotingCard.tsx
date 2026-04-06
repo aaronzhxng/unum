@@ -673,7 +673,9 @@ const VotingCard: React.FC<VotingCardProps> = ({
                                 fontWeight: isFollowed ? "600" : "400",
                               }}
                             >
-                              {m.firstName} {m.lastName}
+                              {[m.firstName, m.lastName]
+                                .filter(Boolean)
+                                .join(" ")}
                             </Text>
                           </View>
                           <Text style={{ fontSize: 12, color: "#7B7C81" }}>

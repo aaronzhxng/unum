@@ -235,7 +235,7 @@ export default function SearchModal({
   return (
     <Modal
       isVisible={isVisible}
-      onBackdropPress={handleClose}
+      onBackdropPress={() => {}}
       onBackButtonPress={handleClose}
       style={{ margin: 0 }}
       backdropOpacity={1}
@@ -248,7 +248,7 @@ export default function SearchModal({
       useNativeDriver
       coverScreen={true}
     >
-      <View style={[componentStyles.container, { marginBottom: 96 }]}>
+      <View style={[componentStyles.container, { paddingBottom: 96 }]}>
         {/* Search Header */}
         <View style={componentStyles.headerBar}>
           <TouchableOpacity

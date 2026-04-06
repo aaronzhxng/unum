@@ -1058,19 +1058,11 @@ export default function BillDetail() {
             },
           ]}
         >
-          {bill.policyArea?.name ? (
-            <Image
-              source={getBillIcon(bill.policyArea.name)}
-              style={{ width: "100%", height: "100%", borderRadius: 6 }}
-              resizeMode="contain"
-            />
-          ) : (
-            <Text
-              style={{ fontSize: 20, fontWeight: "bold", color: "#535353" }}
-            >
-              {bill.type}
-            </Text>
-          )}
+          <Image
+            source={getBillIcon(bill.policyArea?.name ?? null)}
+            style={{ width: "100%", height: "100%", borderRadius: 6 }}
+            resizeMode="contain"
+          />
         </View>
         <View style={{ flex: 1, gap: 8 }}>
           <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>

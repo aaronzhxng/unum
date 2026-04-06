@@ -133,6 +133,9 @@ export default function ReportErrorModal({ visible, onClose, screen }: Props) {
                 </Text>
 
                 <TextInput
+                  ref={(ref) => {
+                    if (ref) setTimeout(() => ref.focus(), 100);
+                  }}
                   style={{
                     borderWidth: 1,
                     borderColor: "#e0e0e0",
@@ -149,7 +152,6 @@ export default function ReportErrorModal({ visible, onClose, screen }: Props) {
                   placeholder="e.g. Vote count looks wrong on H.R. 1234..."
                   placeholderTextColor="#adb5bd"
                   multiline
-                  autoFocus
                 />
 
                 {status === "error" && (

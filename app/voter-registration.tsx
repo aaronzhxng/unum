@@ -85,7 +85,7 @@ export default function VoterRegistrationScreen() {
           Laws ordain the frameworks that determine the safety of your home, the
           finances you hold, the vigor of your land, and the weight of your
           ethics. To have a say in them is a granted privilege in trust of your
-          judgement as an adult, it is why children cannot vote. No matter how
+          judgement as an adult; it is why children cannot vote. No matter how
           insignificant your singular vote may appear to be, you will always
           have inifinitely more say in your government than in any corporation.
         </Text>
