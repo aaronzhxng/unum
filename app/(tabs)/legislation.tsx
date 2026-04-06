@@ -15,6 +15,7 @@ import {
   Modal,
   Pressable,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useTabBar } from "../context/TabBarContext";
@@ -88,6 +89,9 @@ export default function LegislationScreen() {
   const [listsVersion, setListsVersion] = useState(0);
   const PAGE_SIZE = 50;
   const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
+
+  const searchInputRef = useRef<TextInput>(null);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -177,13 +181,6 @@ export default function LegislationScreen() {
   });
 
   const allBills: any[] = useMemo(() => data?.bills || [], [data?.bills]);
-
-  // const originalOrder = useRef<any[]>([]);
-  // useEffect(() => {
-  //   if (allBills.length > 0 && originalOrder.current.length === 0) {
-  //     originalOrder.current = allBills;
-  //   }
-  // }, [allBills]);
 
   const pendingCount = useMemo(() => {
     let filtered = allBills;
@@ -402,6 +399,13 @@ export default function LegislationScreen() {
       }, 300);
     }
   }, [isActive, currentStep]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   if (isLoading) {
     return (
