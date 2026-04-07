@@ -2,7 +2,7 @@
   "expo": {
     "name": "unum",
     "slug": "unum",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "scheme": "unum",
     "userInterfaceStyle": "automatic",
@@ -79,13 +79,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
     },
-    "assets": [
-      "assets/seed.db"
-    ],
+    "assets": ["assets/seed.db"],
     "metro": {
-      "blockList": [
-        "scripts/.*"
-      ]
+      "blockList": ["scripts/.*"]
     },
     "runtimeVersion": {
       "policy": "appVersion"
