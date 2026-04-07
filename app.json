@@ -79,9 +79,19 @@
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
     },
-    "assets": ["assets/seed.db"],
+    "assets": [
+      "assets/seed.db"
+    ],
     "metro": {
-      "blockList": ["scripts/.*"]
+      "blockList": [
+        "scripts/.*"
+      ]
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/12b9a43d-7541-4d8e-b709-0e9d15418ffd"
     }
   }
 }
