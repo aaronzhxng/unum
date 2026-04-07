@@ -36,7 +36,7 @@ interface VoteData {
   members?: MemberVote[];
 }
 
-interface FollowedOfficial {
+export interface FollowedOfficial {
   bioguideId: string;
   name: string;
   isSenator?: boolean;
@@ -319,9 +319,9 @@ const SingleVoteCard = ({
                       fontSize: 13,
                       fontWeight: "600",
                       color:
-                        m.vote === "Yea"
+                        m.vote === "Yea" || m.vote === "Aye"
                           ? "#16a34a"
-                          : m.vote === "Nay"
+                          : m.vote === "Nay" || m.vote === "No"
                             ? "#dc2626"
                             : "#535353",
                     }}
@@ -586,12 +586,16 @@ const VotingCard: React.FC<VotingCardProps> = ({
                   {
                     label: "Yea",
                     color: "#16a34a",
-                    members: filtered.filter((m) => m.vote === "Yea"),
+                    members: filtered.filter(
+                      (m) => m.vote === "Yea" || m.vote === "Aye",
+                    ),
                   },
                   {
                     label: "Nay",
                     color: "#dc2626",
-                    members: filtered.filter((m) => m.vote === "Nay"),
+                    members: filtered.filter(
+                      (m) => m.vote === "Nay" || m.vote === "No",
+                    ),
                   },
                   {
                     label: "Present",

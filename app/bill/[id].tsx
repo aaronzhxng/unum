@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter, type Router } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+  type Router,
+} from "expo-router";
 import { decode } from "html-entities";
 import {
   Bell,
@@ -11,7 +16,13 @@ import {
   Copy,
   Plus,
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   BackHandler,
   Clipboard,
@@ -46,7 +57,7 @@ import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
-import VotingCard from "./bill_components/VotingCard";
+import VotingCard, { FollowedOfficial } from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
 import { storage } from "../utils/storage";
@@ -245,24 +256,33 @@ export default function BillDetail() {
   const summaryRef = useRef<View>(null);
   const billTabBarRef = useRef<View>(null);
 
-  const followedOfficials = useMemo(() => {
-    const db = getDb();
-    const rows = db.getAllSync<{
-      item_id: string;
-      name: string;
-      role: string | null;
-    }>(
-      `SELECT DISTINCT item_id, name, role FROM list_items WHERE item_type = 'official'`,
-    );
-    return rows.map((r) => ({
-      bioguideId: r.item_id,
-      name: r.name,
-      isSenator:
-        r.role?.toLowerCase().includes("senator") ||
-        r.role?.toLowerCase().includes("sen,") ||
-        false,
-    }));
-  }, []);
+  // REPLACE the entire followedOfficials useMemo with:
+  const [followedOfficials, setFollowedOfficials] = useState<
+    FollowedOfficial[]
+  >([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const db = getDb();
+      const rows = db.getAllSync<{
+        item_id: string;
+        name: string;
+        role: string | null;
+      }>(
+        `SELECT DISTINCT item_id, name, role FROM list_items WHERE item_type = 'official'`,
+      );
+      setFollowedOfficials(
+        rows.map((r) => ({
+          bioguideId: r.item_id,
+          name: r.name,
+          isSenator:
+            r.role?.toLowerCase().includes("senator") ||
+            r.role?.toLowerCase().includes("sen,") ||
+            false,
+        })),
+      );
+    }, []),
+  );
 
   type StageStatus = "empty" | "half" | "full";
 

@@ -77,6 +77,7 @@ export default function SearchModal({
   const [selectedAddItem, setSelectedAddItem] = useState<any>(null);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
   // Define handleClose first so useEffect can reference it
   const handleClose = useCallback(() => {
@@ -89,7 +90,7 @@ export default function SearchModal({
   // Focus input when modal opens
   useEffect(() => {
     if (!isVisible) return;
-    const timer = setTimeout(() => inputRef.current?.focus(), 100);
+    const timer = setTimeout(() => inputRef.current?.focus(), 150);
     return () => clearTimeout(timer);
   }, [isVisible]);
 
@@ -97,6 +98,11 @@ export default function SearchModal({
   useEffect(() => {
     setSearchQuery(query || "");
   }, [query]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Filter items based on search query
   useEffect(() => {
@@ -301,7 +307,7 @@ export default function SearchModal({
             >
               Start typing to search
             </Text>
-          ) : filteredItems.length === 0 ? (
+          ) : filteredItems.length === 0 && debouncedQuery === searchQuery ? (
             <Text
               style={[
                 componentStyles.subtitle,
