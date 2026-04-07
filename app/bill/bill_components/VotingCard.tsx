@@ -40,6 +40,7 @@ export interface FollowedOfficial {
   bioguideId: string;
   name: string;
   isSenator?: boolean;
+  role?: string;
 }
 
 interface VoiceVote {
@@ -61,6 +62,67 @@ interface MemberVote {
   party: string;
   vote: string;
 }
+
+const STATE_TO_ABBR: Record<string, string> = {
+  Alabama: "AL",
+  Alaska: "AK",
+  Arizona: "AZ",
+  Arkansas: "AR",
+  California: "CA",
+  Colorado: "CO",
+  Connecticut: "CT",
+  Delaware: "DE",
+  Florida: "FL",
+  Georgia: "GA",
+  Hawaii: "HI",
+  Idaho: "ID",
+  Illinois: "IL",
+  Indiana: "IN",
+  Iowa: "IA",
+  Kansas: "KS",
+  Kentucky: "KY",
+  Louisiana: "LA",
+  Maine: "ME",
+  Maryland: "MD",
+  Massachusetts: "MA",
+  Michigan: "MI",
+  Minnesota: "MN",
+  Mississippi: "MS",
+  Missouri: "MO",
+  Montana: "MT",
+  Nebraska: "NE",
+  Nevada: "NV",
+  "New Hampshire": "NH",
+  "New Jersey": "NJ",
+  "New Mexico": "NM",
+  "New York": "NY",
+  "North Carolina": "NC",
+  "North Dakota": "ND",
+  Ohio: "OH",
+  Oklahoma: "OK",
+  Oregon: "OR",
+  Pennsylvania: "PA",
+  "Rhode Island": "RI",
+  "South Carolina": "SC",
+  "South Dakota": "SD",
+  Tennessee: "TN",
+  Texas: "TX",
+  Utah: "UT",
+  Vermont: "VT",
+  Virginia: "VA",
+  Washington: "WA",
+  "West Virginia": "WV",
+  Wisconsin: "WI",
+  Wyoming: "WY",
+};
+
+const extractStateAbbr = (role: string): string => {
+  const dotMatch = role.match(/·\s*([^,]+)/);
+  const fullState = dotMatch
+    ? dotMatch[1].trim()
+    : (role.match(/(?:Representative|Senator),\s*([^,]+)/)?.[1]?.trim() ?? "");
+  return STATE_TO_ABBR[fullState] ?? fullState;
+};
 
 const PartyBar = ({
   label,
@@ -137,6 +199,13 @@ const PartyBar = ({
     </View>
   </View>
 );
+
+const extractState = (role: string): string => {
+  const dotMatch = role.match(/·\s*([^,]+)/);
+  if (dotMatch) return dotMatch[1].trim();
+  const commaMatch = role.match(/(?:Representative|Senator),\s*([^,]+)/);
+  return commaMatch ? commaMatch[1].trim() : "";
+};
 
 const SingleVoteCard = ({
   vote,
@@ -249,9 +318,13 @@ const SingleVoteCard = ({
         vote.members.length > 0 &&
         (() => {
           const matches = followedOfficials.flatMap((official) => {
-            const parts = official.name.split(",").map((s) => s.trim());
-            const lastName = parts[0] ?? "";
-            const firstName = parts[1]?.split(" ")[0] ?? "";
+            const hasComma = official.name.includes(",");
+            const lastName = hasComma
+              ? official.name.split(",")[0].trim()
+              : official.name.split(" ").slice(-1)[0].trim();
+            const firstName = hasComma
+              ? (official.name.split(",")[1]?.split(" ")[0] ?? "").trim()
+              : official.name.split(" ")[0].trim();
             const isSenateVote = vote.chamber?.toLowerCase() === "senate";
             if (official.isSenator && !isSenateVote) return [];
 
@@ -269,16 +342,16 @@ const SingleVoteCard = ({
               );
             });
             if (!match) return [];
+            const cleanLastName = match.lastName
+              .replace(/\s*\([^)]+\)$/, "")
+              .trim();
+            const stateAbbr = extractStateAbbr(official.role ?? "");
             return [
               {
-                name: [
-                  match.firstName,
-                  match.lastName.replace(/\s*\([^)]+\)$/, "").trim(),
-                ]
-                  .filter(Boolean)
-                  .join(" "),
+                name: `${cleanLastName}${stateAbbr ? ` (${stateAbbr})` : ""}`,
                 vote: match.vote,
                 party: match.party,
+                state: stateAbbr,
               },
             ];
           });
@@ -629,22 +702,38 @@ const VotingCard: React.FC<VotingCardProps> = ({
                         selectedVote?.chamber?.toLowerCase() === "senate";
                       const isFollowed = followedOfficials?.some((o) => {
                         if (o.isSenator && !isSenateVote) return false;
-                        const parts = o.name.split(",").map((s) => s.trim());
-                        const lastName = parts[0] ?? "";
-                        const firstName = parts[1]?.split(" ")[0] ?? "";
+                        const hasComma = o.name.includes(",");
+                        const oLastName = hasComma
+                          ? o.name.split(",")[0].trim()
+                          : o.name.split(" ").slice(-1)[0].trim();
                         const memberLastName = m.lastName
                           .replace(/\s*\([^)]+\)$/, "")
                           .trim();
-                        const lastNameMatch =
-                          memberLastName.toLowerCase() ===
-                          lastName.toLowerCase();
-                        if (!lastNameMatch) return false;
+                        if (
+                          memberLastName.toLowerCase() !==
+                          oLastName.toLowerCase()
+                        )
+                          return false;
+
+                        // If member row already has a state abbr in lastName, use it to disambiguate
+                        const memberStateMatch =
+                          m.lastName.match(/\(([A-Z]{2})\)$/);
+                        if (memberStateMatch) {
+                          const memberState = memberStateMatch[1];
+                          const followedState = extractStateAbbr(o.role ?? "");
+                          return memberState === followedState;
+                        }
+
+                        // Fall back to first name prefix match
                         if (m.firstName === "") return true;
+                        const oFirstName = hasComma
+                          ? (o.name.split(",")[1]?.split(" ")[0] ?? "").trim()
+                          : o.name.split(" ")[0].trim();
                         return (
-                          firstName === "" ||
+                          oFirstName === "" ||
                           m.firstName
                             .toLowerCase()
-                            .startsWith(firstName.toLowerCase())
+                            .startsWith(oFirstName.toLowerCase())
                         );
                       });
                       return (
@@ -670,17 +759,53 @@ const VotingCard: React.FC<VotingCardProps> = ({
                               gap: 8,
                             }}
                           >
-                            <Text
-                              style={{
-                                fontSize: 14,
-                                color: "#1a1a1a",
-                                fontWeight: isFollowed ? "600" : "400",
-                              }}
-                            >
-                              {[m.firstName, m.lastName]
-                                .filter(Boolean)
-                                .join(" ")}
-                            </Text>
+                            {(() => {
+                              const cleanLast = m.lastName
+                                .replace(/\s*\([^)]+\)$/, "")
+                                .trim();
+                              const alreadyHasState = /\([A-Z]{2}\)$/.test(
+                                m.lastName.trim(),
+                              );
+
+                              // Find the matched followed official for state
+                              const matchedFollowed = followedOfficials?.find(
+                                (o) => {
+                                  const hasComma = o.name.includes(",");
+                                  const oLastName = hasComma
+                                    ? o.name.split(",")[0].trim()
+                                    : o.name.split(" ").slice(-1)[0].trim();
+                                  return (
+                                    oLastName.toLowerCase() ===
+                                    cleanLast.toLowerCase()
+                                  );
+                                },
+                              );
+                              const stateAbbr = matchedFollowed
+                                ? extractStateAbbr(matchedFollowed.role ?? "")
+                                : "";
+
+                              const displayName = alreadyHasState
+                                ? [m.firstName, m.lastName]
+                                    .filter(Boolean)
+                                    .join(" ")
+                                : stateAbbr
+                                  ? `${[m.firstName, cleanLast].filter(Boolean).join(" ")} (${stateAbbr})`
+                                  : [m.firstName, m.lastName]
+                                      .filter(Boolean)
+                                      .join(" ");
+
+                              return (
+                                <Text
+                                  style={{
+                                    fontSize: 14,
+                                    color: "#1a1a1a",
+                                    fontWeight: isFollowed ? "600" : "400",
+                                  }}
+                                >
+                                  {displayName}
+                                </Text>
+                              );
+                            })()}
                           </View>
                           <Text style={{ fontSize: 12, color: "#7B7C81" }}>
                             {m.party === "D"

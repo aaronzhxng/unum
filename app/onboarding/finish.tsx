@@ -265,8 +265,8 @@ export default function FinishScreen() {
             const fullState = STATE_ABBR[suggested.state] ?? suggested.state;
             const roleLabel =
               suggested.role === "Senator"
-                ? `Senator · ${fullState}`
-                : `Representative · ${fullState}${suggested.district ? `, District ${suggested.district}` : ""}`;
+                ? `Senator, ${fullState}`
+                : `Representative, ${fullState}${suggested.district ? `, District ${suggested.district}` : ""}`;
             items.push({
               id: suggested.bioguideId,
               type: "official",
@@ -287,8 +287,8 @@ export default function FinishScreen() {
                 cached.terms?.item?.[cached.terms.item.length - 1]?.chamber ===
                   "Senate";
               const roleLabel = isSenator
-                ? `Senator · ${cached.state}`
-                : `Representative · ${cached.state}${cached.district ? `, District ${cached.district}` : ""}`;
+                ? `Senator, ${cached.state}`
+                : `Representative, ${cached.state}${cached.district ? `, District ${cached.district}` : ""}`;
               items.push({
                 id: cached.bioguideId,
                 type: "official",

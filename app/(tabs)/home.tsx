@@ -577,7 +577,7 @@ export default function HomeScreen() {
                   }}
                 >
                   {(() => {
-                    if (!featuredData?.weekOf) return "Newsworthy bills";
+                    if (!featuredData?.weekOf) return "Bills of the Week";
                     const parseDate = (str: string) => {
                       const [y, m, d] = str.split("-").map(Number);
                       return new Date(y, m - 1, d);
@@ -591,7 +591,7 @@ export default function HomeScreen() {
                     const end = featuredData.weekEnd
                       ? parseDate(featuredData.weekEnd)
                       : null;
-                    return `Newsworthy bills (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
+                    return `Bills of the week (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
                   })()}
                 </Text>
                 {featuredData.bills.map((bill: any) => (

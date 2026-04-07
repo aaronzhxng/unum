@@ -275,6 +275,7 @@ export default function BillDetail() {
         rows.map((r) => ({
           bioguideId: r.item_id,
           name: r.name,
+          role: r.role ?? "",
           isSenator:
             r.role?.toLowerCase().includes("senator") ||
             r.role?.toLowerCase().includes("sen,") ||

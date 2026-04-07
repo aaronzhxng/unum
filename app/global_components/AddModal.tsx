@@ -224,59 +224,15 @@ export default function AddModal({
   // Keep the simple progress animation (no saving in here)
   useEffect(() => {
     if (!showConfirmModal) return;
-
-    const totalLists = activeListLabels.length;
-    let currentProgress = 0;
-
-    const interval = setInterval(() => {
-      currentProgress += 2;
-      setProgress(currentProgress);
-
-      const newListIndex = Math.floor((currentProgress / 100) * totalLists);
-      if (newListIndex < totalLists) {
-        setCurrentListIndex(newListIndex);
+    const timer = setTimeout(() => {
+      setShowConfirmModal(false);
+      if (pendingNewList) {
+        setPendingNewList(false);
+        setTimeout(() => onNewListPress(currentItem), 200);
       }
-
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-
-        if (
-          isRemoving &&
-          selectedLists.some(
-            (id) => id !== "new-list" && !initialSelections.includes(id),
-          )
-        ) {
-          setTimeout(() => {
-            setActiveListLabels(selectedListLabels);
-            setIsRemoving(false);
-            setProgress(0);
-            setCurrentListIndex(0);
-          }, 300);
-        } else {
-          setTimeout(() => {
-            setShowConfirmModal(false);
-            setProgress(0);
-            setCurrentListIndex(0);
-            setIsRemoving(false);
-
-            if (pendingNewList) {
-              setPendingNewList(false);
-              setTimeout(() => onNewListPress(currentItem), 200);
-            }
-          }, 300);
-        }
-      }
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, [
-    showConfirmModal,
-    isRemoving,
-    activeListLabels.length,
-    selectedLists,
-    initialSelections,
-    selectedListLabels,
-  ]);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [showConfirmModal]);
 
   return (
     <>
@@ -388,146 +344,41 @@ export default function AddModal({
         </Pressable>
       </Modal>
 
-      {/* Confirmation Modal with Progress */}
-      <Modal
-        visible={showConfirmModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-      >
-        <Pressable
-          style={[modalStyles.modalOverlay, { justifyContent: "center" }]}
-          onPress={() => {}}
+      {/* Confirmation Toast */}
+      {showConfirmModal && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            pointerEvents: "none",
+          }}
         >
           <View
             style={{
-              backgroundColor: "#f5f5f5",
-              marginHorizontal: 16,
-              borderRadius: 16,
-              padding: 24,
+              backgroundColor: "#535353",
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.12,
-              shadowRadius: 12,
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
               elevation: 8,
             }}
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#1a1a1a",
-                marginTop: 8,
-                marginBottom: 32,
-                textAlign: "center",
-              }}
-            >
+            <Text style={{ fontSize: 14, color: "#fff", fontWeight: "500" }}>
               {isRemoving
-                ? activeListLabels.length > 1
-                  ? `Removing from ${activeListLabels[currentListIndex] || activeListLabels[0]}`
-                  : `Removing from ${activeListLabels[0]}`
-                : activeListLabels.length > 1
-                  ? `Adding to ${activeListLabels[currentListIndex] || activeListLabels[0]}`
-                  : `Adding to ${activeListLabels[0]}`}
+                ? `Removed from ${activeListLabels[0]}`
+                : `Added to ${activeListLabels[0]}`}
             </Text>
-
-            {/* Progress Bar */}
-            <View
-              style={{
-                width: "100%",
-                height: 6,
-                backgroundColor: "#e0e0e0",
-                borderRadius: 3,
-                marginBottom: 12,
-                overflow: "hidden",
-              }}
-            >
-              <View
-                style={{
-                  width: `${progress}%`,
-                  height: "100%",
-                  backgroundColor: "#00AFFF",
-                  borderRadius: 3,
-                }}
-              />
-            </View>
-
-            {/* Progress Text */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 0,
-              }}
-            >
-              <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/{activeListLabels.length}
-              </Text>
-              <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {Math.round(progress)}%
-              </Text>
-            </View>
-
-            {/* Cancel Button */}
-            <Pressable
-              onPress={async () => {
-                // Undo the save
-                if (savedChanges && currentItem) {
-                  const lists = await storage.getLists();
-
-                  // Re-add to lists we removed from
-                  for (const listId of savedChanges.listsToRemove) {
-                    const list = lists.find((l) => l.id === listId);
-                    if (list) {
-                      const alreadyExists = list.items.some(
-                        (i) => i.id === currentItem.id,
-                      );
-                      if (!alreadyExists) {
-                        const listItem: ListItem = {
-                          id: currentItem.id,
-                          type: currentItem.type,
-                          name: currentItem.name,
-                          party: currentItem.party,
-                          role: currentItem.role,
-                          date: currentItem.date,
-                          latestAction: currentItem.latestAction,
-                          policyArea: currentItem.policyArea,
-                          update: "",
-                          photoUrl: currentItem.photoUrl,
-                        };
-                        list.items.push(listItem);
-                      }
-                    }
-                  }
-
-                  // Remove from lists we added to
-                  for (const listId of savedChanges.listsToAdd) {
-                    const list = lists.find((l) => l.id === listId);
-                    if (list) {
-                      list.items = list.items.filter(
-                        (item) => item.id !== currentItem.id,
-                      );
-                    }
-                  }
-
-                  await storage.saveLists(lists);
-                  listEvents.emit(LIST_UPDATED);
-                }
-
-                setShowConfirmModal(false);
-                setProgress(0);
-                setSavedChanges(null);
-              }}
-            >
-              <Text
-                style={{ fontSize: 14, color: "#535353", textAlign: "center" }}
-              >
-                Cancel
-              </Text>
-            </Pressable>
           </View>
-        </Pressable>
-      </Modal>
+        </View>
+      )}
     </>
   );
 }
