@@ -30,7 +30,7 @@ export default function WelcomeScreen() {
     >
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <Image
-          source={require("../../assets/app_icons/app_icon_small.png")}
+          source={require("../../assets/app_icons/app_icon_ios.png")}
           style={{ width: 96, height: 96, borderRadius: 22, marginBottom: 24 }}
           resizeMode="cover"
         />

@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native"; // ✅ ADD THIS LINE
 
 export const styles = StyleSheet.create({
   screen: {
@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 48,
+    paddingTop: Platform.OS === "ios" ? 63 : 48,
   },
   headerRight: {
     flexDirection: "row",

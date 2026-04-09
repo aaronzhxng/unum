@@ -10,7 +10,15 @@ import {
   Search,
 } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useTabBar } from "../context/TabBarContext";
 import { useTour } from "../context/TourContext";
@@ -1440,14 +1448,15 @@ function formatRole(
   state: string,
   district?: number | null,
 ): string {
+  const threshold = Platform.OS === "ios" ? 32 : 39;
   if (chamber === "House of Representatives") {
     const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
     const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
-    return full.length > 39 ? abbr : full;
+    return full.length > threshold ? abbr : full;
   }
   const full = `Senator, ${state}`;
   const abbr = `Sen, ${state}`;
-  return full.length > 40 ? abbr : full;
+  return full.length > threshold + 1 ? abbr : full;
 }
 
 const Card = React.memo(function Card({

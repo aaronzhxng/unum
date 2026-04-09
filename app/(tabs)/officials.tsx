@@ -16,6 +16,7 @@ import {
   FlatList,
   Image,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -702,14 +703,15 @@ function formatRole(
   state: string,
   district?: number | null,
 ): string {
+  const threshold = Platform.OS === "ios" ? 32 : 39;
   if (chamber === "House of Representatives") {
     const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
     const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
-    return full.length > 39 ? abbr : full;
+    return full.length > threshold ? abbr : full;
   }
   const full = `Senator, ${state}`;
   const abbr = `Sen, ${state}`;
-  return full.length > 40 ? abbr : full;
+  return full.length > threshold + 1 ? abbr : full;
 }
 
 const OfficialCard = React.memo(function OfficialCard({
