@@ -1183,6 +1183,20 @@ app.get("/api/debug/clear-notified", (req, res) => {
   res.json({ success: true });
 });
 
+app.get("/api/debug/my-token", (req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT token, updated_at FROM push_registrations ORDER BY updated_at DESC LIMIT 5`,
+    )
+    .all();
+  res.json(rows);
+});
+
+app.post("/api/debug/token", (req, res) => {
+  console.log("DEBUG TOKEN RECEIVED:", JSON.stringify(req.body));
+  res.json({ success: true });
+});
+
 app.listen(PORT, () => {
   startCronScheduler();
 });

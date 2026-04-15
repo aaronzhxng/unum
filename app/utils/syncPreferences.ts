@@ -57,30 +57,22 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
       };
     });
 
-    // console.log(
-    //   "Syncing to backend:",
-    //   JSON.stringify({
-    //     token,
-    //     policyAreas,
-    //     followedStates,
-    //     followedBills,
-    //     followedOfficials,
-    //   }),
-    // );
+    console.log(
+      "Syncing to backend:",
+      JSON.stringify({
+        token,
+        policyAreas,
+        followedStates,
+        followedBills,
+        followedOfficials,
+      }),
+    );
 
-    // await fetch(`${BACKEND_URL}/api/debug/token`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     token: "SYNC_DEBUG",
-    //     error: JSON.stringify({
-    //       policyAreas,
-    //       followedStates,
-    //       followedBills,
-    //       followedOfficials,
-    //     }),
-    //   }),
-    // }).catch(() => {});
+    await fetch(`${BACKEND_URL}/api/debug/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, policyAreas }),
+    }).catch(() => {});
 
     await fetch(`${BACKEND_URL}/api/push-tokens`, {
       method: "POST",
