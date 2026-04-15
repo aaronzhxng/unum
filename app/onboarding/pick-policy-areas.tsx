@@ -92,10 +92,10 @@ export default function PickPolicyAreasScreen() {
         </Text>
         <Text style={{ fontSize: 15, color: "#535353" }}>
           {familiarityLevel === "low"
-            ? "All bills have a policy area they are sorted into. Which ones matter to YOU most?"
+            ? "All bills have a policy area they are sorted into. Which ones matter to YOU most? We will notify you when a bill in this category is introduced or has an update."
             : familiarityLevel === "high"
-              ? "Select the policy areas you want to actively follow."
-              : "Get notified when major new bills are introduced in areas you care about."}
+              ? "Select the policy areas you want to actively follow. We will notify you when a bill in this category is introduced or has an update."
+              : "Get notified when major new bills are introduced in areas you care about. We will notify you when a bill in this category is introduced or has an update."}
         </Text>
       </View>
 

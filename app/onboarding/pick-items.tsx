@@ -385,10 +385,10 @@ export default function PickItemsScreen() {
         </Text>
         <Text style={{ fontSize: 15, color: "#535353" }}>
           {familiarityLevel === "low"
-            ? "You can add some names you recognize — officials or bills you've heard about. You can always add more later."
+            ? "This list will store all the officials and bills you want to track. You can add some names you recognize — officials or bills you've heard about. You can always add more later."
             : familiarityLevel === "high"
-              ? "Add officials and legislation to your watchlist. You can add more later."
-              : "Follow officials and bills you want to keep track of. You can always add more later."}
+              ? "Add officials and legislation to a watchlist to keep track of. You can add more later."
+              : "This list will store all the officials and bills you want to track. You can always add more later."}
         </Text>
       </View>
 

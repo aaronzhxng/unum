@@ -102,10 +102,10 @@ export default function PickStateScreen() {
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
           {familiarityLevel === "low"
-            ? "Every state has two senators and several representatives in Congress. Pick yours to follow what they're working on. Their work is meant to amplify your state's needs on a national level."
+            ? "Every state has two senators in Congress. Pick yours to follow what they're working on. Their work is meant to amplify your state's needs on a national level."
             : familiarityLevel === "high"
               ? "Set a priority state to track legislative activity from your delegation."
-              : "Get notified about new bills introduced by senator and representatives from your state."}
+              : "Get notified about new bills introduced by senators from your state."}
         </Text>
       </View>
 

@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-04-07",
-  "weekEnd": "2026-04-13",
+  "weekOf": "2026-04-13",
+  "weekEnd": "2026-04-20",
   "bills": [
     {
-      "billId": "hr22",
-      "note": "Congress is expected to vote on this Thursday."
+      "billId": "hr7148",
+      "note": "This is the omnibus bill that made major moves to the US military draft."
     },
     {
-      "billId": "hr7147",
-      "note": "This Bill is the appropriations act for the Department of Homeland Security after the partial DHS shutdown that began February 14, 2026."
+      "billId": "hr4393",
+      "note": "This is the major immigration bill of the week."
     }
   ]
 }

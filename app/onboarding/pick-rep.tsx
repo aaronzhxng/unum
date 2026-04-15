@@ -356,7 +356,7 @@ export default function PickRepScreen() {
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
           {familiarityLevel === "low"
-            ? "Your zip code tells us exactly which congressman represents your particular neighborhood in the House of Representatives."
+            ? "Your zip code tells us exactly which representative represents your particular neighborhood in the House of Representatives."
             : familiarityLevel === "high"
               ? "Look up your House rep by zip code."
               : "Enter your zip code and we'll find the House representative for your district."}

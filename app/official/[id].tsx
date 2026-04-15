@@ -1017,7 +1017,7 @@ export default function OfficialDetail() {
               }}
             >
               <Text style={{ fontSize: 16, fontWeight: "700" }}>
-                Bills Signed Into Law (2025 -)
+                Bills Signed Into Law (2025 - )
               </Text>
             </View>
             {!sponsoredLoading && !cosponsoredLoading ? (
