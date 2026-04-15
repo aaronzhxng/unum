@@ -247,6 +247,8 @@ export default function PickItemsScreen() {
     priorityState,
     setOverlayConfig,
     familiarityLevel,
+    notificationsEnabled,
+    setNotificationsEnabled,
   } = useOnboarding();
 
   const [activeTab, setActiveTab] = useState<Tab>("officials");
@@ -434,6 +436,49 @@ export default function PickItemsScreen() {
           </Pressable>
         ))}
       </View>
+
+      <Pressable
+        onPress={() => setNotificationsEnabled(!notificationsEnabled)}
+        style={({ pressed }) => ({
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 24,
+          paddingVertical: 14,
+          marginBottom: 4,
+          transform: [{ scale: pressed ? 0.98 : 1 }],
+        })}
+      >
+        <Text
+          style={{
+            fontSize: 15,
+            color: "#1a1a1a",
+            fontWeight: "500",
+            flex: 1,
+            marginRight: 12,
+          }}
+        >
+          Notify me about activity from followed officials and bills
+        </Text>
+        <View
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: 6,
+            borderWidth: 2,
+            borderColor: notificationsEnabled ? "#008CFF" : "#ccc",
+            backgroundColor: notificationsEnabled ? "#008CFF" : "transparent",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {notificationsEnabled && (
+            <Text style={{ color: "white", fontSize: 13, fontWeight: "700" }}>
+              ✓
+            </Text>
+          )}
+        </View>
+      </Pressable>
 
       {activeTab === "officials" && (
         <ScrollView

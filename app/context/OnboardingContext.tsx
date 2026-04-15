@@ -29,6 +29,8 @@ interface OnboardingData {
   setOverlayConfig: (config: OverlayConfig | null) => void;
   foundRepBioguideId: string | null;
   setFoundRepBioguideId: (id: string | null) => void;
+  notificationsEnabled: boolean;
+  setNotificationsEnabled: (enabled: boolean) => void;
 }
 
 const OnboardingContext = createContext<OnboardingData>({
@@ -48,6 +50,8 @@ const OnboardingContext = createContext<OnboardingData>({
   setFoundRepBioguideId: () => {},
   overlayConfig: null,
   setOverlayConfig: () => {},
+  notificationsEnabled: true,
+  setNotificationsEnabled: () => {},
 });
 
 export const OnboardingProvider = ({
@@ -71,6 +75,8 @@ export const OnboardingProvider = ({
     null,
   );
 
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
   return (
     <OnboardingContext.Provider
       value={{
@@ -90,6 +96,8 @@ export const OnboardingProvider = ({
         setOverlayConfig,
         foundRepBioguideId,
         setFoundRepBioguideId,
+        notificationsEnabled,
+        setNotificationsEnabled,
       }}
     >
       {children}

@@ -2,7 +2,11 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { getDb } from "./database";
 
-const isExpoGo = Constants.executionEnvironment === "storeClient";
+const isStandaloneBuild =
+  Constants.executionEnvironment === "standalone" ||
+  Constants.executionEnvironment === "storeClient";
+
+const isExpoGo = !isStandaloneBuild;
 export const pushToken = {
   register: async (): Promise<string | null> => {
     console.log("executionEnvironment:", Constants.executionEnvironment);
@@ -37,11 +41,11 @@ export const pushToken = {
       console.log("Token data:", tokenData);
       const token = tokenData.data;
 
-      // fetch("https://unum-production.up.railway.app/api/debug/token", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ token }),
-      // }).catch(() => {});
+      fetch("https://unum-production.up.railway.app/api/debug/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      }).catch(() => {});
 
       console.log("Token:", token);
 

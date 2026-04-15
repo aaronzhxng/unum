@@ -115,7 +115,7 @@ app.get("/api/bills", async (req, res) => {
             update_date = excluded.update_date,
             latest_action_date = excluded.latest_action_date,
             synced_at = excluded.synced_at,
-            policy_area = COALESCE(bills.policy_area, excluded.policy_area)
+            policy_area = COALESCE(excluded.policy_area, bills.policy_area)
         `);
       const syncBills = db.transaction((bills: any[]) => {
         for (const bill of bills) {

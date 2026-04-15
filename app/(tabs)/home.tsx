@@ -87,6 +87,8 @@ export default function HomeScreen() {
   const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);
   const [showNewListProgressModal, setShowNewListProgressModal] =
     useState(false);
+  const [showActionToast, setShowActionToast] = useState(false);
+  const [actionToastMessage, setActionToastMessage] = useState("");
   const [newListProgress, setNewListProgress] = useState(0);
   // const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [createdListName, setCreatedListName] = useState("");
@@ -157,6 +159,12 @@ export default function HomeScreen() {
     setOriginalOrder([]);
   };
 
+  const showToast = (message: string) => {
+    setActionToastMessage(message);
+    setShowActionToast(true);
+    setTimeout(() => setShowActionToast(false), 1500);
+  };
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -179,6 +187,9 @@ export default function HomeScreen() {
     await saveItems(newItems); // Save to storage
     setShowRemoveModal(false);
     exitEditMode();
+    showToast(
+      `Removed ${selectedIds.size} item${selectedIds.size > 1 ? "s" : ""}`,
+    );
   };
 
   const handleEditConfirm = async (
@@ -215,6 +226,16 @@ export default function HomeScreen() {
     await storage.saveLists(allLists);
     setShowEditOptions(false);
     exitEditMode();
+
+    const targetNames = listIds
+      .map((id) => lists.find((l) => l.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+    showToast(
+      action === "move"
+        ? `Moved to ${targetNames}`
+        : `Copied to ${targetNames}`,
+    );
   };
 
   const handleNewListCreate = async () => {
@@ -1405,6 +1426,39 @@ export default function HomeScreen() {
           </View>
         </Pressable>
       </Modal>
+
+      {showActionToast && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#535353",
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#fff", fontWeight: "500" }}>
+              {actionToastMessage}
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

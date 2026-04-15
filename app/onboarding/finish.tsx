@@ -215,6 +215,7 @@ export default function FinishScreen() {
     selectedPolicyAreas,
     priorityState,
     setOverlayConfig,
+    notificationsEnabled,
   } = useOnboarding();
   const hasRun = useRef(false);
 
@@ -241,6 +242,22 @@ export default function FinishScreen() {
             "bill",
             selectedPolicyAreas,
           );
+        }
+
+        // 2b. Save notification preferences for followed officials and bills
+        if (notificationsEnabled) {
+          for (const bioguideId of selectedOfficials) {
+            notificationPreferences.saveSubTypes(
+              `official_${bioguideId}`,
+              "official",
+              ["all-notications"],
+            );
+          }
+          for (const billId of selectedBills) {
+            notificationPreferences.saveSubTypes(`bill_${billId}`, "bill", [
+              "all-notications",
+            ]);
+          }
         }
 
         // 3. Sync preferences to backend
