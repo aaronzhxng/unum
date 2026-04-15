@@ -542,7 +542,7 @@ const enrichMissingPolicyAreas = async (): Promise<void> => {
 
 export const runCronJob = async () => {
   db.prepare(
-    `DELETE FROM notified_bills WHERE notified_date < date('now', '-3 days')`,
+    `DELETE FROM notified_bills WHERE notified_date < date('now', '1 days')`,
   ).run();
   console.log(
     "Running daily notification cron job...",
