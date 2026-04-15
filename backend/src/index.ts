@@ -1178,6 +1178,11 @@ app.get("/api/debug/error-reports", (req, res) => {
   res.send(`<pre>${content}</pre>`);
 });
 
+app.get("/api/debug/clear-notified", (req, res) => {
+  db.prepare(`DELETE FROM notified_bills`).run();
+  res.json({ success: true });
+});
+
 app.listen(PORT, () => {
   startCronScheduler();
 });
