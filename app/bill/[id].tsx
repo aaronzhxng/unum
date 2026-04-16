@@ -256,6 +256,9 @@ export default function BillDetail() {
   const summaryRef = useRef<View>(null);
   const billTabBarRef = useRef<View>(null);
 
+  const [showActionToast, setShowActionToast] = useState(false);
+  const [actionToastMessage, setActionToastMessage] = useState("");
+
   // REPLACE the entire followedOfficials useMemo with:
   const [followedOfficials, setFollowedOfficials] = useState<
     FollowedOfficial[]
@@ -468,7 +471,10 @@ export default function BillDetail() {
       setShowNewListModal(false);
       setPendingItemForNewList(null);
       setNewListProgress(0);
-      setTimeout(() => setShowNewListProgressModal(true), 50);
+      setTimeout(() => {
+        setShowNewListProgressModal(true);
+        setTimeout(() => showToast(`Added to ${newListName.trim()}`), 1800);
+      }, 50);
     }
   };
 
@@ -571,6 +577,12 @@ export default function BillDetail() {
     setIsFiltered(hasFilters);
     setShowChamberModal(false);
     setShowPartyModal(false);
+  };
+
+  const showToast = (message: string) => {
+    setActionToastMessage(message);
+    setShowActionToast(true);
+    setTimeout(() => setShowActionToast(false), 1500);
   };
 
   const { data, isLoading, error } = useQuery({
@@ -1927,6 +1939,38 @@ export default function BillDetail() {
             setTourStep(0);
           }}
         />
+      )}
+      {showActionToast && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#535353",
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#fff", fontWeight: "500" }}>
+              {actionToastMessage}
+            </Text>
+          </View>
+        </View>
       )}
     </View>
   );

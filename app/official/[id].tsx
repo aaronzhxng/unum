@@ -304,6 +304,9 @@ export default function OfficialDetail() {
   const policyAreasRef = useRef<View>(null);
   const tabBarRef = useRef<View>(null);
 
+  const [showActionToast, setShowActionToast] = useState(false);
+  const [actionToastMessage, setActionToastMessage] = useState("");
+
   useEffect(() => {
     setImageError(false);
   }, [id]);
@@ -434,6 +437,10 @@ export default function OfficialDetail() {
       setShowNewListModal(false);
       setPendingItemForNewList(null);
       setShowNewListProgressModal(true);
+      setTimeout(
+        () => showToast(`Added to ${createdListName || newListName.trim()}`),
+        1800,
+      );
       setNewListName("");
     }
   };
@@ -470,6 +477,12 @@ export default function OfficialDetail() {
 
   const handleApply = () => {
     setShowFilterModal(false);
+  };
+
+  const showToast = (message: string) => {
+    setActionToastMessage(message);
+    setShowActionToast(true);
+    setTimeout(() => setShowActionToast(false), 1500);
   };
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -1770,6 +1783,38 @@ export default function OfficialDetail() {
             }
           }}
         />
+      )}
+      {showActionToast && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#535353",
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#fff", fontWeight: "500" }}>
+              {actionToastMessage}
+            </Text>
+          </View>
+        </View>
       )}
     </View>
   );

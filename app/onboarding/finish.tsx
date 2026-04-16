@@ -376,10 +376,11 @@ export default function FinishScreen() {
 
         // 8. Wait at least 4 seconds from when finish screen appeared,
         //    then navigate. Runs in parallel with the work above.
-        await new Promise((resolve) => setTimeout(resolve, 4000));
 
         // Request push notification permission during onboarding
         await pushToken.register();
+
+        await new Promise((resolve) => setTimeout(resolve, 4000));
 
         router.replace("/onboarding/tour" as any);
       } catch (error) {

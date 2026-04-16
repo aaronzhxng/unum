@@ -93,6 +93,9 @@ export default function LegislationScreen() {
   const searchInputRef = useRef<TextInput>(null);
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
+  const [showActionToast, setShowActionToast] = useState(false);
+  const [actionToastMessage, setActionToastMessage] = useState("");
+
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -146,6 +149,7 @@ export default function LegislationScreen() {
       listEvents.emit(LIST_UPDATED);
       setCreatedListName(name.trim());
       setShowNewListProgressModal(true);
+      setTimeout(() => showToast(`Added to ${name.trim()}`), 1800);
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
@@ -173,6 +177,12 @@ export default function LegislationScreen() {
     setPendingLegislationTypes(selectedLegislationTypes);
     setShowSortDropdown(false);
     setShowFilterModal(true);
+  };
+
+  const showToast = (message: string) => {
+    setActionToastMessage(message);
+    setShowActionToast(true);
+    setTimeout(() => setShowActionToast(false), 1500);
   };
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -797,6 +807,38 @@ export default function LegislationScreen() {
           </View>
         </Pressable>
       </Modal>
+      {showActionToast && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#535353",
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#fff", fontWeight: "500" }}>
+              {actionToastMessage}
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

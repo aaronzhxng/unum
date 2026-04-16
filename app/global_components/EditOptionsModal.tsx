@@ -21,8 +21,6 @@ export default function EditOptionsModal({
     null,
   );
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [currentListIndex, setCurrentListIndex] = useState(0);
 
   // Reset state when modal opens
@@ -64,52 +62,19 @@ export default function EditOptionsModal({
       return;
     }
 
+    const action = selectedAction;
+    const realIds = [...selectedRealListIds];
+    const shouldOpenNewList = hasNewList;
+    setSelectedAction(null);
+    setSelectedListIds([]);
     onClose();
-    setShowProgressModal(true);
-    setProgress(0);
-    setCurrentListIndex(0);
+    if (realIds.length > 0) {
+      onConfirm(action!, realIds);
+    }
+    if (shouldOpenNewList) {
+      setTimeout(() => onNewListPress(action!), 200);
+    }
   };
-
-  useEffect(() => {
-    if (!showProgressModal) return;
-
-    const totalLists = selectedRealListIds.length;
-    let currentProgress = 0;
-
-    const interval = setInterval(() => {
-      currentProgress += 2;
-      setProgress(currentProgress);
-
-      const newListIndex = Math.floor((currentProgress / 100) * totalLists);
-      if (newListIndex < totalLists) {
-        setCurrentListIndex(newListIndex);
-      }
-
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setShowProgressModal(false);
-          setProgress(0);
-          setCurrentListIndex(0);
-
-          if (selectedAction) {
-            onConfirm(selectedAction, selectedRealListIds);
-          }
-
-          const shouldOpenNewList = hasNewList;
-          const savedAction = selectedAction; // capture before clearing
-          setSelectedAction(null);
-          setSelectedListIds([]);
-
-          if (shouldOpenNewList) {
-            setTimeout(() => onNewListPress(savedAction!), 200);
-          }
-        }, 300);
-      }
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, [showProgressModal]);
 
   const canConfirm = selectedAction !== null && selectedListIds.length > 0;
 
@@ -375,92 +340,6 @@ export default function EditOptionsModal({
               </Pressable>
             </View>
           </Pressable>
-        </Pressable>
-      </Modal>
-
-      {/* Progress Modal */}
-      <Modal
-        visible={showProgressModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-      >
-        <Pressable
-          style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
-          onPress={() => {}}
-        >
-          <View
-            style={{
-              backgroundColor: "#f5f5f5",
-              marginHorizontal: 16,
-              borderRadius: 16,
-              padding: 24,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.12,
-              shadowRadius: 12,
-              elevation: 8,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#1a1a1a",
-                marginTop: 8,
-                marginBottom: 32,
-                textAlign: "center",
-              }}
-            >
-              {selectedAction === "copy" ? "Copying to" : "Moving to"}{" "}
-              {currentListName}
-            </Text>
-            <View
-              style={{
-                width: "100%",
-                height: 6,
-                backgroundColor: "#e0e0e0",
-                borderRadius: 3,
-                marginBottom: 12,
-                overflow: "hidden",
-              }}
-            >
-              <View
-                style={{
-                  width: `${progress}%`,
-                  height: "100%",
-                  backgroundColor: "#00AFFF",
-                  borderRadius: 3,
-                }}
-              />
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 16,
-              }}
-            >
-              <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {currentListIndex + 1}/{selectedRealListIds.length}
-              </Text>
-              <Text style={{ fontSize: 12, color: "#7B7C81" }}>
-                {Math.round(progress)}%
-              </Text>
-            </View>
-            <Pressable
-              onPress={() => {
-                setShowProgressModal(false);
-                setProgress(0);
-              }}
-            >
-              <Text
-                style={{ fontSize: 14, color: "#535353", textAlign: "center" }}
-              >
-                Cancel
-              </Text>
-            </Pressable>
-          </View>
         </Pressable>
       </Modal>
     </>
