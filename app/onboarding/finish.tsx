@@ -378,10 +378,10 @@ export default function FinishScreen() {
         //    then navigate. Runs in parallel with the work above.
 
         // Request push notification permission during onboarding
+        // Request permission first while screen is stable
         await pushToken.register();
-
+        // Then wait remaining time before navigating
         await new Promise((resolve) => setTimeout(resolve, 4000));
-
         router.replace("/onboarding/tour" as any);
       } catch (error) {
         console.error("Error finishing onboarding:", error);

@@ -45,8 +45,6 @@ export default function PickPolicyAreasScreen() {
     setSelectedPolicyAreas,
     setOverlayConfig,
     familiarityLevel,
-    notificationsEnabled,
-    setNotificationsEnabled,
   } = useOnboarding();
 
   const toggle = (area: string) => {

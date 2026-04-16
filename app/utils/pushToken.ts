@@ -2,19 +2,20 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { getDb } from "./database";
 
-const isStandaloneBuild =
+const isStandalone = () =>
   Constants.executionEnvironment === "standalone" ||
   Constants.executionEnvironment === "storeClient";
 
-const isExpoGo = !isStandaloneBuild;
 export const pushToken = {
   register: async (): Promise<string | null> => {
     console.log("executionEnvironment:", Constants.executionEnvironment);
-    console.log("isExpoGo:", isExpoGo);
-    if (isExpoGo) {
+    console.log("isStandalone:", isStandalone());
+
+    if (!isStandalone()) {
       console.log("Push notifications not supported in Expo Go — skipping");
       return null;
     }
+
     try {
       const Notifications = await import("expo-notifications");
 
@@ -68,17 +69,12 @@ export const pushToken = {
       return token;
     } catch (error) {
       console.error("Error registering for push notifications:", error);
-      // fetch("https://unum-production.up.railway.app/api/debug/token", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ error: String(error) }),
-      // }).catch(() => {});
       return null;
     }
   },
 
   get: (): string | null => {
-    if (isExpoGo) return null;
+    if (!isStandalone()) return null;
     try {
       const db = getDb();
       const row = db.getFirstSync<{ token: string }>(
