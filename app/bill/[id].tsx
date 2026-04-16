@@ -473,7 +473,7 @@ export default function BillDetail() {
       setNewListProgress(0);
       setTimeout(() => {
         setShowNewListProgressModal(true);
-        setTimeout(() => showToast(`Added to ${newListName.trim()}`), 1800);
+        setTimeout(() => showToast(`Added to ${newListName.trim()}`), 1000);
       }, 50);
     }
   };

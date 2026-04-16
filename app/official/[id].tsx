@@ -439,7 +439,7 @@ export default function OfficialDetail() {
       setShowNewListProgressModal(true);
       setTimeout(
         () => showToast(`Added to ${createdListName || newListName.trim()}`),
-        1800,
+        1000,
       );
       setNewListName("");
     }

@@ -235,7 +235,7 @@ export default function FinishScreen() {
           notificationPreferences.enable(`state_${priorityState}`, "official");
         }
 
-        // 2. Save policy area notification preferences
+        // Step 2 — always save policy area preferences (no toggle needed)
         if (selectedPolicyAreas.length > 0) {
           notificationPreferences.saveSubTypes(
             "policy_areas",
@@ -244,7 +244,7 @@ export default function FinishScreen() {
           );
         }
 
-        // 2b. Save notification preferences for followed officials and bills
+        // Step 2b — officials and bills respect the toggle
         if (notificationsEnabled) {
           for (const bioguideId of selectedOfficials) {
             notificationPreferences.saveSubTypes(

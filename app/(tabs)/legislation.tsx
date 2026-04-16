@@ -149,7 +149,7 @@ export default function LegislationScreen() {
       listEvents.emit(LIST_UPDATED);
       setCreatedListName(name.trim());
       setShowNewListProgressModal(true);
-      setTimeout(() => showToast(`Added to ${name.trim()}`), 1800);
+      setTimeout(() => showToast(`Added to ${name.trim()}`), 1000);
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);

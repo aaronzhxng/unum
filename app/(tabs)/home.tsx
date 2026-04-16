@@ -240,6 +240,7 @@ export default function HomeScreen() {
 
   const handleNewListCreate = async () => {
     if (newListName.trim()) {
+      const trimmedName = newListName.trim(); // capture before clearing
       const allLists = await storage.getLists();
 
       let itemsForNewList: ListItem[] = [];
@@ -275,13 +276,14 @@ export default function HomeScreen() {
         exitEditMode();
       }
 
-      setCreatedListName(newListName.trim());
+      setCreatedListName(trimmedName);
       setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
       setShowNewListProgressModal(true);
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
       setPendingEditAction(null);
+      setTimeout(() => showToast(`Added to ${trimmedName}`), 1000);
     }
   };
 
