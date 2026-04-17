@@ -8,9 +8,16 @@ const isStandalone = () =>
 
 export const pushToken = {
   register: async (): Promise<string | null> => {
-    console.log("executionEnvironment:", Constants.executionEnvironment);
-    console.log("isStandalone:", isStandalone());
-
+    // Debug: report what environment we're in
+    fetch("https://unum-production.up.railway.app/api/debug/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: "REGISTER_CALLED",
+        executionEnvironment: Constants.executionEnvironment,
+        isStandalone: isStandalone(),
+      }),
+    }).catch(() => {});
     if (!isStandalone()) {
       console.log("Push notifications not supported in Expo Go — skipping");
       return null;

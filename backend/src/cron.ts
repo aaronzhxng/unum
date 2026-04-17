@@ -106,24 +106,42 @@ const checkNewBills = async () => {
     [];
   const since = getLastChecked();
 
-  // Query only HR and S bills with a policy area, updated since yesterday
-  const recentBills = db
-    .prepare(
-      `SELECT bill_id, type, number, title, policy_area, sponsor_state
-     FROM bills
-     WHERE latest_action_date >= ?
-       AND type IN ('HR', 'S')
-       AND policy_area IS NOT NULL`,
-    )
-    .all(since) as {
-    bill_id: string;
-    type: string;
-    number: string;
-    title: string;
-    policy_area: string;
-    sponsor_state: string | null;
-    update_date: string | null; // ADD THIS LINE
-  }[];
+  // Fetch directly from Congress.gov instead of relying on Railway SQLite
+  let recentBills: any[] = [];
+  try {
+    const response = await axios.get("https://api.congress.gov/v3/bill/119", {
+      headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+      params: {
+        limit: 250,
+        sort: "updateDate+desc",
+        format: "json",
+        fromDateTime: `${since}T00:00:00Z`,
+      },
+    });
+    const bills = response.data.bills || [];
+    recentBills = bills
+      .filter((b: any) => b.policyArea?.name)
+      .map((b: any) => ({
+        bill_id: `${b.type.toLowerCase()}${b.number}`,
+        type: b.type,
+        number: b.number,
+        title: b.title,
+        policy_area: b.policyArea.name,
+        sponsor_state: b.sponsors?.[0]?.state ?? null,
+      }));
+  } catch (error) {
+    console.error("Error fetching bills from Congress.gov:", error);
+    // Fall back to Railway SQLite
+    recentBills = db
+      .prepare(
+        `SELECT bill_id, type, number, title, policy_area, sponsor_state
+       FROM bills
+       WHERE latest_action_date >= ?
+         AND type IN ('HR', 'S')
+         AND policy_area IS NOT NULL`,
+      )
+      .all(since) as any[];
+  }
 
   console.log(`Found ${recentBills.length} recent bills since ${since}`);
   console.log(
@@ -557,8 +575,10 @@ export const runCronJob = async () => {
 
 // ── Scheduler — runs every day at 8am and 4pm EST ─────────────────────────────────
 export const startCronScheduler = () => {
-  cron.schedule("0 13,21 * * *", () => {
+  // cron.schedule("0 13,21 * * *", () => {
+  cron.schedule("*/30 * * * *", () => {
     runCronJob();
   });
-  console.log("Cron scheduler started — runs at 8am and 4pm EST daily");
+  // console.log("Cron scheduler started — runs at 8am and 4pm EST daily");
+  console.log("Cron scheduler started — runs every 30 minutes");
 };

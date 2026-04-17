@@ -71,7 +71,12 @@ export default function OptionsModal({
   useEffect(() => {
     if (showOptionsModal) {
       const saved = notificationPreferences.getSubTypes(itemId);
-      setSelectedNotifications(saved);
+      // If "all-notications" is saved, expand to show all checkboxes ticked
+      if (saved.includes("all-notications")) {
+        setSelectedNotifications(listOptions.map((o) => o.id));
+      } else {
+        setSelectedNotifications(saved);
+      }
     }
   }, [showOptionsModal, itemId]);
 
