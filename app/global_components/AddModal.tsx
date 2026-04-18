@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { ListItem, storage } from "../utils/storage";
@@ -226,10 +226,6 @@ export default function AddModal({
           currentItem.type === "bill"
             ? `bill_${currentItem.id}`
             : `official_${currentItem.id}`;
-        Alert.alert(
-          "Debug",
-          `stillInAnyList: ${stillInAnyList}, prefId: ${prefId}`,
-        );
         console.log("listsToRemove:", listsToRemove);
         console.log("stillInAnyList:", stillInAnyList);
         console.log("prefId:", prefId);

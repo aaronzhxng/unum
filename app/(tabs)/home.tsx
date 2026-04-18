@@ -196,10 +196,8 @@ export default function HomeScreen() {
       const stillInAnyList = allLists.some((l) =>
         l.items.some((i) => i.id === item.id),
       );
-      console.log("item:", item.id, "stillInAnyList:", stillInAnyList);
       if (!stillInAnyList) {
         notificationPreferences.disable(prefId);
-        console.log("disable called for:", prefId);
       }
     }
     syncPreferencesToBackend();
