@@ -251,7 +251,7 @@ export default function OfficialDetail() {
   ).current;
 
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [selectedSort, setSelectedSort] = useState("Most Popular");
+  const [selectedSort, setSelectedSort] = useState("Most Recent Action");
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedChambers, setSelectedChambers] = useState<string[]>([]);

@@ -33,8 +33,9 @@ import { billsService } from "../services/bills";
 import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
+import { notificationPreferences } from "../utils/notificationPreferences";
 import { ListItem, storage } from "../utils/storage";
-
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 type Item = ListItem;
 
 export default function HomeScreen() {
@@ -182,9 +183,27 @@ export default function HomeScreen() {
   };
 
   const handleRemoveConfirm = async () => {
+    const removedItems = items.filter((item) => selectedIds.has(item.id));
     const newItems = items.filter((item) => !selectedIds.has(item.id));
     setItems(newItems);
-    await saveItems(newItems); // Save to storage
+    await saveItems(newItems);
+
+    // Disable notifications for items no longer in any list
+    const allLists = await storage.getLists();
+    for (const item of removedItems) {
+      const prefId =
+        item.type === "bill" ? `bill_${item.id}` : `official_${item.id}`;
+      const stillInAnyList = allLists.some((l) =>
+        l.items.some((i) => i.id === item.id),
+      );
+      console.log("item:", item.id, "stillInAnyList:", stillInAnyList);
+      if (!stillInAnyList) {
+        notificationPreferences.disable(prefId);
+        console.log("disable called for:", prefId);
+      }
+    }
+    syncPreferencesToBackend();
+
     setShowRemoveModal(false);
     exitEditMode();
     showToast(

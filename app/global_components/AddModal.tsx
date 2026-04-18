@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { ListItem, storage } from "../utils/storage";
@@ -212,6 +212,30 @@ export default function AddModal({
           notificationPreferences.saveSubTypes(prefId, currentItem.type, [
             "all-notications",
           ]);
+          syncPreferencesToBackend();
+        }
+      }
+
+      // Auto-disable notifications if removed from ALL lists
+      if (currentItem && listsToRemove.length > 0) {
+        const updatedLists = storage.getLists();
+        const stillInAnyList = updatedLists.some((l) =>
+          l.items.some((i) => i.id === currentItem.id),
+        );
+        const prefId =
+          currentItem.type === "bill"
+            ? `bill_${currentItem.id}`
+            : `official_${currentItem.id}`;
+        Alert.alert(
+          "Debug",
+          `stillInAnyList: ${stillInAnyList}, prefId: ${prefId}`,
+        );
+        console.log("listsToRemove:", listsToRemove);
+        console.log("stillInAnyList:", stillInAnyList);
+        console.log("prefId:", prefId);
+        if (!stillInAnyList) {
+          notificationPreferences.disable(prefId);
+          console.log("disable called for:", prefId);
           syncPreferencesToBackend();
         }
       }

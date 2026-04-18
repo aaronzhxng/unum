@@ -13,6 +13,7 @@ import {
 import { styles as componentStyles } from "../global_styles/styles";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { storage } from "../utils/storage"; // adjust relative path if needed
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 
 interface Props {
   showOptionsModal: boolean;
@@ -74,7 +75,28 @@ export default function OptionsModal({
 
   const handleDeleteConfirm = async () => {
     if (!selectedListId) return;
+
+    // Capture items before deleting
+    const allLists = await storage.getLists();
+    const listToDelete = allLists.find((l) => l.id === selectedListId);
+    const itemsInList = listToDelete?.items ?? [];
+
     await storage.deleteList(selectedListId);
+
+    // Disable notifications for items no longer in any remaining list
+    const remainingLists = await storage.getLists();
+    for (const item of itemsInList) {
+      const stillInAnyList = remainingLists.some((l) =>
+        l.items.some((i) => i.id === item.id),
+      );
+      if (!stillInAnyList) {
+        const prefId =
+          item.type === "bill" ? `bill_${item.id}` : `official_${item.id}`;
+        notificationPreferences.disable(prefId);
+      }
+    }
+    syncPreferencesToBackend();
+
     setSelectedNotifications("Deleted");
     setShowDeleteModal(false);
     await refreshLists();

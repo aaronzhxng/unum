@@ -106,43 +106,22 @@ const checkNewBills = async () => {
     [];
   const since = getLastChecked();
 
-  // Fetch directly from Congress.gov instead of relying on Railway SQLite
-  let recentBills: any[] = [];
-  try {
-    const response = await axios.get("https://api.congress.gov/v3/bill/119", {
-      headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-      params: {
-        limit: 250,
-        sort: "updateDate+desc",
-        format: "json",
-        fromDateTime: `${since}T00:00:00Z`,
-      },
-      timeout: 15000, // add this line here
-    });
-    const bills = response.data.bills || [];
-    recentBills = bills
-      .filter((b: any) => b.policyArea?.name)
-      .map((b: any) => ({
-        bill_id: `${b.type.toLowerCase()}${b.number}`,
-        type: b.type,
-        number: b.number,
-        title: b.title,
-        policy_area: b.policyArea.name,
-        sponsor_state: b.sponsors?.[0]?.state ?? null,
-      }));
-  } catch (error) {
-    console.error("Error fetching bills from Congress.gov:", error);
-    // Fall back to Railway SQLite
-    recentBills = db
-      .prepare(
-        `SELECT bill_id, type, number, title, policy_area, sponsor_state
-       FROM bills
-       WHERE latest_action_date >= ?
-         AND type IN ('HR', 'S')
-         AND policy_area IS NOT NULL`,
-      )
-      .all(since) as any[];
-  }
+  const recentBills = db
+    .prepare(
+      `SELECT bill_id, type, number, title, policy_area, sponsor_state
+     FROM bills
+     WHERE latest_action_date >= ?
+       AND type IN ('HR', 'S')
+       AND policy_area IS NOT NULL`,
+    )
+    .all(since) as {
+    bill_id: string;
+    type: string;
+    number: string;
+    title: string;
+    policy_area: string;
+    sponsor_state: string | null;
+  }[];
 
   console.log(`Found ${recentBills.length} recent bills since ${since}`);
   console.log(
@@ -563,7 +542,7 @@ const enrichMissingPolicyAreas = async (): Promise<void> => {
 
 export const runCronJob = async () => {
   db.prepare(
-    `DELETE FROM notified_bills WHERE notified_date < date('now', '-1 days')`,
+    `DELETE FROM notified_bills WHERE notified_date < date('now', '-3 days')`,
   ).run();
   console.log(
     "Running daily notification cron job...",

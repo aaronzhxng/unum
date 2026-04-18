@@ -2,15 +2,19 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { getDb } from "./database";
 
-const isStandalone = () => {
-  const env = Constants.executionEnvironment;
-  // "storeClient" = Expo Go, everything else is a standalone build
-  return env !== "storeClient";
-};
+// const isStandalone = () => {
+//   const env = Constants.executionEnvironment;
+//   // "storeClient" = Expo Go, everything else is a standalone build
+//   return env !== "storeClient";
+// };
+
+const isExpoGo =
+  Constants.appOwnership === "expo" ||
+  Constants.executionEnvironment === "storeClient";
 
 export const pushToken = {
   register: async (): Promise<string | null> => {
-    if (!isStandalone()) {
+    if (isExpoGo) {
       console.log("Push notifications not supported in Expo Go — skipping");
       return null;
     }
@@ -73,7 +77,7 @@ export const pushToken = {
   },
 
   get: (): string | null => {
-    if (!isStandalone()) return null;
+    if (isExpoGo) return null;
     try {
       const db = getDb();
       const row = db.getFirstSync<{ token: string }>(

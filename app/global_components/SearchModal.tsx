@@ -113,6 +113,7 @@ export default function SearchModal({
 
     const lowercaseQuery = searchQuery.toLowerCase().trim();
     const queryWords = lowercaseQuery.split(/\s+/);
+    const normalizedQuery = lowercaseQuery.replace(/[\s.,\-]+/g, "");
     const nicknameMap = officialNicknames as Record<string, string[]>;
 
     const matchesAll = (text: string) => {
@@ -152,7 +153,9 @@ export default function SearchModal({
         billIdDot.startsWith(lowercaseQuery)
       )
         return 85;
-
+      const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
+      if (billIdFlat === normalizedQuery) return 95;
+      if (billIdFlat.startsWith(normalizedQuery)) return 85;
       if (matchesNickname(item)) return 75;
 
       const wordPositions = queryWords.map((w) => name.indexOf(w));
@@ -181,6 +184,8 @@ export default function SearchModal({
           return true;
         if (matchesAll(`${item.billType ?? item.type}.${item.number}`))
           return true;
+        const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
+        if (billIdFlat.startsWith(normalizedQuery)) return true;
         if (matchesNickname(item)) return true;
         return false;
       })
