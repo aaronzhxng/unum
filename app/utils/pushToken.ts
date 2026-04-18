@@ -18,6 +18,13 @@ export const pushToken = {
     try {
       const Notifications = await import("expo-notifications");
 
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.MAX,
+        });
+      }
+
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
       console.log("Existing permission status:", existingStatus);
@@ -57,13 +64,6 @@ export const pushToken = {
       );
 
       console.log("Token saved to local DB");
-
-      if (Platform.OS === "android") {
-        await Notifications.setNotificationChannelAsync("default", {
-          name: "default",
-          importance: Notifications.AndroidImportance.MAX,
-        });
-      }
 
       return token;
     } catch (error) {

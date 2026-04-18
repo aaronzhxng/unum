@@ -261,8 +261,10 @@ export default function FinishScreen() {
         }
 
         // 3. Sync preferences to backend
-        await syncPreferencesToBackend();
+        await pushToken.register();
 
+        // 4. NOW sync — the token is in local DB so this will include it
+        await syncPreferencesToBackend();
         // 4. Build list items from onboarding selections.
         //    Bills come from SUGGESTED_BILLS directly — no SQLite lookup needed
         //    since seed.db is already in place from initializeDatabase().
@@ -377,9 +379,6 @@ export default function FinishScreen() {
         // 8. Wait at least 4 seconds from when finish screen appeared,
         //    then navigate. Runs in parallel with the work above.
 
-        // Request push notification permission during onboarding
-        // Request permission first while screen is stable
-        await pushToken.register();
         // Then wait remaining time before navigating
         await new Promise((resolve) => setTimeout(resolve, 4000));
         router.replace("/onboarding/tour" as any);
