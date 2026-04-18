@@ -20,7 +20,15 @@ export const pushToken = {
     console.log("isExpoGo:", isExpoGo);
 
     if (isExpoGo) {
-      console.log("Push notifications not supported in Expo Go — skipping");
+      fetch("https://unum-production.up.railway.app/api/debug/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: "EXPO_GO_DETECTED",
+          appOwnership: Constants.appOwnership,
+          executionEnvironment: Constants.executionEnvironment,
+        }),
+      }).catch(() => {});
       return null;
     }
 

@@ -7,6 +7,16 @@ const BACKEND_URL = "https://unum-production.up.railway.app";
 export const syncPreferencesToBackend = async (): Promise<void> => {
   try {
     const token = pushToken.get();
+
+    fetch(`${BACKEND_URL}/api/debug/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: token ?? "NULL_TOKEN",
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+
     if (!token) return; // No token means notifications aren't enabled
 
     // Get followed policy areas
