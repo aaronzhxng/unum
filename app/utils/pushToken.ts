@@ -8,12 +8,17 @@ import { getDb } from "./database";
 //   return env !== "storeClient";
 // };
 
-const isExpoGo =
-  Constants.appOwnership === "expo" ||
-  Constants.executionEnvironment === "storeClient";
-
 export const pushToken = {
   register: async (): Promise<string | null> => {
+    // Check inside function, not at module level
+    const isExpoGo =
+      Constants.appOwnership === "expo" ||
+      Constants.executionEnvironment === "storeClient";
+
+    console.log("appOwnership:", Constants.appOwnership);
+    console.log("executionEnvironment:", Constants.executionEnvironment);
+    console.log("isExpoGo:", isExpoGo);
+
     if (isExpoGo) {
       console.log("Push notifications not supported in Expo Go — skipping");
       return null;
@@ -77,6 +82,9 @@ export const pushToken = {
   },
 
   get: (): string | null => {
+    const isExpoGo =
+      Constants.appOwnership === "expo" ||
+      Constants.executionEnvironment === "storeClient";
     if (isExpoGo) return null;
     try {
       const db = getDb();

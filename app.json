@@ -63,7 +63,15 @@
           "userInterfaceStyle": "automatic"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/app_icons/app_icon_android.png",
+          "color": "#ffffff",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
