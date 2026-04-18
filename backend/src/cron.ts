@@ -117,6 +117,7 @@ const checkNewBills = async () => {
         format: "json",
         fromDateTime: `${since}T00:00:00Z`,
       },
+      timeout: 15000, // add this line here
     });
     const bills = response.data.bills || [];
     recentBills = bills
@@ -542,13 +543,15 @@ const enrichMissingPolicyAreas = async (): Promise<void> => {
     try {
       const response = await axios.get(
         `https://api.congress.gov/v3/bill/119/${bill.type.toLowerCase()}/${bill.number}`,
-        { headers: { "X-Api-Key": process.env.CONGRESS_API_KEY } },
+        {
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          timeout: 15000,
+        },
       );
       const policyArea = response.data?.bill?.policyArea?.name ?? null;
       if (policyArea) {
         update.run(policyArea, bill.bill_id);
       }
-      // Small delay to avoid rate limiting
       await new Promise((res) => setTimeout(res, 100));
     } catch {
       // Skip failed bills silently

@@ -2,9 +2,11 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { getDb } from "./database";
 
-const isStandalone = () =>
-  Constants.executionEnvironment === "standalone" ||
-  Constants.executionEnvironment === "storeClient";
+const isStandalone = () => {
+  const env = Constants.executionEnvironment;
+  // "storeClient" = Expo Go, everything else is a standalone build
+  return env !== "storeClient";
+};
 
 export const pushToken = {
   register: async (): Promise<string | null> => {

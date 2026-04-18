@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
+import { notificationPreferences } from "../utils/notificationPreferences";
 import { ListItem, storage } from "../utils/storage";
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 
 interface Props {
   showAddModal: boolean;
@@ -198,6 +200,21 @@ export default function AddModal({
 
       await storage.saveLists(lists);
       listEvents.emit(LIST_UPDATED);
+
+      // Auto-enable notifications for newly added items
+      if (currentItem && listsToAdd.length > 0) {
+        const prefId =
+          currentItem.type === "bill"
+            ? `bill_${currentItem.id}`
+            : `official_${currentItem.id}`;
+        const existing = notificationPreferences.getSubTypes(prefId);
+        if (existing.length === 0) {
+          notificationPreferences.saveSubTypes(prefId, currentItem.type, [
+            "all-notications",
+          ]);
+          syncPreferencesToBackend();
+        }
+      }
     }
 
     setPendingNewList(hasNewList);
