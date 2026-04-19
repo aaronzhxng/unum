@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
+import UpdateToast from "./global_components/UpdateToast";
 import { initializeDatabase } from "./utils/database";
 import { storage } from "./utils/storage";
 import { syncListItemsFromBills } from "./utils/syncListItems";
@@ -134,6 +135,7 @@ export default function RootLayout() {
           </TabBarProvider>
         </PolicyAreasProvider>
       </QueryClientProvider>
+      <UpdateToast />
     </GestureHandlerRootView>
   );
 }
