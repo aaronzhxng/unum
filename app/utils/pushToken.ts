@@ -55,7 +55,15 @@ export const pushToken = {
       console.log("Final permission status:", finalStatus);
 
       if (finalStatus !== "granted") {
-        console.log("Push notification permission denied");
+        fetch("https://unum-production.up.railway.app/api/debug/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: "PERMISSION_DENIED",
+            existingStatus: existingStatus,
+            finalStatus: finalStatus,
+          }),
+        }).catch(() => {});
         return null;
       }
 
