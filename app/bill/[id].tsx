@@ -266,6 +266,12 @@ export default function BillDetail() {
 
   useFocusEffect(
     useCallback(() => {
+      setNotifVersion((v) => v + 1);
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
       const db = getDb();
       const rows = db.getAllSync<{
         item_id: string;

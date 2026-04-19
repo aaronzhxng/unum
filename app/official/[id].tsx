@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter, type Router } from "expo-router";
 import {
@@ -11,7 +12,13 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   BackHandler,
   Image,
@@ -282,6 +289,11 @@ export default function OfficialDetail() {
       : notifSubTypes.includes("all-notications")
         ? "all"
         : "some";
+  useFocusEffect(
+    useCallback(() => {
+      setNotifVersion((v) => v + 1);
+    }, []),
+  );
   const [showNewListModal, setShowNewListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [pendingItemForNewList, setPendingItemForNewList] = useState<any>(null);

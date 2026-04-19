@@ -7,28 +7,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:291959255245:android:917127c80951ebff17b984",
-        "android_client_info": {
-          "package_name": "com.aaronzhxng.unum"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDJ68dlzyQmDuSA_sZRNku4yZxl2zAK5oU"
-        },
-        {
-          "current_key": "AIzaSyD_QwbPATdnbd7Vk91ArrT3N9S0cn0L91E"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:291959255245:android:19989ff8e852af8517b984",
         "android_client_info": {
           "package_name": "com.unuminitiative.unum"
@@ -36,9 +14,6 @@
       },
       "oauth_client": [],
       "api_key": [
-        {
-          "current_key": "AIzaSyDJ68dlzyQmDuSA_sZRNku4yZxl2zAK5oU"
-        },
         {
           "current_key": "AIzaSyD_QwbPATdnbd7Vk91ArrT3N9S0cn0L91E"
         }
