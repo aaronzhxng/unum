@@ -67,9 +67,17 @@ const sendNotifications = async (
   }
   for (const chunk of chunks) {
     try {
-      await axios.post(EXPO_PUSH_URL, chunk, {
-        headers: { "Content-Type": "application/json" },
-      });
+      await axios.post(
+        EXPO_PUSH_URL,
+        chunk.map((msg) => ({
+          ...msg,
+          priority: "high",
+          channelId: "default",
+        })),
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     } catch (error) {
       console.error("Error sending push notifications:", error);
     }
