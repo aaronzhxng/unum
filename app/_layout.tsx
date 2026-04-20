@@ -49,6 +49,16 @@ export default function RootLayout() {
     const setupNotificationHandler = async () => {
       const Notifications = await import("expo-notifications");
 
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        }),
+      });
+
       // Handle cold start — app opened from notification
       const initialResponse =
         await Notifications.getLastNotificationResponseAsync();
