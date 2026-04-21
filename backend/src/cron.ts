@@ -94,15 +94,15 @@ const getAllRegistrations = () => {
   }[];
 };
 
-// const getLastChecked = (): string => {
-//   const yesterday = new Date();
-//   yesterday.setDate(yesterday.getDate() - 1);
-//   return yesterday.toISOString().split("T")[0];
-// };
-
 const getLastChecked = (): string => {
-  return "2026-04-14";
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split("T")[0];
 };
+
+// const getLastChecked = (): string => {
+//   return "2026-04-14";
+// };
 
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 // Uses Railway SQLite bills table — no Congress.gov API needed
@@ -548,6 +548,55 @@ const enrichMissingPolicyAreas = async (): Promise<void> => {
   console.log(`Policy area enrichment complete.`);
 };
 
+const syncRecentBills = async (): Promise<void> => {
+  try {
+    const since = getLastChecked();
+    const response = await axios.get("https://api.congress.gov/v3/bill/119", {
+      headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+      params: {
+        limit: 250,
+        sort: "updateDate+desc",
+        format: "json",
+        fromDateTime: `${since}T00:00:00Z`,
+      },
+      timeout: 15000,
+    });
+
+    const bills = response.data.bills || [];
+    const insert = db.prepare(`
+      INSERT INTO bills (bill_id, type, number, title, policy_area, sponsor_state, update_date, latest_action_date, synced_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(bill_id) DO UPDATE SET
+        title = excluded.title,
+        sponsor_state = excluded.sponsor_state,
+        update_date = excluded.update_date,
+        latest_action_date = excluded.latest_action_date,
+        synced_at = excluded.synced_at,
+        policy_area = COALESCE(excluded.policy_area, bills.policy_area)
+    `);
+
+    const sync = db.transaction((bills: any[]) => {
+      for (const bill of bills) {
+        insert.run(
+          `${bill.type.toLowerCase()}${bill.number}`,
+          bill.type,
+          bill.number,
+          bill.title,
+          bill.policyArea?.name ?? null,
+          bill.sponsors?.[0]?.state ?? null,
+          bill.updateDate ?? null,
+          bill.latestAction?.actionDate ?? null,
+          Date.now(),
+        );
+      }
+    });
+    sync(bills);
+    console.log(`Synced ${bills.length} recent bills to SQLite`);
+  } catch (error) {
+    console.warn("Background bill sync failed:", error);
+  }
+};
+
 export const runCronJob = async () => {
   db.prepare(
     `DELETE FROM notified_bills WHERE notified_date < date('now', '-3 days')`,
@@ -556,6 +605,7 @@ export const runCronJob = async () => {
     "Running daily notification cron job...",
     new Date().toISOString(),
   );
+  await syncRecentBills(); // ← add this line
   await enrichMissingPolicyAreas();
   await checkNewBills();
   await checkFollowedBills();

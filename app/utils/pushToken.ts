@@ -2,35 +2,13 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { getDb } from "./database";
 
-// const isStandalone = () => {
-//   const env = Constants.executionEnvironment;
-//   // "storeClient" = Expo Go, everything else is a standalone build
-//   return env !== "storeClient";
-// };
-
 export const pushToken = {
   register: async (): Promise<string | null> => {
-    // Check inside function, not at module level
     const isExpoGo =
       Constants.appOwnership === "expo" ||
       Constants.executionEnvironment === "storeClient";
 
-    console.log("appOwnership:", Constants.appOwnership);
-    console.log("executionEnvironment:", Constants.executionEnvironment);
-    console.log("isExpoGo:", isExpoGo);
-
-    if (isExpoGo) {
-      fetch("https://unum-production.up.railway.app/api/debug/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: "EXPO_GO_DETECTED",
-          appOwnership: Constants.appOwnership,
-          executionEnvironment: Constants.executionEnvironment,
-        }),
-      }).catch(() => {});
-      return null;
-    }
+    if (isExpoGo) return null;
 
     try {
       const Notifications = await import("expo-notifications");
@@ -44,7 +22,6 @@ export const pushToken = {
 
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
-      console.log("Existing permission status:", existingStatus);
       let finalStatus = existingStatus;
 
       if (existingStatus !== "granted") {
@@ -52,40 +29,12 @@ export const pushToken = {
         finalStatus = status;
       }
 
-      console.log("Final permission status:", finalStatus);
-
-      if (finalStatus !== "granted") {
-        fetch("https://unum-production.up.railway.app/api/debug/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token: "PERMISSION_DENIED",
-            existingStatus: existingStatus,
-            finalStatus: finalStatus,
-          }),
-        }).catch(() => {});
-        return null;
-      }
-
-      fetch("https://unum-production.up.railway.app/api/debug/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: "BEFORE_TOKEN_FETCH" }),
-      }).catch(() => {});
+      if (finalStatus !== "granted") return null;
 
       const tokenData = await Notifications.getExpoPushTokenAsync({
         projectId: Constants.expoConfig?.extra?.eas?.projectId,
       });
-      console.log("Token data:", tokenData);
       const token = tokenData.data;
-
-      fetch("https://unum-production.up.railway.app/api/debug/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      }).catch(() => {});
-
-      console.log("Token:", token);
 
       const db = getDb();
       db.runSync(
@@ -94,19 +43,9 @@ export const pushToken = {
         [token, Date.now()],
       );
 
-      console.log("Token saved to local DB");
-
       return token;
     } catch (error) {
       console.error("Error registering for push notifications:", error);
-      fetch("https://unum-production.up.railway.app/api/debug/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: "REGISTER_ERROR",
-          error: String(error),
-        }),
-      }).catch(() => {});
       return null;
     }
   },

@@ -100,11 +100,11 @@ export const notificationPreferences = {
   getSubTypes: (id: string): string[] => {
     try {
       const db = getDb();
-      const row = db.getFirstSync<{ sub_types: string }>(
-        "SELECT sub_types FROM notification_preferences WHERE id = ?",
+      const row = db.getFirstSync<{ sub_types: string; enabled: number }>(
+        "SELECT sub_types, enabled FROM notification_preferences WHERE id = ?",
         [id],
       );
-      if (!row?.sub_types) return [];
+      if (!row?.sub_types || row.enabled === 0) return [];
       return JSON.parse(row.sub_types);
     } catch {
       return [];
