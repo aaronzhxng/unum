@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -7,7 +8,13 @@ import {
   Plus,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   BackHandler,
   FlatList,
@@ -189,6 +196,18 @@ export default function LegislationScreen() {
     queryKey: ["bills", "v2"],
     queryFn: billsService.getAll,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      const state = queryClient.getQueryState(["bills", "v2"]);
+      const isStale =
+        !state?.dataUpdatedAt ||
+        Date.now() - state.dataUpdatedAt > 1000 * 60 * 120; // 120 minutes
+      if (isStale) {
+        queryClient.invalidateQueries({ queryKey: ["bills", "v2"] });
+      }
+    }, []),
+  );
 
   const allBills: any[] = useMemo(() => data?.bills || [], [data?.bills]);
 

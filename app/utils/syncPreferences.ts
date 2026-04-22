@@ -8,15 +8,6 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
   try {
     const token = pushToken.get();
 
-    fetch(`${BACKEND_URL}/api/debug/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        token: token ?? "NULL_TOKEN",
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-
     if (!token) return; // No token means notifications aren't enabled
 
     // Get followed policy areas
@@ -45,6 +36,16 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
 
     const db = getDb();
 
+    const SUGGESTED_OFFICIAL_NAMES: Record<string, string> = {
+      O000172: "Alexandria Ocasio-Cortez",
+      S000033: "Bernie Sanders",
+      M000355: "Mitch McConnell",
+      J000299: "Mike Johnson",
+      J000294: "Hakeem Jeffries",
+      C001098: "Ted Cruz",
+      P000603: "Rand Paul",
+    };
+
     const followedOfficials = allEnabledOfficials.map((id) => {
       const bioguideId = id.replace(/^official_/, "");
       const row = db.getFirstSync<{ name: string }>(
@@ -58,11 +59,15 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
             .reverse()
             .map((s: string) => s.trim())
             .join(" ")
-        : (rawName ?? bioguideId);
+        : (rawName ?? null);
+
+      // Fall back to static list, then bioguideId as last resort
+      const name =
+        formattedName ?? SUGGESTED_OFFICIAL_NAMES[bioguideId] ?? bioguideId;
 
       return {
         bioguideId,
-        name: formattedName,
+        name,
         subTypes: notificationPreferences.getSubTypes(id),
       };
     });
@@ -77,12 +82,6 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
         followedOfficials,
       }),
     );
-
-    await fetch(`${BACKEND_URL}/api/debug/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, policyAreas }),
-    }).catch(() => {});
 
     await fetch(`${BACKEND_URL}/api/push-tokens`, {
       method: "POST",
