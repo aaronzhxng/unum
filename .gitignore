@@ -56,3 +56,10 @@ node_modules/
 # Both
 *.log
 .DS_Store
+
+# debugging 1
+.env
+credentials.json
+GoogleService-Info.plist
+google-services.json
+*.zip
