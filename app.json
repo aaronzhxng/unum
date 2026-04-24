@@ -9,7 +9,7 @@
     "newArchEnabled": true,
     "icon": "./assets/app_icons/app_icon_ios.png",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.unuminitiative.unum",
       "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/app_icons/app_icon_ios.png",
