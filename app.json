@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.unuminitiative.unum",
-      "googleServicesFile": "$GOOGLE_SERVICES_INFO_PLIST",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/app_icons/app_icon_ios.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -19,7 +19,7 @@
     },
     "android": {
       "allowBackup": false,
-      "googleServicesFile": "$GOOGLE_SERVICES_JSON",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/app_icons/app_icon_android.png",
