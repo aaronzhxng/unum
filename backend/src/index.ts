@@ -11,7 +11,15 @@ const app = express();
 app.set("trust proxy", 1); // trust Railway's proxy
 const requireAdminToken = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers["x-admin-token"];
-  if (!token || token !== process.env.ADMIN_SECRET) {
+  const secret = process.env.ADMIN_SECRET ?? "";
+  const tokenStr = String(token ?? "");
+  const a = Buffer.from(tokenStr);
+  const b = Buffer.from(secret);
+  if (
+    !token ||
+    a.length !== b.length ||
+    !require("crypto").timingSafeEqual(a, b)
+  ) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   next();
@@ -39,6 +47,11 @@ const reportLimiter = rateLimit({
 const congressProxyLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5,
+});
+
+const pushTokenLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
 });
 
 app.get("/health", (req, res) => {
@@ -725,17 +738,15 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       };
     };
 
-    const allowedVoteHosts = [
-      "clerk.house.gov",
-      "www.senate.gov",
-      "senate.gov",
-      "house.gov",
-    ];
-
     const voteResults = await Promise.allSettled(
       uniqueVotes.map(async (meta) => {
         const voteHost = new URL(meta.url).hostname;
-        if (!allowedVoteHosts.includes(voteHost)) {
+        const isAllowedVoteHost =
+          voteHost === "house.gov" ||
+          voteHost.endsWith(".house.gov") ||
+          voteHost === "senate.gov" ||
+          voteHost.endsWith(".senate.gov");
+        if (!isAllowedVoteHost) {
           throw new Error(`Blocked vote URL host: ${voteHost}`);
         }
         const response = await axios.get(meta.url, {
@@ -1073,7 +1084,7 @@ app.get("/api/debug/update-dates", requireAdminToken, (req, res) => {
   res.json(rows);
 });
 
-app.get("/api/cron/run", requireAdminToken, async (req, res) => {
+app.post("/api/cron/run", requireAdminToken, async (req, res) => {
   try {
     await runCronJob();
     res.json({ success: true });
@@ -1088,7 +1099,7 @@ app.get("/api/push-tokens/list", requireAdminToken, (req, res) => {
   res.json(rows);
 });
 
-app.post("/api/push-tokens", (req, res) => {
+app.post("/api/push-tokens", pushTokenLimiter, (req, res) => {
   try {
     const {
       token,
