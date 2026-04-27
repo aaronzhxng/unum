@@ -872,7 +872,13 @@ app.get(
   congressProxyLimiter,
   async (req, res) => {
     try {
-      const { bioguideId } = req.params;
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
       let allLegislation: any[] = [];
       let offset = 0;
       const limit = 250;
@@ -941,7 +947,13 @@ app.get(
   congressProxyLimiter,
   async (req, res) => {
     try {
-      const { bioguideId } = req.params;
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
       let allLegislation: any[] = [];
       let offset = 0;
       const limit = 250;
@@ -1006,11 +1018,18 @@ app.get(
   congressProxyLimiter,
   async (req, res) => {
     try {
-      const { bioguideId } = req.params;
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
 
       const fetchUntil119 = async (
         path: string,
         key: string,
+        validatedId: string,
       ): Promise<any[]> => {
         let all: any[] = [];
         let offset = 0;
@@ -1019,7 +1038,7 @@ app.get(
 
         while (hasMore) {
           const response = await axios.get(
-            `https://api.congress.gov/v3/member/${bioguideId}/${path}`,
+            `https://api.congress.gov/v3/member/${validatedId}/${path}`,
             {
               headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
               params: { limit, offset, format: "json" },
@@ -1042,8 +1061,16 @@ app.get(
       };
 
       const [sponsored, cosponsored] = await Promise.all([
-        fetchUntil119("sponsored-legislation", "sponsoredLegislation"),
-        fetchUntil119("cosponsored-legislation", "cosponsoredLegislation"),
+        fetchUntil119(
+          "sponsored-legislation",
+          "sponsoredLegislation",
+          bioguideId,
+        ),
+        fetchUntil119(
+          "cosponsored-legislation",
+          "cosponsoredLegislation",
+          bioguideId,
+        ),
       ]);
 
       const counts: { [key: string]: number } = {};
