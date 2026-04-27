@@ -1,19 +1,37 @@
 import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import { runCronJob, startCronScheduler } from "./cron";
 import db from "./db";
-
 dotenv.config();
 
 const app = express();
 app.set("trust proxy", 1); // trust Railway's proxy
+const requireAdminToken = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers["x-admin-token"];
+  const secret = process.env.ADMIN_SECRET ?? "";
+  const tokenStr = String(token ?? "");
+  const a = Buffer.from(tokenStr);
+  const b = Buffer.from(secret);
+  if (
+    !token ||
+    a.length !== b.length ||
+    !require("crypto").timingSafeEqual(a, b)
+  ) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  next();
+};
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin: ["https://unum-production.up.railway.app"],
+  }),
+);
+app.use(express.json({ limit: "50kb" }));
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -24,6 +42,16 @@ app.use(globalLimiter);
 const reportLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 10,
+});
+
+const congressProxyLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+});
+
+const pushTokenLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
 });
 
 app.get("/health", (req, res) => {
@@ -275,7 +303,7 @@ app.get("/api/bills/enrich-status", (req, res) => {
   }
 });
 
-app.post("/api/bills/enrich", (req, res) => {
+app.post("/api/bills/enrich", requireAdminToken, (req, res) => {
   try {
     const { bills } = req.body as {
       bills: {
@@ -712,6 +740,15 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
 
     const voteResults = await Promise.allSettled(
       uniqueVotes.map(async (meta) => {
+        const voteHost = new URL(meta.url).hostname;
+        const isAllowedVoteHost =
+          voteHost === "house.gov" ||
+          voteHost.endsWith(".house.gov") ||
+          voteHost === "senate.gov" ||
+          voteHost.endsWith(".senate.gov");
+        if (!isAllowedVoteHost) {
+          throw new Error(`Blocked vote URL host: ${voteHost}`);
+        }
         const response = await axios.get(meta.url, {
           timeout: 8000,
           responseType: "text",
@@ -830,151 +867,58 @@ app.get("/api/officials/:bioguideId", async (req, res) => {
 });
 
 // Get sponsored legislation - optimized to stop at 119th congress boundary
-app.get("/api/officials/:bioguideId/sponsored", async (req, res) => {
-  try {
-    const { bioguideId } = req.params;
-    let allLegislation: any[] = [];
-    let offset = 0;
-    const limit = 250;
-    let hasMore = true;
-    let allTimeCo = 0;
+app.get(
+  "/api/officials/:bioguideId/sponsored",
+  congressProxyLimiter,
+  async (req, res) => {
+    try {
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
+      let allLegislation: any[] = [];
+      let offset = 0;
+      const limit = 250;
+      let hasMore = true;
+      let allTimeCo = 0;
 
-    // First get total count from pagination
-    const firstPage = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit, offset, format: "json" },
-      },
-    );
-    allTimeCo = firstPage.data.pagination?.count ?? 0;
-    const firstPageItems = firstPage.data.sponsoredLegislation || [];
-
-    // Check if this page has any 119th congress items
-    const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
-    allLegislation = allLegislation.concat(filtered119);
-
-    // Stop early if we've already passed into older congresses
-    const hasOlder = firstPageItems.some(
-      (b: any) => b.congress !== undefined && b.congress < 119,
-    );
-
-    hasMore = !!firstPage.data.pagination?.next && !hasOlder;
-    offset += limit;
-
-    while (hasMore) {
-      const response = await axios.get(
+      // First get total count from pagination
+      const firstPage = await axios.get(
         `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
         {
           headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
           params: { limit, offset, format: "json" },
         },
       );
-      const page = response.data.sponsoredLegislation || [];
-      const page119 = page.filter((b: any) => b.congress === 119);
-      allLegislation = allLegislation.concat(page119);
+      allTimeCo = firstPage.data.pagination?.count ?? 0;
+      const firstPageItems = firstPage.data.sponsoredLegislation || [];
 
-      const hasOlderBills = page.some(
+      // Check if this page has any 119th congress items
+      const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
+      allLegislation = allLegislation.concat(filtered119);
+
+      // Stop early if we've already passed into older congresses
+      const hasOlder = firstPageItems.some(
         (b: any) => b.congress !== undefined && b.congress < 119,
       );
-      hasMore =
-        !!response.data.pagination?.next &&
-        page.length === limit &&
-        !hasOlderBills;
+
+      hasMore = !!firstPage.data.pagination?.next && !hasOlder;
       offset += limit;
-    }
-
-    res.json({
-      legislation: allLegislation,
-      count: allTimeCo,
-    });
-  } catch (error) {
-    console.error("Error fetching sponsored legislation:", error);
-    res.status(500).json({ error: "Failed to fetch sponsored legislation" });
-  }
-});
-
-// Get cosponsored legislation - same optimization
-app.get("/api/officials/:bioguideId/cosponsored", async (req, res) => {
-  try {
-    const { bioguideId } = req.params;
-    let allLegislation: any[] = [];
-    let offset = 0;
-    const limit = 250;
-    let hasMore = true;
-    let allTimeCount = 0;
-
-    const firstPage = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit, offset, format: "json" },
-      },
-    );
-    allTimeCount = firstPage.data.pagination?.count ?? 0;
-    const firstPageItems = firstPage.data.cosponsoredLegislation || [];
-    const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
-    allLegislation = allLegislation.concat(filtered119);
-
-    const hasOlder = firstPageItems.some(
-      (b: any) => b.congress !== undefined && b.congress < 119,
-    );
-    hasMore = !!firstPage.data.pagination?.next && !hasOlder;
-    offset += limit;
-
-    while (hasMore) {
-      const response = await axios.get(
-        `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
-        {
-          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { limit, offset, format: "json" },
-        },
-      );
-      const page = response.data.cosponsoredLegislation || [];
-      const page119 = page.filter((b: any) => b.congress === 119);
-      allLegislation = allLegislation.concat(page119);
-
-      const hasOlderBills = page.some(
-        (b: any) => b.congress !== undefined && b.congress < 119,
-      );
-      hasMore =
-        !!response.data.pagination?.next &&
-        page.length === limit &&
-        !hasOlderBills;
-      offset += limit;
-    }
-
-    res.json({
-      legislation: allLegislation,
-      count: allTimeCount,
-    });
-  } catch (error) {
-    console.error("Error fetching cosponsored legislation:", error);
-    res.status(500).json({ error: "Failed to fetch cosponsored legislation" });
-  }
-});
-
-app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
-  try {
-    const { bioguideId } = req.params;
-
-    const fetchUntil119 = async (path: string, key: string): Promise<any[]> => {
-      let all: any[] = [];
-      let offset = 0;
-      const limit = 250;
-      let hasMore = true;
 
       while (hasMore) {
         const response = await axios.get(
-          `https://api.congress.gov/v3/member/${bioguideId}/${path}`,
+          `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
           {
             headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
             params: { limit, offset, format: "json" },
           },
         );
-        const page = response.data[key] || [];
+        const page = response.data.sponsoredLegislation || [];
         const page119 = page.filter((b: any) => b.congress === 119);
-        all = all.concat(page119);
+        allLegislation = allLegislation.concat(page119);
 
         const hasOlderBills = page.some(
           (b: any) => b.congress !== undefined && b.congress < 119,
@@ -985,37 +929,174 @@ app.get("/api/officials/:bioguideId/policy-areas", async (req, res) => {
           !hasOlderBills;
         offset += limit;
       }
-      return all;
-    };
 
-    const [sponsored, cosponsored] = await Promise.all([
-      fetchUntil119("sponsored-legislation", "sponsoredLegislation"),
-      fetchUntil119("cosponsored-legislation", "cosponsoredLegislation"),
-    ]);
-
-    const counts: { [key: string]: number } = {};
-    for (const bill of [...sponsored, ...cosponsored]) {
-      const area = bill.policyArea?.name;
-      if (area) counts[area] = (counts[area] || 0) + 1;
+      res.json({
+        legislation: allLegislation,
+        count: allTimeCo,
+      });
+    } catch (error) {
+      console.error("Error fetching sponsored legislation:", error);
+      res.status(500).json({ error: "Failed to fetch sponsored legislation" });
     }
+  },
+);
 
-    const policyAreas = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([name, count]) => ({ name, count }));
+// Get cosponsored legislation - same optimization
+app.get(
+  "/api/officials/:bioguideId/cosponsored",
+  congressProxyLimiter,
+  async (req, res) => {
+    try {
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
+      let allLegislation: any[] = [];
+      let offset = 0;
+      const limit = 250;
+      let hasMore = true;
+      let allTimeCount = 0;
 
-    res.json({
-      policyAreas,
-      totalSponsored: sponsored.length,
-      totalCosponsored: cosponsored.length,
-    });
-  } catch (error) {
-    console.error("Error fetching policy areas:", error);
-    res.status(500).json({ error: "Failed to fetch policy areas" });
-  }
-});
+      const firstPage = await axios.get(
+        `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
+        {
+          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+          params: { limit, offset, format: "json" },
+        },
+      );
+      allTimeCount = firstPage.data.pagination?.count ?? 0;
+      const firstPageItems = firstPage.data.cosponsoredLegislation || [];
+      const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
+      allLegislation = allLegislation.concat(filtered119);
 
-app.get("/api/debug/update-dates", (req, res) => {
+      const hasOlder = firstPageItems.some(
+        (b: any) => b.congress !== undefined && b.congress < 119,
+      );
+      hasMore = !!firstPage.data.pagination?.next && !hasOlder;
+      offset += limit;
+
+      while (hasMore) {
+        const response = await axios.get(
+          `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
+          {
+            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+            params: { limit, offset, format: "json" },
+          },
+        );
+        const page = response.data.cosponsoredLegislation || [];
+        const page119 = page.filter((b: any) => b.congress === 119);
+        allLegislation = allLegislation.concat(page119);
+
+        const hasOlderBills = page.some(
+          (b: any) => b.congress !== undefined && b.congress < 119,
+        );
+        hasMore =
+          !!response.data.pagination?.next &&
+          page.length === limit &&
+          !hasOlderBills;
+        offset += limit;
+      }
+
+      res.json({
+        legislation: allLegislation,
+        count: allTimeCount,
+      });
+    } catch (error) {
+      console.error("Error fetching cosponsored legislation:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch cosponsored legislation" });
+    }
+  },
+);
+
+app.get(
+  "/api/officials/:bioguideId/policy-areas",
+  congressProxyLimiter,
+  async (req, res) => {
+    try {
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
+
+      const fetchUntil119 = async (
+        path: string,
+        key: string,
+        validatedId: string,
+      ): Promise<any[]> => {
+        let all: any[] = [];
+        let offset = 0;
+        const limit = 250;
+        let hasMore = true;
+
+        while (hasMore) {
+          const response = await axios.get(
+            `https://api.congress.gov/v3/member/${validatedId}/${path}`,
+            {
+              headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+              params: { limit, offset, format: "json" },
+            },
+          );
+          const page = response.data[key] || [];
+          const page119 = page.filter((b: any) => b.congress === 119);
+          all = all.concat(page119);
+
+          const hasOlderBills = page.some(
+            (b: any) => b.congress !== undefined && b.congress < 119,
+          );
+          hasMore =
+            !!response.data.pagination?.next &&
+            page.length === limit &&
+            !hasOlderBills;
+          offset += limit;
+        }
+        return all;
+      };
+
+      const [sponsored, cosponsored] = await Promise.all([
+        fetchUntil119(
+          "sponsored-legislation",
+          "sponsoredLegislation",
+          bioguideId,
+        ),
+        fetchUntil119(
+          "cosponsored-legislation",
+          "cosponsoredLegislation",
+          bioguideId,
+        ),
+      ]);
+
+      const counts: { [key: string]: number } = {};
+      for (const bill of [...sponsored, ...cosponsored]) {
+        const area = bill.policyArea?.name;
+        if (area) counts[area] = (counts[area] || 0) + 1;
+      }
+
+      const policyAreas = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, count]) => ({ name, count }));
+
+      res.json({
+        policyAreas,
+        totalSponsored: sponsored.length,
+        totalCosponsored: cosponsored.length,
+      });
+    } catch (error) {
+      console.error("Error fetching policy areas:", error);
+      res.status(500).json({ error: "Failed to fetch policy areas" });
+    }
+  },
+);
+
+app.get("/api/debug/update-dates", requireAdminToken, (req, res) => {
   const rows = db
     .prepare(
       `
@@ -1030,7 +1111,7 @@ app.get("/api/debug/update-dates", (req, res) => {
   res.json(rows);
 });
 
-app.get("/api/cron/run", async (req, res) => {
+app.post("/api/cron/run", requireAdminToken, async (req, res) => {
   try {
     await runCronJob();
     res.json({ success: true });
@@ -1040,12 +1121,12 @@ app.get("/api/cron/run", async (req, res) => {
   }
 });
 
-app.get("/api/push-tokens/list", (req, res) => {
+app.get("/api/push-tokens/list", requireAdminToken, (req, res) => {
   const rows = db.prepare("SELECT * FROM push_registrations").all();
   res.json(rows);
 });
 
-app.post("/api/push-tokens", (req, res) => {
+app.post("/api/push-tokens", pushTokenLimiter, (req, res) => {
   try {
     const {
       token,
@@ -1056,6 +1137,21 @@ app.post("/api/push-tokens", (req, res) => {
     } = req.body;
 
     if (!token) return res.status(400).json({ error: "Token required" });
+
+    const EXPO_TOKEN_REGEX = /^Expo(nent)?PushToken\[.+\]$/;
+    if (!EXPO_TOKEN_REGEX.test(token)) {
+      return res.status(400).json({ error: "Invalid push token format" });
+    }
+
+    const MAX_FOLLOWED = 100;
+    if (
+      followedBills?.length > MAX_FOLLOWED ||
+      followedOfficials?.length > MAX_FOLLOWED ||
+      followedStates?.length > MAX_FOLLOWED ||
+      policyAreas?.length > MAX_FOLLOWED
+    ) {
+      return res.status(400).json({ error: "Too many followed items" });
+    }
 
     db.prepare(
       `
@@ -1092,7 +1188,7 @@ const prewarmCache = async () => {
   }
 };
 
-app.get("/api/debug/sample-bills", (req, res) => {
+app.get("/api/debug/sample-bills", requireAdminToken, (req, res) => {
   const rows = db
     .prepare(
       `
@@ -1108,12 +1204,12 @@ app.get("/api/debug/sample-bills", (req, res) => {
   res.json(rows);
 });
 
-app.get("/api/debug/meta", (req, res) => {
+app.get("/api/debug/meta", requireAdminToken, (req, res) => {
   const rows = db.prepare(`SELECT * FROM meta`).all();
   res.json(rows);
 });
 
-app.get("/api/debug/old-bills-with-policy", (req, res) => {
+app.get("/api/debug/old-bills-with-policy", requireAdminToken, (req, res) => {
   const rows = db
     .prepare(
       `
@@ -1161,29 +1257,39 @@ app.post("/report-error", reportLimiter, express.json(), (req, res) => {
     return res.status(400).json({ error: "Message is required" });
   }
 
+  if (message.length > 4000) {
+    return res.status(400).json({ error: "Message too long" });
+  }
+
+  const safeMessage = message.trim().replace(/[\r\n]/g, " ");
+  const safeScreen = (screen || "unknown")
+    .replace(/[\r\n]/g, " ")
+    .slice(0, 200);
+
   const timestamp = new Date().toISOString();
-  const entry = `[${timestamp}] Screen: ${screen || "unknown"}\n${message.trim()}\n${"─".repeat(60)}\n`;
+  const entry = `[${timestamp}] Screen: ${safeScreen}\n${safeMessage}\n${"─".repeat(60)}\n`;
   const logPath = path.join("/data", "error-reports.txt");
 
   fs.appendFileSync(logPath, entry, "utf8");
   res.json({ success: true });
 });
 
-app.get("/api/debug/error-reports", (req, res) => {
+app.get("/api/debug/error-reports", requireAdminToken, (req, res) => {
   const logPath = path.join("/data", "error-reports.txt");
   if (!fs.existsSync(logPath)) {
     return res.json({ reports: "No reports yet." });
   }
   const content = fs.readFileSync(logPath, "utf8");
-  res.send(`<pre>${content}</pre>`);
+  res.setHeader("Content-Type", "text/plain");
+  res.send(content);
 });
 
-app.get("/api/debug/clear-notified", (req, res) => {
+app.get("/api/debug/clear-notified", requireAdminToken, (req, res) => {
   db.prepare(`DELETE FROM notified_bills`).run();
   res.json({ success: true });
 });
 
-app.get("/api/debug/my-token", (req, res) => {
+app.get("/api/debug/my-token", requireAdminToken, (req, res) => {
   const rows = db
     .prepare(
       `SELECT token, updated_at FROM push_registrations ORDER BY updated_at DESC LIMIT 5`,
@@ -1192,7 +1298,7 @@ app.get("/api/debug/my-token", (req, res) => {
   res.json(rows);
 });
 
-app.post("/api/debug/token", (req, res) => {
+app.post("/api/debug/token", requireAdminToken, (req, res) => {
   console.log("DEBUG TOKEN RECEIVED:", JSON.stringify(req.body));
   res.json({ success: true });
 });
