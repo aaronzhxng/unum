@@ -1029,6 +1029,7 @@ app.get(
       const fetchUntil119 = async (
         path: string,
         key: string,
+        validatedId: string,
       ): Promise<any[]> => {
         let all: any[] = [];
         let offset = 0;
@@ -1037,7 +1038,7 @@ app.get(
 
         while (hasMore) {
           const response = await axios.get(
-            `https://api.congress.gov/v3/member/${bioguideId}/${path}`,
+            `https://api.congress.gov/v3/member/${validatedId}/${path}`,
             {
               headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
               params: { limit, offset, format: "json" },
@@ -1060,8 +1061,16 @@ app.get(
       };
 
       const [sponsored, cosponsored] = await Promise.all([
-        fetchUntil119("sponsored-legislation", "sponsoredLegislation"),
-        fetchUntil119("cosponsored-legislation", "cosponsoredLegislation"),
+        fetchUntil119(
+          "sponsored-legislation",
+          "sponsoredLegislation",
+          bioguideId,
+        ),
+        fetchUntil119(
+          "cosponsored-legislation",
+          "cosponsoredLegislation",
+          bioguideId,
+        ),
       ]);
 
       const counts: { [key: string]: number } = {};
