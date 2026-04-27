@@ -872,7 +872,13 @@ app.get(
   congressProxyLimiter,
   async (req, res) => {
     try {
-      const { bioguideId } = req.params;
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
       let allLegislation: any[] = [];
       let offset = 0;
       const limit = 250;
@@ -941,7 +947,13 @@ app.get(
   congressProxyLimiter,
   async (req, res) => {
     try {
-      const { bioguideId } = req.params;
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
       let allLegislation: any[] = [];
       let offset = 0;
       const limit = 250;
@@ -1006,7 +1018,13 @@ app.get(
   congressProxyLimiter,
   async (req, res) => {
     try {
-      const { bioguideId } = req.params;
+      const { bioguideId: rawBioguideId } = req.params;
+      const bioguideId = String(rawBioguideId ?? "")
+        .trim()
+        .toUpperCase();
+      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+        return res.status(400).json({ error: "Invalid bioguideId" });
+      }
 
       const fetchUntil119 = async (
         path: string,
