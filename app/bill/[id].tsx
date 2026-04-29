@@ -958,6 +958,23 @@ export default function BillDetail() {
     );
   }
 
+  if (!bill.latestAction?.actionDate) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text
+          style={{
+            color: "#7B7C81",
+            fontSize: 14,
+            textAlign: "center",
+            paddingHorizontal: 32,
+          }}
+        >
+          This bill has no legislative information available yet.
+        </Text>
+      </View>
+    );
+  }
+
   const getBillTypeName = (typeCode: string, chamber: string) => {
     const types: { [key: string]: string } = {
       HR: "House Bill",

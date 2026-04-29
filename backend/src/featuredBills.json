@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-04-20",
-  "weekEnd": "2026-04-26",
+  "weekOf": "2026-04-27",
+  "weekEnd": "2026-05-03",
   "bills": [
     {
-      "billId": "s3971",
-      "note": "This  bill expands the requirements for federal agencies to evaluate the security risks of the small businesses that apply for awards under the programs."
+      "billId": "hres939",
+      "note": "With tensions at a high, this bill is recirculating in interest."
     },
     {
-      "billId": "hr3633",
-      "note": "This bill establishes a regulatory framework for digital commodities, defined by the bill as digital assets that rely upon a blockchain for their value."
+      "billId": "hr4692",
+      "note": "The Measuring adverse market disruption and national impact act"
     }
   ]
 }
