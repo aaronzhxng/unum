@@ -952,25 +952,55 @@ export default function BillDetail() {
 
   if (error || !bill) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Error loading bill</Text>
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={componentStyles.headerBar}>
+          <Pressable
+            onPress={handleBack}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <ChevronLeft size={24} color="#535353" />
+          </Pressable>
+        </View>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ color: "#7B7C81", fontSize: 14 }}>
+            Error loading bill
+          </Text>
+        </View>
       </View>
     );
   }
 
   if (!bill.latestAction?.actionDate) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text
-          style={{
-            color: "#7B7C81",
-            fontSize: 14,
-            textAlign: "center",
-            paddingHorizontal: 32,
-          }}
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={componentStyles.headerBar}>
+          <Pressable
+            onPress={handleBack}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <ChevronLeft size={24} color="#535353" />
+          </Pressable>
+        </View>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          This bill has no legislative information available yet.
-        </Text>
+          <Text
+            style={{
+              color: "#7B7C81",
+              fontSize: 14,
+              textAlign: "center",
+              paddingHorizontal: 32,
+            }}
+          >
+            This bill has no legislative information available yet.
+          </Text>
+        </View>
       </View>
     );
   }

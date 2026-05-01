@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -68,6 +68,34 @@ const STATE_TO_ABBR: Record<string, string> = {
   Wyoming: "WY",
 };
 
+const TERRITORY_TO_ABBR: Record<string, string> = {
+  "American Samoa": "AS",
+  "District of Columbia": "DC",
+  Guam: "GU",
+  "Northern Mariana Islands": "MP",
+  "Puerto Rico": "PR",
+  "U.S. Virgin Islands": "VI",
+  "Virgin Islands": "VI",
+};
+
+const SINGLE_REP_STATES = new Set([
+  "Alaska",
+  "Delaware",
+  "North Dakota",
+  "South Dakota",
+  "Vermont",
+  "Wyoming",
+]);
+
+const TERRITORIES = new Set([
+  "American Samoa",
+  "District of Columbia",
+  "Guam",
+  "Northern Mariana Islands",
+  "Puerto Rico",
+  "U.S. Virgin Islands",
+]);
+
 const PARTY_COLORS: Record<string, string> = {
   Democrat: "#008CFF",
   Republican: "#D45252",
@@ -111,6 +139,9 @@ export default function PickRepScreen() {
   const [rep, setRep] = useState<RepResult | null>(null);
   const [repSelected, setRepSelected] = useState(false);
   const [stateMismatch, setStateMismatch] = useState(false);
+  const [multipleReps, setMultipleReps] = useState<RepResult[]>([]);
+  const [selectedRepId, setSelectedRepId] = useState<string | null>(null);
+  const [showAllReps, setShowAllReps] = useState(false);
 
   const stateAbbrForLookup = priorityState
     ? STATE_TO_ABBR[priorityState]
@@ -129,7 +160,7 @@ export default function PickRepScreen() {
       setOverlayConfig({
         dotIndex: 4,
         continueLabel: "Continue",
-        continueDisabled: rep === null,
+        continueDisabled: true,
         onContinue: () => router.push("/onboarding/pick-items" as any),
         onBack: () => router.back(),
         onSkip: () => {
@@ -138,8 +169,31 @@ export default function PickRepScreen() {
           router.push("/onboarding/pick-items" as any);
         },
       });
-    }, [rep]),
+
+      if (
+        priorityState &&
+        !rep &&
+        (SINGLE_REP_STATES.has(priorityState) || TERRITORIES.has(priorityState))
+      ) {
+        autoLookupAtLargeRep();
+      }
+    }, [priorityState]),
   );
+
+  useEffect(() => {
+    setOverlayConfig({
+      dotIndex: 4,
+      continueLabel: "Continue",
+      continueDisabled: rep === null,
+      onContinue: () => router.push("/onboarding/pick-items" as any),
+      onBack: () => router.back(),
+      onSkip: () => {
+        setUserRepBioguideId(null);
+        setFoundRepBioguideId(null);
+        router.push("/onboarding/pick-items" as any);
+      },
+    });
+  }, [rep]);
 
   const lookupRep = async () => {
     if (zip.length !== 5) {
@@ -149,37 +203,22 @@ export default function PickRepScreen() {
     setLoading(true);
     setError(null);
     setRep(null);
+    setMultipleReps([]);
+    setShowAllReps(false);
 
     try {
-      // Step 1: Zip → lat/lng via Zippopotam.us (free, no key, zip-friendly)
-      const geoRes = await fetch(`https://api.zippopotam.us/us/${zip}`);
-
-      if (!geoRes.ok) {
-        setError("Couldn't locate that zip code. Try another.");
-        setLoading(false);
-        return;
-      }
-
-      const geoData = await geoRes.json();
-      const place = geoData?.places?.[0];
-
-      if (!place) {
-        setError("Couldn't locate that zip code. Try another.");
-        setLoading(false);
-        return;
-      }
-
-      const lat = parseFloat(place.latitude);
-      const lng = parseFloat(place.longitude);
-
-      // Step 2: lat/lng → congressional district via Census
-      const districtRes = await fetch(
-        `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${lng}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Current&layers=54&format=json`,
+      const res = await fetch(
+        `https://unum-production.up.railway.app/api/zip-districts/${zip}`,
       );
-      const districtData = await districtRes.json();
 
-      const districts =
-        districtData?.result?.geographies?.["119th Congressional Districts"];
+      if (!res.ok) {
+        setError("Couldn't locate that zip code. Try another.");
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+      const districts: { state: string; district: number }[] = data.districts;
 
       if (!districts?.length) {
         setError(
@@ -189,101 +228,65 @@ export default function PickRepScreen() {
         return;
       }
 
-      const districtNum = parseInt(
-        districts[0].CD119 ?? districts[0].CD119FP,
-        10,
-      );
-      const FIPS_TO_ABBR: Record<string, string> = {
-        "01": "AL",
-        "02": "AK",
-        "04": "AZ",
-        "05": "AR",
-        "06": "CA",
-        "08": "CO",
-        "09": "CT",
-        "10": "DE",
-        "12": "FL",
-        "13": "GA",
-        "15": "HI",
-        "16": "ID",
-        "17": "IL",
-        "18": "IN",
-        "19": "IA",
-        "20": "KS",
-        "21": "KY",
-        "22": "LA",
-        "23": "ME",
-        "24": "MD",
-        "25": "MA",
-        "26": "MI",
-        "27": "MN",
-        "28": "MS",
-        "29": "MO",
-        "30": "MT",
-        "31": "NE",
-        "32": "NV",
-        "33": "NH",
-        "34": "NJ",
-        "35": "NM",
-        "36": "NY",
-        "37": "NC",
-        "38": "ND",
-        "39": "OH",
-        "40": "OK",
-        "41": "OR",
-        "42": "PA",
-        "44": "RI",
-        "45": "SC",
-        "46": "SD",
-        "47": "TN",
-        "48": "TX",
-        "49": "UT",
-        "50": "VT",
-        "51": "VA",
-        "53": "WA",
-        "54": "WV",
-        "55": "WI",
-        "56": "WY",
-      };
-
-      const fipsCode = districts[0].STATE;
-      const resolved = FIPS_TO_ABBR[fipsCode] ?? stateAbbrForLookup;
-      setResolvedState(resolved);
-
-      // Warn if zip state differs from priority state
-      if (stateAbbrForLookup && resolved !== stateAbbrForLookup) {
+      // Warn if zip's state differs from selected priority state
+      const resolvedStateAbbr = districts[0].state;
+      setResolvedState(resolvedStateAbbr);
+      if (stateAbbrForLookup && resolvedStateAbbr !== stateAbbrForLookup) {
         setStateMismatch(true);
       } else {
         setStateMismatch(false);
       }
 
-      // Step 3: Match against locally cached officials (from seed.db or SQLite cache)
+      // Load officials and match ALL returned districts
       const officialsData = await officialsService.getAll();
-
       const officials = officialsData.officials as any[];
-      const match = officials.find((o) => {
-        const termInfo = o.terms?.item?.[o.terms.item.length - 1];
-        const isHouse =
-          termInfo?.chamber === "House of Representatives" ||
-          o.chamber === "House of Representatives";
 
-        // state is full name like "Texas", convert to abbr for comparison
-        const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
-
-        // district is stored as "4" or "04" in CD119
-        const officialDistrict = parseInt(
-          termInfo?.district ?? o.district ?? "0",
-          10,
-        );
-
-        return (
-          isHouse &&
-          officialStateAbbr === resolved &&
-          officialDistrict === districtNum
-        );
+      const buildRepResult = (o: any, resolvedAbbr: string): RepResult => ({
+        bioguideId: o.bioguideId,
+        name: formatName(o.name),
+        party:
+          o.partyName ??
+          o.terms?.item?.[o.terms.item.length - 1]?.partyName ??
+          "Unknown",
+        role: (() => {
+          const state = ABBR_TO_STATE[resolvedAbbr] ?? resolvedAbbr;
+          const district = o.district ? `, District ${o.district}` : "";
+          const full = `Representative, ${state}${district}`;
+          const abbr = `Rep, ${state}${district}`;
+          return full.length > 39 ? abbr : full;
+        })(),
+        photoUrl: `https://bioguide.congress.gov/bioguide/photo/${o.bioguideId[0]}/${o.bioguideId}.jpg`,
       });
 
-      if (!match) {
+      // Find a rep for each district returned, deduplicate by bioguideId
+      const seen = new Set<string>();
+      const matched: RepResult[] = [];
+
+      for (const { state, district } of districts) {
+        const match = officials.find((o) => {
+          const termInfo = o.terms?.item?.[o.terms.item.length - 1];
+          const isHouse =
+            termInfo?.chamber === "House of Representatives" ||
+            o.chamber === "House of Representatives";
+          const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
+          const officialDistrict = parseInt(
+            termInfo?.district ?? o.district ?? "0",
+            10,
+          );
+          return (
+            isHouse &&
+            officialStateAbbr === state &&
+            officialDistrict === district
+          );
+        });
+
+        if (match && !seen.has(match.bioguideId)) {
+          seen.add(match.bioguideId);
+          matched.push(buildRepResult(match, state));
+        }
+      }
+
+      if (matched.length === 0) {
         setError(
           "Found your district but couldn't match to our database. You can skip this step.",
         );
@@ -291,23 +294,15 @@ export default function PickRepScreen() {
         return;
       }
 
-      setRep({
-        bioguideId: match.bioguideId,
-        name: formatName(match.name),
-        party:
-          match.partyName ??
-          match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
-          "Unknown",
-        role: (() => {
-          const state = ABBR_TO_STATE[resolved] ?? resolved;
-          const district = match.district ? `, District ${match.district}` : "";
-          const full = `Representative, ${state}${district}`;
-          const abbr = `Rep, ${state}${district}`;
-          return full.length > 39 ? abbr : full;
-        })(),
-        photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
-      });
-      setFoundRepBioguideId(match.bioguideId);
+      // First match is the primary
+      setRep(matched[0]);
+      setFoundRepBioguideId(matched[0].bioguideId);
+
+      if (matched.length > 1) {
+        setMultipleReps(matched);
+      } else {
+        setMultipleReps([]);
+      }
     } catch (e) {
       console.error("Rep lookup error:", e);
       setError("Something went wrong. You can skip this step.");
@@ -320,16 +315,88 @@ export default function PickRepScreen() {
     if (!rep) return;
     if (repSelected) {
       setRepSelected(false);
+      setSelectedRepId(null);
       setUserRepBioguideId(null);
       setSelectedOfficials(
         selectedOfficials.filter((id) => id !== rep.bioguideId),
       );
     } else {
       setRepSelected(true);
+      setSelectedRepId(rep.bioguideId);
       setUserRepBioguideId(rep.bioguideId);
       if (!selectedOfficials.includes(rep.bioguideId)) {
         setSelectedOfficials([...selectedOfficials, rep.bioguideId]);
       }
+    }
+  };
+
+  const selectSpecificRep = (chosen: RepResult) => {
+    setRep(chosen);
+    setRepSelected(true);
+    setSelectedRepId(chosen.bioguideId);
+    setUserRepBioguideId(chosen.bioguideId);
+    setFoundRepBioguideId(chosen.bioguideId);
+    const filtered = selectedOfficials.filter((id) =>
+      multipleReps.every((r) => r.bioguideId !== id),
+    );
+    setSelectedOfficials([...filtered, chosen.bioguideId]);
+    setShowAllReps(false);
+  };
+
+  const autoLookupAtLargeRep = async () => {
+    if (!priorityState) return;
+    setLoading(true);
+    setError(null);
+    setRep(null);
+
+    try {
+      const stateAbbr =
+        STATE_TO_ABBR[priorityState] ?? TERRITORY_TO_ABBR[priorityState];
+
+      const officialsData = await officialsService.getAll();
+      const officials = officialsData.officials as any[];
+
+      const match = officials.find((o) => {
+        const termInfo = o.terms?.item?.[o.terms.item.length - 1];
+        const isHouse =
+          termInfo?.chamber === "House of Representatives" ||
+          o.chamber === "House of Representatives";
+        const officialStateAbbr = o.state
+          ? (STATE_TO_ABBR[o.state] ?? TERRITORY_TO_ABBR[o.state])
+          : null;
+        return isHouse && officialStateAbbr === stateAbbr;
+      });
+
+      if (!match) {
+        setError(
+          "Couldn't find a delegate for this state in our database. You can skip this step.",
+        );
+        return;
+      }
+
+      const resolved = stateAbbr ?? "";
+      setResolvedState(resolved);
+      setRep({
+        bioguideId: match.bioguideId,
+        name: formatName(match.name),
+        party:
+          match.partyName ??
+          match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
+          "Unknown",
+        role: (() => {
+          const district = match.district ? `, District ${match.district}` : "";
+          const full = `Representative, ${priorityState}${district}`;
+          const abbr = `Rep, ${priorityState}${district}`;
+          return full.length > 39 ? abbr : full;
+        })(),
+        photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
+      });
+      setFoundRepBioguideId(match.bioguideId);
+    } catch (e) {
+      console.error("Auto rep lookup error:", e);
+      setError("Something went wrong. You can skip this step.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -355,57 +422,76 @@ export default function PickRepScreen() {
           Find your representative
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
-          {familiarityLevel === "low"
-            ? "Your zip code tells us exactly which representative represents your particular neighborhood in the House of Representatives."
-            : familiarityLevel === "high"
-              ? "Look up your House rep by zip code."
-              : "Enter your zip code and we'll find the House representative for your district."}
-          {resolvedState
+          {TERRITORIES.has(priorityState ?? "")
+            ? `${priorityState} has a non-voting delegate to the House of Representatives instead of a senator or voting rep.`
+            : SINGLE_REP_STATES.has(priorityState ?? "")
+              ? `${priorityState} has only one House representative for the whole state, so no zip code is needed.`
+              : familiarityLevel === "low"
+                ? "Your zip code tells us exactly which representative represents your particular neighborhood in the House of Representatives."
+                : familiarityLevel === "high"
+                  ? "Look up your House rep by zip code."
+                  : "Enter your zip code and we'll find the House representative for your district."}
+          {resolvedState &&
+          !SINGLE_REP_STATES.has(priorityState ?? "") &&
+          !TERRITORIES.has(priorityState ?? "")
             ? ` Your senators from ${priorityState} will be added automatically.`
             : ""}
         </Text>
       </View>
 
       <View style={{ paddingHorizontal: 16, gap: 12 }}>
-        {/* Zip input row */}
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <TextInput
-            value={zip}
-            onChangeText={(t) => {
-              setZip(t.replace(/[^0-9]/g, "").slice(0, 5));
-              setError(null);
-              setRep(null);
-              setRepSelected(false);
-            }}
-            onSubmitEditing={lookupRep}
-            placeholder="Enter your zip code"
-            placeholderTextColor="#aaa"
-            keyboardType="number-pad"
-            returnKeyType="search"
-            maxLength={5}
-            style={{
-              flex: 1,
-              backgroundColor: "#fff",
-              borderRadius: 16,
-              paddingVertical: 16,
-              paddingHorizontal: 14,
-              fontSize: 16,
-              color: "#1a1a1a",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.06,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          />
-          {loading && (
-            <View style={{ justifyContent: "center", paddingHorizontal: 8 }}>
+        {/* Only show zip input for normal multi-rep states */}
+        {!SINGLE_REP_STATES.has(priorityState ?? "") &&
+          !TERRITORIES.has(priorityState ?? "") && (
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TextInput
+                value={zip}
+                onChangeText={(t) => {
+                  setZip(t.replace(/[^0-9]/g, "").slice(0, 5));
+                  setError(null);
+                  setRep(null);
+                  setRepSelected(false);
+                }}
+                onSubmitEditing={lookupRep}
+                placeholder="Enter your zip code"
+                placeholderTextColor="#aaa"
+                keyboardType="number-pad"
+                returnKeyType="search"
+                maxLength={5}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#fff",
+                  borderRadius: 16,
+                  paddingVertical: 16,
+                  paddingHorizontal: 14,
+                  fontSize: 16,
+                  color: "#1a1a1a",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.06,
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}
+              />
+              {loading && (
+                <View
+                  style={{ justifyContent: "center", paddingHorizontal: 8 }}
+                >
+                  <ActivityIndicator color="#008CFF" />
+                </View>
+              )}
+            </View>
+          )}
+
+        {/* Loading spinner for auto-lookup states */}
+        {loading &&
+          (SINGLE_REP_STATES.has(priorityState ?? "") ||
+            TERRITORIES.has(priorityState ?? "")) && (
+            <View style={{ alignItems: "center", paddingVertical: 16 }}>
               <ActivityIndicator color="#008CFF" />
             </View>
           )}
-        </View>
 
-        {/* Error */}
         {error && (
           <Text
             style={{ fontSize: 13, color: "#D45252", paddingHorizontal: 4 }}
@@ -430,7 +516,6 @@ export default function PickRepScreen() {
           </View>
         )}
 
-        {/* Rep card */}
         {rep && (
           <Pressable
             onPress={toggleRep}
@@ -450,7 +535,6 @@ export default function PickRepScreen() {
               elevation: 2,
             })}
           >
-            {/* Photo */}
             <View
               style={{
                 width: 52,
@@ -467,9 +551,7 @@ export default function PickRepScreen() {
                 resizeMode="cover"
               />
             </View>
-
             <View style={{ flex: 1 }}>
-              {/* "Your representative" badge */}
               <View
                 style={{
                   alignSelf: "flex-start",
@@ -483,7 +565,11 @@ export default function PickRepScreen() {
                 <Text
                   style={{ fontSize: 11, color: "#008CFF", fontWeight: "600" }}
                 >
-                  Your Representative
+                  {TERRITORIES.has(priorityState ?? "")
+                    ? "Your Delegate"
+                    : multipleReps.length > 1
+                      ? "Best Match"
+                      : "Your Representative"}
                 </Text>
               </View>
               <Text
@@ -519,8 +605,6 @@ export default function PickRepScreen() {
                 </Text>
               </View>
             </View>
-
-            {/* Checkbox */}
             <View
               style={{
                 width: 24,
@@ -545,7 +629,151 @@ export default function PickRepScreen() {
           </Pressable>
         )}
 
-        {/* Helper text when no search yet */}
+        {/* Multiple reps section — shown when zip crosses district lines */}
+        {multipleReps.length > 1 && (
+          <View>
+            <View
+              style={{
+                backgroundColor: "#FFF8E1",
+                borderRadius: 12,
+                padding: 12,
+                marginTop: 4,
+              }}
+            >
+              <Text style={{ fontSize: 13, color: "#7A5C00", lineHeight: 18 }}>
+                Zip codes sometimes cross district lines due to gerrymandering.
+                If the match above doesn't look right, select your actual
+                representative below.
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => setShowAllReps(!showAllReps)}
+              style={{ paddingVertical: 12, alignItems: "center" }}
+            >
+              <Text
+                style={{ fontSize: 13, color: "#008CFF", fontWeight: "600" }}
+              >
+                {showAllReps
+                  ? "Hide other representatives"
+                  : `See all ${multipleReps.length} representatives from this state`}
+              </Text>
+            </Pressable>
+            {showAllReps &&
+              multipleReps
+                .filter((r) => r.bioguideId !== rep?.bioguideId)
+                .map((r) => (
+                  <Pressable
+                    key={r.bioguideId}
+                    onPress={() => selectSpecificRep(r)}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor:
+                        selectedRepId === r.bioguideId ? "#E8F4FF" : "#fff",
+                      borderRadius: 24,
+                      padding: 14,
+                      borderWidth: 2,
+                      borderColor:
+                        selectedRepId === r.bioguideId
+                          ? "#008CFF"
+                          : "transparent",
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 4,
+                      elevation: 2,
+                      marginBottom: 8,
+                    })}
+                  >
+                    <View
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: 26,
+                        overflow: "hidden",
+                        backgroundColor: "#eee",
+                        marginRight: 12,
+                      }}
+                    >
+                      <Image
+                        source={{ uri: r.photoUrl }}
+                        style={{ width: "100%", height: "120%" }}
+                        resizeMode="cover"
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: "600",
+                          color: "#535353",
+                        }}
+                      >
+                        {r.name}
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginTop: 2,
+                        }}
+                      >
+                        <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                          {PARTY_ABBR[r.party] ?? r.party}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            color: "#000000",
+                            marginHorizontal: 4,
+                            fontWeight: "900",
+                          }}
+                        >
+                          ·
+                        </Text>
+                        <Text
+                          style={{ fontSize: 13, color: "#7B7C81" }}
+                          numberOfLines={1}
+                        >
+                          {r.role}
+                        </Text>
+                      </View>
+                    </View>
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 6,
+                        borderWidth: 2,
+                        borderColor:
+                          selectedRepId === r.bioguideId ? "#008CFF" : "#ccc",
+                        backgroundColor:
+                          selectedRepId === r.bioguideId
+                            ? "#008CFF"
+                            : "transparent",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginLeft: 8,
+                      }}
+                    >
+                      {selectedRepId === r.bioguideId && (
+                        <Text
+                          style={{
+                            color: "white",
+                            fontSize: 13,
+                            fontWeight: "700",
+                          }}
+                        >
+                          ✓
+                        </Text>
+                      )}
+                    </View>
+                  </Pressable>
+                ))}
+          </View>
+        )}
+
         {!rep && !loading && !error && (
           <Text
             style={{

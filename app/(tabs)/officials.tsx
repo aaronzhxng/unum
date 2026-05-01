@@ -100,7 +100,7 @@ const LOCATION_OPTIONS = [
   "Texas",
   "Utah",
   "Vermont",
-  "Virgin Islands",
+  "U.S. Virgin Islands",
   "Virginia",
   "Washington",
   "West Virginia",
@@ -228,8 +228,13 @@ export default function OfficialsScreen() {
     const filtered =
       selectedList === "All States"
         ? allOfficials
-        : allOfficials.filter((official) => official.state === selectedList);
-
+        : allOfficials.filter((official) => {
+            const normalizedState =
+              official.state === "Virgin Islands"
+                ? "U.S. Virgin Islands"
+                : official.state;
+            return normalizedState === selectedList;
+          });
     return [...filtered].sort((a: any, b: any) => {
       // Sort by state alphabetically
       if (a.state < b.state) return -1;

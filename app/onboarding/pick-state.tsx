@@ -8,14 +8,17 @@ import { useOnboarding } from "../context/OnboardingContext";
 const STATES = [
   "Alabama",
   "Alaska",
+  "American Samoa",
   "Arizona",
   "Arkansas",
   "California",
   "Colorado",
   "Connecticut",
   "Delaware",
+  "District of Columbia",
   "Florida",
   "Georgia",
+  "Guam",
   "Hawaii",
   "Idaho",
   "Illinois",
@@ -40,15 +43,18 @@ const STATES = [
   "New York",
   "North Carolina",
   "North Dakota",
+  "Northern Mariana Islands",
   "Ohio",
   "Oklahoma",
   "Oregon",
   "Pennsylvania",
+  "Puerto Rico",
   "Rhode Island",
   "South Carolina",
   "South Dakota",
   "Tennessee",
   "Texas",
+  "U.S. Virgin Islands",
   "Utah",
   "Vermont",
   "Virginia",
@@ -57,6 +63,15 @@ const STATES = [
   "Wisconsin",
   "Wyoming",
 ];
+
+const TERRITORIES = new Set([
+  "American Samoa",
+  "District of Columbia",
+  "Guam",
+  "Northern Mariana Islands",
+  "Puerto Rico",
+  "U.S. Virgin Islands",
+]);
 
 export default function PickStateScreen() {
   const router = useRouter();
@@ -101,11 +116,13 @@ export default function PickStateScreen() {
           Set a priority state
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
-          {familiarityLevel === "low"
-            ? "Every state has two senators in Congress. Pick yours to follow what they're working on. Their work is meant to amplify your state's needs on a national level."
-            : familiarityLevel === "high"
-              ? "Set a priority state to track legislative activity from your delegation."
-              : "Get notified about new bills introduced by senators from your state."}
+          {priorityState && TERRITORIES.has(priorityState)
+            ? "Territories and DC have non-voting delegates instead of senators. You can still follow their representative's work in Congress."
+            : familiarityLevel === "low"
+              ? "Every state has two senators in Congress. Pick yours to follow what they're working on. Their work is meant to amplify your state's needs on a national level."
+              : familiarityLevel === "high"
+                ? "Set a priority state to track legislative activity from your delegation."
+                : "Get notified about new bills introduced by senators from your state."}
         </Text>
       </View>
 
@@ -192,6 +209,23 @@ export default function PickStateScreen() {
                 </Pressable>
               ))}
             </ScrollView>
+          </View>
+        )}
+
+        {priorityState && TERRITORIES.has(priorityState) && (
+          <View
+            style={{
+              backgroundColor: "#FFF8E1",
+              borderRadius: 12,
+              padding: 14,
+              marginTop: 12,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#7A5C00", lineHeight: 20 }}>
+              {priorityState === "District of Columbia"
+                ? "DC has no voting senators. You'll be shown your non-voting delegate to the House instead."
+                : `${priorityState} has no voting senators. You'll be shown your non-voting delegate to the House instead.`}
+            </Text>
           </View>
         )}
       </View>

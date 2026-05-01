@@ -3,8 +3,25 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
+import fs from "fs";
+import path from "path";
 import { runCronJob, startCronScheduler } from "./cron";
 import db from "./db";
+
+// Load zip-to-districts crosswalk
+const zipDistrictMap = new Map<string, { state: string; district: number }[]>();
+
+const csvPath = path.join(__dirname, "../data/zccd.csv");
+const csvLines = fs.readFileSync(csvPath, "utf-8").split("\n");
+for (const line of csvLines.slice(1)) {
+  // skip header row
+  const [zip, state, district] = line.trim().split(",");
+  if (!zip || !state || !district) continue;
+  const districtNum = parseInt(district, 10);
+  if (!zipDistrictMap.has(zip)) zipDistrictMap.set(zip, []);
+  zipDistrictMap.get(zip)!.push({ state, district: districtNum });
+}
+
 dotenv.config();
 
 const app = express();
@@ -1248,9 +1265,6 @@ app.get("/api/officials/:bioguideId/bio", async (req, res) => {
   }
 });
 
-const fs = require("fs");
-const path = require("path");
-
 app.post("/report-error", reportLimiter, express.json(), (req, res) => {
   const { message, screen } = req.body;
   if (!message || !message.trim()) {
@@ -1296,6 +1310,15 @@ app.get("/api/debug/my-token", requireAdminToken, (req, res) => {
     )
     .all();
   res.json(rows);
+});
+
+app.get("/api/zip-districts/:zip", (req, res) => {
+  const { zip } = req.params;
+  const results = zipDistrictMap.get(zip);
+  if (!results || results.length === 0) {
+    return res.status(404).json({ error: "Zip code not found" });
+  }
+  res.json({ districts: results });
 });
 
 app.post("/api/debug/token", requireAdminToken, (req, res) => {
