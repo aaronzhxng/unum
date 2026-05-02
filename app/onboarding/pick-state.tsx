@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { Check } from "lucide-react-native";
+import { Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
@@ -153,7 +153,15 @@ export default function PickStateScreen() {
           >
             {priorityState ?? "Select a state..."}
           </Text>
-          {priorityState && <Check size={20} color="#008CFF" strokeWidth={3} />}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            {priorityState ? (
+              <Check size={20} color="#008CFF" strokeWidth={3} />
+            ) : showList ? (
+              <ChevronUp size={20} color="#7B7C81" />
+            ) : (
+              <ChevronDown size={20} color="#7B7C81" />
+            )}
+          </View>
         </Pressable>
 
         {showList && (

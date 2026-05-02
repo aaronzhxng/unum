@@ -264,6 +264,9 @@ export default function BillDetail() {
     FollowedOfficial[]
   >([]);
 
+  const [titleExpanded, setTitleExpanded] = useState(false);
+  const [titleExceedsLimit, setTitleExceedsLimit] = useState(false);
+
   useFocusEffect(
     useCallback(() => {
       setNotifVersion((v) => v + 1);
@@ -1176,9 +1179,27 @@ export default function BillDetail() {
               </>
             )}
           </View>
-          <Text style={componentStyles.billNumber}>
-            {bill.type}.{bill.number} - {bill.title}
-          </Text>
+          <Pressable
+            onPress={() => titleExceedsLimit && setTitleExpanded((v) => !v)}
+          >
+            <Text
+              style={componentStyles.billNumber}
+              numberOfLines={titleExpanded ? undefined : 8}
+              ellipsizeMode="tail"
+              onTextLayout={(e) => {
+                if (!titleExceedsLimit && e.nativeEvent.lines.length >= 8) {
+                  setTitleExceedsLimit(true);
+                }
+              }}
+            >
+              {bill.type}.{bill.number} - {bill.title}
+            </Text>
+            {titleExceedsLimit && (
+              <Text style={{ fontSize: 11, color: "#008CFF", marginTop: 2 }}>
+                {titleExpanded ? "Tap to collapse" : "Tap to expand"}
+              </Text>
+            )}
+          </Pressable>
         </View>
       </View>
 

@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -439,7 +440,14 @@ export default function PickRepScreen() {
         </Text>
       </View>
 
-      <View style={{ paddingHorizontal: 16, gap: 12 }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          gap: 12,
+          paddingBottom: 160,
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Only show zip input for normal multi-rep states */}
         {!SINGLE_REP_STATES.has(priorityState ?? "") &&
           !TERRITORIES.has(priorityState ?? "") && (
@@ -482,7 +490,6 @@ export default function PickRepScreen() {
               )}
             </View>
           )}
-
         {/* Loading spinner for auto-lookup states */}
         {loading &&
           (SINGLE_REP_STATES.has(priorityState ?? "") ||
@@ -491,7 +498,6 @@ export default function PickRepScreen() {
               <ActivityIndicator color="#008CFF" />
             </View>
           )}
-
         {error && (
           <Text
             style={{ fontSize: 13, color: "#D45252", paddingHorizontal: 4 }}
@@ -499,7 +505,6 @@ export default function PickRepScreen() {
             {error}
           </Text>
         )}
-
         {stateMismatch && !error && (
           <View
             style={{
@@ -515,7 +520,6 @@ export default function PickRepScreen() {
             </Text>
           </View>
         )}
-
         {rep && (
           <Pressable
             onPress={toggleRep}
@@ -628,7 +632,6 @@ export default function PickRepScreen() {
             </View>
           </Pressable>
         )}
-
         {/* Multiple reps section — shown when zip crosses district lines */}
         {multipleReps.length > 1 && (
           <View>
@@ -655,7 +658,7 @@ export default function PickRepScreen() {
               >
                 {showAllReps
                   ? "Hide other representatives"
-                  : `See all ${multipleReps.length} representatives from this state`}
+                  : `See all ${multipleReps.length} representatives from this zip code`}
               </Text>
             </Pressable>
             {showAllReps &&
@@ -773,7 +776,6 @@ export default function PickRepScreen() {
                 ))}
           </View>
         )}
-
         {!rep && !loading && !error && (
           <Text
             style={{
@@ -786,7 +788,7 @@ export default function PickRepScreen() {
             You can skip this step if you prefer.
           </Text>
         )}
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

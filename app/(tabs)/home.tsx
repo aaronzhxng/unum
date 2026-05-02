@@ -1853,7 +1853,7 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
           >
             <Text style={{ fontSize: 24 }}>🗳️</Text>
           </View>
-          <View style={{ flexDirection: "column", maxWidth: 300 }}>
+          <View style={{ flexDirection: "column", flex: 1, minWidth: 0 }}>
             <Text
               style={{
                 fontSize: 16,

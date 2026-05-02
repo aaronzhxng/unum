@@ -23,6 +23,7 @@ import {
   Pressable,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useTabBar } from "../context/TabBarContext";
@@ -113,6 +114,8 @@ export default function LegislationScreen() {
     }
     return "Congress";
   };
+
+  const { width: screenWidth } = useWindowDimensions();
 
   const [showReportModal, setShowReportModal] = useState(false);
   const handleReportError = () => setShowReportModal(true);
@@ -454,8 +457,19 @@ export default function LegislationScreen() {
   return (
     <View style={componentStyles.container}>
       {/* Header */}
-      <View style={componentStyles.headerBar}>
-        <View style={componentStyles.headerLeft}>
+      <View style={[componentStyles.headerBar, { alignItems: "center" }]}>
+        <View
+          style={[
+            componentStyles.headerLeft,
+            {
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              minWidth: 0,
+            },
+          ]}
+        >
+          {/* Chamber filter */}
           <Pressable
             onPress={() => {
               setShowSortDropdown(false);
@@ -463,6 +477,7 @@ export default function LegislationScreen() {
             }}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.96 : 1 }],
+              flexShrink: 0,
             })}
           >
             <View
@@ -489,6 +504,7 @@ export default function LegislationScreen() {
             </View>
           </Pressable>
 
+          {/* Sort dropdown */}
           <Pressable
             onPress={() => {
               setShowFilterModal(false);
@@ -500,29 +516,41 @@ export default function LegislationScreen() {
             })}
           >
             <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                ...(screenWidth < 390 && { maxWidth: 96 }),
+              }}
             >
               <Text
                 style={[
                   componentStyles.header,
-                  { fontSize: 16, fontWeight: 500 },
+                  {
+                    fontSize: 16,
+                    fontWeight: "500",
+                    ...(screenWidth < 390 && { flexShrink: 1 }),
+                  },
                 ]}
+                numberOfLines={screenWidth < 390 ? 2 : 1}
               >
                 {selectedSort}
               </Text>
-              {showSortDropdown ? (
-                <ChevronUp
-                  size={20}
-                  color="#535353"
-                  style={{ marginBottom: 12 }}
-                />
-              ) : (
-                <ChevronDown
-                  size={20}
-                  color="#535353"
-                  style={{ marginBottom: 12 }}
-                />
-              )}
+              <View style={{ flexShrink: 0 }}>
+                {showSortDropdown ? (
+                  <ChevronUp
+                    size={20}
+                    color="#535353"
+                    style={{ marginBottom: 12 }}
+                  />
+                ) : (
+                  <ChevronDown
+                    size={20}
+                    color="#535353"
+                    style={{ marginBottom: 12 }}
+                  />
+                )}
+              </View>
             </View>
           </Pressable>
         </View>
