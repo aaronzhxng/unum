@@ -14,12 +14,14 @@ const zipDistrictMap = new Map<string, { state: string; district: number }[]>();
 const csvPath = path.join(__dirname, "../data/zccd.csv");
 const csvLines = fs.readFileSync(csvPath, "utf-8").split("\n");
 for (const line of csvLines.slice(1)) {
-  // skip header row
-  const [zip, state, district] = line.trim().split(",");
-  if (!zip || !state || !district) continue;
-  const districtNum = parseInt(district, 10);
-  if (!zipDistrictMap.has(zip)) zipDistrictMap.set(zip, []);
-  zipDistrictMap.get(zip)!.push({ state, district: districtNum });
+  const [stateFips, stateAbbr, zcta, district] = line.trim().split(",");
+  if (!stateAbbr || !zcta || !district) continue;
+  const districtNum = parseInt(district.trim(), 10);
+  if (isNaN(districtNum)) continue;
+  if (!zipDistrictMap.has(zcta)) zipDistrictMap.set(zcta, []);
+  zipDistrictMap
+    .get(zcta)!
+    .push({ state: stateAbbr.trim(), district: districtNum });
 }
 
 dotenv.config();
