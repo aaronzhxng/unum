@@ -34,6 +34,7 @@ import {
   ScrollView,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import JargonFootnotes from "../../components/JargonFootnotes";
@@ -266,6 +267,8 @@ export default function BillDetail() {
 
   const [titleExpanded, setTitleExpanded] = useState(false);
   const [titleExceedsLimit, setTitleExceedsLimit] = useState(false);
+
+  const { width: screenWidth } = useWindowDimensions();
 
   useFocusEffect(
     useCallback(() => {
@@ -873,8 +876,8 @@ export default function BillDetail() {
         name: c.name,
         party: c.party,
         role: c.district
-          ? `Rep, ${STATE_NAMES[c.state] || c.state} - ${c.district}`
-          : `Senator, ${STATE_NAMES[c.state] || c.state}`,
+          ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
+          : `Sen, ${STATE_NAMES[c.state] || c.state}`,
         photoUrl: c.photoUrl,
         update: c.isOriginalCosponsor
           ? "Original cosponsor"
@@ -1291,11 +1294,12 @@ export default function BillDetail() {
                           key={index}
                           style={{
                             flex: 1,
-                            fontSize: 10,
+                            fontSize: screenWidth < 390 ? 8 : 10,
                             color: status === "empty" ? "#7B7C81" : "#1a1a1a",
                             fontWeight: status === "empty" ? "400" : "600",
                             textAlign: "left",
-                            lineHeight: 13,
+                            lineHeight: screenWidth < 390 ? 11 : 13,
+                            paddingRight: 2,
                           }}
                           numberOfLines={2}
                         >
@@ -2057,9 +2061,18 @@ export default function BillDetail() {
       ? `https://bioguide.congress.gov/bioguide/photo/${sponsor.bioguideId[0]}/${sponsor.bioguideId}.jpg`
       : null;
 
-    const role = sponsor.district
-      ? `Representative, ${STATE_NAMES[sponsor.state] ?? sponsor.state}, District ${sponsor.district}`
-      : `Senator, ${STATE_NAMES[sponsor.state] ?? sponsor.state}`;
+    const { width: screenWidth } = useWindowDimensions();
+    const stateName = STATE_NAMES[sponsor.state] ?? sponsor.state;
+    const role = (() => {
+      if (sponsor.district) {
+        const full = `Representative, ${stateName}, District ${sponsor.district}`;
+        const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
+        return screenWidth < 390 ? abbr : full;
+      }
+      const full = `Senator, ${stateName}`;
+      const abbr = `Sen, ${stateName}`;
+      return screenWidth < 390 ? abbr : full;
+    })();
 
     return (
       <Pressable

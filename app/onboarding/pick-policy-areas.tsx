@@ -133,6 +133,8 @@ export default function PickPolicyAreasScreen() {
                   fontSize: 15,
                   fontWeight: isSelected ? "600" : "400",
                   color: isSelected ? "#008CFF" : "#1a1a1a",
+                  flex: 1,
+                  marginRight: 12,
                 }}
               >
                 {area}

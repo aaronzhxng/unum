@@ -1,12 +1,81 @@
 import { useRouter } from "expo-router";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";
-import { FlatList, Image, Pressable, Text, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import LoadingSpinner from "../../global_components/LoadingSpinner";
 import { styles as componentStyles } from "../styles"; // adjust path if needed
 import FilterDropdown from "./FilterDropdown"; // Adjust path
 
 type Party = "D" | "R" | "I";
+
+const STATE_TO_ABBR: Record<string, string> = {
+  Alabama: "AL",
+  Alaska: "AK",
+  Arizona: "AZ",
+  Arkansas: "AR",
+  California: "CA",
+  Colorado: "CO",
+  Connecticut: "CT",
+  Delaware: "DE",
+  Florida: "FL",
+  Georgia: "GA",
+  Hawaii: "HI",
+  Idaho: "ID",
+  Illinois: "IL",
+  Indiana: "IN",
+  Iowa: "IA",
+  Kansas: "KS",
+  Kentucky: "KY",
+  Louisiana: "LA",
+  Maine: "ME",
+  Maryland: "MD",
+  Massachusetts: "MA",
+  Michigan: "MI",
+  Minnesota: "MN",
+  Mississippi: "MS",
+  Missouri: "MO",
+  Montana: "MT",
+  Nebraska: "NE",
+  Nevada: "NV",
+  "New Hampshire": "NH",
+  "New Jersey": "NJ",
+  "New Mexico": "NM",
+  "New York": "NY",
+  "North Carolina": "NC",
+  "North Dakota": "ND",
+  Ohio: "OH",
+  Oklahoma: "OK",
+  Oregon: "OR",
+  Pennsylvania: "PA",
+  "Rhode Island": "RI",
+  "South Carolina": "SC",
+  "South Dakota": "SD",
+  Tennessee: "TN",
+  Texas: "TX",
+  Utah: "UT",
+  Vermont: "VT",
+  Virginia: "VA",
+  Washington: "WA",
+  "West Virginia": "WV",
+  Wisconsin: "WI",
+  Wyoming: "WY",
+};
+
+function abbreviateRole(role: string): string {
+  for (const [full, abbr] of Object.entries(STATE_TO_ABBR)) {
+    if (role.includes(full)) {
+      return role.replace(full, abbr);
+    }
+  }
+  return role;
+}
 
 export interface Cosponsor {
   id: string;
@@ -128,6 +197,9 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   const CosponsorCard = ({ item }: { item: Cosponsor }) => {
     const [imageError, setImageError] = useState(false);
     const router = useRouter();
+    const { width: screenWidth } = useWindowDimensions();
+    const displayRole =
+      screenWidth < 390 ? abbreviateRole(item.role) : item.role;
 
     return (
       <Pressable
@@ -168,7 +240,9 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
             <View style={componentStyles.metaRow}>
               <Text style={componentStyles.subtitle}>{item.party}</Text>
               <Text style={componentStyles.separator}>·</Text>
-              <Text style={componentStyles.subtitle}>{item.role}</Text>
+              <Text style={componentStyles.subtitle} numberOfLines={1}>
+                {displayRole}
+              </Text>
               {item.update ? (
                 <>
                   <Text style={componentStyles.separator}>·</Text>

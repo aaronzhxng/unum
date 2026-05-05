@@ -29,6 +29,7 @@ import {
   ScrollView,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
@@ -239,7 +240,7 @@ export default function OfficialDetail() {
   };
   const [activeTab, setActiveTab] = useState(0);
   // const [isNavigatingBack, setIsNavigatingBack] = useState(false);
-
+  const { width: screenWidth } = useWindowDimensions();
   // Back swipe on first page
   const backSwipePanResponder = useRef(
     PanResponder.create({
@@ -874,10 +875,20 @@ export default function OfficialDetail() {
       <View ref={headerRef} collapsable={false} style={componentStyles.header}>
         <Text style={componentStyles.roleTop}>
           {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
-          {official.terms?.[official.terms.length - 1]?.chamber ===
-          "House of Representatives"
-            ? `Representative, ${official.state}${official.terms?.[official.terms.length - 1]?.district ? ` - District ${official.terms[official.terms.length - 1].district}` : ""}`
-            : `Senator, ${official.state}`}
+          {(() => {
+            const lastTerm = official.terms?.[official.terms.length - 1];
+            if (lastTerm?.chamber === "House of Representatives") {
+              const district = lastTerm?.district
+                ? ` - District ${lastTerm.district}`
+                : "";
+              const full = `Representative, ${official.state}${district}`;
+              const abbr = `Rep, ${official.state}${district}`;
+              return screenWidth < 390 ? abbr : full;
+            }
+            return screenWidth < 390
+              ? `Sen, ${official.state}`
+              : `Senator, ${official.state}`;
+          })()}
         </Text>
         {LEADERSHIP_ROLES[official.bioguideId] && (
           <Text style={componentStyles.roleTop}>
@@ -1395,9 +1406,30 @@ export default function OfficialDetail() {
                         ]}
                         onPress={() => setShowFilterModal(true)}
                       >
-                        <Text style={componentStyles.legislationHeaderTotal}>
-                          {`${filteredSponsored.length.toLocaleString()} in 119th · ${(sponsoredData?.count ?? 0).toLocaleString()} all-time`}
-                        </Text>
+                        {screenWidth < 390 ? (
+                          <View>
+                            <Text
+                              style={[
+                                componentStyles.legislationHeaderTotal,
+                                { fontSize: 12 },
+                              ]}
+                            >
+                              {`${filteredSponsored.length.toLocaleString()} in 119th`}
+                            </Text>
+                            <Text
+                              style={[
+                                componentStyles.legislationHeaderTotal,
+                                { fontSize: 12 },
+                              ]}
+                            >
+                              {`${(sponsoredData?.count ?? 0).toLocaleString()} all-time`}
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={componentStyles.legislationHeaderTotal}>
+                            {`${filteredSponsored.length.toLocaleString()} in 119th · ${(sponsoredData?.count ?? 0).toLocaleString()} all-time`}
+                          </Text>
+                        )}
                         {showFilterModal ? (
                           <ChevronUp size={16} color="#7B7C81" />
                         ) : (
@@ -1411,14 +1443,25 @@ export default function OfficialDetail() {
                         ]}
                         onPress={() => setShowSortDropdown(!showSortDropdown)}
                       >
-                        <Text style={componentStyles.sortText}>
+                        <Text
+                          style={[
+                            componentStyles.sortText,
+                            {
+                              fontSize: screenWidth < 390 ? 11 : 13,
+                              flexShrink: 1,
+                              marginRight: 0,
+                            },
+                          ]}
+                        >
                           {selectedSort}
                         </Text>
-                        {showSortDropdown ? (
-                          <ChevronUp size={16} color="#7B7C81" />
-                        ) : (
-                          <ChevronDown size={16} color="#7B7C81" />
-                        )}
+                        <View style={{ flexShrink: 0 }}>
+                          {showSortDropdown ? (
+                            <ChevronUp size={16} color="#7B7C81" />
+                          ) : (
+                            <ChevronDown size={16} color="#7B7C81" />
+                          )}
+                        </View>
                       </Pressable>
                     </View>
                     <Pressable
@@ -1492,9 +1535,30 @@ export default function OfficialDetail() {
                         ]}
                         onPress={() => setShowFilterModal(true)}
                       >
-                        <Text style={componentStyles.legislationHeaderTotal}>
-                          {`${filteredCosponsored.length.toLocaleString()} in 119th · ${(cosponsoredData?.count ?? 0).toLocaleString()} all-time`}
-                        </Text>
+                        {screenWidth < 390 ? (
+                          <View>
+                            <Text
+                              style={[
+                                componentStyles.legislationHeaderTotal,
+                                { fontSize: 12 },
+                              ]}
+                            >
+                              {`${filteredCosponsored.length.toLocaleString()} in 119th`}
+                            </Text>
+                            <Text
+                              style={[
+                                componentStyles.legislationHeaderTotal,
+                                { fontSize: 12 },
+                              ]}
+                            >
+                              {`${(cosponsoredData?.count ?? 0).toLocaleString()} all-time`}
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={componentStyles.legislationHeaderTotal}>
+                            {`${filteredCosponsored.length.toLocaleString()} in 119th · ${(cosponsoredData?.count ?? 0).toLocaleString()} all-time`}
+                          </Text>
+                        )}
                         {showFilterModal ? (
                           <ChevronUp size={16} color="#7B7C81" />
                         ) : (
@@ -1508,14 +1572,25 @@ export default function OfficialDetail() {
                         ]}
                         onPress={() => setShowSortDropdown(!showSortDropdown)}
                       >
-                        <Text style={componentStyles.sortText}>
+                        <Text
+                          style={[
+                            componentStyles.sortText,
+                            {
+                              fontSize: screenWidth < 390 ? 11 : 13,
+                              flexShrink: 1,
+                              marginRight: 0,
+                            },
+                          ]}
+                        >
                           {selectedSort}
                         </Text>
-                        {showSortDropdown ? (
-                          <ChevronUp size={16} color="#7B7C81" />
-                        ) : (
-                          <ChevronDown size={16} color="#7B7C81" />
-                        )}
+                        <View style={{ flexShrink: 0 }}>
+                          {showSortDropdown ? (
+                            <ChevronUp size={16} color="#7B7C81" />
+                          ) : (
+                            <ChevronDown size={16} color="#7B7C81" />
+                          )}
+                        </View>
                       </Pressable>
                     </View>
                     <Pressable

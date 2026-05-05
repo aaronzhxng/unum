@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-04-27",
-  "weekEnd": "2026-05-03",
+  "weekOf": "2026-05-04",
+  "weekEnd": "2026-05-10",
   "bills": [
     {
-      "billId": "hres939",
-      "note": "With tensions at a high, this bill is recirculating in interest."
+      "billId": "hr7567",
+      "note": "This bill modifies Department of Agriculture programs until 2031, addressing nutrition assistance, international food aid, and foreign investments in US agricultural land."
     },
     {
-      "billId": "hr4692",
-      "note": "The Measuring adverse market disruption and national impact act"
+      "billId": "hr8445",
+      "note": "This bill provides eligibility to U.S. citizens who are serving in the Israeli Defense Forces for certain benefits and protections."
     }
   ]
 }

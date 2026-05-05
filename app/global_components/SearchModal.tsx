@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import Modal from "react-native-modal";
 import officialNicknames from "../data/nicknames.json";
@@ -78,6 +79,7 @@ export default function SearchModal({
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const { width: screenWidth } = useWindowDimensions();
 
   // Define handleClose first so useEffect can reference it
   const handleClose = useCallback(() => {
@@ -508,6 +510,7 @@ export default function SearchModal({
                                     item.chamber,
                                     item.state,
                                     item.district,
+                                    screenWidth,
                                   )
                                 : (item.role ?? "")}
                             </Text>
@@ -589,14 +592,17 @@ function formatRole(
   chamber: string,
   state: string,
   district?: number | null,
+  screenWidth?: number,
 ): string {
   if (chamber === "House of Representatives") {
     const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
     const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    if (screenWidth && screenWidth < 390) return abbr;
     return full.length > 39 ? abbr : full;
   }
   const full = `Senator, ${state}`;
   const abbr = `Sen, ${state}`;
+  if (screenWidth && screenWidth < 390) return abbr;
   return full.length > 40 ? abbr : full;
 }
 

@@ -76,44 +76,43 @@ export default function VoterRegistrationScreen() {
         </Text>
         <Text
           style={{
-            fontSize: 14,
-            color: "#535353",
+            fontSize: 16,
+            color: "#008CFF",
             lineHeight: 24,
+            marginTop: 12,
             marginBottom: 12,
+            fontWeight: 600,
           }}
         >
-          Laws ordain the frameworks that determine the safety of your home, the
-          finances you hold, the vigor of your land, and the weight of your
-          ethics. To have a say in them is a granted privilege in trust of your
-          judgement as an adult; it is why children cannot vote. No matter how
-          insignificant your singular vote may appear to be, you will always
-          have inifinitely more say in your government than in any corporation.
-        </Text>
-        <Text
-          style={{
-            fontSize: 14,
-            color: "#535353",
-            lineHeight: 24,
-            marginBottom: 12,
-          }}
-        >
-          Apathy towards the structure and disillusionment to challenge renders
-          this application purposeless, and nothing more besides a dusting
-          encyclopedia.
+          Almost every United States citizen aged eighteen or older has the
+          right and the responsibility to vote.
         </Text>
         <Text
           style={{
             fontSize: 16,
             color: "#008CFF",
             lineHeight: 24,
-            marginTop: 12,
-            marginBottom: 32,
+            // marginTop: 12,
+            marginBottom: 24,
             fontWeight: 600,
           }}
         >
-          Voter turnout is the backbone to a functioning democracy. It is both a
-          right and responsibility.
+          You can vote by mail, early, or on the day, so long as you are
+          registered.
         </Text>
+        {/* <Text
+          style={{
+            fontSize: 16,
+            color: "#008CFF",
+            lineHeight: 24,
+            marginTop: 12,
+            marginBottom: 12,
+            fontWeight: 600,
+          }}
+        >
+          Voting helps hold the government to account by making sure politicians
+          know about the issues that matter to you.
+        </Text> */}
 
         {/* Links */}
         {/* <Text
@@ -181,11 +180,111 @@ export default function VoterRegistrationScreen() {
             fontSize: 14,
             color: "#535353",
             lineHeight: 24,
-            // marginTop: 24,
+            marginBottom: 12,
           }}
         >
           Registration deadlines and rules vary by state, but the links below
           will walk you through everything based on where you live.
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+          }}
+        >
+          Make sure you get your information about registering to vote from
+          trustworthy sources, such as www.vote.gov,
+          usa.gov/voting-and-elections, or the website of your state’s board of
+          elections.
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+          }}
+        >
+          Before you go to actually vote, you should know all of the following:
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+            marginLeft: 12,
+          }}
+        >
+          1. How, when, and where to vote.
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+            marginLeft: 12,
+          }}
+        >
+          2. What documents, if any, you need to bring to the polling-booth.
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+            marginLeft: 12,
+          }}
+        >
+          3. Who is up for election. Elections to Congress take place every two
+          years. Elections for president and vice-president take place every
+          four years. Elections to smaller offices might take place more
+          frequently. A ballot can include many people all running for different
+          offices.
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+            marginLeft: 12,
+          }}
+        >
+          4. How to mark a ballot. Before an election, you can find voter guides
+          and example ballots online, and you can bring papers with you in the
+          polling place.
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+            marginLeft: 12,
+          }}
+        >
+          5. Who you want to vote for. The decision you make could impact the
+          lives of yourself and millions of others. Make sure you are voting for
+          the person you feel is best for the job.
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#535353",
+            lineHeight: 24,
+            marginBottom: 12,
+            marginLeft: 12,
+          }}
+        >
+          6. If you need any help. If you have problems with vision, if English
+          is not your first language, or if you have any other concerns, you
+          should call your local board of elections to see what can be done for
+          you.
         </Text>
       </ScrollView>
 

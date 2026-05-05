@@ -10,6 +10,7 @@ import {
   ScrollView,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
@@ -143,6 +144,7 @@ export default function PickRepScreen() {
   const [multipleReps, setMultipleReps] = useState<RepResult[]>([]);
   const [selectedRepId, setSelectedRepId] = useState<string | null>(null);
   const [showAllReps, setShowAllReps] = useState(false);
+  const { width: screenWidth } = useWindowDimensions();
 
   const stateAbbrForLookup = priorityState
     ? STATE_TO_ABBR[priorityState]
@@ -254,6 +256,7 @@ export default function PickRepScreen() {
           const district = o.district ? `, District ${o.district}` : "";
           const full = `Representative, ${state}${district}`;
           const abbr = `Rep, ${state}${district}`;
+          if (screenWidth < 390) return abbr;
           return full.length > 39 ? abbr : full;
         })(),
         photoUrl: `https://bioguide.congress.gov/bioguide/photo/${o.bioguideId[0]}/${o.bioguideId}.jpg`,
@@ -388,6 +391,7 @@ export default function PickRepScreen() {
           const district = match.district ? `, District ${match.district}` : "";
           const full = `Representative, ${priorityState}${district}`;
           const abbr = `Rep, ${priorityState}${district}`;
+          if (screenWidth < 390) return abbr;
           return full.length > 39 ? abbr : full;
         })(),
         photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,

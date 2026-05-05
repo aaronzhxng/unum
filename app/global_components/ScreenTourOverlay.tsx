@@ -36,17 +36,19 @@ export default function ScreenTourOverlay({
   const statusBarHeight =
     Platform.OS === "android" ? (Constants.statusBarHeight ?? 0) : 0;
   const adjustedY = targetLayout.y + statusBarHeight;
-  const TOOLTIP_HEIGHT = 160;
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+  const TOOLTIP_HEIGHT = SCREEN_HEIGHT < 700 ? 220 : 200;
+  const BOTTOM_BUFFER = SCREEN_HEIGHT < 700 ? 120 : 100;
 
   const showAbove =
-    adjustedY + targetLayout.height + TOOLTIP_HEIGHT > SCREEN_HEIGHT - 100;
+    adjustedY + targetLayout.height + TOOLTIP_HEIGHT >
+    SCREEN_HEIGHT - BOTTOM_BUFFER;
 
   const tooltipTop = showAbove
     ? Math.max(adjustedY - TOOLTIP_HEIGHT - 12, 60)
     : Math.min(
         adjustedY + targetLayout.height + 12,
-        SCREEN_HEIGHT - TOOLTIP_HEIGHT - 80,
+        SCREEN_HEIGHT - TOOLTIP_HEIGHT - BOTTOM_BUFFER,
       );
 
   const inset = step.horizontalInset ?? 0;

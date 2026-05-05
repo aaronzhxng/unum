@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import LoadingSpinner from "../../global_components/LoadingSpinner";
@@ -216,6 +217,7 @@ const SingleVoteCard = ({
   followedOfficials?: FollowedOfficial[];
   onSeeAll: () => void;
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
   const grandTotal =
     vote.total.yea +
       vote.total.nay +
@@ -272,14 +274,18 @@ const SingleVoteCard = ({
                 backgroundColor: "#fafafa",
                 borderColor: "#7B7C81",
                 borderWidth: 1,
-                paddingVertical: 8,
-                paddingHorizontal: 14,
+                paddingVertical: screenWidth < 390 ? 5 : 8,
+                paddingHorizontal: screenWidth < 390 ? 8 : 14,
                 borderRadius: 8,
                 transform: [{ scale: pressed ? 0.96 : 1 }],
               })}
             >
               <Text
-                style={{ fontSize: 13, color: "#1a1a1a", fontWeight: "600" }}
+                style={{
+                  fontSize: screenWidth < 390 ? 11 : 13,
+                  color: "#1a1a1a",
+                  fontWeight: "600",
+                }}
               >
                 See all votes ({vote.members.length})
               </Text>
