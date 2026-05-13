@@ -2,7 +2,7 @@
   "expo": {
     "name": "Unum",
     "slug": "unum",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "scheme": "unum",
     "userInterfaceStyle": "automatic",
@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.unuminitiative.unum",
       "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/app_icons/app_icon_ios.png",
+      "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
