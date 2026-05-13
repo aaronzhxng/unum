@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-05-04",
-  "weekEnd": "2026-05-10",
+  "weekOf": "2026-05-11",
+  "weekEnd": "2026-05-17",
   "bills": [
     {
-      "billId": "hr7567",
-      "note": "This bill modifies Department of Agriculture programs until 2031, addressing nutrition assistance, international food aid, and foreign investments in US agricultural land."
+      "billId": "hr1137",
+      "note": "This bill prevents the installation of passive monitoring systems in new cars, repealing the mandate requiring advanced drunk and impaired driving prevention technology."
     },
     {
-      "billId": "hr8250",
-      "note": "This bill sets parent-controlled age verification requirements for computers and smartphones."
+      "billId": "hr5269",
+      "note": "This bill amends the Social Security Act to provide stable Medicare beneficiary access by improving the accuracy and feasibility of relevant data collection. "
     }
   ]
 }
