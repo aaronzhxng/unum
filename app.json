@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "scheme": "unum",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "icon": "./assets/app_icons/app_icon_ios.png",
     "ios": {
       "supportsTablet": false,
@@ -23,7 +22,6 @@
         "foregroundImage": "./assets/app_icons/app_icon_android.png",
         "backgroundColor": "#E6F4FE"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.unuminitiative.unum"
     },
@@ -85,10 +83,6 @@
       "image": "./assets/app_icons/game-icons_olive.png",
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
-    },
-    "assets": ["assets/seed.db"],
-    "metro": {
-      "blockList": ["scripts/.*"]
     },
     "runtimeVersion": {
       "policy": "appVersion"

@@ -8,12 +8,11 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx . --config .eslintrc.js",
     "backend": "cd backend && npm run dev"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
-    "@expo/config-plugins": "^55.0.8",
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/netinfo": "11.5.2",
@@ -71,8 +70,11 @@
     "@types/node-cron": "^3.0.11",
     "@types/react": "~19.2.10",
     "better-sqlite3": "^12.8.0",
-    "eslint": "^10.0.0",
+    "eslint": "^9.11.1",
     "eslint-config-expo": "~55.0.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "puppeteer": "^24.40.0",
     "typescript": "~5.9.2"
   },
