@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-05-11",
-  "weekEnd": "2026-05-17",
+  "weekOf": "2026-05-18",
+  "weekEnd": "2026-05-24",
   "bills": [
     {
-      "billId": "hr1137",
-      "note": "This bill prevents the installation of passive monitoring systems in new cars, repealing the mandate requiring advanced drunk and impaired driving prevention technology."
+      "billId": "hr2853",
+      "note": "This bill punishes interstate retail crime by broadening what qualifies as an offense to the interstate transportation or sale of stolen property."
     },
     {
-      "billId": "hr5269",
-      "note": "This bill amends the Social Security Act to provide stable Medicare beneficiary access by improving the accuracy and feasibility of relevant data collection. "
+      "billId": "hr8469",
+      "note": "This is the appropriations bill for the military, Department of Defense, and Department of Veterans Affairs. It directs the FY2027 budget for construction in the army, navy, air force, marines, NATO security investment program, veterans benefits administration, veterans health administration, and more."
     }
   ]
 }
