@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 8081 19000 19001
 
 # Default command starts Expo dev server
-CMD ["npm", "start"]
+CMD ["npx", "expo", "npm", "start"]
