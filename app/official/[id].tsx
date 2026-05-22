@@ -507,10 +507,6 @@ export default function OfficialDetail() {
 
   const cachedSponsored = officialBillsCache.get(`sponsored_v2_${id}`);
   const cachedCosponsored = officialBillsCache.get(`cosponsored_v2_${id}`);
-  const cachedPolicyAreas = officialBillsCache.get(
-    `policy_areas_v4_${id}`,
-    30 * 24 * 60 * 60 * 1000,
-  );
 
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
@@ -539,28 +535,6 @@ export default function OfficialDetail() {
     enabled: !!id,
     retry: 1,
     initialData: cachedCosponsored ?? undefined,
-    staleTime: 5 * 60 * 1000, // add this
-  });
-
-  const { data: policyAreasData, isLoading: policyAreasLoading } = useQuery({
-    queryKey: ["officialPolicyAreas", id],
-    queryFn: async () => {
-      const cached = officialBillsCache.get(
-        `policy_areas_v4_${id}`,
-        30 * 24 * 60 * 60 * 1000,
-      );
-      if (cached) return cached;
-      const result = await officialsService.getPolicyAreas(id as string);
-      officialBillsCache.save(
-        `policy_areas_v4_${id}`,
-        result,
-        30 * 24 * 60 * 60 * 1000,
-      );
-      return result;
-    },
-    enabled: !!id,
-    retry: 1,
-    initialData: cachedPolicyAreas ?? undefined,
     staleTime: 5 * 60 * 1000, // add this
   });
 
@@ -771,8 +745,21 @@ export default function OfficialDetail() {
           : (item.policyArea?.name ?? null),
     }));
 
-  const topPolicyAreas: { name: string; count: number }[] =
-    policyAreasData?.policyAreas ?? [];
+  const topPolicyAreas: { name: string; count: number }[] = useMemo(() => {
+    if (sponsoredLoading || cosponsoredLoading) return [];
+    const counts: Record<string, number> = {};
+    for (const bill of [...sponsoredBills, ...cosponsoredBills]) {
+      const area =
+        typeof bill.policyArea === "string"
+          ? bill.policyArea
+          : (bill.policyArea?.name ?? null);
+      if (area) counts[area] = (counts[area] || 0) + 1;
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+  }, [sponsoredBills, cosponsoredBills, sponsoredLoading, cosponsoredLoading]);
 
   const safeFormatDate = (dateStr?: string | null): string => {
     if (!dateStr) return "";
@@ -1156,7 +1143,7 @@ export default function OfficialDetail() {
                     </View>
                   );
                 })
-              ) : policyAreasLoading ? (
+              ) : sponsoredLoading || cosponsoredLoading ? (
                 <View
                   style={{
                     paddingTop: 12,
