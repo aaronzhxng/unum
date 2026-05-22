@@ -72,7 +72,8 @@
           "color": "#ffffff",
           "defaultChannel": "default"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -89,9 +90,13 @@
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
     },
-    "assets": ["assets/seed.db"],
+    "assets": [
+      "assets/seed.db"
+    ],
     "metro": {
-      "blockList": ["scripts/.*"]
+      "blockList": [
+        "scripts/.*"
+      ]
     },
     "runtimeVersion": {
       "policy": "appVersion"

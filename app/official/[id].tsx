@@ -502,6 +502,7 @@ export default function OfficialDetail() {
     queryKey: ["official", id],
     queryFn: () => officialsService.getById(id as string),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000, // add this
   });
 
   const cachedSponsored = officialBillsCache.get(`sponsored_v2_${id}`);
@@ -523,6 +524,7 @@ export default function OfficialDetail() {
     enabled: !!id,
     retry: 1,
     initialData: cachedSponsored ?? undefined,
+    staleTime: 5 * 60 * 1000, // add this
   });
 
   const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
@@ -537,6 +539,7 @@ export default function OfficialDetail() {
     enabled: !!id,
     retry: 1,
     initialData: cachedCosponsored ?? undefined,
+    staleTime: 5 * 60 * 1000, // add this
   });
 
   const { data: policyAreasData, isLoading: policyAreasLoading } = useQuery({
@@ -558,6 +561,7 @@ export default function OfficialDetail() {
     enabled: !!id,
     retry: 1,
     initialData: cachedPolicyAreas ?? undefined,
+    staleTime: 5 * 60 * 1000, // add this
   });
 
   // Add after the policyAreasData query
@@ -794,7 +798,11 @@ export default function OfficialDetail() {
 
   if (error || !official) {
     return (
-      <ErrorScreen onRetry={refetch} message="Could not load this official" />
+      <ErrorScreen
+        onRetry={refetch}
+        onBack={handleBack}
+        message="Could not load this official"
+      />
     );
   }
 
