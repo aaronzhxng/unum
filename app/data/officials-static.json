@@ -3,7 +3,6 @@
     "committees": [],
     "caucuses": [],
     "education": [
-      "Cheshire Academy (attended)",
       "Emory University (BA)",
       "Cornell University (MPA)",
       "Dedman School of Law, Southern Baptist University (JD, 2009)",
@@ -60,7 +59,6 @@
     ],
     "caucuses": [],
     "education": [
-      "public schools of Palo Alto (attended)",
       "Stanford University (AB, 1971)",
       "University of Oregon Law School in Eugene (JD, 1974)"
     ]
@@ -201,7 +199,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Culver Military Academy (1983)",
       "Harvard University (BA, 1987)",
       "Georgetown University (JD, MFS, 1993)"
     ]
@@ -228,7 +225,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Cranbrook Schools (1994)",
       "Cornell University (AB, 1998)",
       "Columbia University (MA, 2003)"
     ]
@@ -240,10 +236,7 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": [
-      "St. Paul Academy (2004)",
-      "United States Naval Academy (BS, 2008)"
-    ]
+    "education": ["United States Naval Academy (BS, 2008)"]
   },
   "S001181": {
     "committees": [
@@ -294,7 +287,6 @@
     ],
     "caucuses": [],
     "education": [
-      "public schools (attended)",
       "Harvard University (AB, 1971)",
       "Harvard Law School (JD, 1974)"
     ]
@@ -334,7 +326,7 @@
       "Senate Select Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["Punahou School (attended)", "Pomona College (BA, 1994)"]
+    "education": ["Pomona College (BA, 1994)"]
   },
   "S000033": {
     "committees": [
@@ -407,8 +399,6 @@
     ],
     "caucuses": [],
     "education": [
-      "St. Matthew's Elementary School (attended)",
-      "graduated (RI, 1967)",
       "United States Military Academy, West Point (BS, 1971)",
       "Kennedy School of Government, Harvard University (MPP, 1973)",
       "Harvard Law School (JD, 1982)"
@@ -462,7 +452,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Paideia School (2005)",
       "Georgetown University School of Foreign Service (BS, 2009)",
       "London School of Economics (MS, 2013)"
     ]
@@ -523,10 +512,7 @@
       "United States Senate Caucus on International Narcotics Control"
     ],
     "caucuses": [],
-    "education": [
-      "Pinecrest Academy in Florida (1985)",
-      "University of Michigan (BA, 1989)"
-    ]
+    "education": ["University of Michigan (BA, 1989)"]
   },
   "M000934": {
     "committees": [
@@ -599,9 +585,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Louisville (attended)",
-      "graduated, University of Louisville (1964)",
-      "graduated, University of Kentucky Law School, Lexington (1967)"
+      "University of Louisville (1964)",
+      "University of Kentucky Law School, Lexington (1967)"
     ]
   },
   "M001198": {
@@ -627,7 +612,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Immaculate Conception Grammar School (attended)",
       "Boston College (BA, 1968)",
       "Boston College Law School (JD, 1972)"
     ]
@@ -696,11 +680,7 @@
       "Joint Economic Committee"
     ],
     "caucuses": [],
-    "education": [
-      "public schools (attended)",
-      "magna cum laude Yale University (1982)",
-      "University of Chicago (JD, 1985)"
-    ]
+    "education": ["Yale University (1982)", "University of Chicago (JD, 1985)"]
   },
   "K000383": {
     "committees": [
@@ -860,7 +840,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Haverford School, Haverford, Penn. (1970)",
       "Wesleyan University (BA, 1974)",
       "Wesleyan University (MS, 1980)"
     ]
@@ -930,10 +909,8 @@
     ],
     "caucuses": [],
     "education": [
-      "public schools (attended)",
-      "graduated, University of Northern Iowa, Cedar Falls (1955)",
-      "received a graduate degree from the same university in (1956)",
-      "pursued graduate work (1957-1958)"
+      "University of Northern Iowa, Cedar Falls (1955)",
+      "University of Northern Iowa, Cedar Falls (1956)"
     ]
   },
   "G000359": {
@@ -1206,11 +1183,7 @@
       "Joint Committee on Taxation"
     ],
     "caucuses": [],
-    "education": [
-      "public schools (attended)",
-      "Miami University of Ohio (BA, 1980)",
-      "pursued an academic course at the Miami University European Center"
-    ]
+    "education": ["Miami University of Ohio (BA, 1980)"]
   },
   "B001305": {
     "committees": [
@@ -1280,7 +1253,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Padua Academy (1980)",
       "Fairleigh Dickinson University (BA, 1985)",
       "University of Delaware (MA, 2003)"
     ]
@@ -1380,10 +1352,7 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": [
-      "Osceola County School for the Arts",
-      "Valencia College (attended)"
-    ]
+    "education": ["Valencia College (attended)"]
   },
   "M001245": {
     "committees": ["House Committee on Science, Space, and Technology"],
@@ -1439,10 +1408,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": [
-      "Cor Jesu Academy (1980)",
-      "University of Missouri (BSBA, 1984)"
-    ]
+    "education": ["University of Missouri (BSBA, 1984)"]
   },
   "R000619": {
     "committees": [
@@ -1492,10 +1458,7 @@
   "P000197": {
     "committees": [],
     "caucuses": [],
-    "education": [
-      "The Institute of Notre Dame (1958)",
-      "Trinity College (AB, 1962)"
-    ]
+    "education": ["Trinity College (AB, 1962)"]
   },
   "V000139": {
     "committees": [
@@ -1696,7 +1659,6 @@
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
-      "C.S. Monroe Technology Center (attended)",
       "George Mason University (BA, 2005)",
       "National Defense University (MA, 2011)"
     ]
@@ -1764,7 +1726,6 @@
     ],
     "caucuses": [],
     "education": [
-      "St. David's School (2005)",
       "Baylor University (BA, 2009)",
       "Wake Forest University (JD, 2012)"
     ]
@@ -1833,11 +1794,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": [
-      "Groton School (2005)",
-      "Yale University (BA, 2009)",
-      "Yale Law School (JD, 2016)"
-    ]
+    "education": ["Yale University (BA, 2009)", "Yale Law School (JD, 2016)"]
   },
   "G000603": {
     "committees": [
@@ -1855,7 +1812,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Sacred Heart Academy, Hempstead, New York",
       "Georgetown University (AB, 1991)",
       "New York University (JD, 2000)"
     ]
@@ -1863,10 +1819,7 @@
   "G000601": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": [
-      "Trinity Valley School (1987)",
-      "University of Texas at Austin (BA, 1991)"
-    ]
+    "education": ["University of Texas at Austin (BA, 1991)"]
   },
   "F000483": {
     "committees": [
@@ -1930,16 +1883,12 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": [
-      "Wyoming Seminary (2008)",
-      "University of Scranton (BS, 2012)"
-    ]
+    "education": ["University of Scranton (BS, 2012)"]
   },
   "B001326": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
     "education": [
-      "Madeira School (1992)",
       "Florida Agricultural and Mechanical University (BS, 1996)",
       "University of Michigan (MBA, 2000)"
     ]
@@ -2004,7 +1953,8 @@
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
     "education": [
-      "Southern University, 1984, J.D., Southern University Law Center (BA, 1987)"
+      "Southern University (BA, 1984)",
+      "Southern University Law Center (JD, 1987)"
     ]
   },
   "O000177": {
@@ -2026,10 +1976,7 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": [
-      "Cab Calloway School of the Arts (2009)",
-      "American University (BA, 2013)"
-    ]
+    "education": ["American University (BA, 2013)"]
   },
   "M001234": {
     "committees": [
@@ -2038,7 +1985,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Blake School (1987)",
       "Yale University (BA, 1991)",
       "Boston University (attended)",
       "Case Western Reserve University (MD, 1997)"
@@ -2064,7 +2010,7 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": ["Woodward Academy", "Pepperdine University (BA, 2010)"]
+    "education": ["Pepperdine University (BA, 2010)"]
   },
   "H001099": {
     "committees": [
@@ -2094,10 +2040,7 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": [
-      "Patrick Henry College, Purcellville, Virginia (BA, 2009)",
-      "attending Colorado State University"
-    ]
+    "education": ["Patrick Henry College, Purcellville, Virginia (BA, 2009)"]
   },
   "C001137": {
     "committees": [
@@ -2115,7 +2058,7 @@
     "caucuses": [],
     "education": [
       "St. Louis Community College-Florissant Valley (attended)",
-      "Lindenwood University (BA, 2011-2018)",
+      "Lindenwood University (BA, 2018)",
       "University of Missouri (JD)"
     ]
   },
@@ -2126,7 +2069,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["Notre Dame Academy", "St. Norbert College (1998)"]
+    "education": ["St. Norbert College (1998)"]
   },
   "M001229": {
     "committees": [
@@ -2136,8 +2079,7 @@
     "caucuses": [],
     "education": [
       "Bloomfield College (BA, 2008)",
-      "Seton Hall University (MA, 2011)",
-      "staff, Newark Public Schools (2006-2013)"
+      "Seton Hall University (MA, 2011)"
     ]
   },
   "F000480": {
@@ -2251,11 +2193,7 @@
       "House Committee on Homeland Security"
     ],
     "caucuses": [],
-    "education": [
-      "Milton Academy (2002)",
-      "Brown University (BA, 2006)",
-      "Yale University (MBA, 2010)"
-    ]
+    "education": ["Brown University (BA, 2006)", "Yale University (MBA, 2010)"]
   },
   "L000603": {
     "committees": [
@@ -2301,7 +2239,6 @@
     ],
     "caucuses": [],
     "education": [
-      "St. John's School (2000)",
       "United States Military Academy (BS, 2004)",
       "Cornell University (MPA, 2015)",
       "Cornell University (MBA, 2015)",
@@ -2359,7 +2296,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Mary Institute and Saint Louis Country Day School (1999)",
       "Rhodes College (BA, 2003)",
       "Thurgood Marshall School of Law (attended)",
       "University of Houston Law Center (JD, 2006)"
@@ -2371,10 +2307,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": [
-      "Strake Jesuit College Preparatory (2007)",
-      "University of Virginia (BA, 2011)"
-    ]
+    "education": ["University of Virginia (BA, 2011)"]
   },
   "B001318": {
     "committees": [
@@ -2521,7 +2454,6 @@
       "Karnatak University (BS, 1973)",
       "University of Bombay (now University of Mumbai) (MS, 1977)",
       "University of Akron (PhD, 1982)",
-      "postdoctoral research, University of Michigan (1982-1984)",
       "Fontbonne University (MBA, 1987)"
     ]
   },
@@ -2632,7 +2564,6 @@
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
     "education": [
-      "The Hudson School (2003)",
       "University of North Carolina at Chapel Hill (BA, 2008)",
       "Rutgers Law School (JD, 2011)"
     ]
@@ -2684,10 +2615,7 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": [
-      "Pine Valley Central School (1999)",
-      "Niagara University (BA, 2003)"
-    ]
+    "education": ["Niagara University (BA, 2003)"]
   },
   "L000601": {
     "committees": ["House Committee on Energy and Commerce"],
@@ -2713,7 +2641,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Pingry School, Martinsville (NJ, 1986)",
       "Dartmouth College (AB, 1990)",
       "Tufts University (MALD, 1997)"
     ]
@@ -2779,7 +2706,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Sidwell Friends School (1994)",
       "Yale University (BA, 1998)",
       "Stanford University (JD, 2005)"
     ]
@@ -2831,10 +2757,7 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": [
-      "Piedmont Academy (1985)",
-      "Georgia State University (BBA, 1990)"
-    ]
+    "education": ["Georgia State University (BBA, 1990)"]
   },
   "B001316": {
     "committees": [
@@ -2986,7 +2909,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Spalding Institute (1986)",
       "Loras College (BA, 1990)",
       "John Marshall Law School (JD, 1997)"
     ]
@@ -3010,7 +2932,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Academy of the Sacred Heart (1971)",
       "Georgetown University (BSFS, 1975)",
       "Georgetown University (MS, 1996)"
     ]
@@ -3122,7 +3043,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Saint Ignatius College Preparatory School",
       "Compton College (attended)",
       "University of Southern California (BA, 1994)",
       "Carnegie Mellon University (MA, 1996)"
@@ -3159,8 +3079,7 @@
     "caucuses": [],
     "education": [
       "Pima Community College (AA, 2003)",
-      "University of Arizona (BA, 2005)",
-      "senior program development specialist, University of Arizona (2006-2011)"
+      "University of Arizona (BA, 2005)"
     ]
   },
   "B001314": {
@@ -3290,10 +3209,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": [
-      "The Greenhill School (1988)",
-      "Cornell University (BA, 1995)"
-    ]
+    "education": ["Cornell University (BA, 1995)"]
   },
   "S001159": {
     "committees": [
@@ -3441,11 +3357,7 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": [
-      "Cranwell Preparatory School (1970)",
-      "College of the Holy Cross (BA, 1974)",
-      "fellow, John F. Kennedy School of Government, Harvard University (2003)"
-    ]
+    "education": ["College of the Holy Cross (BA, 1974)"]
   },
   "P000608": {
     "committees": [
@@ -3663,7 +3575,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Deerborne School (1979)",
       "University of Miami (BA, 1983)",
       "Harvard University (MPA, 1995)"
     ]
@@ -3837,7 +3748,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Semester at Sea program, University of Virginia in (attended)",
       "Metropolitan State University of Denver (BA, 2011)",
       "Naval War College (MS, 2018)"
     ]
@@ -3919,8 +3829,7 @@
     "caucuses": [],
     "education": [
       "University of California (BA, 1991)",
-      "University of California (MD, 1997)",
-      "pediatric residency (2000)"
+      "University of California (MD, 1997)"
     ]
   },
   "G000587": {
@@ -3961,11 +3870,7 @@
   "F000468": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": [
-      "St. John's School (1993)",
-      "Kenyon College (BA)",
-      "College of William & Mary (JD, 2006)"
-    ]
+    "education": ["Kenyon College (BA)", "College of William & Mary (JD, 2006)"]
   },
   "G000589": {
     "committees": [
@@ -4018,7 +3923,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Christ Church Episcopal School (2002)",
       "The George Washington University (BA, 2006)",
       "University of South Carolina (MA, 2009)",
       "University of South Carolina (JD, 2010)",
@@ -4060,7 +3964,6 @@
     ],
     "caucuses": [],
     "education": [
-      "St. George's School (1985)",
       "Stanford University (BS, 1989)",
       "Massachusetts Institute of Technology (MS, 1994)"
     ]
@@ -4244,10 +4147,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": [
-      "Francis W. Parker School (1992)",
-      "Boston University (attended)"
-    ]
+    "education": ["Boston University (attended)"]
   },
   "T000482": {
     "committees": ["House Committee on Energy and Commerce"],
@@ -4748,7 +4648,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Choate Rosemary Hall (1984)",
       "Georgetown University (BSFS, 1988)",
       "American University (JD, 1994)"
     ]
@@ -4779,10 +4678,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": [
-      "Albany Academy for Girls (2002)",
-      "Harvard University (AB, 2006)"
-    ]
+    "education": ["Harvard University (AB, 2006)"]
   },
   "W000822": {
     "committees": [
@@ -4805,7 +4701,6 @@
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
     "education": [
-      "St. Thomas Academy (1979)",
       "University of Alaska (BA, 1984)",
       "Mitchell College of Law (JD, 1988)"
     ]
@@ -4818,7 +4713,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Phillips Academy Andover (1997)",
       "Harvard University (BS, 2001)",
       "Harvard University (MBA, MPP, 2011)"
     ]
@@ -4830,9 +4724,7 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": [
-      "Certified Firefighter II Academy, University of Illinois (1993)"
-    ]
+    "education": []
   },
   "A000372": {
     "committees": [
@@ -4904,7 +4796,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Sacred Hearts Academy (attended)",
       "University of Guam (BS, 1975)",
       "George Mason University (attended)",
       "Loyola Marymount University (attended)"
@@ -5143,7 +5034,6 @@
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
     "education": [
-      "The Choate School (1979)",
       "Reed College (BA, 1983)",
       "University of Washington (MBA, 1990)"
     ]
@@ -5255,10 +5145,7 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": [
-      "Tiftarea Academy (1987)",
-      "University of Georgia (BBA, 1993)"
-    ]
+    "education": ["University of Georgia (BBA, 1993)"]
   },
   "W000808": {
     "committees": [
@@ -5296,7 +5183,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Polytechnic School (attended)",
       "Vanderbilt University (BA, 1971)",
       "University of Memphis (JD, 1973)"
     ]
@@ -5436,7 +5322,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Worcester Academy (1977)",
       "American University (BA, 1981)",
       "American University (MPA, 1984)"
     ]
@@ -5501,10 +5386,7 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": [
-      "Wellesley College (BA, 2008)",
-      "staff, Wellesley College (2010-2015)"
-    ]
+    "education": ["Wellesley College (BA, 2008)"]
   },
   "R000620": {
     "committees": [
@@ -5518,7 +5400,6 @@
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
     "education": [
-      "Bellarmine College Preparatory (1987)",
       "Georgetown University (AB, 1991)",
       "Harvard University (MPP, 1996)",
       "Harvard University (JD, 1996)"
@@ -5551,7 +5432,6 @@
     ],
     "caucuses": [],
     "education": [
-      "The Master's Academy (1995)",
       "Baylor University (BBA, 1999)",
       "Indiana University (MBA, 2002)"
     ]
@@ -5680,7 +5560,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Groton School (1965)",
       "Harvard University (AB, 1969)",
       "Boston College School of Law (JD, 1973)"
     ]
@@ -5725,7 +5604,6 @@
     ],
     "caucuses": [],
     "education": [
-      "Jesuit College Preparatory School (1980)",
       "Trinity University (BS, 1984)",
       "St. Mary's University (JD, 1987)"
     ]
@@ -5816,10 +5694,7 @@
   "C000537": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": [
-      "Mather Academy (1957)",
-      "South Carolina State University (BA, 1961)"
-    ]
+    "education": ["South Carolina State University (BA, 1961)"]
   },
   "K000009": {
     "committees": [
@@ -5828,11 +5703,8 @@
     ],
     "caucuses": [],
     "education": [
-      "St. Ursula Academy (1964)",
       "University of Wisconsin (BA, 1968)",
-      "University of Michigan (MA, 1974)",
-      "University of Manchester (attended)",
-      "post-graduate studies (1981)"
+      "University of Michigan (MA, 1974)"
     ]
   },
   "H000874": {
