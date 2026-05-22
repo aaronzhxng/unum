@@ -27,27 +27,74 @@ for (const line of csvLines.slice(1)) {
 dotenv.config();
 
 // ─── Congress.gov response cache ─────────────────────────────────────────────
-const congressCache = new Map<string, { data: any; timestamp: number }>();
+// ─── Congress.gov response cache (SQLite-backed, survives deploys) ────────────
 const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const memoryCache = new Map<string, { data: any; timestamp: number }>();
 
 function getCached(key: string): any | null {
-  const entry = congressCache.get(key);
-  if (!entry) return null;
-  if (Date.now() - entry.timestamp > CONGRESS_CACHE_TTL) {
-    congressCache.delete(key);
+  // Check memory cache first (fastest)
+  const mem = memoryCache.get(key);
+  if (mem) {
+    if (Date.now() - mem.timestamp < CONGRESS_CACHE_TTL) return mem.data;
+    memoryCache.delete(key);
+  }
+
+  // Fall back to SQLite cache (survives restarts)
+  try {
+    const row = db
+      .prepare(`SELECT data, cached_at FROM congress_cache WHERE cache_key = ?`)
+      .get(key) as { data: string; cached_at: number } | undefined;
+
+    if (!row) return null;
+    if (Date.now() - row.cached_at > CONGRESS_CACHE_TTL) {
+      db.prepare(`DELETE FROM congress_cache WHERE cache_key = ?`).run(key);
+      return null;
+    }
+
+    const parsed = JSON.parse(row.data);
+    // Warm memory cache so next request is instant
+    memoryCache.set(key, { data: parsed, timestamp: row.cached_at });
+    return parsed;
+  } catch {
     return null;
   }
-  return entry.data;
 }
 
 function setCache(key: string, data: any): void {
-  // Prevent unbounded memory growth
-  if (congressCache.size > 1000) {
-    const oldestKey = congressCache.keys().next().value as string;
-    congressCache.delete(oldestKey);
+  const now = Date.now();
+
+  // Write to memory cache
+  if (memoryCache.size > 1000) {
+    const oldestKey = memoryCache.keys().next().value as string;
+    memoryCache.delete(oldestKey);
   }
-  congressCache.set(key, { data, timestamp: Date.now() });
+  memoryCache.set(key, { data, timestamp: now });
+
+  // Write to SQLite cache
+  try {
+    db.prepare(
+      `
+      INSERT INTO congress_cache (cache_key, data, cached_at)
+      VALUES (?, ?, ?)
+      ON CONFLICT(cache_key) DO UPDATE SET
+        data = excluded.data,
+        cached_at = excluded.cached_at
+    `,
+    ).run(key, JSON.stringify(data), now);
+  } catch (err) {
+    console.error("SQLite cache write failed:", err);
+  }
 }
+
+// Clean up expired cache entries once on startup
+try {
+  const deleted = db
+    .prepare(`DELETE FROM congress_cache WHERE cached_at < ?`)
+    .run(Date.now() - CONGRESS_CACHE_TTL);
+  if (deleted.changes > 0) {
+    console.log(`Cleared ${deleted.changes} expired cache entries`);
+  }
+} catch {}
 
 const app = express();
 app.set("trust proxy", 1); // trust Railway's proxy
@@ -77,7 +124,7 @@ app.use(express.json({ limit: "50kb" }));
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
 });
 app.use(globalLimiter);
 
