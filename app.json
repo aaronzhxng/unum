@@ -2,7 +2,7 @@
   "expo": {
     "name": "Unum",
     "slug": "unum",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "scheme": "unum",
     "userInterfaceStyle": "automatic",
@@ -11,6 +11,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.unuminitiative.unum",
       "icon": "./assets/app_icons/app_icon_ios.png",
+      "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -67,7 +68,8 @@
           "color": "#ffffff",
           "defaultChannel": "default"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -83,6 +85,14 @@
       "image": "./assets/app_icons/game-icons_olive.png",
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
+    },
+    "assets": [
+      "assets/seed.db"
+    ],
+    "metro": {
+      "blockList": [
+        "scripts/.*"
+      ]
     },
     "runtimeVersion": {
       "policy": "appVersion"

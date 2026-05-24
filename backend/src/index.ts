@@ -3,9 +3,98 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
+import fs from "fs";
+import path from "path";
 import { runCronJob, startCronScheduler } from "./cron";
 import db from "./db";
+
+// Load zip-to-districts crosswalk
+const zipDistrictMap = new Map<string, { state: string; district: number }[]>();
+
+const csvPath = path.join(__dirname, "../data/zccd.csv");
+const csvLines = fs.readFileSync(csvPath, "utf-8").split("\n");
+for (const line of csvLines.slice(1)) {
+  const [stateFips, stateAbbr, zcta, district] = line.trim().split(",");
+  if (!stateAbbr || !zcta || !district) continue;
+  const districtNum = parseInt(district.trim(), 10);
+  if (isNaN(districtNum)) continue;
+  if (!zipDistrictMap.has(zcta)) zipDistrictMap.set(zcta, []);
+  zipDistrictMap
+    .get(zcta)!
+    .push({ state: stateAbbr.trim(), district: districtNum });
+}
+
 dotenv.config();
+
+// ─── Congress.gov response cache ─────────────────────────────────────────────
+// ─── Congress.gov response cache (SQLite-backed, survives deploys) ────────────
+const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const memoryCache = new Map<string, { data: any; timestamp: number }>();
+
+function getCached(key: string): any | null {
+  // Check memory cache first (fastest)
+  const mem = memoryCache.get(key);
+  if (mem) {
+    if (Date.now() - mem.timestamp < CONGRESS_CACHE_TTL) return mem.data;
+    memoryCache.delete(key);
+  }
+
+  // Fall back to SQLite cache (survives restarts)
+  try {
+    const row = db
+      .prepare(`SELECT data, cached_at FROM congress_cache WHERE cache_key = ?`)
+      .get(key) as { data: string; cached_at: number } | undefined;
+
+    if (!row) return null;
+    if (Date.now() - row.cached_at > CONGRESS_CACHE_TTL) {
+      db.prepare(`DELETE FROM congress_cache WHERE cache_key = ?`).run(key);
+      return null;
+    }
+
+    const parsed = JSON.parse(row.data);
+    // Warm memory cache so next request is instant
+    memoryCache.set(key, { data: parsed, timestamp: row.cached_at });
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function setCache(key: string, data: any): void {
+  const now = Date.now();
+
+  // Write to memory cache
+  if (memoryCache.size > 1000) {
+    const oldestKey = memoryCache.keys().next().value as string;
+    memoryCache.delete(oldestKey);
+  }
+  memoryCache.set(key, { data, timestamp: now });
+
+  // Write to SQLite cache
+  try {
+    db.prepare(
+      `
+      INSERT INTO congress_cache (cache_key, data, cached_at)
+      VALUES (?, ?, ?)
+      ON CONFLICT(cache_key) DO UPDATE SET
+        data = excluded.data,
+        cached_at = excluded.cached_at
+    `,
+    ).run(key, JSON.stringify(data), now);
+  } catch (err) {
+    console.error("SQLite cache write failed:", err);
+  }
+}
+
+// Clean up expired cache entries once on startup
+try {
+  const deleted = db
+    .prepare(`DELETE FROM congress_cache WHERE cached_at < ?`)
+    .run(Date.now() - CONGRESS_CACHE_TTL);
+  if (deleted.changes > 0) {
+    console.log(`Cleared ${deleted.changes} expired cache entries`);
+  }
+} catch {}
 
 const app = express();
 app.set("trust proxy", 1); // trust Railway's proxy
@@ -35,7 +124,7 @@ app.use(express.json({ limit: "50kb" }));
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
 });
 app.use(globalLimiter);
 
@@ -46,7 +135,7 @@ const reportLimiter = rateLimit({
 
 const congressProxyLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 5,
+  max: 30,
 });
 
 const pushTokenLimiter = rateLimit({
@@ -341,6 +430,10 @@ app.get("/api/bills/:billId", async (req, res) => {
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
 
+    const cacheKey = `bill-${congress}-${billId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
@@ -352,6 +445,7 @@ app.get("/api/bills/:billId", async (req, res) => {
       },
     );
 
+    setCache(cacheKey, response.data);
     res.json(response.data);
   } catch (error) {
     console.error("Error fetching bill:", error);
@@ -367,7 +461,9 @@ app.get("/api/bills/:billId/summaries", async (req, res) => {
     const match = billId.match(/^([a-z]+)(\d+)$/i);
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-
+    const cacheKey = `summaries-${congress}-${billId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
@@ -378,7 +474,7 @@ app.get("/api/bills/:billId/summaries", async (req, res) => {
         params: { format: "json" },
       },
     );
-
+    setCache(cacheKey, response.data);
     res.json(response.data);
   } catch (error) {
     console.error("Error fetching summaries:", error);
@@ -394,7 +490,9 @@ app.get("/api/bills/:billId/actions", async (req, res) => {
     const match = billId.match(/^([a-z]+)(\d+)$/i);
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-
+    const cacheKey = `actions-${congress}-${billId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
@@ -415,7 +513,10 @@ app.get("/api/bills/:billId/actions", async (req, res) => {
       hasMore = response.data.pagination?.next != null;
       offset += limit;
     }
-
+    setCache(cacheKey, {
+      actions: allActions,
+      pagination: { count: allActions.length },
+    });
     res.json({ actions: allActions, pagination: { count: allActions.length } });
   } catch (error) {
     console.error("Error fetching actions:", error);
@@ -431,7 +532,9 @@ app.get("/api/bills/:billId/amendments", async (req, res) => {
     const match = billId.match(/^([a-z]+)(\d+)$/i);
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-
+    const cacheKey = `amendments-${congress}-${billId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
@@ -452,7 +555,10 @@ app.get("/api/bills/:billId/amendments", async (req, res) => {
       hasMore = response.data.pagination?.next != null;
       offset += limit;
     }
-
+    setCache(cacheKey, {
+      amendments: allAmendments,
+      pagination: { count: allAmendments.length },
+    });
     res.json({
       amendments: allAmendments,
       pagination: { count: allAmendments.length },
@@ -492,7 +598,9 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
     const match = billId.match(/^([a-z]+)(\d+)$/i);
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-
+    const cacheKey = `votes-${congress}-${billId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
@@ -761,6 +869,7 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
       .filter((r) => r.status === "fulfilled")
       .map((r) => (r as PromiseFulfilledResult<any>).value);
 
+    setCache(cacheKey, { votes, voiceVotes: [] });
     res.json({ votes, voiceVotes: [] });
   } catch (error) {
     console.error("Error fetching votes:", error);
@@ -776,7 +885,9 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
     const match = billId.match(/^([a-z]+)(\d+)$/i);
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
-
+    const cacheKey = `cosponsors-${congress}-${billId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
@@ -809,7 +920,7 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
       role: c.district ? `Rep, ${c.state} ${c.district}` : `Sen, ${c.state}`,
       photoUrl: `https://bioguide.congress.gov/bioguide/photo/${c.bioguideId[0]}/${c.bioguideId}.jpg`,
     }));
-
+    setCache(cacheKey, { cosponsors: enriched, count: enriched.length });
     res.json({ cosponsors: enriched, count: enriched.length });
   } catch (error) {
     console.error("Error fetching cosponsors:", error);
@@ -851,6 +962,9 @@ app.get("/api/officials", async (req, res) => {
 // Get single official
 app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
+    const cacheKey = `official-${req.params.bioguideId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     const { bioguideId } = req.params;
     const response = await axios.get(
       `https://api.congress.gov/v3/member/${bioguideId}`,
@@ -859,6 +973,7 @@ app.get("/api/officials/:bioguideId", async (req, res) => {
         params: { format: "json" },
       },
     );
+    setCache(cacheKey, response.data);
     res.json(response.data);
   } catch (error) {
     console.error("Error fetching official:", error);
@@ -879,6 +994,9 @@ app.get(
       if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
         return res.status(400).json({ error: "Invalid bioguideId" });
       }
+      const cacheKey = `sponsored-${bioguideId}`;
+      const cached = getCached(cacheKey);
+      if (cached) return res.json(cached);
       let allLegislation: any[] = [];
       let offset = 0;
       const limit = 250;
@@ -930,10 +1048,9 @@ app.get(
         offset += limit;
       }
 
-      res.json({
-        legislation: allLegislation,
-        count: allTimeCo,
-      });
+      const sponsoredResult = { legislation: allLegislation, count: allTimeCo };
+      setCache(cacheKey, sponsoredResult);
+      res.json(sponsoredResult);
     } catch (error) {
       console.error("Error fetching sponsored legislation:", error);
       res.status(500).json({ error: "Failed to fetch sponsored legislation" });
@@ -954,6 +1071,9 @@ app.get(
       if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
         return res.status(400).json({ error: "Invalid bioguideId" });
       }
+      const cacheKey = `cosponsored-${bioguideId}`;
+      const cached = getCached(cacheKey);
+      if (cached) return res.json(cached);
       let allLegislation: any[] = [];
       let offset = 0;
       const limit = 250;
@@ -999,11 +1119,12 @@ app.get(
           !hasOlderBills;
         offset += limit;
       }
-
-      res.json({
+      const cosponsoredResult = {
         legislation: allLegislation,
         count: allTimeCount,
-      });
+      };
+      setCache(cacheKey, cosponsoredResult);
+      res.json(cosponsoredResult);
     } catch (error) {
       console.error("Error fetching cosponsored legislation:", error);
       res
@@ -1025,7 +1146,9 @@ app.get(
       if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
         return res.status(400).json({ error: "Invalid bioguideId" });
       }
-
+      const cacheKey = `policy-areas-${bioguideId}`;
+      const cached = getCached(cacheKey);
+      if (cached) return res.json(cached);
       const fetchUntil119 = async (
         path: string,
         key: string,
@@ -1084,11 +1207,13 @@ app.get(
         .slice(0, 5)
         .map(([name, count]) => ({ name, count }));
 
-      res.json({
+      const policyAreasResult = {
         policyAreas,
         totalSponsored: sponsored.length,
         totalCosponsored: cosponsored.length,
-      });
+      };
+      setCache(cacheKey, policyAreasResult);
+      res.json(policyAreasResult);
     } catch (error) {
       console.error("Error fetching policy areas:", error);
       res.status(500).json({ error: "Failed to fetch policy areas" });
@@ -1230,12 +1355,21 @@ app.get("/api/debug/old-bills-with-policy", requireAdminToken, (req, res) => {
 app.get("/api/officials/:bioguideId/bio", async (req, res) => {
   try {
     const { bioguideId } = req.params;
+    const cacheKey = `bio-${bioguideId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     const response = await axios.get(
       `https://bioguide.congress.gov/search/bio/${bioguideId}.json`,
       { timeout: 8000 },
     );
     const data = response.data?.data;
     if (!data) return res.status(404).json({ error: "Bio not found" });
+    setCache(cacheKey, {
+      profileText: data.profileText ?? null,
+      birthDate: data.birthDate ?? null,
+      nickName: data.nickName ?? null,
+      creativeWork: data.creativeWork ?? [],
+    });
     res.json({
       profileText: data.profileText ?? null,
       birthDate: data.birthDate ?? null,
@@ -1247,9 +1381,6 @@ app.get("/api/officials/:bioguideId/bio", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch biography" });
   }
 });
-
-const fs = require("fs");
-const path = require("path");
 
 app.post("/report-error", reportLimiter, express.json(), (req, res) => {
   const { message, screen } = req.body;
@@ -1296,6 +1427,15 @@ app.get("/api/debug/my-token", requireAdminToken, (req, res) => {
     )
     .all();
   res.json(rows);
+});
+
+app.get("/api/zip-districts/:zip", (req, res) => {
+  const { zip } = req.params;
+  const results = zipDistrictMap.get(zip);
+  if (!results || results.length === 0) {
+    return res.status(404).json({ error: "Zip code not found" });
+  }
+  res.json({ districts: results });
 });
 
 app.post("/api/debug/token", requireAdminToken, (req, res) => {

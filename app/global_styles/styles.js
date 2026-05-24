@@ -1,4 +1,17 @@
-import { Platform, StyleSheet } from "react-native"; // ✅ ADD THIS LINE
+import { Dimensions, Platform, StyleSheet } from "react-native";
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const headerPaddingTop =
+  SCREEN_HEIGHT < 700
+    ? Platform.OS === "ios"
+      ? 44
+      : 32
+    : SCREEN_HEIGHT < 800
+      ? Platform.OS === "ios"
+        ? 52
+        : 40
+      : Platform.OS === "ios"
+        ? 60
+        : 45;
 
 export const styles = StyleSheet.create({
   container: {
@@ -10,7 +23,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: Platform.OS === "ios" ? 60 : 45,
+    paddingTop: headerPaddingTop,
   },
   header: {
     fontSize: 22,

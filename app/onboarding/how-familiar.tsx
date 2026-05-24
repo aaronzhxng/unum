@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { FamiliarityLevel, useOnboarding } from "../context/OnboardingContext";
 
 const OPTIONS: {
@@ -65,7 +65,13 @@ export default function HowFamiliarScreen() {
         </Text>
       </View>
 
-      <View style={{ paddingHorizontal: 16, gap: 12 }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          gap: 12,
+          paddingBottom: 160,
+        }}
+      >
         {OPTIONS.map((option) => {
           const isSelected = familiarityLevel === option.level;
           return (
@@ -136,7 +142,7 @@ export default function HowFamiliarScreen() {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 }

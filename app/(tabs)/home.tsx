@@ -18,6 +18,7 @@ import {
   Pressable,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useTabBar } from "../context/TabBarContext";
@@ -1520,15 +1521,18 @@ function formatRole(
   chamber: string,
   state: string,
   district?: number | null,
+  screenWidth?: number,
 ): string {
   const threshold = Platform.OS === "ios" ? 32 : 39;
   if (chamber === "House of Representatives") {
     const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
     const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    if (screenWidth && screenWidth < 390) return abbr;
     return full.length > threshold ? abbr : full;
   }
   const full = `Senator, ${state}`;
   const abbr = `Sen, ${state}`;
+  if (screenWidth && screenWidth < 390) return abbr;
   return full.length > threshold + 1 ? abbr : full;
 }
 
@@ -1550,6 +1554,7 @@ const Card = React.memo(function Card({
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const isOfficial = item.type === "official";
+  const { width: screenWidth } = useWindowDimensions();
 
   const handlePress = () => {
     if (isEditMode) {
@@ -1671,11 +1676,22 @@ const Card = React.memo(function Card({
                     .join(" ")
                 : item.name}
             </Text>
-            <View style={componentStyles.metaRow}>
-              <Text style={componentStyles.subtitle}>{item.party}</Text>
-              <Text style={componentStyles.separator}>·</Text>
-              <Text style={componentStyles.subtitle} numberOfLines={1}>
-                {item.role}
+            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+              <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
+                {item.party}
+              </Text>
+              <Text style={[componentStyles.separator, { flexShrink: 0 }]}>
+                ·
+              </Text>
+              <Text
+                style={[componentStyles.subtitle, { flexShrink: 1 }]}
+                numberOfLines={1}
+              >
+                {screenWidth < 390 && item.role
+                  ? item.role
+                      .replace(/^Representative,/, "Rep,")
+                      .replace(/^Senator,/, "Sen,")
+                  : item.role}
               </Text>
               {item.update ? (
                 <>
@@ -1853,7 +1869,7 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
           >
             <Text style={{ fontSize: 24 }}>🗳️</Text>
           </View>
-          <View style={{ flexDirection: "column", maxWidth: 300 }}>
+          <View style={{ flexDirection: "column", flex: 1, minWidth: 0 }}>
             <Text
               style={{
                 fontSize: 16,

@@ -113,10 +113,6 @@ export const officialsService = {
     return apiClient.get(`/officials/${bioguideId}/cosponsored`);
   },
 
-  getPolicyAreas: async (bioguideId: string): Promise<any> => {
-    return apiClient.get(`/officials/${bioguideId}/policy-areas`);
-  },
-
   getBio: async (bioguideId: string): Promise<any> => {
     const response = await fetch(
       `https://bioguide.congress.gov/search/bio/${bioguideId}.json`,

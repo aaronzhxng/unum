@@ -1,11 +1,38 @@
 {
+  "F000485": {
+    "committees": [],
+    "caucuses": [],
+    "education": [
+      "Emory University (BA)",
+      "Cornell University (MPA)",
+      "Dedman School of Law, Southern Baptist University (JD, 2009)",
+      "Air University (MMOAS)"
+    ]
+  },
+  "M001246": {
+    "committees": [],
+    "caucuses": [],
+    "education": [
+      "Rutgers University (BA, 2000)",
+      "Rutgers University (MPAP)",
+      "Rutgers University (MLER)"
+    ]
+  },
+  "A000383": {
+    "committees": [],
+    "caucuses": [],
+    "education": ["University of Oklahoma (BS, 1985)"]
+  },
   "B001296": {
     "committees": [
       "House Committee on Ways and Means",
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of Notre Dame (BA)", "Harvard University (MPP)"]
+    "education": [
+      "University of Notre Dame (BA, 1999)",
+      "Harvard University Kennedy School of Government (MPP, 2005)"
+    ]
   },
   "Y000064": {
     "committees": [
@@ -16,10 +43,10 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Naval Academy (BS)",
-      "University of Chicago (MBA)",
-      "University of London (MA)",
-      "Indiana University, Indianapolis (JD)"
+      "United States Naval Academy (BS, 1995)",
+      "University of Chicago (MBA, 2000)",
+      "University of London (MA, 2001)",
+      "Robert H. McKinney School of Law (JD, 2006)"
     ]
   },
   "W000779": {
@@ -32,9 +59,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of California, Santa Barbara",
-      "Stanford University (BA)",
-      "University of Oregon (JD)"
+      "Stanford University (AB, 1971)",
+      "University of Oregon Law School in Eugene (JD, 1974)"
     ]
   },
   "W000437": {
@@ -47,7 +73,10 @@
       "Commission on Security and Cooperation in Europe"
     ],
     "caucuses": [],
-    "education": ["University of Mississippi (BA, JD)"]
+    "education": [
+      "University of Mississippi (BA, 1973)",
+      "University of Mississippi (JD, 1975)"
+    ]
   },
   "W000802": {
     "committees": [
@@ -59,7 +88,7 @@
       "Commission on Security and Cooperation in Europe"
     ],
     "caucuses": [],
-    "education": ["Yale University (BA)", "University of Virginia (JD)"]
+    "education": ["Yale University (1978)", "University of Virginia (JD, 1982)"]
   },
   "W000800": {
     "committees": [
@@ -70,8 +99,8 @@
     ],
     "caucuses": [],
     "education": [
-      "College of the Holy Cross (BA)",
-      "University of California, Berkeley (JD)"
+      "College of the Holy Cross (AB)",
+      "University of California (JD, 1973)"
     ]
   },
   "W000817": {
@@ -83,9 +112,9 @@
     ],
     "caucuses": [],
     "education": [
-      "George Washington University",
-      "University of Houston (BS)",
-      "Rutgers University (JD)"
+      "George Washington University (attended)",
+      "University of Houston (BS, 1970)",
+      "Rutgers University (JD, 1976)"
     ]
   },
   "W000790": {
@@ -96,10 +125,7 @@
       "Senate Special Committee on Aging"
     ],
     "caucuses": [],
-    "education": [
-      "Morehouse College (BA)",
-      "Union Theological Seminary (MDiv, MPhil, PhD)"
-    ]
+    "education": ["Morehouse College (BA, 1991)"]
   },
   "W000805": {
     "committees": [
@@ -111,8 +137,8 @@
     ],
     "caucuses": [],
     "education": [
-      "George Washington University (BA)",
-      "Harvard University (JD)"
+      "George Washington University (BA, 1977)",
+      "Harvard Law School (JD, 1980)"
     ]
   },
   "V000128": {
@@ -124,9 +150,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Swarthmore College (BA)",
-      "Harvard University (MPP)",
-      "Georgetown University (JD)"
+      "Swarthmore College (BA, 1982)",
+      "Harvard University (MPP, 1985)",
+      "Georgetown University (JD, 1990)"
     ]
   },
   "T000278": {
@@ -138,7 +164,7 @@
       "Senate Special Committee on Aging"
     ],
     "caucuses": [],
-    "education": ["Southern Arkansas University (BS)"]
+    "education": ["Southern Arkansas University (BS, 1976)"]
   },
   "T000476": {
     "committees": [
@@ -149,10 +175,7 @@
       "Commission on Security and Cooperation in Europe"
     ],
     "caucuses": [],
-    "education": [
-      "Chattanooga State Community College",
-      "University of Maryland, University College (BS)"
-    ]
+    "education": ["University of Maryland University College (BA, 1997)"]
   },
   "T000250": {
     "committees": [
@@ -162,7 +185,10 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Biola University (BA)", "University of South Dakota (MBA)"]
+    "education": [
+      "Biola University (BS, 1983)",
+      "University of South Dakota (MBA, 1984)"
+    ]
   },
   "S001198": {
     "committees": [
@@ -172,7 +198,10 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Harvard University (BA)", "Georgetown University (JD, MS)"]
+    "education": [
+      "Harvard University (BA, 1987)",
+      "Georgetown University (JD, MFS, 1993)"
+    ]
   },
   "S001203": {
     "committees": [
@@ -182,7 +211,10 @@
       "Senate Committee on Indian Affairs"
     ],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Dartmouth College (MBA)"]
+    "education": [
+      "Stanford University (BA, 1980)",
+      "Dartmouth College, Tuck School of Business (MBA, 1984)"
+    ]
   },
   "S001208": {
     "committees": [
@@ -192,7 +224,10 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Cornell University (BA)", "Columbia University (MIA)"]
+    "education": [
+      "Cornell University (AB, 1998)",
+      "Columbia University (MA, 2003)"
+    ]
   },
   "S001232": {
     "committees": [
@@ -201,7 +236,7 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["United States Naval Academy (BS)"]
+    "education": ["United States Naval Academy (BS, 2008)"]
   },
   "S001181": {
     "committees": [
@@ -214,8 +249,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Shippensburg University (BA)",
-      "University of Mississippi (MSS)"
+      "Shippensburg State College (BA, 1969)",
+      "University of Mississippi (MSS, 1973)"
     ]
   },
   "S001217": {
@@ -228,8 +263,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Missouri-Kansas City (BBA)",
-      "Southern Methodist University (JD)"
+      "University of Missouri-Kansas City (BA, 1975)",
+      "Southern Methodist University (JD, 1978)"
     ]
   },
   "S001184": {
@@ -240,7 +275,10 @@
       "Senate Committee on Small Business and Entrepreneurship"
     ],
     "caucuses": [],
-    "education": ["Presbyterian College", "Charleston Southern University (BS)"]
+    "education": [
+      "Presbyterian College (attended)",
+      "Charleston Southern University (BS, 1988)"
+    ]
   },
   "S000148": {
     "committees": [
@@ -248,7 +286,10 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Harvard University (BA)", "Harvard University (JD)"]
+    "education": [
+      "Harvard University (AB, 1971)",
+      "Harvard Law School (JD, 1974)"
+    ]
   },
   "S001227": {
     "committees": [
@@ -258,7 +299,10 @@
       "Joint Economic Committee"
     ],
     "caucuses": [],
-    "education": ["Truman State University (BA)", "Saint Louis University (JD)"]
+    "education": [
+      "Truman State University (BA, 1997)",
+      "Saint Louis University School of Law (JD, 2000)"
+    ]
   },
   "S001150": {
     "committees": [
@@ -268,7 +312,10 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Harvard University (JD)"]
+    "education": [
+      "Stanford University (BA, 1982)",
+      "Harvard University (JD, 1985)"
+    ]
   },
   "S001194": {
     "committees": [
@@ -279,7 +326,7 @@
       "Senate Select Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["Pomona College (BA)"]
+    "education": ["Pomona College (BA, 1994)"]
   },
   "S000033": {
     "committees": [
@@ -290,7 +337,7 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Brooklyn College (attended)", "University of Chicago (BA)"]
+    "education": ["University of Chicago (BS, 1964)"]
   },
   "R000605": {
     "committees": [
@@ -302,7 +349,7 @@
       "Commission on Security and Cooperation in Europe"
     ],
     "caucuses": [],
-    "education": ["South Dakota State University (BS)"]
+    "education": ["South Dakota State University (BS, 1977)"]
   },
   "R000608": {
     "committees": [
@@ -312,10 +359,7 @@
       "Senate Committee on Small Business and Entrepreneurship"
     ],
     "caucuses": [],
-    "education": [
-      "University of Minnesota (BA)",
-      "Clark County Community College (AAS)"
-    ]
+    "education": ["University of Minnesota (BA, 1979)"]
   },
   "R000584": {
     "committees": [
@@ -327,7 +371,11 @@
       "United States Senate Caucus on International Narcotics Control"
     ],
     "caucuses": [],
-    "education": ["the University of Wisconsin (attended)"]
+    "education": [
+      "University of Wisconsin, Milwaukee (attended, 1961-1963)",
+      "University of Idaho (BS, 1965)",
+      "University of Idaho College of Law (JD, 1968)"
+    ]
   },
   "R000618": {
     "committees": [
@@ -337,7 +385,10 @@
       "Senate Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of Chicago (BA, MBA)"]
+    "education": [
+      "University of Chicago (BA, 1986)",
+      "University of Chicago (MBA, 1991)"
+    ]
   },
   "R000122": {
     "committees": [
@@ -348,8 +399,9 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Military Academy (BS)",
-      "Harvard University (MPP, JD)"
+      "United States Military Academy, West Point (BS, 1971)",
+      "Kennedy School of Government, Harvard University (MPP, 1973)",
+      "Harvard Law School (JD, 1982)"
     ]
   },
   "P000595": {
@@ -361,10 +413,12 @@
     ],
     "caucuses": [],
     "education": [
-      "Alma College (BA)",
-      "University of Detroit Mercy (MBA)",
-      "Wayne State University (JD, MA)",
-      "Michigan State University (MA)"
+      "Alma College (BA, 1980)",
+      "University of Detroit (MBA, 1984)",
+      "Wayne State University (JD, 1989)",
+      "Michigan State University (MA, 2007)",
+      "diploma, Naval Command and Staff, U.S. Naval War College (2018)",
+      "Wayne State University (MA, 2020)"
     ]
   },
   "P000603": {
@@ -375,7 +429,7 @@
       "Senate Committee on Small Business and Entrepreneurship"
     ],
     "caucuses": [],
-    "education": ["Baylor University", "Duke University (MD)"]
+    "education": ["Baylor University (attended)", "Duke University (MD, 1988)"]
   },
   "P000145": {
     "committees": [
@@ -388,7 +442,7 @@
       "Joint Committee of Congress on the Library"
     ],
     "caucuses": [],
-    "education": ["Massachusetts Institute of Technology (BS)"]
+    "education": ["Massachusetts Institute of Technology (BS, 1994)"]
   },
   "O000174": {
     "committees": [
@@ -398,8 +452,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Georgetown University (BS)",
-      "London School of Economics (MS)"
+      "Georgetown University School of Foreign Service (BS, 2009)",
+      "London School of Economics (MS, 2013)"
     ]
   },
   "M001111": {
@@ -410,7 +464,7 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Washington State University (BA)"]
+    "education": ["Washington State University (1972)"]
   },
   "M001169": {
     "committees": [
@@ -419,7 +473,11 @@
       "Senate Committee on Health, Education, Labor, and Pensions"
     ],
     "caucuses": [],
-    "education": ["Exeter College (attended)"]
+    "education": [
+      "Williams College (BA, 1996)",
+      "Exeter College (attended)",
+      "University of Connecticut (JD, 2002)"
+    ]
   },
   "M001153": {
     "committees": [
@@ -429,7 +487,11 @@
       "Senate Committee on Indian Affairs"
     ],
     "caucuses": [],
-    "education": ["Georgetown University (BA)", "Willamette University (JD)"]
+    "education": [
+      "Willamette University (attended)",
+      "Georgetown University (BA, 1980)",
+      "Willamette College of Law (JD, 1985)"
+    ]
   },
   "M001190": {
     "committees": [
@@ -450,7 +512,7 @@
       "United States Senate Caucus on International Narcotics Control"
     ],
     "caucuses": [],
-    "education": ["University of Michigan (BBA)"]
+    "education": ["University of Michigan (BA, 1989)"]
   },
   "M000934": {
     "committees": [
@@ -462,7 +524,10 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Fort Hays State University", "University of Kansas (BS, JD)"]
+    "education": [
+      "University of Kansas (BS, 1976)",
+      "Kansas University School of Law (JD, 1981)"
+    ]
   },
   "M001244": {
     "committees": [
@@ -474,8 +539,10 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Florida (BS, MS, JD)",
-      "Stetson University (LLM)"
+      "University of Florida (BS, 1996)",
+      "University of Florida (MA, 2000)",
+      "University of Florida College of Law (JD, 2000)",
+      "Stetson University College of Law (LLM, 2010)"
     ]
   },
   "M001176": {
@@ -488,7 +555,10 @@
       "Joint Committee on Printing"
     ],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Princeton University (MPA)"]
+    "education": [
+      "Stanford University (BA, 1979)",
+      "Princeton University (MPA, 1982)"
+    ]
   },
   "M001243": {
     "committees": [
@@ -499,7 +569,11 @@
       "Senate Special Committee on Aging"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "United States Military Academy, West Point (BS, 1987)",
+      "Princeton University (MPA, 1994)",
+      "Princeton University (PhD, 1996)"
+    ]
   },
   "M000355": {
     "committees": [
@@ -511,8 +585,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Louisville (BA)",
-      "University of Kentucky (JD)"
+      "University of Louisville (1964)",
+      "University of Kentucky Law School, Lexington (1967)"
     ]
   },
   "M001198": {
@@ -524,9 +598,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Butler Community College",
-      "Kansas State University (BS)",
-      "University of Kansas (MD)"
+      "Butler Community College (AS, 1980)",
+      "Kansas State University, Manhattan, Kan (BS)",
+      "University of Kansas School of Medicine (MD, 1987)"
     ]
   },
   "M000133": {
@@ -537,7 +611,10 @@
       "Senate Committee on Small Business and Entrepreneurship"
     ],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Princeton University (MPA)"]
+    "education": [
+      "Boston College (BA, 1968)",
+      "Boston College Law School (JD, 1972)"
+    ]
   },
   "L000571": {
     "committees": [
@@ -546,7 +623,11 @@
       "Senate Committee on Environment and Public Works"
     ],
     "caucuses": [],
-    "education": ["University of Wyoming (BS, JD)"]
+    "education": [
+      "University of Wyoming (BS, 1976)",
+      "University of Wyoming (BA, 1978)",
+      "University of Wyoming College of Law (JD, 1985)"
+    ]
   },
   "L000570": {
     "committees": [
@@ -558,7 +639,10 @@
       "United States Senate Caucus on International Narcotics Control"
     ],
     "caucuses": [],
-    "education": ["New Mexico Highlands University (BBA)"]
+    "education": [
+      "University of New Mexico (attended)",
+      "New Mexico Highlands University (BBA, 2007)"
+    ]
   },
   "L000577": {
     "committees": [
@@ -568,7 +652,10 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Brigham Young University (BA, JD)"]
+    "education": [
+      "Brigham Young University (BA, 1994)",
+      "Brigham Young University (JD, 1997)"
+    ]
   },
   "L000575": {
     "committees": [
@@ -579,8 +666,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Texas at Austin (BS)",
-      "Southwestern Baptist Theological Seminary (MDiv)"
+      "University of Texas (BS, 1990)",
+      "Southwestern Theological Baptist Seminary (MDiv, 1994)"
     ]
   },
   "K000367": {
@@ -593,7 +680,7 @@
       "Joint Economic Committee"
     ],
     "caucuses": [],
-    "education": ["Yale University (BA)", "University of Chicago (JD)"]
+    "education": ["Yale University (1982)", "University of Chicago (JD, 1985)"]
   },
   "K000383": {
     "committees": [
@@ -603,7 +690,10 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Dartmouth College (BA)", "University of Virginia (JD)"]
+    "education": [
+      "Dartmouth College (BA, 1966)",
+      "University of Virginia (JD, 1969)"
+    ]
   },
   "K000394": {
     "committees": [
@@ -615,9 +705,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Deep Springs College",
-      "University of Chicago (BA)",
-      "Magdalen College, Oxford (MPhil, DPhil)"
+      "Deep Springs College (attended)",
+      "University of Chicago (BA, 2004)",
+      "Rhodes Scholar, Ph.D., Oxford University (2010)"
     ]
   },
   "K000393": {
@@ -628,7 +718,11 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Vanderbilt University (BA, 1973)",
+      "University of Virginia School of Law (JD, 1977)",
+      "Oxford University (BCL, 1979)"
+    ]
   },
   "K000377": {
     "committees": [
@@ -640,8 +734,8 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Merchant Marine Academy (BS)",
-      "Naval Postgraduate School (MS)"
+      "United States Merchant Marine Academy (BS, 1986)",
+      "United States Naval Postgraduate School (MS, 1994)"
     ]
   },
   "K000384": {
@@ -652,7 +746,10 @@
       "Senate Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of Missouri (BA)", "Harvard University (JD)"]
+    "education": [
+      "University of Missouri (BA, 1979)",
+      "Harvard University (JD, 1983)"
+    ]
   },
   "J000312": {
     "committees": [
@@ -662,7 +759,10 @@
       "Senate Special Committee on Aging"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Marshall University (BA, 1974)",
+      "Marshall University (MBA, 1976)"
+    ]
   },
   "J000293": {
     "committees": [
@@ -672,7 +772,10 @@
       "Senate Special Committee on Aging"
     ],
     "caucuses": [],
-    "education": ["University of Minnesota (BS)"]
+    "education": [
+      "University of Minnesota (BS, 1977)",
+      "University of Minnesota (1977-1979)"
+    ]
   },
   "H001079": {
     "committees": [
@@ -684,8 +787,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Copiah-Lincoln Community College (AA)",
-      "University of Southern Mississippi (BA)"
+      "Copiah-Lincoln Community College",
+      "University of Southern Mississippi (BA, 1981)"
     ]
   },
   "H001104": {
@@ -696,7 +799,10 @@
       "Senate Special Committee on Aging"
     ],
     "caucuses": [],
-    "education": ["University of Dayton (BA, MA)"]
+    "education": [
+      "University of Dayton (BA, 1989)",
+      "University of Dayton (MA, 1992)"
+    ]
   },
   "H001061": {
     "committees": [
@@ -706,7 +812,10 @@
       "Senate Committee on Indian Affairs"
     ],
     "caucuses": [],
-    "education": ["Dartmouth College (BA)", "Northwestern University (MBA)"]
+    "education": [
+      "Dartmouth College (BA, 1979)",
+      "Northwestern University (MBA, 1981)"
+    ]
   },
   "H001042": {
     "committees": [
@@ -718,8 +827,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Hawaiʻi at Mānoa (BA)",
-      "Georgetown University (JD)"
+      "University of Hawaii (BA, 1970)",
+      "Georgetown University (JD, 1978)"
     ]
   },
   "H000273": {
@@ -730,7 +839,10 @@
       "Senate Committee on Small Business and Entrepreneurship"
     ],
     "caucuses": [],
-    "education": ["Wesleyan University (BA, MS)"]
+    "education": [
+      "Wesleyan University (BA, 1974)",
+      "Wesleyan University (MS, 1980)"
+    ]
   },
   "H001046": {
     "committees": [
@@ -740,7 +852,10 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["University of Missouri (BS)", "University of New Mexico"]
+    "education": [
+      "University of Missouri (BS, 1995)",
+      "University of New Mexico, Albuquerque, N. Mex. (attended)"
+    ]
   },
   "H001089": {
     "committees": [
@@ -750,7 +865,10 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Yale University (JD)"]
+    "education": [
+      "Stanford University (BA, 2002)",
+      "Yale Law School (JD, 2006)"
+    ]
   },
   "H001076": {
     "committees": [
@@ -761,7 +879,10 @@
       "Joint Economic Committee"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Brown University (BA, 1980)",
+      "Northeastern University School of Law (JD, 1985)"
+    ]
   },
   "H000601": {
     "committees": [
@@ -772,7 +893,10 @@
       "Joint Committee on Printing"
     ],
     "caucuses": [],
-    "education": ["Vanderbilt University (BA, JD)"]
+    "education": [
+      "Vanderbilt University (BA, 1981)",
+      "Vanderbilt University (JD, 1984)"
+    ]
   },
   "G000386": {
     "committees": [
@@ -784,7 +908,10 @@
       "United States Senate Caucus on International Narcotics Control"
     ],
     "caucuses": [],
-    "education": ["University of Northern Iowa (BA, MA)", "University of Iowa"]
+    "education": [
+      "University of Northern Iowa, Cedar Falls (1955)",
+      "University of Northern Iowa, Cedar Falls (1956)"
+    ]
   },
   "G000359": {
     "committees": [
@@ -794,7 +921,10 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["University of South Carolina (BA, JD)"]
+    "education": [
+      "University of South Carolina, Columbia (BA, 1977)",
+      "University of South Carolina School of Law (JD, 1981)"
+    ]
   },
   "G000555": {
     "committees": [
@@ -805,8 +935,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Dartmouth College (BA)",
-      "University of California, Los Angeles (JD)"
+      "Dartmouth College (AB, 1988)",
+      "University of California Los Angeles (JD, 1991)"
     ]
   },
   "G000574": {
@@ -818,7 +948,7 @@
       "Commission on Security and Cooperation in Europe"
     ],
     "caucuses": [],
-    "education": ["Harvard University (AB)"]
+    "education": ["Harvard University (AB, 2004)"]
   },
   "F000463": {
     "committees": [
@@ -832,7 +962,7 @@
       "Senate Select Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["University of Nebraska-Lincoln (BS)"]
+    "education": ["University of Nebraska (BS, 1988)"]
   },
   "F000479": {
     "committees": [
@@ -843,9 +973,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Albright College (BA)",
-      "University of Connecticut (MBA)",
-      "Harvard University (MPP)"
+      "Albright College, Reading, Penn. (BA, 1991)",
+      "University of Connecticut (MBA, 1993)",
+      "Kennedy School of Government, Harvard University (MPP, 1999)"
     ]
   },
   "E000295": {
@@ -857,8 +987,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Iowa State University (BA)",
-      "Columbus State University (MPA)"
+      "Iowa State University (BA, 1992)",
+      "Columbus College (now Columbus State University) (MPA, 1995)"
     ]
   },
   "D000563": {
@@ -868,7 +998,10 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Georgetown University (BA)", "Georgetown University (JD)"]
+    "education": [
+      "Georgetown University School of Foreign Service (BS, 1966)",
+      "Georgetown University Law Center (JD, 1969)"
+    ]
   },
   "D000622": {
     "committees": [
@@ -879,10 +1012,9 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Hawaiʻi at Mānoa (BA)",
-      "George Washington University (MIA)",
-      "Northern Illinois University",
-      "Capella University (PhD)"
+      "University of Hawaii (BA, 1989)",
+      "The George Washington University (MA, 1992)",
+      "Northern Illinois University (attended)"
     ]
   },
   "D000618": {
@@ -893,7 +1025,7 @@
       "Senate Committee on Indian Affairs"
     ],
     "caucuses": [],
-    "education": ["Montana State University (BS)"]
+    "education": ["Montana State University (BS, 1984)"]
   },
   "C001114": {
     "committees": [
@@ -903,7 +1035,10 @@
       "Senate Committee on Small Business and Entrepreneurship"
     ],
     "caucuses": [],
-    "education": ["Brigham Young University (BS)"]
+    "education": [
+      "University of Utah (attended)",
+      "Brigham Young University (BS, 1985)"
+    ]
   },
   "C001098": {
     "committees": [
@@ -913,7 +1048,10 @@
       "Senate Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Princeton University (BA)", "Harvard University (JD)"]
+    "education": [
+      "Princeton University (BA, 1992)",
+      "Harvard University (JD, 1995)"
+    ]
   },
   "C000880": {
     "committees": [
@@ -923,7 +1061,10 @@
       "Joint Committee on Taxation"
     ],
     "caucuses": [],
-    "education": ["Brigham Young University (BA)", "Harvard University (JD)"]
+    "education": [
+      "Brigham Young University (BA, 1973)",
+      "Harvard University School of Law (JD, 1977)"
+    ]
   },
   "C001096": {
     "committees": [
@@ -933,7 +1074,10 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Concordia College (BA)", "University of Mary (MA)"]
+    "education": [
+      "Concordia College (BA, 1983)",
+      "University of Mary (MA, 2003)"
+    ]
   },
   "C001095": {
     "committees": [
@@ -944,8 +1088,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Harvard University (BA, JD)",
-      "Claremont Graduate University (attended)"
+      "Harvard University (AB, 1998)",
+      "Claremont Graduate University (attended)",
+      "Harvard University (JD, 2002)"
     ]
   },
   "C001113": {
@@ -956,7 +1101,10 @@
       "Senate Committee on Indian Affairs"
     ],
     "caucuses": [],
-    "education": ["University of Nevada, Reno (BS)", "Gonzaga University (JD)"]
+    "education": [
+      "University of Nevada (BA, 1986)",
+      "Gonzaga University School of Law (JD, 1990)"
+    ]
   },
   "C001056": {
     "committees": [
@@ -970,9 +1118,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Trinity University (BA)",
-      "St. Mary's University (JD)",
-      "University of Virginia (LLM)"
+      "Trinity University (BA, 1973)",
+      "St. Mary's School of Law (JD, 1977)",
+      "LLM, University of Virginia (1995)"
     ]
   },
   "C001088": {
@@ -984,7 +1132,11 @@
       "Senate Select Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["Amherst College (BA)", "Yale University (MAR, JD)"]
+    "education": [
+      "Amherst College (BA, 1985)",
+      "Yale University Law School (JD, 1992)",
+      "Yale Divinity School (MAR, 1992)"
+    ]
   },
   "C001035": {
     "committees": [
@@ -993,7 +1145,7 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["St. Lawrence University (BA)"]
+    "education": ["St. Lawrence University, Canton, NY (1975)"]
   },
   "C001075": {
     "committees": [
@@ -1003,7 +1155,10 @@
       "Senate Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Louisiana State University (BS, MD)"]
+    "education": [
+      "Louisiana State University (BS, 1979)",
+      "Louisiana State University Medical School (MD, 1983)"
+    ]
   },
   "C001047": {
     "committees": [
@@ -1013,7 +1168,10 @@
       "Senate Committee on Rules and Administration"
     ],
     "caucuses": [],
-    "education": ["Duke University (BA)", "University of Virginia (MEd)"]
+    "education": [
+      "Duke University (BS, 1975)",
+      "University of Virginia (MEd, 1976)"
+    ]
   },
   "C000127": {
     "committees": [
@@ -1025,7 +1183,7 @@
       "Joint Committee on Taxation"
     ],
     "caucuses": [],
-    "education": ["Miami University (BA)"]
+    "education": ["Miami University of Ohio (BA, 1980)"]
   },
   "B001305": {
     "committees": [
@@ -1037,9 +1195,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Appalachian State University (BS)",
-      "Dallas Theological Seminary (ThM)",
-      "Wake Forest University (MBA)"
+      "Appalachian State University (BS, 1994)",
+      "Dallas Theological Seminary (MA, 1998)",
+      "Wake Forest University (MBA, 2007)"
     ]
   },
   "B001319": {
@@ -1051,7 +1209,10 @@
       "Commission on Security and Cooperation in Europe"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Alabama (BS, 2004)",
+      "University of Alabama School of Law (JD, 2013)"
+    ]
   },
   "B001236": {
     "committees": [
@@ -1064,8 +1225,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Arkansas",
-      "Southern College of Optometry (OD)"
+      "University of Arkansas (attended)",
+      "Southern College of Optometry (1977)"
     ]
   },
   "B001288": {
@@ -1077,9 +1238,10 @@
     ],
     "caucuses": [],
     "education": [
-      "Stanford University (BA, MA)",
-      "Queen's College, Oxford (MA)",
-      "Yale University (JD)"
+      "Stanford University (BA, 1991)",
+      "Stanford University (MA, 1992)",
+      "Queen’s College, University of Oxford (attended)",
+      "Yale Law School (JD, 1997)"
     ]
   },
   "B001303": {
@@ -1091,9 +1253,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Villanova University",
-      "Fairleigh Dickinson University (BA)",
-      "University of Delaware (MA)"
+      "Fairleigh Dickinson University (BA, 1985)",
+      "University of Delaware (MA, 2003)"
     ]
   },
   "B001277": {
@@ -1106,9 +1267,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Harvard University (BA)",
-      "Trinity College, Cambridge",
-      "Yale University (JD)"
+      "Harvard University (BA, 1967)",
+      "Cambridge University (attended)",
+      "Yale University (JD, 1973)"
     ]
   },
   "B001243": {
@@ -1120,7 +1281,7 @@
       "Joint Economic Committee"
     ],
     "caucuses": [],
-    "education": ["Mississippi State University (BS)"]
+    "education": ["Mississippi State University (BS, 1973)"]
   },
   "B001267": {
     "committees": [
@@ -1130,7 +1291,10 @@
       "Senate Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Wesleyan University (BA)", "Yale University (JD)"]
+    "education": [
+      "Wesleyan University (BA, 1987)",
+      "Yale Law School, (JD, 1993)"
+    ]
   },
   "B001261": {
     "committees": [
@@ -1140,8 +1304,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Rensselaer Polytechnic Institute",
-      "Georgetown University (BS, MD)"
+      "Georgetown University (BS, 1974)",
+      "Georgetown University School of Medicine (MD, 1978)"
     ]
   },
   "B001299": {
@@ -1153,8 +1317,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Indiana University, Bloomington (BA)",
-      "Grace College and Seminary (MBA)"
+      "Indiana University (BA, 2004)",
+      "Grace College and Seminary (MBA, 2013)"
     ]
   },
   "B001230": {
@@ -1164,7 +1328,10 @@
       "Senate Committee on Health, Education, Labor, and Pensions"
     ],
     "caucuses": [],
-    "education": ["Smith College (BA)", "University of Wisconsin-Madison (JD)"]
+    "education": [
+      "Smith College (AB, 1984)",
+      "University of Wisconsin Law School (JD, 1989)"
+    ]
   },
   "A000382": {
     "committees": [
@@ -1175,8 +1342,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Duke University (BA)",
-      "University of Maryland, Baltimore (JD)"
+      "Duke University (BA, 1993)",
+      "University of Maryland School of Law (JD, 1996)"
     ]
   },
   "F000476": {
@@ -1191,8 +1358,8 @@
     "committees": ["House Committee on Science, Space, and Technology"],
     "caucuses": [],
     "education": [
-      "University of Texas, San Antonio (BA)",
-      "Washington University (JD)"
+      "University of Texas (BBA, 2010)",
+      "Washington University School of Law (JD, 2013)"
     ]
   },
   "C001120": {
@@ -1201,12 +1368,18 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Tufts University (BA)", "Harvard University (MPA)"]
+    "education": [
+      "Tufts University (BA, 2006)",
+      "Harvard University (MPA, 2017)"
+    ]
   },
   "L000566": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Bowling Green State University (BA, 1978)",
+      "University of Toledo (JD, 1981)"
+    ]
   },
   "C001118": {
     "committees": [
@@ -1216,7 +1389,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Bates College (BA)", "University of Richmond (JD)"]
+    "education": [
+      "Bates College (BA, 1994)",
+      "University of Richmond Law School (JD, 2007)"
+    ]
   },
   "C001059": {
     "committees": [
@@ -1224,7 +1400,7 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": ["California State University, Fresno (BA)"]
+    "education": ["California State University (BA, 1974)"]
   },
   "W000812": {
     "committees": [
@@ -1232,7 +1408,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": ["University of Missouri (BS)"]
+    "education": ["University of Missouri (BSBA, 1984)"]
   },
   "R000619": {
     "committees": [
@@ -1240,7 +1416,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["Emerson College (BA)"]
+    "education": ["Emerson College (1991)"]
   },
   "D000628": {
     "committees": [
@@ -1249,8 +1425,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Washington and Lee University (BS)",
-      "George Washington University (MD)"
+      "Washington & Lee University (BS, 1975)",
+      "George Washington University (MD, 1979)"
     ]
   },
   "N000147": {
@@ -1259,26 +1435,30 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": ["Antioch College (BA)", "Yale University (MA, LLB)"]
+    "education": [
+      "Antioch College (BA, 1960)",
+      "Yale University (MA, 1963)",
+      "Yale University Law School (LLB, 1964)"
+    ]
   },
   "D000216": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
-      "Marymount College (BA)",
-      "London School of Economics",
-      "Columbia University (MA)"
+      "Marymount College (BA, 1964)",
+      "London School of Economics (attended)",
+      "Columbia University (MA, 1966)"
     ]
   },
   "W000187": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": ["California State University, Los Angeles (BA)"]
+    "education": ["California State University (BA, 1970)"]
   },
   "P000197": {
     "committees": [],
     "caucuses": [],
-    "education": ["Trinity College, Washington (BA)"]
+    "education": ["Trinity College (AB, 1962)"]
   },
   "V000139": {
     "committees": [
@@ -1287,8 +1467,8 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Military Academy (BS)",
-      "University of North Carolina, Chapel Hill (MPA)"
+      "United States Military Academy (2005)",
+      "University of North Carolina (MPA, 2019)"
     ]
   },
   "G000606": {
@@ -1297,7 +1477,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["University of Arizona (BA)"]
+    "education": ["University of Arizona (BA, 1995)"]
   },
   "C001087": {
     "committees": [
@@ -1306,7 +1486,7 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Arkansas State University (BS, 1996)"]
   },
   "W000830": {
     "committees": [
@@ -1314,7 +1494,10 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Princeton University (AB, 1996)",
+      "University of Cambridge (MPhil, 2000)"
+    ]
   },
   "F000484": {
     "committees": [
@@ -1322,7 +1505,10 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["Harvard University (BA, MBA)"]
+    "education": [
+      "Harvard University (AB, 1996)",
+      "Harvard University (MBA, 1998)"
+    ]
   },
   "P000622": {
     "committees": [
@@ -1331,8 +1517,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Gulf Coast State College (AS)",
-      "Florida State University (BS)"
+      "Gulf Coast Community College (now Gulf Coast State College) (AA, 1994)",
+      "Florida State University (BA, 1996)"
     ]
   },
   "V000138": {
@@ -1341,7 +1527,11 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Binghamton University (BA, 1997)",
+      "Central Michigan University (MA, 2005)",
+      "University of Georgia (JD, 2009)"
+    ]
   },
   "T000490": {
     "committees": [
@@ -1349,7 +1539,7 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Miami University (BA, 1996)"]
   },
   "S001230": {
     "committees": [
@@ -1358,7 +1548,10 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["Tulane University (BA)", "Northwestern University (JD)"]
+    "education": [
+      "Tulane University (BA, 2008)",
+      "Northwestern University (JD, 2013)"
+    ]
   },
   "S001229": {
     "committees": [
@@ -1367,9 +1560,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Indiana University, Bloomington (BA)",
-      "University of London (MA)",
-      "Purdue University, West Lafayette (MBA)"
+      "Indiana University (BA, 1989)",
+      "University of London (MA, 1998)",
+      "Purdue University (MBA, 2003)"
     ]
   },
   "S001228": {
@@ -1380,9 +1573,11 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Kansas (BA)",
+      "Independence Community College (attended)",
+      "University of Kansas (BS, 1990)",
       "University of Leicester (MA)",
-      "Georgetown University (JD)"
+      "Georgetown University (JD, 1996)",
+      "University of Kansas School of Law (SJD, 2015)"
     ]
   },
   "R000622": {
@@ -1391,7 +1586,10 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": ["College of William and Mary (BS)", "Harvard University (JD)"]
+    "education": [
+      "College of William and Mary (BA, 2003)",
+      "Harvard University (JD, 2007)"
+    ]
   },
   "P000621": {
     "committees": [
@@ -1400,9 +1598,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Kean University",
-      "Rutgers University, New Brunswick",
-      "University of Virginia"
+      "Kean College of New Jersey (now Kean University) (attended)",
+      "Rutgers University (attended)",
+      "University of Virginia (attended)"
     ]
   },
   "O000176": {
@@ -1412,9 +1610,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Goucher College (BA)",
-      "George Washington University (MA)",
-      "University of Maryland, Baltimore County (PhD)"
+      "Goucher College (BA, 2004)",
+      "The George Washington University (MA, 2006)",
+      "University of Maryland Baltimore County (PhD, 2017)"
     ]
   },
   "M001240": {
@@ -1424,7 +1622,7 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of North Carolina at Charlotte (BA)"]
+    "education": ["University of North Carolina (BA, 2016)"]
   },
   "M001239": {
     "committees": [
@@ -1441,8 +1639,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Michigan State University (BA)",
-      "University of Michigan, Flint (MPA)"
+      "Michigan State University (BA, 1992)",
+      "University of Michigan Flint (MPA, 2010)"
     ]
   },
   "M001236": {
@@ -1451,14 +1649,18 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Campbell University (attended)"]
+    "education": [
+      "Campbell University (attended)",
+      "University of North Carolina (BA, 1992)",
+      "Oklahoma City University School of Law (JD, 1995)"
+    ]
   },
   "M001235": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
-      "George Mason University (BA)",
-      "National Defense University (MS)"
+      "George Mason University (BA, 2005)",
+      "National Defense University (MA, 2011)"
     ]
   },
   "M001233": {
@@ -1468,7 +1670,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["Purdue University (BS)"]
+    "education": ["Purdue University (BS, 1985)"]
   },
   "M001232": {
     "committees": [
@@ -1476,7 +1678,10 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": ["Northwestern University (BS)", "Georgetown University (JD)"]
+    "education": [
+      "Northwestern University (BA, 1986)",
+      "Georgetown University Law Center (JD, 1989)"
+    ]
   },
   "M001231": {
     "committees": [
@@ -1484,7 +1689,10 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Binghamton University (BA)",
+      "State University of New York at Oswego (MS)"
+    ]
   },
   "M001230": {
     "committees": [
@@ -1493,7 +1701,10 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["New York University (BS)", "Harvard University (MBA)"]
+    "education": [
+      "New York University (BS, 2004)",
+      "Harvard University (MBA, 2010)"
+    ]
   },
   "L000606": {
     "committees": [
@@ -1501,7 +1712,10 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Fordham University (BA, 1974)",
+      "New York University (MPA, 1976)"
+    ]
   },
   "K000405": {
     "committees": [
@@ -1511,7 +1725,10 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["Baylor University (BA)", "Wake Forest University (JD)"]
+    "education": [
+      "Baylor University (BA, 2009)",
+      "Wake Forest University (JD, 2012)"
+    ]
   },
   "K000403": {
     "committees": [
@@ -1521,8 +1738,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Brigham Young University (BS, JD)",
-      "Michigan State University (MD)"
+      "Brigham Young University (BS, 1994)",
+      "Michigan State University (MD, 1998)",
+      "Brigham Young University (JD, 2007)"
     ]
   },
   "J000310": {
@@ -1533,7 +1751,10 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Texas at Austin (BA, 1987)",
+      "University of Houston, Houston Tex. (JD, 1991)"
+    ]
   },
   "H001103": {
     "committees": [
@@ -1541,7 +1762,10 @@
       "House Committee on Homeland Security"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Harvard College (AB, 2013)",
+      "Stanford University (JD, 2017)"
+    ]
   },
   "H001102": {
     "committees": [
@@ -1550,7 +1774,11 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Appalachian State University (BS, 1987)",
+      "Southeastern Baptist Theological Seminary (MDiv, 1991)",
+      "Southeastern Baptist Theological Seminary (DDiv, 2009)"
+    ]
   },
   "H001101": {
     "committees": [
@@ -1558,7 +1786,7 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": ["United States Military Academy (BS)"]
+    "education": ["West Point Military Academy (BS, 2009)"]
   },
   "G000604": {
     "committees": [
@@ -1566,7 +1794,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["Yale University (BA, JD)"]
+    "education": ["Yale University (BA, 2009)", "Yale Law School (JD, 2016)"]
   },
   "G000603": {
     "committees": [
@@ -1575,7 +1803,7 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Dartmouth College (BA)"]
+    "education": ["Dartmouth College (BA, 2016)"]
   },
   "G000602": {
     "committees": [
@@ -1583,12 +1811,15 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": ["Georgetown University (BA)", "New York University (JD)"]
+    "education": [
+      "Georgetown University (AB, 1991)",
+      "New York University (JD, 2000)"
+    ]
   },
   "G000601": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["University of Texas, Austin (BA)"]
+    "education": ["University of Texas at Austin (BA, 1991)"]
   },
   "F000483": {
     "committees": [
@@ -1596,12 +1827,12 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": ["University of Rochester (BA)"]
+    "education": ["University of Rochester (BA, 1988)"]
   },
   "F000482": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["University of North Dakota (BA)"]
+    "education": ["University of North Dakota, Grand Forks, N. Dak. (BA)"]
   },
   "E000301": {
     "committees": [
@@ -1609,7 +1840,10 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": ["Towson University (BA)", "Johns Hopkins University (MPP)"]
+    "education": [
+      "Towson University (BA, 2010)",
+      "Johns Hopkins University (MS, 2012)"
+    ]
   },
   "D000635": {
     "committees": [
@@ -1617,7 +1851,10 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["University of Washington (BA, MD)"]
+    "education": [
+      "University of Washington (BA)",
+      "University of Washington (MD, 2001)"
+    ]
   },
   "D000634": {
     "committees": [
@@ -1633,7 +1870,11 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Princeton University (AB, 1985)",
+      "Thomas Jefferson University, Philadelphia, P.A. (MD, 1989)",
+      "Rutgers University (JD, 1996)"
+    ]
   },
   "B001327": {
     "committees": [
@@ -1642,12 +1883,15 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of Scranton (BS, 2012)"]
   },
   "B001326": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": ["Florida A&M University (BS)", "University of Michigan (MBA)"]
+    "education": [
+      "Florida Agricultural and Mechanical University (BS, 1996)",
+      "University of Michigan (MBA, 2000)"
+    ]
   },
   "B001325": {
     "committees": [
@@ -1657,8 +1901,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Carolina College of Biblical Studies (BA)",
-      "Samford University (MS, DNP)"
+      "Carolina Bible College, Anderson (SC)",
+      "Samford University (DNP)"
     ]
   },
   "B001322": {
@@ -1669,8 +1913,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Washington State University (BA)",
-      "Harvard University (MPA)"
+      "Washington State University (BA, 1999)",
+      "Harvard University (MPA, 2002)"
     ]
   },
   "B001321": {
@@ -1679,7 +1923,7 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Western Michigan University (BA, 2007)"]
   },
   "M001218": {
     "committees": [
@@ -1688,7 +1932,11 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Oregon State University (BS, 1990)",
+      "National University (MBA)",
+      "Morehouse School of Medicine (MD, 2010)"
+    ]
   },
   "S001188": {
     "committees": [
@@ -1696,12 +1944,18 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Glen Oaks Community College", "Trine University"]
+    "education": [
+      "Trine State University (attended)",
+      "Glen Oaks Community College (attended)"
+    ]
   },
   "F000110": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": ["Southern University (BA, JD)"]
+    "education": [
+      "Southern University (BA, 1984)",
+      "Southern University Law Center (JD, 1987)"
+    ]
   },
   "O000177": {
     "committees": [
@@ -1710,7 +1964,11 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Washington University (BA)",
+      "Washington University (MD, 1987)",
+      "St. Louis University (JD)"
+    ]
   },
   "M001238": {
     "committees": [
@@ -1718,7 +1976,7 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": ["American University (BA)"]
+    "education": ["American University (BA, 2013)"]
   },
   "M001234": {
     "committees": [
@@ -1727,9 +1985,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Yale University (BA)",
+      "Yale University (BA, 1991)",
       "Boston University (attended)",
-      "Case Western Reserve University (MD)"
+      "Case Western Reserve University (MD, 1997)"
     ]
   },
   "K000404": {
@@ -1740,8 +1998,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Loyola Marymount University (BA)",
-      "University of Hawaii, Manoa (MA, JD)"
+      "Loyola Marymount University (BA, 2000)",
+      "University of Hawaii (MHRM, 2007)",
+      "University of Hawaii (JD, 2014)"
     ]
   },
   "J000311": {
@@ -1751,7 +2010,7 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": ["Pepperdine University (BA)"]
+    "education": ["Pepperdine University (BA, 2010)"]
   },
   "H001099": {
     "committees": [
@@ -1759,7 +2018,10 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": ["Stetson University (BA)", "University of Arkansas (MA)"]
+    "education": [
+      "Stetson University (BA, 1992)",
+      "University of Arkansas (MA, 1993)"
+    ]
   },
   "F000481": {
     "committees": [
@@ -1767,7 +2029,10 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": ["University of Alabama (BA, JD)"]
+    "education": [
+      "University of Alabama (BA, 2006)",
+      "University of Alabama (JD, 2010)"
+    ]
   },
   "E000300": {
     "committees": [
@@ -1775,7 +2040,7 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": ["Patrick Henry College (BA)"]
+    "education": ["Patrick Henry College, Purcellville, Virginia (BA, 2009)"]
   },
   "C001137": {
     "committees": [
@@ -1783,7 +2048,7 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": ["Colorado State University (BA)"]
+    "education": ["Colorado State University (BA, 1990)"]
   },
   "B001324": {
     "committees": [
@@ -1791,7 +2056,11 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": ["Lindenwood University (BA)", "University of Missouri (JD)"]
+    "education": [
+      "St. Louis Community College-Florissant Valley (attended)",
+      "Lindenwood University (BA, 2018)",
+      "University of Missouri (JD)"
+    ]
   },
   "W000829": {
     "committees": [
@@ -1800,7 +2069,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["St. Norbert College (BBA)"]
+    "education": ["St. Norbert College (1998)"]
   },
   "M001229": {
     "committees": [
@@ -1809,9 +2078,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Bloomfield College (BA)",
-      "Seton Hall University (MA)",
-      "Kean University (EdD)"
+      "Bloomfield College (BA, 2008)",
+      "Seton Hall University (MA, 2011)"
     ]
   },
   "F000480": {
@@ -1822,8 +2090,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of California, Los Angeles (BA)",
-      "Princeton University (MPA)"
+      "University of California (BA, 2001)",
+      "Princeton University (MPA, 2003)"
     ]
   },
   "K000402": {
@@ -1832,7 +2100,11 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "St. Joseph's Collegiate Institute (1994)",
+      "D'Youville College (now D'Youville University) (BS, 1999)",
+      "D'Youville College (now D'Youville University) (MS, 1999)"
+    ]
   },
   "M001228": {
     "committees": [
@@ -1841,8 +2113,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Southern Utah University (BA)",
-      "Brigham Young University (JD)"
+      "Southern Utah University (BS, 2003)",
+      "Brigham Young University, J. Reuben Clark Law School (JD, 2015)"
     ]
   },
   "A000380": {
@@ -1852,12 +2124,19 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Wheaton College (BA)", "Merton College, Oxford (MSc)"]
+    "education": [
+      "The Moses Brown School (2005)",
+      "Wheaton College (BA, 2010)",
+      "Marshall Scholar, Oxford University (2010)"
+    ]
   },
   "M001227": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["University of Richmond (BA)", "University of Virginia (JD)"]
+    "education": [
+      "University of Richmond (BA, 1994)",
+      "University of Virginia (JD, 1997)"
+    ]
   },
   "V000135": {
     "committees": [
@@ -1866,7 +2145,7 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Excelsior University (BS)"]
+    "education": ["Excelsior University, Albany, NY (BS)"]
   },
   "S001224": {
     "committees": [
@@ -1876,14 +2155,15 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Military Academy (BS)",
-      "University of Southern California (MA)"
+      "United States Military Academy (BS, 1975)",
+      "University of Southern California (MA, 1981)",
+      "United States Army Command and General Staff College (attended)"
     ]
   },
   "G000600": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Warren Wilson College (attended)", "Reed College (BA)"]
+    "education": ["Reed College (BA, 2012)"]
   },
   "O000175": {
     "committees": [
@@ -1891,7 +2171,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Middle Tennessee State University (BS, 2007)"]
   },
   "M001224": {
     "committees": [
@@ -1902,7 +2182,9 @@
     "caucuses": [],
     "education": [
       "United States Military Academy (attended)",
-      "Texas Tech University (BA, MBA, JD)"
+      "Texas Tech University (BA, 1997)",
+      "Texas Tech University (MBA, 1998)",
+      "Texas Tech University (JD, 2002)"
     ]
   },
   "M001223": {
@@ -1911,7 +2193,7 @@
       "House Committee on Homeland Security"
     ],
     "caucuses": [],
-    "education": ["Brown University (BA)", "Yale University (MBA)"]
+    "education": ["Brown University (BA, 2006)", "Yale University (MBA, 2010)"]
   },
   "L000603": {
     "committees": [
@@ -1921,8 +2203,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Sam Houston State University (BS)",
-      "University of Texas, Dallas (MS)"
+      "Sam Houston State University (BS, 2000)",
+      "University of Texas at Dallas (MS, 2016)",
+      "Harvard University, Cambridge Mass. (attended)"
     ]
   },
   "L000602": {
@@ -1932,8 +2215,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Pennsylvania State University (BA)",
-      "Howard University (JD)"
+      "Pennsylvania State University (BA, 2009)",
+      "Howard University (JD, 2015)"
     ]
   },
   "K000399": {
@@ -1943,7 +2226,11 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Boston University (BA, 1993)",
+      "Old Dominion University (BS, 2011)",
+      "Vanderbilt University (MS, 2012)"
+    ]
   },
   "H001095": {
     "committees": [
@@ -1952,8 +2239,10 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Military Academy (BS)",
-      "Cornell University (MBA, MPA, MA)"
+      "United States Military Academy (BS, 2004)",
+      "Cornell University (MPA, 2015)",
+      "Cornell University (MBA, 2015)",
+      "Cornell University (MILR, 2016)"
     ]
   },
   "H001096": {
@@ -1963,7 +2252,11 @@
       "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
     ],
     "caucuses": [],
-    "education": ["University of Wyoming (BA)"]
+    "education": [
+      "Casper College (attended)",
+      "University of Wyoming (BS, 1986)",
+      "University of Wyoming (JD, 1989)"
+    ]
   },
   "F000478": {
     "committees": [
@@ -1972,8 +2265,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of South Carolina (BA)",
-      "Charleston School of Law (JD)"
+      "University of South Carolina (BA, 2007)",
+      "Charleston School of Law (JD, 2011)"
     ]
   },
   "D000530": {
@@ -1982,7 +2275,10 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "United States Naval Academy (BS, 2006)",
+      "Georgetown University (JD, 2013)"
+    ]
   },
   "D000594": {
     "committees": [
@@ -1990,7 +2286,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": ["University of Texas, San Antonio (BBA)"]
+    "education": ["University of Texas (BBA, 1997)"]
   },
   "C001130": {
     "committees": [
@@ -1999,7 +2295,11 @@
       "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
     ],
     "caucuses": [],
-    "education": ["Rhodes College (BA)", "University of Houston (JD)"]
+    "education": [
+      "Rhodes College (BA, 2003)",
+      "Thurgood Marshall School of Law (attended)",
+      "University of Houston Law Center (JD, 2006)"
+    ]
   },
   "C001131": {
     "committees": [
@@ -2007,7 +2307,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["University of Virginia (BA)"]
+    "education": ["University of Virginia (BA, 2011)"]
   },
   "B001318": {
     "committees": [
@@ -2017,9 +2317,9 @@
     "caucuses": [],
     "education": [
       "Barnard College (attended)",
-      "Smith College (BA)",
-      "Harvard University (MEd)",
-      "University of Massachusetts, Amherst (MA)"
+      "Smith College (AB, 1990)",
+      "Harvard University (EdM, 1994)",
+      "University of Massachusetts (MA, 2000)"
     ]
   },
   "M001212": {
@@ -2028,7 +2328,11 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Troy State University (attended)"]
+    "education": [
+      "Enterprise State Junior College (AS, 1988)",
+      "Troy State University (attended)",
+      "Auburn University (BS, 1992)"
+    ]
   },
   "F000472": {
     "committees": [
@@ -2036,7 +2340,11 @@
       "House Committee on Appropriations"
     ],
     "caucuses": [],
-    "education": ["the Air Command and Staff College (attended)"]
+    "education": [
+      "United States Naval Academy (BS, 1986)",
+      "Embry-Riddle Aeronautical University (MBA, 1994)",
+      "Air Command and Staff College (attended)"
+    ]
   },
   "B000825": {
     "committees": [
@@ -2049,7 +2357,7 @@
   "M001205": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": ["Columbia College (BS, 1972)"]
   },
   "M001208": {
     "committees": [
@@ -2057,7 +2365,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["Virginia State University (BA)"]
+    "education": ["Virginia State University (BA, 1982)"]
   },
   "C001123": {
     "committees": [
@@ -2065,7 +2373,11 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "George Washington University (BA, 1994)",
+      "Regis University (MBA, 2002)",
+      "Brown University (MA, 2015)"
+    ]
   },
   "S001205": {
     "committees": [
@@ -2073,17 +2385,23 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": ["Colgate University (BA)", "University of Pennsylvania (JD)"]
+    "education": [
+      "Colgate University (BA, 1980)",
+      "University of Pennsylvania (JD, 1984)"
+    ]
   },
   "G000581": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Embry-Riddle Aeronautical University, Naval Air Station (BA, 1992)",
+      "Texas Wesleyan School of Law (JD, 1996)"
+    ]
   },
   "S001201": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": ["Boston College (BS, 1984)", "Fordham University (JD, 1989)"]
   },
   "G000553": {
     "committees": [
@@ -2091,7 +2409,11 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": ["Tuskegee University (attended)"]
+    "education": [
+      "Florida A&M University (attended)",
+      "Tuskegee University (attended)",
+      "Texas Southern University (JD, 1974)"
+    ]
   },
   "D000399": {
     "committees": [
@@ -2100,7 +2422,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of Texas, Austin (BA, JD)"]
+    "education": [
+      "University of Texas (BA, 1967)",
+      "University of Texas School of Law (JD, 1970)"
+    ]
   },
   "V000136": {
     "committees": [
@@ -2108,7 +2433,7 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": ["New Mexico State University (BA)"]
+    "education": ["New Mexico State University (BA, 2008)"]
   },
   "T000487": {
     "committees": [
@@ -2117,7 +2442,7 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["George Washington University (BA)"]
+    "education": ["George Washington University (BA, 1997)"]
   },
   "T000488": {
     "committees": [
@@ -2126,9 +2451,10 @@
     ],
     "caucuses": [],
     "education": [
-      "Karnatak University (BS)",
-      "University of Mumbai (MS)",
-      "University of Akron (PhD)"
+      "Karnatak University (BS, 1973)",
+      "University of Bombay (now University of Mumbai) (MS, 1977)",
+      "University of Akron (PhD, 1982)",
+      "Fontbonne University (MBA, 1987)"
     ]
   },
   "S001223": {
@@ -2137,7 +2463,11 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Kent State University (BA, 2007)",
+      "University of Florida (JD, 2011)",
+      "University of Florida (MPH, 2011)"
+    ]
   },
   "S001225": {
     "committees": [
@@ -2145,7 +2475,7 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Northern Illinois University (BS, 1999)"]
   },
   "S001221": {
     "committees": [
@@ -2154,8 +2484,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Gordon College (BA)",
-      "University of Maryland, Baltimore (JD)"
+      "Gordon College (BA, 2004)",
+      "University of Maryland School of Law (JD, 2011)"
     ]
   },
   "S001226": {
@@ -2164,7 +2494,7 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": ["University of California, Berkeley (BA)"]
+    "education": ["University of California (BA, 1994)"]
   },
   "R000617": {
     "committees": [
@@ -2181,7 +2511,11 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Drake University (BA, 2002)",
+      "Air Command and Staff College (MS)",
+      "Cambridge University (MSt, 2007)"
+    ]
   },
   "M001219": {
     "committees": [
@@ -2199,7 +2533,10 @@
       "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "George Washington University (BA, 2003)",
+      "Nova Southeastern University (JD, 2007)"
+    ]
   },
   "M001216": {
     "committees": [
@@ -2208,8 +2545,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Florida State College at Jacksonville (AA)",
-      "American Military University (BS, MA)"
+      "Florida State College (AA, 2005)",
+      "American Military University, Charles Town, W. Va. (BS, 2010)"
     ]
   },
   "M001222": {
@@ -2218,12 +2555,18 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Arizona (attended)",
+      "Cleveland State University (BA, 2013)"
+    ]
   },
   "M001226": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of North Carolina at Chapel Hill (BA, 2008)",
+      "Rutgers Law School (JD, 2011)"
+    ]
   },
   "M001220": {
     "committees": [
@@ -2232,7 +2575,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of Missouri (BA)", "University of Kentucky (JD)"]
+    "education": [
+      "University of Missouri (BA, 2002)",
+      "University of Kentucky, Lexington, Kentucky (JD, 2007)"
+    ]
   },
   "L000596": {
     "committees": [
@@ -2240,7 +2586,7 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of West Florida (BS, 2018)"]
   },
   "L000597": {
     "committees": [
@@ -2249,7 +2595,10 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Florida (BA)",
+      "University of Florida (JD, 1999)"
+    ]
   },
   "L000599": {
     "committees": [
@@ -2257,7 +2606,7 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Manhattan College (BA, 2009)"]
   },
   "L000600": {
     "committees": [
@@ -2266,12 +2615,12 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Niagara University (BA, 2003)"]
   },
   "L000601": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["Ohio University (BA)", "Harvard University (MA)"]
+    "education": ["Ohio University (BA, 1999)", "Harvard University (MA, 2004)"]
   },
   "L000598": {
     "committees": [
@@ -2280,8 +2629,9 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Naval Academy (BS)",
-      "Hofstra University (MBA, JD)"
+      "United States Naval Academy (BS, 2000)",
+      "Hofstra University (MBA, 2012)",
+      "Hofstra University (JD, 2020)"
     ]
   },
   "K000398": {
@@ -2290,12 +2640,19 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Dartmouth College (AB, 1990)",
+      "Tufts University (MALD, 1997)"
+    ]
   },
   "J000307": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "United States Military Academy (BS, 2004)",
+      "Pennsylvania State University (MPA, 2014)",
+      "University of Michigan (MBA, 2015)"
+    ]
   },
   "J000309": {
     "committees": [
@@ -2303,7 +2660,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "North Carolina Agricultural and Technical University, Greensboro, NC (BS, 1988)",
+      "Northwestern University (MBA, 1991)"
+    ]
   },
   "I000058": {
     "committees": [
@@ -2311,7 +2671,10 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Princeton University (AB, 1983)",
+      "Harvard University (JD, 1986)"
+    ]
   },
   "H001094": {
     "committees": [
@@ -2321,7 +2684,7 @@
     "caucuses": [],
     "education": [
       "Bunker Hill Community College (attended)",
-      "Emmanuel College (BA)"
+      "Emmanuel College (BA, 1992)"
     ]
   },
   "H001093": {
@@ -2331,7 +2694,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Indiana University (BA)",
+      "George Washington University (MA)"
+    ]
   },
   "G000599": {
     "committees": [
@@ -2339,7 +2705,10 @@
       "House Committee on Homeland Security"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Yale University (BA, 1998)",
+      "Stanford University (JD, 2005)"
+    ]
   },
   "F000477": {
     "committees": [
@@ -2347,7 +2716,7 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of North Carolina (BA, 2008)"]
   },
   "E000235": {
     "committees": [
@@ -2355,7 +2724,10 @@
       "House Committee on Transportation and Infrastructure"
     ],
     "caucuses": [],
-    "education": ["University of Southern Mississippi (BA)"]
+    "education": [
+      "Federal Bureau of Investigation National Academy (1990)",
+      "University of Southern Mississippi (BS, 1997)"
+    ]
   },
   "E000246": {
     "committees": [
@@ -2371,7 +2743,12 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "United States Air Force Academy (BS, 1994)",
+      "Central Michigan University (MS, 1997)",
+      "East Carolina University (MA, 2001)",
+      "East Carolina University (EdD, 2007)"
+    ]
   },
   "C001129": {
     "committees": [
@@ -2380,7 +2757,7 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Georgia State University (BBA, 1990)"]
   },
   "B001316": {
     "committees": [
@@ -2388,7 +2765,10 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": ["Missouri State University (BA, MBA)"]
+    "education": [
+      "Missouri State University (BA)",
+      "Missouri State University (MBA, 2002)"
+    ]
   },
   "B001315": {
     "committees": [
@@ -2396,7 +2776,7 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["University of Illinois, Urbana-Champaign (BA)"]
+    "education": ["University of Illinois (BA, 1999)"]
   },
   "B001317": {
     "committees": [
@@ -2406,7 +2786,7 @@
     "caucuses": [],
     "education": [
       "Southeastern Oklahoma State University (attended)",
-      "Oklahoma State University, Stillwater (BS)"
+      "Oklahoma State University (BS, 2002)"
     ]
   },
   "A000379": {
@@ -2416,9 +2796,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Lee College",
-      "Texas State University",
-      "University of Texas, Austin (attended)"
+      "Lee College (attended)",
+      "Southwest Texas State College (attended)",
+      "University of Texas (attended)"
     ]
   },
   "R000579": {
@@ -2427,7 +2807,10 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "United States Military Academy (BS, 2004)",
+      "Georgetown University (MA, 2013)"
+    ]
   },
   "M001215": {
     "committees": [
@@ -2435,7 +2818,12 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["San Antonio Junior College (attended)"]
+    "education": [
+      "San Antonio Junior College (attended)",
+      "Texas Christian University (BSN, 1976)",
+      "University of Southern California (MS, 1980)",
+      "University of Texas Health Science Center (MD, 1986)"
+    ]
   },
   "M001136": {
     "committees": [
@@ -2443,7 +2831,10 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["Lansing Community College (attended)"]
+    "education": [
+      "Lansing Community College (attended)",
+      "Northwood University (BBA, 1997)"
+    ]
   },
   "H001091": {
     "committees": [
@@ -2452,7 +2843,7 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of Southern California (BA, 2004)"]
   },
   "G000593": {
     "committees": [
@@ -2461,7 +2852,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["Harvard University (attended)"]
+    "education": [
+      "Barry University (BPA, 1999)",
+      "Harvard University (attended)"
+    ]
   },
   "T000481": {
     "committees": [
@@ -2470,8 +2864,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Wayne State University (BA)",
-      "Thomas M. Cooley Law School (JD)"
+      "Wayne State University (BA, 1998)",
+      "Western Michigan University (JD, 2004)"
     ]
   },
   "T000478": {
@@ -2481,7 +2875,10 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Colgate University (BA)", "University of Cincinnati (JD)"]
+    "education": [
+      "Colgate University (BA, 1983)",
+      "Cincinnati University (JD, 1987)"
+    ]
   },
   "M001199": {
     "committees": [
@@ -2491,13 +2888,18 @@
     "caucuses": [],
     "education": [
       "Palm Beach Atlantic University (attended)",
-      "American Military University (attended)"
+      "American Military University (attended)",
+      "Harvard University Extension School (ALB, 2016)"
     ]
   },
   "R000609": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Jacksonville Junior College (attended)"]
+    "education": [
+      "Jacksonville Junior College (attended)",
+      "Florida State University (BS, 1974)",
+      "Federal Bureau of Investigation National Academy"
+    ]
   },
   "L000585": {
     "committees": [
@@ -2506,7 +2908,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Loras College (BA, 1990)",
+      "John Marshall Law School (JD, 1997)"
+    ]
   },
   "Z000018": {
     "committees": [
@@ -2514,7 +2919,11 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Oregon, Eugene, Ore. (BS, 1984)",
+      "National University (MBA, 1991)",
+      "University of San Diego (MS, 2003)"
+    ]
   },
   "D000624": {
     "committees": [
@@ -2522,7 +2931,10 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": ["Georgetown University (BS, MS)"]
+    "education": [
+      "Georgetown University (BSFS, 1975)",
+      "Georgetown University (MS, 1996)"
+    ]
   },
   "M001194": {
     "committees": [
@@ -2530,17 +2942,20 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Hope College (BA, 1983)", "Harvard University (MPA, 1989)"]
   },
   "H001067": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": ["University of North Carolina (BA, 1996)"]
   },
   "F000462": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Boston University (BA)", "Georgetown University (JD)"]
+    "education": [
+      "Boston University (BA, 1970)",
+      "Georgetown University (JD, 1973)"
+    ]
   },
   "H001058": {
     "committees": [
@@ -2548,7 +2963,7 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": ["Calvin College (BA)"]
+    "education": ["Calvin College (BA, 1991)"]
   },
   "W000798": {
     "committees": [
@@ -2558,7 +2973,9 @@
     "caucuses": [],
     "education": [
       "Western Illinois University (attended)",
-      "Moody Bible College Institute (attended)"
+      "Moody Bible College Institute (attended)",
+      "Fort Wayne Bible College (BS, 1975)",
+      "Wheaton College (MA, 1978)"
     ]
   },
   "N000002": {
@@ -2567,17 +2984,23 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Columbia University (BA, 1969)",
+      "Fordham University (JD, 1978)"
+    ]
   },
   "W000797": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["University of Florida (BA, MA)"]
+    "education": [
+      "University of Florida (BA, 1988)",
+      "University of Florida (MA, 1990)"
+    ]
   },
   "D000600": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["the University of South Florida (attended)"]
+    "education": ["University of South Florida (attended)"]
   },
   "S001220": {
     "committees": [
@@ -2585,19 +3008,19 @@
       "House Committee on Homeland Security"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Athens State University (BS, 1992)"]
   },
   "P000620": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": ["Metropolitan State University of Denver (BA)"]
+    "education": ["Metropolitan State University of Denver (BA, 2006)"]
   },
   "M001225": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
     "education": [
-      "University of San Francisco (BA)",
-      "San Francisco State University (MPA)"
+      "University of San Francisco (BA, 1992)",
+      "San Francisco State University (MPA, 1998)"
     ]
   },
   "K000401": {
@@ -2607,7 +3030,11 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Harvard University (AB, 2007)",
+      "Yale University (JD, 2012)",
+      "Loyola Marymount University (MA, 2009)"
+    ]
   },
   "K000400": {
     "committees": [
@@ -2616,9 +3043,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Compton College",
-      "University of Southern California (BA)",
-      "Carnegie Mellon University (MA)"
+      "Compton College (attended)",
+      "University of Southern California (BA, 1994)",
+      "Carnegie Mellon University (MA, 1996)"
     ]
   },
   "G000598": {
@@ -2627,7 +3054,11 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "California State University (BA, 2002)",
+      "University of Southern California (MA, 2005)",
+      "California State University (EdD, 2010)"
+    ]
   },
   "C001132": {
     "committees": [
@@ -2635,7 +3066,10 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": ["Arizona Western College (attended)"]
+    "education": [
+      "Arizona Western College (attended)",
+      "University of Arizona (attended)"
+    ]
   },
   "C001133": {
     "committees": [
@@ -2644,19 +3078,23 @@
     ],
     "caucuses": [],
     "education": [
-      "Pima Community College (attended)",
-      "University of Arizona (BA)"
+      "Pima Community College (AA, 2003)",
+      "University of Arizona (BA, 2005)"
     ]
   },
   "B001314": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": ["Jacksonville University (BS)"]
+    "education": ["Jacksonville University (BS, 1989)"]
   },
   "Y000067": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Indiana University South Bend (AS, 2009)",
+      "Indiana University South Bend (BS, 2011)",
+      "University of Notre Dame (MBA, 2019)"
+    ]
   },
   "F000475": {
     "committees": [
@@ -2670,7 +3108,10 @@
   "F000474": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Notre Dame (BA, 1997)",
+      "University of Nebraska College of Law (JD, 2001)"
+    ]
   },
   "C001127": {
     "committees": [
@@ -2688,7 +3129,7 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Ohio State University (BA, 1993)"]
   },
   "B001313": {
     "committees": [
@@ -2697,7 +3138,7 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Cuyahoga Community College (AB)"]
   },
   "E000071": {
     "committees": [
@@ -2705,7 +3146,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["United States Naval Academy (BS)"]
+    "education": ["United States Naval Academy (BS, 1992)"]
   },
   "S001218": {
     "committees": [
@@ -2713,7 +3154,10 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Saint Mary's College of California (BA, 2002)",
+      "Cornell University (MS, 2007)"
+    ]
   },
   "C001125": {
     "committees": [
@@ -2721,7 +3165,10 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Xavier University (BA, 1986)",
+      "Carnegie Mellon University (attended)"
+    ]
   },
   "L000595": {
     "committees": [
@@ -2730,8 +3177,9 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Louisiana, Monroe (BA, MA)",
-      "University of South Florida (PhD)"
+      "University of Louisiana (BA, 2002)",
+      "University of Louisiana (MA, 2005)",
+      "University of South Florida (PhD, 2011)"
     ]
   },
   "O000019": {
@@ -2742,9 +3190,8 @@
     ],
     "caucuses": [],
     "education": [
-      "California Institute of Technology (BS)",
-      "University of California, Los Angeles (MS)",
-      "California Baptist University (DPA)"
+      "University of California (MS, 1997)",
+      "California Baptist University (DPA, 2020)"
     ]
   },
   "K000397": {
@@ -2754,7 +3201,7 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of Southern California (BBA, 1985)"]
   },
   "V000134": {
     "committees": [
@@ -2762,7 +3209,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["Cornell University (BA)"]
+    "education": ["Cornell University (BA, 1995)"]
   },
   "S001159": {
     "committees": [
@@ -2771,8 +3218,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Washington (BA)",
-      "Clark Atlanta University (MBA)"
+      "University of Washington (BA, 1984)",
+      "Clark Atlanta University (MBA, 1992)"
     ]
   },
   "O000086": {
@@ -2781,7 +3228,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["University of Miami (BS)"]
+    "education": ["University of Miami (BS, 1975)"]
   },
   "N000026": {
     "committees": [
@@ -2792,7 +3239,7 @@
     "caucuses": [],
     "education": [
       "Liberty University (BA)",
-      "University of Houston, Downtown (MA)"
+      "University of Houston-Downtown (MS)"
     ]
   },
   "M001213": {
@@ -2801,7 +3248,11 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of Utah (BA)", "Northwestern University (MPA)"]
+    "education": [
+      "Utah State University (attended)",
+      "University of Utah (BA)",
+      "Northwestern University (MPPA, 2018)"
+    ]
   },
   "J000305": {
     "committees": [
@@ -2809,7 +3260,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Columbia University (BA, 2011)",
+      "Columbia University (MIA, 2012)"
+    ]
   },
   "J000304": {
     "committees": [
@@ -2820,9 +3274,9 @@
     ],
     "caucuses": [],
     "education": [
-      "South Plains College (AS)",
-      "Texas A&M University, Galveston (BS)",
-      "University of Texas Medical Branch (MD)"
+      "South Plains College (AS, 1988)",
+      "Texas Agricultural and Mechanical University (BS, 1991)",
+      "University of Texas Medical Branch (MD, 1995)"
     ]
   },
   "G000594": {
@@ -2844,12 +3298,16 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of Wisconsin (BS, 1985)"]
   },
   "H001090": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Harvard University (MBA, MPP)"]
+    "education": [
+      "Stanford University (BA, 2008)",
+      "Harvard University (MBA, 2014)",
+      "Harvard University (MPP, 2014)"
+    ]
   },
   "S001211": {
     "committees": [
@@ -2858,7 +3316,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["Marquette University (BA)", "University of Michigan (JD)"]
+    "education": [
+      "Marquette University (BA, 1992)",
+      "University of Michigan (JD, 1995)"
+    ]
   },
   "P000613": {
     "committees": [
@@ -2867,9 +3328,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Monterey Peninsula College (attended)",
-      "University of California, Davis (BA)",
-      "Santa Clara University (JD)"
+      "Monterey Peninsula College (AA, 1989)",
+      "University of California (BA, 1991)",
+      "Santa Clara University (JD, 1996)"
     ]
   },
   "L000582": {
@@ -2878,12 +3339,16 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Stanford University (BA, 1991)",
+      "Stanford University (BS, 1991)",
+      "Georgetown University (JD, 1994)"
+    ]
   },
   "A000371": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["University of Redlands (BS)"]
+    "education": ["University of Redlands (BS, 2001)"]
   },
   "D000623": {
     "committees": [
@@ -2892,7 +3357,7 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": ["College of the Holy Cross (BA)"]
+    "education": ["College of the Holy Cross (BA, 1974)"]
   },
   "P000608": {
     "committees": [
@@ -2900,15 +3365,18 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Duke University (AB, 1980)",
+      "New York University (JD, 1984)"
+    ]
   },
   "V000130": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
     "education": [
-      "University of San Diego (BA)",
-      "Fordham University (MA)",
-      "Harvard University (JD)"
+      "University of San Diego (BA, 1983)",
+      "Fordham University (MA, 1987)",
+      "Harvard University (JD, 1991)"
     ]
   },
   "T000472": {
@@ -2917,12 +3385,20 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Harvard University (AB, 1983)",
+      "University of California (MFA, 2010)"
+    ]
   },
   "R000599": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of California (BS, 1994)",
+      "Harvard University (MD, 2001)",
+      "Harvard University (MPP, 2001)",
+      "Harvard University (MPH, 2007)"
+    ]
   },
   "V000129": {
     "committees": [
@@ -2930,7 +3406,7 @@
       "House Committee on Appropriations"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["College of the Sequoias (attended)"]
   },
   "S001193": {
     "committees": [
@@ -2951,7 +3427,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": ["University of California, Irvine (BS, MD)"]
+    "education": [
+      "University of California (BS, 1987)",
+      "University of California (MD, 1991)"
+    ]
   },
   "G000559": {
     "committees": [
@@ -2960,8 +3439,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of California, Berkeley (BA)",
-      "Harvard University (MBA)"
+      "University of California (BA, 1966)",
+      "Harvard University (MBA, 1970)"
     ]
   },
   "C001080": {
@@ -2970,7 +3449,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of California (BA, 1974)",
+      "California School of Professional Psychology (PhD, 1979)"
+    ]
   },
   "S001183": {
     "committees": [
@@ -2978,7 +3460,11 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Scottsdale Community College (AA, 1985)",
+      "Arizona State University (BS, 1988)",
+      "Arizona State University (MBA, 2005)"
+    ]
   },
   "G000565": {
     "committees": [
@@ -2986,7 +3472,10 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Creighton University (BS, 1981)",
+      "Creighton University (DDS, 1985)"
+    ]
   },
   "M001177": {
     "committees": [
@@ -2995,19 +3484,19 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of California (BA, 1978)"]
   },
   "M001163": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": ["University of California (BA, 1966)"]
   },
   "T000460": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
     "education": [
-      "Napa Valley College (attended)",
-      "California State University, Chico (BA, MPA)"
+      "California State University (BA, 1982)",
+      "California State University (MA, 1996)"
     ]
   },
   "S000344": {
@@ -3017,8 +3506,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of California, Los Angeles (BA)",
-      "Harvard University (JD)"
+      "University of California (BA, 1974)",
+      "Harvard University (JD, 1979)"
     ]
   },
   "S000250": {
@@ -3027,7 +3516,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Southwestern University (BS, 1978)"]
   },
   "I000056": {
     "committees": [
@@ -3036,15 +3525,15 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": [
-      "Kent State University, Stark (attended)",
-      "Siena Heights University (BA)"
-    ]
+    "education": ["Siena Heights College (BA, 1976)"]
   },
   "C000059": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Chaffey College (AA)", "San Diego State University (BA)"]
+    "education": [
+      "Chaffey College (AA, 1973)",
+      "San Diego State University (BA, 1975)"
+    ]
   },
   "L000397": {
     "committees": [
@@ -3052,12 +3541,15 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Santa Clara University (JD)"]
+    "education": [
+      "Stanford University (BA, 1970)",
+      "Santa Clara University School of Law (JD, 1975)"
+    ]
   },
   "W000788": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": ["Talladega College (BA)"]
+    "education": ["Talladega College (BA, 2000)"]
   },
   "T000486": {
     "committees": [
@@ -3071,8 +3563,9 @@
     "committees": ["Joint Economic Committee"],
     "caucuses": [],
     "education": [
-      "Kyiv National Economic University (BS, MBA)",
-      "Indiana University, Indianapolis (MAcc)"
+      "National University of Economics (BS)",
+      "National University of Economics (MBA, 2000)",
+      "National University of Economics (MPA, 2006)"
     ]
   },
   "S000168": {
@@ -3081,7 +3574,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Miami (BA, 1983)",
+      "Harvard University (MPA, 1995)"
+    ]
   },
   "R000305": {
     "committees": [
@@ -3090,7 +3586,10 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Brown University (AB, 1985)",
+      "University of North Carolina (JD, 1990)"
+    ]
   },
   "P000048": {
     "committees": [
@@ -3098,12 +3597,17 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "United States Air Force Academy (BS, 2000)",
+      "Embry-Riddle Aeronautical University (MSA, 2007)",
+      "Air University (MS, 2012)",
+      "Georgetown University (MA, 2019)"
+    ]
   },
   "M001214": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Ball State University (BS)"]
+    "education": ["Ball State University (BA, 1992)"]
   },
   "M001211": {
     "committees": [
@@ -3113,7 +3617,7 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Eastern Illinois University (BS, 1981)"]
   },
   "M000871": {
     "committees": [
@@ -3121,7 +3625,7 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": ["Kansas State University (BS)"]
+    "education": ["Kansas State University (BA, 2000)"]
   },
   "M000317": {
     "committees": [
@@ -3129,7 +3633,10 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Seton Hall University (BA, 2001)",
+      "Wagner University (MBA, 2010)"
+    ]
   },
   "M000194": {
     "committees": [
@@ -3138,7 +3645,11 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": ["Trident Technical College (attended)"]
+    "education": [
+      "Trident Technical College (attended)",
+      "The Citadel, The Military College of South Carolina (BA, 1999)",
+      "University of Georgia (MS, 2004)"
+    ]
   },
   "L000273": {
     "committees": [
@@ -3146,12 +3657,18 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Yale University (AB, 1982)",
+      "Stanford University (JD, 1987)"
+    ]
   },
   "H001086": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["East Tennessee State University (attended)"]
+    "education": [
+      "East Tennessee State University (attended)",
+      "Mercer University (Pharm.D, 1987)"
+    ]
   },
   "G000597": {
     "committees": [
@@ -3160,7 +3677,10 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "George Washington University (BA, 2006)",
+      "Hofstra University (JD, 2009)"
+    ]
   },
   "F000470": {
     "committees": [
@@ -3169,9 +3689,9 @@
     ],
     "caucuses": [],
     "education": [
-      "College of Saint Benedict",
-      "St. Cloud State University (BA)",
-      "William Mitchell College of Law (JD)"
+      "College of Saint Benedict (attended)",
+      "St. Cloud State University (BA, 1989)",
+      "William Mitchell College of Law (JD, 2011)"
     ]
   },
   "F000446": {
@@ -3181,9 +3701,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Dordt University (BA)",
+      "Dordt College (BA, 1991)",
       "Iowa State University (MPA)",
-      "Northcentral University (PhD)"
+      "Northcentral University (PhD, 2022)"
     ]
   },
   "F000246": {
@@ -3193,7 +3713,10 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["University of Notre Dame (BA)"]
+    "education": [
+      "University of Massachusetts (attended)",
+      "University of Notre Dame (BA, 1990)"
+    ]
   },
   "D000032": {
     "committees": [
@@ -3201,7 +3724,10 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Florida A&M University (attended)",
+      "Florida State University (BA, 2002)"
+    ]
   },
   "C001116": {
     "committees": [
@@ -3210,9 +3736,9 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Notre Dame",
-      "Bethel University (BBA)",
-      "University of Georgia (MBA)"
+      "University of Notre Dame (attended)",
+      "Bethel College (BBA, 1985)",
+      "University of Georgia (MBA, 1999)"
     ]
   },
   "C001039": {
@@ -3221,7 +3747,10 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Metropolitan State University of Denver (BA, 2011)",
+      "Naval War College (MS, 2018)"
+    ]
   },
   "B000740": {
     "committees": [
@@ -3229,7 +3758,7 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": ["Oklahoma State University, Stillwater (BS)"]
+    "education": ["Oklahoma State University (BA, 1995)"]
   },
   "B000668": {
     "committees": [
@@ -3238,16 +3767,16 @@
     ],
     "caucuses": [],
     "education": [
-      "Eastern Oregon University (BA)",
-      "Lewis and Clark College (JD)"
+      "Eastern Oregon State College (BS, 1974)",
+      "Lewis and Clark College (JD, 1977)"
     ]
   },
   "A000148": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
     "education": [
-      "Harvard University (BA)",
-      "Massachusetts Institute of Technology (MBA)"
+      "Harvard University (AB, 2010)",
+      "Massachusetts Institute of Technology (MBA, 2016)"
     ]
   },
   "T000165": {
@@ -3256,7 +3785,7 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of Wisconsin (BS, 1980)"]
   },
   "M001210": {
     "committees": [
@@ -3266,7 +3795,10 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Davidson College (1985)",
+      "University of North Carolina (MD, 1989)"
+    ]
   },
   "G000592": {
     "committees": [
@@ -3274,7 +3806,10 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Maine, Farmington, Maine (attended)",
+      "Bates College, Lewiston, Maine (BA, 2011)"
+    ]
   },
   "S001213": {
     "committees": [
@@ -3284,14 +3819,17 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Georgetown University (BS, 2003)",
+      "University of Wisconsin (JD, 2007)"
+    ]
   },
   "S001216": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
     "education": [
-      "University of California, Berkeley (BS)",
-      "University of California, Davis (MD)"
+      "University of California (BA, 1991)",
+      "University of California (MD, 1997)"
     ]
   },
   "G000587": {
@@ -3301,8 +3839,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Texas Woman's University (BA)",
-      "Texas Southern University (JD)"
+      "Texas Women's University (BS, 1972)",
+      "Texas Southern University (JD, 1978)"
     ]
   },
   "R000614": {
@@ -3313,8 +3851,9 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Virginia (BS, MS)",
-      "University of Texas, Austin (JD)"
+      "University of Virginia (BS, 1994)",
+      "University of Virginia (MS, 1995)",
+      "University of Texas (JD, 2003)"
     ]
   },
   "E000299": {
@@ -3324,14 +3863,14 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Texas, El Paso (BA)",
-      "New York University (MA)"
+      "University of Texas at El Paso (BA, 1991)",
+      "New York University (MA, 1993)"
     ]
   },
   "F000468": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["Kenyon College (BA)", "College of William and Mary (JD)"]
+    "education": ["Kenyon College (BA)", "College of William & Mary (JD, 2006)"]
   },
   "G000589": {
     "committees": [
@@ -3339,7 +3878,10 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Texas (BA, 2004)",
+      "University of Texas (BBA, 2004)"
+    ]
   },
   "R000612": {
     "committees": [
@@ -3347,7 +3889,11 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Tennessee Tech University (BS, 1988)",
+      "Purdue University (MS, 1990)",
+      "Vanderbilt University (JD, 1993)"
+    ]
   },
   "B001309": {
     "committees": [
@@ -3356,7 +3902,7 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of Tennessee (BS, 1988)"]
   },
   "J000301": {
     "committees": [
@@ -3366,8 +3912,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of South Dakota (BA)",
-      "University of Kansas (MPA)"
+      "University of South Dakota (BA, 1999)",
+      "University of Kansas (MPA, 2002)"
     ]
   },
   "T000480": {
@@ -3377,20 +3923,28 @@
     ],
     "caucuses": [],
     "education": [
-      "George Washington University (BA)",
-      "University of South Carolina (MA, JD)",
-      "New York University (MS)"
+      "The George Washington University (BA, 2006)",
+      "University of South Carolina (MA, 2009)",
+      "University of South Carolina (JD, 2010)",
+      "New York University (MS, 2021)"
     ]
   },
   "R000610": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Behrend College, Pennsylvania State University (BA, 2004)",
+      "Duquesne University (JD, 2007)"
+    ]
   },
   "J000302": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["Pennsylvania State University (attended)"]
+    "education": [
+      "Pennsylvania State University (attended)",
+      "Pennsylvania State University (BS, 1979)",
+      "Temple University (MD, 1983)"
+    ]
   },
   "M001204": {
     "committees": [
@@ -3399,7 +3953,8 @@
     ],
     "caucuses": [],
     "education": [
-      "New York Maritime University (now SUNY Maritime College) (attended)"
+      "New York Maritime University (now SUNY Maritime College) (attended)",
+      "Cornell University (BA, 1986)"
     ]
   },
   "H001085": {
@@ -3409,8 +3964,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Stanford University (BS)",
-      "Massachusetts Institute of Technology (MS)"
+      "Stanford University (BS, 1989)",
+      "Massachusetts Institute of Technology (MS, 1994)"
     ]
   },
   "D000631": {
@@ -3421,7 +3976,9 @@
     "caucuses": [],
     "education": [
       "Montgomery County College (attended)",
-      "Fels Institute of Government (attended)"
+      "Fels Institute of Government, University of Pennsylvania (attended)",
+      "La Salle University (BA, 1981)",
+      "Widener University Delaware Law School (JD, 1984)"
     ]
   },
   "V000133": {
@@ -3430,12 +3987,15 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Rutgers University (BS)",
+      "Fairleigh Dickinson University (DDS, 1979)"
+    ]
   },
   "C001119": {
     "committees": ["House Committee on Agriculture"],
     "caucuses": [],
-    "education": []
+    "education": ["University of Memphis (BA, 1994)"]
   },
   "G000586": {
     "committees": [
@@ -3443,7 +4003,10 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Illinois (BA, 1999)",
+      "University of Illinois (MA, 2002)"
+    ]
   },
   "S001199": {
     "committees": [
@@ -3452,12 +4015,18 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Lebanon Valley College", "Franklin and Marshall College"]
+    "education": [
+      "Lebanon Valley College (attended)",
+      "Franklin & Marshall College (attended)"
+    ]
   },
   "E000296": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Community College of Philadelphia (AA, 1973)",
+      "La Salle University (BA, 1975)"
+    ]
   },
   "P000605": {
     "committees": [
@@ -3467,15 +4036,12 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": [
-      "Pennsylvania State University (BS)",
-      "United States Army War College (MS)"
-    ]
+    "education": ["Pennsylvania State University (BS, 1991)"]
   },
   "K000376": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": ["Notre Dame University (BA, 1970)"]
   },
   "T000467": {
     "committees": [
@@ -3483,7 +4049,10 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Pennsylvania State University (BS, 1981)",
+      "Temple University (MEd, 1988)"
+    ]
   },
   "M000687": {
     "committees": [
@@ -3492,8 +4061,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Morgan State University (BS)",
-      "Johns Hopkins University (MA)"
+      "Morgan State University (BS, 1976)",
+      "Johns Hopkins University (MA, 1984)"
     ]
   },
   "W000831": {
@@ -3502,12 +4071,12 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["New York University (BA, 2005)"]
   },
   "O000172": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["Boston University (BA)"]
+    "education": ["Boston University (BA, 2011)"]
   },
   "L000590": {
     "committees": [
@@ -3515,7 +4084,10 @@
       "House Committee on Appropriations"
     ],
     "caucuses": [],
-    "education": ["Carnegie Mellon University (BA, MS)"]
+    "education": [
+      "Carnegie Mellon University (BA, 1989)",
+      "Carnegie Mellon University (MPM, 1990)"
+    ]
   },
   "P000614": {
     "committees": [
@@ -3523,7 +4095,7 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Harvard University (AB, 2002)"]
   },
   "G000591": {
     "committees": [
@@ -3532,7 +4104,10 @@
       "House Committee on Ethics"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Mississippi State University (BS, 1993)",
+      "University of Mississippi (JD, 1995)"
+    ]
   },
   "S001212": {
     "committees": [
@@ -3541,7 +4116,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["Lake Superior State University (BA)"]
+    "education": ["Lake Superior State University (BS, 1990)"]
   },
   "O000173": {
     "committees": [
@@ -3549,7 +4124,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["North Dakota State University (BA)"]
+    "education": [
+      "North Dakota State University, Fargo, N. Dak. (BA, 2011)",
+      "North Dakota State University, Fargo, N. Dak. (BS, 2011)"
+    ]
   },
   "S001215": {
     "committees": [
@@ -3558,7 +4136,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "American University (BA, 2005)",
+      "American University (MA, 2007)"
+    ]
   },
   "P000617": {
     "committees": [
@@ -3571,7 +4152,10 @@
   "T000482": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": ["Georgetown University (BS)"]
+    "education": [
+      "Georgetown University (BS, 1995)",
+      "Harvard University (attended)"
+    ]
   },
   "D000629": {
     "committees": [
@@ -3579,7 +4163,13 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": ["Haskell Indian Nations University (attended)"]
+    "education": [
+      "Haskell Indian Nations University (attended)",
+      "University of Kansas (attended)",
+      "Johnson County Community College (AA, 2003)",
+      "University of Missouri (BA, 2007)",
+      "Cornell University (JD, 2010)"
+    ]
   },
   "B001307": {
     "committees": [
@@ -3588,14 +4178,18 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Purdue University (BS, 1967)",
+      "Purdue University (MS, 1969)",
+      "University of Kentucky (PhD, 1975)"
+    ]
   },
   "U000040": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
-      "University of Michigan (BSN)",
-      "Johns Hopkins University (MSN, MPH)"
+      "University of Michigan (BSN, 2008)",
+      "Johns Hopkins University (MSN, MPH, 2009)"
     ]
   },
   "C001117": {
@@ -3604,7 +4198,11 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": ["Middlebury College (BA)", "Dartmouth College (MS, MEng)"]
+    "education": [
+      "Middlebury College (BA, 1993)",
+      "Dartmouth College (MS, 1998)",
+      "Dartmouth College (MEM, 1998)"
+    ]
   },
   "F000469": {
     "committees": [
@@ -3612,7 +4210,10 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Boise State University (BS, 1984)",
+      "Boise State University (MBA, 1988)"
+    ]
   },
   "S001214": {
     "committees": [
@@ -3620,7 +4221,10 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Florida (BS, 2000)",
+      "University of Florida (JD, 2003)"
+    ]
   },
   "H001081": {
     "committees": [
@@ -3629,10 +4233,10 @@
     ],
     "caucuses": [],
     "education": [
-      "Naugatuck Valley Community College (AA)",
-      "Southern Connecticut State University (BA)",
-      "University of Saint Joseph (MA)",
-      "University of Bridgeport (SYC)"
+      "Naugatuck Valley Community College (AA, 2002)",
+      "Southern Connecticut State University (BA, 2005)",
+      "University of Saint Joseph (MA, 2012)",
+      "University of Bridgeport (attended)"
     ]
   },
   "C001121": {
@@ -3641,7 +4245,10 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Wisconsin (BA, 2002)",
+      "University of Denver (JD, 2009)"
+    ]
   },
   "N000191": {
     "committees": [
@@ -3650,17 +4257,26 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": ["University of Colorado, Boulder (BA, JD)"]
+    "education": [
+      "University of Colorado (BA, 2005)",
+      "University of Colorado (JD, 2009)"
+    ]
   },
   "L000593": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Duke University (JD)"]
+    "education": [
+      "Stanford University (BA, 2001)",
+      "Duke University (JD, 2005)"
+    ]
   },
   "H001082": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Arkansas Tech University (BS, 1986)",
+      "University of Arkansas (MBA, 1999)"
+    ]
   },
   "M001206": {
     "committees": [
@@ -3670,13 +4286,13 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["SUNY Genesco (BA, 1986)"]
   },
   "B001306": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
     "education": [
-      "Muskingum University (attended)",
+      "Muskingum College (attended)",
       "Ohio State University (attended)"
     ]
   },
@@ -3686,7 +4302,7 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": ["Oral Roberts University (BS)"]
+    "education": ["Oral Roberts University (BS, 1997)"]
   },
   "G000585": {
     "committees": [
@@ -3694,7 +4310,11 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": ["Riverside Community College (attended)"]
+    "education": [
+      "Riverside Community College (attended)",
+      "University of California (BA, 1999)",
+      "Harvard University (MPP, 2003)"
+    ]
   },
   "N000190": {
     "committees": [
@@ -3703,7 +4323,7 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Presbyterian College (BS)"]
+    "education": ["Presbyterian College (BS, 1975)"]
   },
   "E000298": {
     "committees": [
@@ -3712,7 +4332,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Tennessee Technological University (BS, MBA)"]
+    "education": [
+      "Tennessee Technological University (BA, 1973)",
+      "Tennessee Technological University (MBA, 1983)"
+    ]
   },
   "J000298": {
     "committees": [
@@ -3721,7 +4344,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Georgetown University (BA)", "Northwestern University (MBA)"]
+    "education": [
+      "Georgetown University (AB, 1986)",
+      "Northwestern University (MBA, 1990)"
+    ]
   },
   "A000375": {
     "committees": [
@@ -3730,12 +4356,18 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Texas Tech University (BA, 1994)",
+      "Texas Tech University (MA, 1997)"
+    ]
   },
   "K000392": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": ["University of Memphis (BA, JD)"]
+    "education": [
+      "University of Memphis (BBA, 1989)",
+      "University of Memphis (JD, 1992)"
+    ]
   },
   "F000466": {
     "committees": [
@@ -3743,12 +4375,17 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "La Salle University (BSBA, 1996)",
+      "Pennsylvania State University (MBA, 2001)",
+      "Dickinson School of Law, Pennsylvania State University (JD, 2001)"
+    ]
   },
   "E000297": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
+      "Queens College (BS, 1979)",
       "New York University (attended)",
       "Rutgers University (attended)"
     ]
@@ -3760,9 +4397,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Pennsylvania (BA)",
-      "Pembroke College, Oxford (attended)",
-      "Harvard University (JD)"
+      "University of Pennsylvania (BA, 1997)",
+      "Harvard Law School (JD, 2004)"
     ]
   },
   "B001298": {
@@ -3772,9 +4408,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Northern Illinois University (BA)",
-      "University of Phoenix (MBA)",
-      "National War College (MA)"
+      "Northern Illinois University (BA, 1984)",
+      "University of Phoenix (MBA, 1996)",
+      "National War College (MA, 2004)"
     ]
   },
   "B001301": {
@@ -3785,19 +4421,22 @@
     ],
     "caucuses": [],
     "education": [
-      "Gustavus Adolphus College (BA)",
-      "University of West Florida (MBA)"
+      "Gustavus Adolphus College (BA, 1969)",
+      "University of West Florida (MBA, 1975)"
     ]
   },
   "R000606": {
     "committees": ["House Committee on the Judiciary"],
     "caucuses": [],
-    "education": ["Harvard University (BA, JD)"]
+    "education": ["Harvard College (AB, 1983)", "Harvard University (JD, 1987)"]
   },
   "J000299": {
     "committees": [],
     "caucuses": [],
-    "education": ["Louisiana State University (BS, JD)"]
+    "education": [
+      "Louisiana State University (BS, 1995)",
+      "Louisiana State University (JD, 1998)"
+    ]
   },
   "H001077": {
     "committees": [
@@ -3806,7 +4445,7 @@
       "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
     ],
     "caucuses": [],
-    "education": ["Louisiana State University (dropped out)"]
+    "education": ["Louisiana State University (attended)"]
   },
   "K000391": {
     "committees": [
@@ -3815,7 +4454,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["Princeton University (BS)", "Harvard University (JD)"]
+    "education": [
+      "Princeton University (BA, 1995)",
+      "Harvard Law School (JD, 2000)"
+    ]
   },
   "S001200": {
     "committees": [
@@ -3823,7 +4465,10 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Rutgers College (BA, 2000)",
+      "George Washington University (JD, 2004)"
+    ]
   },
   "C001110": {
     "committees": [
@@ -3831,12 +4476,19 @@
       "House Committee on Homeland Security"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "California State University (BA, 1980)",
+      "University of California (JD, 1985)",
+      "University of California (MBA, 1985)"
+    ]
   },
   "B001300": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of California (BA, 2000)",
+      "University of Southern California (JD, 2005)"
+    ]
   },
   "C001112": {
     "committees": [
@@ -3845,12 +4497,15 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of California (BA, 1990)",
+      "Fielding Graduate University (MA, 1994)"
+    ]
   },
   "H001066": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": ["University of Nevada, Reno (BA)"]
+    "education": ["University of Nevada (BA, 2014)"]
   },
   "S001190": {
     "committees": [
@@ -3858,7 +4513,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Northwestern University (BS, 1983)",
+      "Northwestern University (MBA, 1988)"
+    ]
   },
   "W000806": {
     "committees": [
@@ -3867,14 +4525,14 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Georgia Institute of Technology (BEE, 1971)"]
   },
   "C001055": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
-      "Williams College (BA)",
-      "University of California, Hastings (JD)"
+      "Williams College (BA, 1975)",
+      "University of California (JD, 1981)"
     ]
   },
   "M001241": {
@@ -3885,8 +4543,9 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Pennsylvania (BA, BS)",
-      "Harvard University (JD)"
+      "University of Pennsylvania (BA, 1999)",
+      "University of Pennsylvania (BS, 1999)",
+      "Harvard University (JD, 2002)"
     ]
   },
   "H001100": {
@@ -3897,9 +4556,9 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Notre Dame (BA)",
-      "University of Denver (JD)",
-      "Columbia University (LLM)"
+      "University of Notre Dame (BA, 2001)",
+      "University of Denver, Denver Colo. (JD, 2008)",
+      "Columbia University (LLM, 2010)"
     ]
   },
   "B001302": {
@@ -3908,7 +4567,11 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Brigham Young University (BA, 1982)",
+      "University of Arizona (JD, 1984)",
+      "Arizona State University (MA, 1999)"
+    ]
   },
   "K000389": {
     "committees": [
@@ -3917,7 +4580,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["University of Chicago (BA)", "Yale University (JD)"]
+    "education": [
+      "University of Chicago (AB, 1998)",
+      "Yale University (JD, 2001)"
+    ]
   },
   "C001108": {
     "committees": [
@@ -3925,7 +4591,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": ["Western Kentucky University (BS)"]
+    "education": ["Western Kentucky University (BS, 1993)"]
   },
   "D000626": {
     "committees": [
@@ -3934,7 +4600,7 @@
     ],
     "caucuses": [],
     "education": [
-      "United States Military Academy (BS)",
+      "United States Military Academy (BA, 1995)",
       "University of Notre Dame (MBA)"
     ]
   },
@@ -3946,9 +4612,10 @@
     ],
     "caucuses": [],
     "education": [
-      "East Central Community College (AA)",
-      "University of Mississippi (BA, JD)",
-      "United States Army War College (MS)"
+      "East Central Community College (AA, 1986)",
+      "University of Mississippi (BA, 1989)",
+      "University of Mississippi (JD, 1994)",
+      "United States Army War College (MA, 2010)"
     ]
   },
   "G000576": {
@@ -3959,7 +4626,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["University of Wisconsin, Madison (BBA, JD)"]
+    "education": [
+      "University of Wisconsin (BBA, 1978)",
+      "University of Wisconsin (JD, 1983)"
+    ]
   },
   "N000189": {
     "committees": [
@@ -3968,7 +4638,7 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Washington State University (BS, 1977)"]
   },
   "P000610": {
     "committees": [
@@ -3977,7 +4647,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Georgetown University (BSFS, 1988)",
+      "American University (JD, 1994)"
+    ]
   },
   "B001292": {
     "committees": [
@@ -3985,7 +4658,7 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Williams College (BA, 1972)"]
   },
   "B001291": {
     "committees": [
@@ -3993,7 +4666,10 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": ["Lamar University (BS)", "University of Texas, Houston (DDS)"]
+    "education": [
+      "Lamar University (BS, 1973)",
+      "University of Texas (DDS, 1976)"
+    ]
   },
   "S001196": {
     "committees": [
@@ -4002,7 +4678,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Harvard University (AB, 2006)"]
   },
   "W000822": {
     "committees": [
@@ -4010,10 +4686,7 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": [
-      "Rutgers University, Camden",
-      "Thomas Edison State University (BA)"
-    ]
+    "education": ["Thomas Edison State College (BA, 1985)"]
   },
   "R000603": {
     "committees": [
@@ -4022,14 +4695,14 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["North Carolina State University (BS, 1994)"]
   },
   "E000294": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
     "education": [
-      "University of Alaska, Fairbanks (BA)",
-      "William Mitchell College of Law (JD)"
+      "University of Alaska (BA, 1984)",
+      "Mitchell College of Law (JD, 1988)"
     ]
   },
   "M001196": {
@@ -4039,7 +4712,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["Harvard University (BS, MBA, MPA)"]
+    "education": [
+      "Harvard University (BS, 2001)",
+      "Harvard University (MBA, MPP, 2011)"
+    ]
   },
   "B001295": {
     "committees": [
@@ -4056,7 +4732,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Auburn University (BS, 1973)"]
   },
   "L000583": {
     "committees": [
@@ -4065,7 +4741,10 @@
       "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
     ],
     "caucuses": [],
-    "education": ["Air University (AS)", "Wayland Baptist University (BS)"]
+    "education": [
+      "United States Air Force Community College (AA, 1987)",
+      "Wayland Baptist University (BS, 1992)"
+    ]
   },
   "C001103": {
     "committees": [
@@ -4073,7 +4752,10 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Young Harris College (AA, 1977)",
+      "University of Georgia (BS, 1980)"
+    ]
   },
   "T000474": {
     "committees": [
@@ -4083,7 +4765,8 @@
     "caucuses": [],
     "education": [
       "Mount San Antonio College (attended)",
-      "Rio Hondo College (attended)"
+      "Rio Hondo College (attended)",
+      "National Labor College (BA, 2012)"
     ]
   },
   "W000821": {
@@ -4092,7 +4775,10 @@
       "House Committee on Transportation and Infrastructure"
     ],
     "caucuses": [],
-    "education": ["University of Arkansas (BS)", "Yale University (MS)"]
+    "education": [
+      "University of Arkansas (BS, 1990)",
+      "Yale Forestry School (MF, 2001)"
+    ]
   },
   "H001072": {
     "committees": [
@@ -4100,7 +4786,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Vanderbilt University (BS, 1979)"]
   },
   "R000600": {
     "committees": [
@@ -4110,6 +4796,7 @@
     ],
     "caucuses": [],
     "education": [
+      "University of Guam (BS, 1975)",
       "George Mason University (attended)",
       "Loyola Marymount University (attended)"
     ]
@@ -4120,7 +4807,10 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": ["Northwest Alabama Junior College (attended)"]
+    "education": [
+      "Northwest Alabama Junior College (attended)",
+      "University of Alabama (BS, 1977)"
+    ]
   },
   "N000188": {
     "committees": [
@@ -4128,7 +4818,7 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Camden County College (AS, 1979)"]
   },
   "A000370": {
     "committees": [
@@ -4136,12 +4826,20 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "North Carolina Agricultural and Technical State University (BS, 1968)",
+      "North Carolina Agricultural and Technical State University (MS, 1972)",
+      "Ohio State University (PhD, 1981)"
+    ]
   },
   "C001101": {
     "committees": [],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Saint Lawrence University (BA, 1985)",
+      "Cornell University (JD, 1989)",
+      "John F. Kennedy School of Government, Harvard University (MPA, 1997)"
+    ]
   },
   "S001195": {
     "committees": [
@@ -4149,7 +4847,10 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Missouri (BS, 2001)",
+      "Oklahoma City University School of Law (JD, 2004)"
+    ]
   },
   "B001282": {
     "committees": [
@@ -4158,7 +4859,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["University of Virginia (BA)", "University of Kentucky (JD)"]
+    "education": [
+      "University of Virginia (BA, 1996)",
+      "University of Kentucky (JD, 2001)"
+    ]
   },
   "C001067": {
     "committees": ["House Committee on Energy and Commerce"],
@@ -4171,12 +4875,16 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": ["Clarkson University (BS)"]
+    "education": ["Clarkson University (BS, 1971)"]
   },
   "K000385": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Bradley University (BA, 1977)",
+      "Bradley University (MA, 1982)",
+      "Northern Illinois University (PhD, 2004)"
+    ]
   },
   "M001137": {
     "committees": [
@@ -4184,7 +4892,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Adelphi University (BA, 1975)",
+      "Howard University (JD, 1978)"
+    ]
   },
   "V000081": {
     "committees": [
@@ -4192,7 +4903,10 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Puerto Rico, Rio Piedras (BA, 1974)",
+      "New York University (MA, 1976)"
+    ]
   },
   "T000463": {
     "committees": [
@@ -4200,7 +4914,12 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Ohio Northern University (BA, 1982)",
+      "Case Western Reserve University (JD, 1985)",
+      "University of Dayton (MBA, 1992)",
+      "Georgetown University (PhD, 2022)"
+    ]
   },
   "T000491": {
     "committees": [
@@ -4208,17 +4927,20 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["Bentley University (BS)", "Glendale University (JD)"]
+    "education": [
+      "Bentley University (BS, 2003)",
+      "Glendale University (JD, 2013)"
+    ]
   },
   "P000607": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["University of Wisconsin, Madison (BA)"]
+    "education": ["University of Wisconsin (BA, 1986)"]
   },
   "V000131": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": ["Texas Wesleyan University (BS, 1995)"]
   },
   "W000816": {
     "committees": [
@@ -4226,7 +4948,7 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Texas Christian University (BA, 1972)"]
   },
   "C001091": {
     "committees": [
@@ -4234,7 +4956,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": ["Stanford University (BA)", "Harvard University (JD)"]
+    "education": [
+      "Stanford University (BA, 1996)",
+      "Harvard University (JD, 2000)"
+    ]
   },
   "W000814": {
     "committees": [
@@ -4242,31 +4967,44 @@
       "House Committee on Energy and Commerce"
     ],
     "caucuses": [],
-    "education": ["Alvin Community College in Alvin (attended)"]
+    "education": [
+      "Alvin Community College (attended)",
+      "University of Houston-Clear Lake (BS, 1977)"
+    ]
   },
   "J000295": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Dayton (BS, 1979)",
+      "University of Dayton (JD, 1982)"
+    ]
   },
   "B001281": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Central State University (BA, 1972)",
+      "Wright State University (MS, 1974)",
+      "University of Cincinnati (attended)"
+    ]
   },
   "J000294": {
     "committees": [],
     "caucuses": [],
     "education": [
-      "Binghamton University (BA)",
-      "Georgetown University (MPP)",
-      "New York University (JD)"
+      "Binghamton University (BA, 1992)",
+      "Georgetown University (MPP, 1994)",
+      "New York University (JD, 1997)"
     ]
   },
   "M001188": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Michigan (AB, 1997)",
+      "Yeshiva University (JD, 2002)"
+    ]
   },
   "B001285": {
     "committees": [
@@ -4276,8 +5014,9 @@
     ],
     "caucuses": [],
     "education": [
-      "George Washington University (BA)",
-      "American University (MBA)"
+      "Fairfax Hall (1970)",
+      "Mount Vernon College (now The George Washington University) (BA, 1975)",
+      "American University (MBA, 1979)"
     ]
   },
   "H001068": {
@@ -4287,14 +5026,17 @@
     ],
     "caucuses": [],
     "education": [
-      "University of California, Santa Barbara (BA)",
-      "Boston College (JD)"
+      "University of California (BA, 1986)",
+      "Boston College (JD, 1990)"
     ]
   },
   "D000617": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Reed College (BA, 1983)",
+      "University of Washington (MBA, 1990)"
+    ]
   },
   "M001184": {
     "committees": [
@@ -4302,7 +5044,7 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": ["Massachusetts Institute of Technology (BS, MS)"]
+    "education": ["Massachusetts Institute of Technology (BS, 1996)"]
   },
   "B001278": {
     "committees": [
@@ -4311,8 +5053,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Lane Community College (attended)",
-      "University of Oregon (BA, JD)"
+      "Lane Community College (AA, 1978)",
+      "University of Oregon (BA, 1980)",
+      "University of Oregon (JD, 1983)"
     ]
   },
   "A000369": {
@@ -4322,8 +5065,8 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Nevada, Reno (BA)",
-      "University of the Pacific (JD)"
+      "University of Nevada (BA, 1980)",
+      "University of the Pacific, McGeorge School of Law (JD, 1983)"
     ]
   },
   "W000804": {
@@ -4333,7 +5076,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of North Carolina (MPH, 1990)",
+      "Virginia Commonwealth University (PhD, 2002)"
+    ]
   },
   "G000568": {
     "committees": [
@@ -4343,7 +5089,10 @@
       "House Select Subcommittee to Investigate the Remaining Questions Surrounding January 6, 2021"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Emory & Henry College (BA, 1980)",
+      "Washington & Lee University School of Law (JD, 1983)"
+    ]
   },
   "D000616": {
     "committees": [
@@ -4351,7 +5100,10 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": ["University of South Dakota (BS, MD)"]
+    "education": [
+      "University of South Dakota (BS, 1987)",
+      "University of South Dakota (MD, 1991)"
+    ]
   },
   "F000459": {
     "committees": [
@@ -4359,12 +5111,19 @@
       "House Committee on Appropriations"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Illinois (BA, 1983)",
+      "University of Tennessee (JD, 1986)"
+    ]
   },
   "H001052": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Johns Hopkins University (BS, 1977)",
+      "Johns Hopkins University (MD, 1980)",
+      "Johns Hopkins University (MHS, 1995)"
+    ]
   },
   "K000375": {
     "committees": [
@@ -4372,7 +5131,11 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Boston College (BA, 1974)",
+      "Boston College (MBA, 1982)",
+      "Suffolk University (JD, 1985)"
+    ]
   },
   "S001189": {
     "committees": [
@@ -4382,7 +5145,7 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": ["University of Georgia (BBA)"]
+    "education": ["University of Georgia (BBA, 1993)"]
   },
   "W000808": {
     "committees": [
@@ -4390,12 +5153,15 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Fisk University (BS, 1963)",
+      "University of Miami (MS, 1972)"
+    ]
   },
   "W000809": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Arkansas Tech University (BA)"]
+    "education": ["Arkansas Tech University (BA, 1979)"]
   },
   "S001185": {
     "committees": [
@@ -4404,7 +5170,11 @@
       "House Committee on House Administration"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Princeton University (AB, 1986)",
+      "Oxford University (MA, 1988)",
+      "Harvard University (JD, 1992)"
+    ]
   },
   "C001068": {
     "committees": [
@@ -4412,7 +5182,10 @@
       "House Permanent Select Committee on Intelligence"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Vanderbilt University (BA, 1971)",
+      "University of Memphis (JD, 1973)"
+    ]
   },
   "J000289": {
     "committees": [
@@ -4421,9 +5194,9 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Wisconsin, Madison (BS)",
-      "Ohio State University (MA)",
-      "Capital University (JD)"
+      "University of Wisconsin (BS, 1986)",
+      "The Ohio State University (MA, 1991)",
+      "Capital University (JD, 2001)"
     ]
   },
   "B001260": {
@@ -4432,7 +5205,10 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Cleary University (BBA, 1975)",
+      "University of Detroit (MBA, 1986)"
+    ]
   },
   "C001066": {
     "committees": [
@@ -4440,7 +5216,10 @@
       "House Select Committee on the Strategic Competition Between the United States and the Chinese Communist Party"
     ],
     "caucuses": [],
-    "education": ["Emory University (BA)", "Florida State University (JD)"]
+    "education": [
+      "Emory University (BA, 1988)",
+      "Florida State University (JD, 1991)"
+    ]
   },
   "B001257": {
     "committees": [
@@ -4449,9 +5228,9 @@
     ],
     "caucuses": [],
     "education": [
-      "St. Petersburg College (attended)",
-      "University of Florida (BA)",
-      "Stetson University (JD)"
+      "St. Petersburg Junior College (attended)",
+      "University of Florida (BA, 1986)",
+      "Stetson University (JD, 1989)"
     ]
   },
   "Q000023": {
@@ -4461,9 +5240,9 @@
     ],
     "caucuses": [],
     "education": [
-      "Roosevelt University (BA)",
-      "University of Chicago (MPP)",
-      "Loyola University Chicago (JD)"
+      "Roosevelt University (BA, 1981)",
+      "University of Chicago (MPP, 1985)",
+      "Loyola University School of Law (JD, 1989)"
     ]
   },
   "T000468": {
@@ -4472,7 +5251,11 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "College of William and Mary (AB, 1970)",
+      "University of Georgia (MA, 1973)",
+      "Florida State University (PhD, 1976)"
+    ]
   },
   "P000597": {
     "committees": [
@@ -4481,16 +5264,16 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Southern Maine (attended)",
-      "College of the Atlantic (BA)"
+      "University of Southern Maine, Portland, Maine (attended)",
+      "College of the Atlantic, Bar Harbor, Maine (BA, 1979)"
     ]
   },
   "G000558": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
     "education": [
-      "United States Military Academy (BS)",
-      "Yale University (MBA)"
+      "United States Military Academy (BS, 1987)",
+      "Yale University (MPPM, 1997)"
     ]
   },
   "H001047": {
@@ -4499,12 +5282,15 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Harvard University (AB, 1988)",
+      "Oxford University (M Phil, 1990)"
+    ]
   },
   "S001176": {
     "committees": [],
     "caucuses": [],
-    "education": ["Louisiana State University (BS)"]
+    "education": ["Louisiana State University (BS, 1989)"]
   },
   "F000454": {
     "committees": [
@@ -4512,7 +5298,10 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Wisconsin, Madison (BA, 1975)",
+      "Harvard University (PhD, 1984)"
+    ]
   },
   "C001072": {
     "committees": [
@@ -4522,8 +5311,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Concordia University, Wisconsin (BA)",
-      "Indiana Wesleyan University (MS)"
+      "Concordia University Wisconsin (BA, 2003)",
+      "Indiana Wesleyan University (MS, 2005)"
     ]
   },
   "M000312": {
@@ -4532,7 +5321,10 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "American University (BA, 1981)",
+      "American University (MPA, 1984)"
+    ]
   },
   "N000015": {
     "committees": [
@@ -4541,9 +5333,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Holyoke Community College",
-      "American International College (BA)",
-      "University of Hartford (MA)"
+      "American International College (BA, 1972)",
+      "University of Hartford (MA, 1976)"
     ]
   },
   "M001160": {
@@ -4552,7 +5343,7 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": ["Marquette University (BA)"]
+    "education": ["Marquette University (BA, 1978)"]
   },
   "S001157": {
     "committees": [
@@ -4565,7 +5356,10 @@
   "S001156": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of California (BA, 1991)",
+      "University of California (JD, 1995)"
+    ]
   },
   "L000562": {
     "committees": [
@@ -4573,7 +5367,7 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Boston College (JD, 1991)", "Harvard University (MA, 1998)"]
   },
   "S001231": {
     "committees": [
@@ -4581,7 +5375,10 @@
       "House Committee on Small Business"
     ],
     "caucuses": [],
-    "education": ["Mills College (BA)", "University of San Francisco (MPA)"]
+    "education": [
+      "Mills College (BA, 2009)",
+      "University of San Francisco (MPA, 2022)"
+    ]
   },
   "R000621": {
     "committees": [
@@ -4589,7 +5386,7 @@
       "House Committee on Oversight and Government Reform"
     ],
     "caucuses": [],
-    "education": ["Wellesley College (BA)"]
+    "education": ["Wellesley College (BA, 2008)"]
   },
   "R000620": {
     "committees": [
@@ -4597,15 +5394,16 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": [
-      "Massachusetts Institute of Technology (BS)",
-      "Harvard University (MEd)"
-    ]
+    "education": ["Harvard University (EdM, 2003)"]
   },
   "L000607": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Georgetown University (AB, 1991)",
+      "Harvard University (MPP, 1996)",
+      "Harvard University (JD, 1996)"
+    ]
   },
   "H001098": {
     "committees": [
@@ -4613,7 +5411,10 @@
       "House Committee on Veterans' Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Arizona State University (BS, 2012)",
+      "James E. Rogers College of Law, University of Arizona (JD, 2016)"
+    ]
   },
   "G000605": {
     "committees": [
@@ -4621,10 +5422,7 @@
       "House Committee on Agriculture"
     ],
     "caucuses": [],
-    "education": [
-      "Merced College (attended)",
-      "University of California, Santa Barbara (BA)"
-    ]
+    "education": ["University of California (BA, 2000)"]
   },
   "B001323": {
     "committees": [
@@ -4633,7 +5431,10 @@
       "House Committee on Science, Space, and Technology"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Baylor University (BBA, 1999)",
+      "Indiana University (MBA, 2002)"
+    ]
   },
   "A000381": {
     "committees": [
@@ -4642,8 +5443,8 @@
     ],
     "caucuses": [],
     "education": [
-      "Stanford University (BA)",
-      "St. John's College, Cambridge (MPhil)"
+      "Stanford University (BA, 2014)",
+      "University of Cambridge (M Phil)"
     ]
   },
   "S001172": {
@@ -4652,7 +5453,7 @@
       "House Committee on Ways and Means"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["University of Nebraska (BS, 1993)"]
   },
   "J000288": {
     "committees": [
@@ -4660,7 +5461,10 @@
       "House Committee on the Judiciary"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Clark College (Clark Atlanta University) (BA, 1976)",
+      "Thurgood Marshall School of Law (JD, 1979)"
+    ]
   },
   "C001069": {
     "committees": [
@@ -4668,57 +5472,86 @@
       "House Committee on Education and Workforce"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Tufts University (BA, 1975)",
+      "University of Connecticut (JD, 1978)"
+    ]
   },
   "P000034": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Middlebury College (BA, 1973)",
+      "Fletcher School of Law and Diplomacy (MA, 1974)",
+      "Rutgers University School of Law (JD, 1978)"
+    ]
   },
   "S001148": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Utah State University (BS, 1972)",
+      "Washington University School of Dental Medicine (DMD, 1978)"
+    ]
   },
   "S001145": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": ["University of Illinois (BS, 1965)"]
   },
   "L000557": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": ["Central Connecticut State University (BA)"]
+    "education": ["Central Connecticut University (BA, 1971)"]
   },
   "S000510": {
     "committees": ["House Committee on Armed Services"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Fordham University (BA, 1987)",
+      "University of Washington (JD, 1990)"
+    ]
   },
   "D000197": {
     "committees": ["House Committee on Energy and Commerce"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Colorado College (BA, 1979)",
+      "New York University (JD, 1982)"
+    ]
   },
   "D000096": {
     "committees": ["House Committee on Ways and Means"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Arkansas A.M.&N. College (BA, 1961)",
+      "Chicago State University (MS, 1968)",
+      "Union Institute (PhD, 1977)"
+    ]
   },
   "A000055": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Birmingham Southern College (BA, 1987)",
+      "Samford University (JD, 1990)"
+    ]
   },
   "T000193": {
     "committees": ["House Committee on Homeland Security"],
     "caucuses": [],
-    "education": ["Tougaloo College (BA)", "Jackson State University (MS)"]
+    "education": [
+      "Tougaloo College (BA, 1968)",
+      "Jackson State University (MS, 1972)"
+    ]
   },
   "S000522": {
     "committees": ["House Committee on Foreign Affairs"],
     "caucuses": [],
-    "education": ["Worcester College (attended)"]
+    "education": [
+      "Trenton State College (BS, 1975)",
+      "Worcester College (attended)"
+    ]
   },
   "S000185": {
     "committees": [
@@ -4726,17 +5559,24 @@
       "House Committee on the Budget"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Harvard University (AB, 1969)",
+      "Boston College School of Law (JD, 1973)"
+    ]
   },
   "R000395": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Western Kentucky University (attended)"]
+    "education": [
+      "Western Kentucky University (attended)",
+      "University of Kentucky (AB, 1962)",
+      "University of Kentucky (LLB, 1964)"
+    ]
   },
   "B000490": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": ["Morehouse College (BA)", "Emory University (JD)"]
+    "education": ["Morehouse College (BA, 1968)", "Emory University (JD, 1971)"]
   },
   "L000491": {
     "committees": [
@@ -4744,17 +5584,17 @@
       "House Committee on Financial Services"
     ],
     "caucuses": [],
-    "education": []
+    "education": ["Oklahoma State University (BS, 1982)"]
   },
   "C001063": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
-      "Laredo College (AA)",
-      "Georgetown University (BS)",
-      "University of Texas, Austin (JD, PhD)",
-      "Texas A&M International University (MA)",
-      "Naval War College (MS)"
+      "Laredo Community College (AA, 1976)",
+      "Georgetown University (BS, 1978)",
+      "University of Texas (JD, 1981)",
+      "Texas A&M International University (MA, 1982)",
+      "University of Texas (PhD, 1998)"
     ]
   },
   "M001157": {
@@ -4763,7 +5603,10 @@
       "House Committee on Foreign Affairs"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Trinity University (BS, 1984)",
+      "St. Mary's University (JD, 1987)"
+    ]
   },
   "F000450": {
     "committees": [
@@ -4772,30 +5615,45 @@
       "House Committee on Rules"
     ],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of North Carolina (AB, 1968)",
+      "University of North Carolina (MACT, 1972)",
+      "University of North Carolina (EdD, 1985)"
+    ]
   },
   "C001061": {
     "committees": ["House Committee on Financial Services"],
     "caucuses": [],
     "education": [
-      "Prairie View A&M University (BS)",
-      "Saint Paul School of Theology (MDiv)"
+      "Prairie View A&M University (BS, 1972)",
+      "St. Paul School of Theology (MDiv, 1974)"
     ]
   },
   "C001051": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Texas Tech University (BA, 1964)",
+      "University of Texas Law School (JD, 1969)"
+    ]
   },
   "C001053": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Grinnell College (BA, 1971)",
+      "Yale University (MA, 1974)",
+      "University of Oklahoma (PhD, 1984)"
+    ]
   },
   "R000575": {
     "committees": ["House Committee on Armed Services"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "Jacksonville State University (BA, 1981)",
+      "Jacksonville State University (MPA, 1984)",
+      "Birmingham School of Law (JD, 1991)"
+    ]
   },
   "W000795": {
     "committees": [
@@ -4805,16 +5663,16 @@
     ],
     "caucuses": [],
     "education": [
-      "Washington and Lee University (BA)",
-      "University of South Carolina (JD)"
+      "Washington and Lee University (BA, 1969)",
+      "University of South Carolina (JD, 1972)"
     ]
   },
   "L000560": {
     "committees": ["House Committee on Transportation and Infrastructure"],
     "caucuses": [],
     "education": [
-      "Pacific Lutheran University (BA)",
-      "University of Minnesota (MPA)"
+      "Pacific Lutheran University (BA, 1987)",
+      "University of Minnesota (MPA, 1990)"
     ]
   },
   "G000546": {
@@ -4823,20 +5681,20 @@
       "House Committee on Armed Services"
     ],
     "caucuses": [],
-    "education": ["University of Missouri (BS)"]
+    "education": ["University of Missouri (BS, 1986)"]
   },
   "M001143": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
     "education": [
-      "Inver Hills Community College (AA)",
-      "St. Catherine University (BA)"
+      "Inver Hills Community College (AA, 1980)",
+      "College of St. Catherine (BA, 1987)"
     ]
   },
   "C000537": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": ["South Carolina State University (BA, 1961)"]
   },
   "K000009": {
     "committees": [
@@ -4845,14 +5703,16 @@
     ],
     "caucuses": [],
     "education": [
-      "University of Wisconsin, Madison (BA)",
-      "University of Michigan (MUP)",
-      "Massachusetts Institute of Technology (attended)"
+      "University of Wisconsin (BA, 1968)",
+      "University of Michigan (MA, 1974)"
     ]
   },
   "H000874": {
     "committees": ["House Committee on Appropriations"],
     "caucuses": [],
-    "education": []
+    "education": [
+      "University of Maryland, College Park (BS, 1963)",
+      "Georgetown University Law Center (JD, 1966)"
+    ]
   }
 }

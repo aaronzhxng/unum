@@ -64,4 +64,22 @@ try {
   `);
 } catch {}
 
+// Migration: add congress_cache table for persistent API response caching
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS congress_cache (
+      cache_key TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      cached_at INTEGER NOT NULL
+    )
+  `);
+} catch {}
+
+// Migration: add index on cached_at for TTL cleanup
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_congress_cache_cached_at ON congress_cache(cached_at)
+  `);
+} catch {}
+
 export default db;

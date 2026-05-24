@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-04-20",
-  "weekEnd": "2026-04-26",
+  "weekOf": "2026-05-18",
+  "weekEnd": "2026-05-24",
   "bills": [
     {
-      "billId": "s3971",
-      "note": "This  bill expands the requirements for federal agencies to evaluate the security risks of the small businesses that apply for awards under the programs."
+      "billId": "hr2853",
+      "note": "This bill punishes interstate retail crime by broadening what qualifies as an offense to the interstate transportation or sale of stolen property."
     },
     {
-      "billId": "hr3633",
-      "note": "This bill establishes a regulatory framework for digital commodities, defined by the bill as digital assets that rely upon a blockchain for their value."
+      "billId": "hr8469",
+      "note": "This is the appropriations bill for the military, Department of Defense, and Department of Veterans Affairs. It directs the FY2027 budget for construction in the army, navy, air force, marines, NATO security investment program, veterans benefits administration, veterans health administration, and more."
     }
   ]
 }

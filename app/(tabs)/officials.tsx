@@ -20,6 +20,7 @@ import {
   Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useTour } from "../context/TourContext";
@@ -100,7 +101,7 @@ const LOCATION_OPTIONS = [
   "Texas",
   "Utah",
   "Vermont",
-  "Virgin Islands",
+  "U.S. Virgin Islands",
   "Virginia",
   "Washington",
   "West Virginia",
@@ -228,8 +229,13 @@ export default function OfficialsScreen() {
     const filtered =
       selectedList === "All States"
         ? allOfficials
-        : allOfficials.filter((official) => official.state === selectedList);
-
+        : allOfficials.filter((official) => {
+            const normalizedState =
+              official.state === "Virgin Islands"
+                ? "U.S. Virgin Islands"
+                : official.state;
+            return normalizedState === selectedList;
+          });
     return [...filtered].sort((a: any, b: any) => {
       // Sort by state alphabetically
       if (a.state < b.state) return -1;
@@ -380,7 +386,12 @@ export default function OfficialsScreen() {
                 style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
               >
                 <Text
-                  style={[componentStyles.header, { alignItems: "center" }]}
+                  style={[
+                    componentStyles.header,
+                    { alignItems: "center", maxWidth: 220 },
+                  ]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {selectedList}
                 </Text>
@@ -740,20 +751,97 @@ export default function OfficialsScreen() {
   );
 }
 
+const STATE_ABBR: Record<string, string> = {
+  Alabama: "AL",
+  Alaska: "AK",
+  "American Samoa": "AS",
+  Arizona: "AZ",
+  Arkansas: "AR",
+  California: "CA",
+  Colorado: "CO",
+  Connecticut: "CT",
+  Delaware: "DE",
+  "District of Columbia": "DC",
+  Florida: "FL",
+  Georgia: "GA",
+  Guam: "GU",
+  Hawaii: "HI",
+  Idaho: "ID",
+  Illinois: "IL",
+  Indiana: "IN",
+  Iowa: "IA",
+  Kansas: "KS",
+  Kentucky: "KY",
+  Louisiana: "LA",
+  Maine: "ME",
+  Maryland: "MD",
+  Massachusetts: "MA",
+  Michigan: "MI",
+  Minnesota: "MN",
+  Mississippi: "MS",
+  Missouri: "MO",
+  Montana: "MT",
+  Nebraska: "NE",
+  Nevada: "NV",
+  "New Hampshire": "NH",
+  "New Jersey": "NJ",
+  "New Mexico": "NM",
+  "New York": "NY",
+  "North Carolina": "NC",
+  "North Dakota": "ND",
+  "Northern Mariana Islands": "MP",
+  Ohio: "OH",
+  Oklahoma: "OK",
+  Oregon: "OR",
+  Pennsylvania: "PA",
+  "Puerto Rico": "PR",
+  "Rhode Island": "RI",
+  "South Carolina": "SC",
+  "South Dakota": "SD",
+  Tennessee: "TN",
+  Texas: "TX",
+  Utah: "UT",
+  Vermont: "VT",
+  "U.S. Virgin Islands": "VI",
+  Virginia: "VA",
+  Washington: "WA",
+  "West Virginia": "WV",
+  Wisconsin: "WI",
+  Wyoming: "WY",
+};
+
 function formatRole(
   chamber: string,
   state: string,
   district?: number | null,
+  screenWidth?: number,
 ): string {
-  const threshold = Platform.OS === "ios" ? 32 : 39;
-  if (chamber === "House of Representatives") {
+  const baseThreshold = Platform.OS === "ios" ? 32 : 39;
+  const threshold =
+    screenWidth && screenWidth < 390 ? baseThreshold - 6 : baseThreshold;
+
+  const stateAbbr = STATE_ABBR[state] ?? state;
+
+  const isHouse =
+    chamber === "House of Representatives" ||
+    chamber === "House" ||
+    (!chamber?.toLowerCase().includes("senate") && district != null);
+
+  if (isHouse) {
     const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
     const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
-    return full.length > threshold ? abbr : full;
+    const short = `Rep, ${stateAbbr}${district ? `, District ${district}` : ""}`;
+    if (full.length <= threshold) return full;
+    if (abbr.length <= threshold) return abbr;
+    return short;
   }
+
   const full = `Senator, ${state}`;
   const abbr = `Sen, ${state}`;
-  return full.length > threshold + 1 ? abbr : full;
+  const short = `Sen, ${stateAbbr}`;
+  if (full.length <= threshold + 1) return full;
+  if (abbr.length <= threshold + 1) return abbr;
+  return short;
 }
 
 const OfficialCard = React.memo(function OfficialCard({
@@ -767,6 +855,7 @@ const OfficialCard = React.memo(function OfficialCard({
 }) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
+  const { width: screenWidth } = useWindowDimensions();
 
   return (
     <Pressable
@@ -838,13 +927,18 @@ const OfficialCard = React.memo(function OfficialCard({
                   .join(" ")
               : item.name}
           </Text>
-          <View style={componentStyles.metaRow}>
-            <Text style={componentStyles.subtitle}>
+          <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+            <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
               {item.partyName?.charAt(0) || ""}
             </Text>
-            <Text style={componentStyles.separator}>·</Text>
-            <Text style={componentStyles.subtitle} numberOfLines={1}>
-              {formatRole(item.chamber, item.state, item.district)}
+            <Text style={[componentStyles.separator, { flexShrink: 0 }]}>
+              ·
+            </Text>
+            <Text
+              style={[componentStyles.subtitle, { flexShrink: 1 }]}
+              numberOfLines={1}
+            >
+              {formatRole(item.chamber, item.state, item.district, screenWidth)}
             </Text>
           </View>
         </View>

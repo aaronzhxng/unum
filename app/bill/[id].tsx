@@ -34,10 +34,12 @@ import {
   ScrollView,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import JargonFootnotes from "../../components/JargonFootnotes";
 import AddModal from "../global_components/AddModal";
+import ErrorScreen from "../global_components/ErrorScreen";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
 import ScreenTourOverlay, {
@@ -264,6 +266,11 @@ export default function BillDetail() {
     FollowedOfficial[]
   >([]);
 
+  const [titleExpanded, setTitleExpanded] = useState(false);
+  const [titleExceedsLimit, setTitleExceedsLimit] = useState(false);
+
+  const { width: screenWidth } = useWindowDimensions();
+
   useFocusEffect(
     useCallback(() => {
       setNotifVersion((v) => v + 1);
@@ -297,105 +304,93 @@ export default function BillDetail() {
   type StageStatus = "empty" | "half" | "full";
 
   const getBillStages = (bill: any): StageStatus[] => {
-    const action = (bill.latestAction?.text ?? "").toLowerCase();
     const type = bill.type?.toUpperCase();
+
+    // Build a list of all action texts to check
+    const allTexts: string[] = [];
+    if (bill.latestAction?.text)
+      allTexts.push(bill.latestAction.text.toLowerCase());
+    if (Array.isArray(bill.actions)) {
+      bill.actions.forEach((a: any) => {
+        if (a.text) allTexts.push(a.text.toLowerCase());
+      });
+    }
+    const any = (keyword: string) => allTexts.some((a) => a.includes(keyword));
 
     // Simple resolutions — single chamber
     if (type === "HRES" || type === "SRES") {
-      if (action.includes("passed") || action.includes("agreed to"))
-        return ["full", "full"];
+      if (any("passed") || any("agreed to")) return ["full", "full"];
       return ["full", "half"];
     }
 
-    // Concurrent resolutions — both chambers, no president
+    // Concurrent resolutions
     if (type === "HCONRES") {
-      if (
-        action.includes("passed senate") ||
-        action.includes("agreed to in senate")
-      )
+      if (any("passed senate") || any("agreed to in senate"))
         return ["full", "full", "full"];
-      if (
-        action.includes("passed house") ||
-        action.includes("agreed to in house")
-      )
+      if (any("passed house") || any("agreed to in house"))
         return ["full", "full", "half"];
       return ["full", "half", "empty"];
     }
     if (type === "SCONRES") {
-      if (
-        action.includes("passed house") ||
-        action.includes("agreed to in house")
-      )
+      if (any("passed house") || any("agreed to in house"))
         return ["full", "full", "full"];
-      if (
-        action.includes("passed senate") ||
-        action.includes("agreed to in senate")
-      )
+      if (any("passed senate") || any("agreed to in senate"))
         return ["full", "full", "half"];
       return ["full", "half", "empty"];
     }
 
     // Nominations
     if (type === "PN") {
-      if (action.includes("confirmed")) return ["full", "full", "full"];
-      if (action.includes("committee") || action.includes("hearing"))
-        return ["full", "full", "half"];
+      if (any("confirmed")) return ["full", "full", "full"];
+      if (any("committee") || any("hearing")) return ["full", "full", "half"];
       return ["full", "half", "empty"];
     }
 
     // Treaties
     if (type === "TREATY") {
-      if (action.includes("ratified")) return ["full", "full", "full"];
-      if (action.includes("committee") || action.includes("hearing"))
-        return ["full", "full", "half"];
+      if (any("ratified")) return ["full", "full", "full"];
+      if (any("committee") || any("hearing")) return ["full", "full", "half"];
       return ["full", "half", "empty"];
     }
 
     // Standard bills and joint resolutions
     if (
-      action.includes("became public law") ||
-      action.includes("signed by president") ||
-      action.includes("veto overridden")
+      any("became public law") ||
+      any("signed by president") ||
+      any("veto overridden")
     )
       return ["full", "full", "full", "full"];
 
     if (
-      action.includes("presented to president") ||
-      action.includes("to president") ||
-      action.includes("vetoed by president")
+      any("presented to president") ||
+      any("to president") ||
+      any("vetoed by president")
     )
       return ["full", "full", "full", "half"];
 
     if (type?.startsWith("H")) {
-      if (action.includes("passed senate") || action.includes("senate passed"))
+      if (any("passed senate") || any("senate passed"))
         return ["full", "full", "full", "half"];
       if (
-        (action.includes("referred to") && action.includes("senate")) ||
-        (action.includes("senate") && !action.includes("passed house"))
+        any("passed house") ||
+        any("passed/agreed to in house") ||
+        any("on passage passed")
       )
         return ["full", "full", "half", "empty"];
-      if (
-        action.includes("passed house") ||
-        action.includes("passed/agreed to in house") ||
-        action.includes("on passage")
-      )
-        return ["full", "full", "half", "empty"];
+      if (any("senate")) return ["full", "full", "half", "empty"];
       return ["full", "half", "empty", "empty"];
     }
 
     if (type?.startsWith("S")) {
-      if (action.includes("passed house") || action.includes("house passed"))
+      if (any("passed house") || any("house passed"))
         return ["full", "full", "full", "half"];
       if (
-        (action.includes("referred to") && action.includes("house")) ||
-        (action.includes("house") && !action.includes("passed senate"))
+        any("passed senate") ||
+        any("passed/agreed to in senate") ||
+        any("on passage passed")
       )
         return ["full", "full", "half", "empty"];
-      if (
-        action.includes("passed senate") ||
-        action.includes("passed/agreed to in senate")
-      )
-        return ["full", "full", "half", "empty"];
+      if (any("house")) return ["full", "full", "half", "empty"];
       return ["full", "half", "empty", "empty"];
     }
 
@@ -591,7 +586,7 @@ export default function BillDetail() {
     setTimeout(() => setShowActionToast(false), 1500);
   };
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["bill", id],
     queryFn: async () => {
       // console.log("queryFn start:", Date.now());
@@ -649,6 +644,7 @@ export default function BillDetail() {
     enabled: !!id,
     retry: 1,
     retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // add this
   });
 
   const { data: votesData, isLoading: votesLoading } = useQuery({
@@ -656,6 +652,7 @@ export default function BillDetail() {
     queryFn: () => billsService.getVotes(id as string, congress),
     enabled: !!id && votingVisited,
     retry: 1,
+    staleTime: 5 * 60 * 1000, // add this
   });
 
   const { data: cosponsorsData, isLoading: cosponsorsLoading } = useQuery({
@@ -663,6 +660,7 @@ export default function BillDetail() {
     queryFn: () => billsService.getCosponsors(id as string, congress),
     enabled: !!id && cosponsorsVisited,
     retry: 1,
+    staleTime: 5 * 60 * 1000, // add this
   });
 
   const bill = data?.bill;
@@ -870,8 +868,8 @@ export default function BillDetail() {
         name: c.name,
         party: c.party,
         role: c.district
-          ? `Rep, ${STATE_NAMES[c.state] || c.state} - ${c.district}`
-          : `Senator, ${STATE_NAMES[c.state] || c.state}`,
+          ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
+          : `Sen, ${STATE_NAMES[c.state] || c.state}`,
         photoUrl: c.photoUrl,
         update: c.isOriginalCosponsor
           ? "Original cosponsor"
@@ -952,8 +950,41 @@ export default function BillDetail() {
 
   if (error || !bill) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Error loading bill</Text>
+      <ErrorScreen
+        onRetry={refetch}
+        onBack={handleBack}
+        message="Could not load this bill"
+      />
+    );
+  }
+
+  if (!bill.latestAction?.actionDate) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={componentStyles.headerBar}>
+          <Pressable
+            onPress={handleBack}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <ChevronLeft size={24} color="#535353" />
+          </Pressable>
+        </View>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text
+            style={{
+              color: "#7B7C81",
+              fontSize: 14,
+              textAlign: "center",
+              paddingHorizontal: 32,
+            }}
+          >
+            This bill has no legislative information available yet.
+          </Text>
+        </View>
       </View>
     );
   }
@@ -1129,9 +1160,27 @@ export default function BillDetail() {
               </>
             )}
           </View>
-          <Text style={componentStyles.billNumber}>
-            {bill.type}.{bill.number} - {bill.title}
-          </Text>
+          <Pressable
+            onPress={() => titleExceedsLimit && setTitleExpanded((v) => !v)}
+          >
+            <Text
+              style={componentStyles.billNumber}
+              numberOfLines={titleExpanded ? undefined : 8}
+              ellipsizeMode="tail"
+              onTextLayout={(e) => {
+                if (!titleExceedsLimit && e.nativeEvent.lines.length >= 8) {
+                  setTitleExceedsLimit(true);
+                }
+              }}
+            >
+              {bill.type}.{bill.number} - {bill.title}
+            </Text>
+            {titleExceedsLimit && (
+              <Text style={{ fontSize: 11, color: "#008CFF", marginTop: 2 }}>
+                {titleExpanded ? "Tap to collapse" : "Tap to expand"}
+              </Text>
+            )}
+          </Pressable>
         </View>
       </View>
 
@@ -1223,11 +1272,12 @@ export default function BillDetail() {
                           key={index}
                           style={{
                             flex: 1,
-                            fontSize: 10,
+                            fontSize: screenWidth < 390 ? 8 : 10,
                             color: status === "empty" ? "#7B7C81" : "#1a1a1a",
                             fontWeight: status === "empty" ? "400" : "600",
                             textAlign: "left",
-                            lineHeight: 13,
+                            lineHeight: screenWidth < 390 ? 11 : 13,
+                            paddingRight: 2,
                           }}
                           numberOfLines={2}
                         >
@@ -1989,9 +2039,18 @@ export default function BillDetail() {
       ? `https://bioguide.congress.gov/bioguide/photo/${sponsor.bioguideId[0]}/${sponsor.bioguideId}.jpg`
       : null;
 
-    const role = sponsor.district
-      ? `Representative, ${STATE_NAMES[sponsor.state] ?? sponsor.state}, District ${sponsor.district}`
-      : `Senator, ${STATE_NAMES[sponsor.state] ?? sponsor.state}`;
+    const { width: screenWidth } = useWindowDimensions();
+    const stateName = STATE_NAMES[sponsor.state] ?? sponsor.state;
+    const role = (() => {
+      if (sponsor.district) {
+        const full = `Representative, ${stateName}, District ${sponsor.district}`;
+        const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
+        return screenWidth < 390 ? abbr : full;
+      }
+      const full = `Senator, ${stateName}`;
+      const abbr = `Sen, ${stateName}`;
+      return screenWidth < 390 ? abbr : full;
+    })();
 
     return (
       <Pressable
