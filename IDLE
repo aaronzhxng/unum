@@ -1,0 +1,105 @@
+> Evaluating settings
+debarshikundu@Debarshis-Mac-mini unum % npx expo run
+✔ Select the platform to run › iOS
+› Using expo run:ios 
+env: load .env
+env: export EXPO_PUBLIC_GOOGLE_CIVIC_KEY
+› Planning build
+› Executing react-native Pods/hermes-engine » [CP-User] [Hermes] Replace Hermes for the right configuration, if needed
+› Executing react-native Pods/ReactNativeDependencies » [CP-User] [RNDeps] Replace React Native Dependencies for the right configuration, if needed
+› Preparing expo-image Pods/SDWebImage-SDWebImage » ResourceBundle-SDWebImage-SDWebImage-Info.plist
+› Preparing expo-updates Pods/ReachabilitySwift-ReachabilitySwift » ResourceBundle-ReachabilitySwift-ReachabilitySwift-Info.plist
+› Preparing Pods/React-cxxreact-React-cxxreact_privacy » ResourceBundle-React-cxxreact_privacy-React-cxxreact-Info.plist
+› Preparing Pods/EXApplication-ExpoApplication_privacy » ResourceBundle-ExpoApplication_privacy-EXApplication-Info.plist
+› Preparing Pods/ExpoFileSystem-ExpoFileSystem_privacy » ResourceBundle-ExpoFileSystem_privacy-ExpoFileSystem-Info.plist
+› Preparing Pods/ExpoNotifications-ExpoNotifications_privacy » ResourceBundle-ExpoNotifications_privacy-ExpoNotifications-Info.plist
+› Preparing Pods/React-Core-React-Core_privacy » ResourceBundle-React-Core_privacy-React-Core-Info.plist
+› Preparing Pods/RNSVG-RNSVGFilters » ResourceBundle-RNSVGFilters-RNSVG-Info.plist
+› Preparing Pods/RNCAsyncStorage-RNCAsyncStorage_resources » ResourceBundle-RNCAsyncStorage_resources-RNCAsyncStorage-Info.plist
+› Preparing Pods/ExpoSystemUI-ExpoSystemUI_privacy » ResourceBundle-ExpoSystemUI_privacy-ExpoSystemUI-Info.plist
+› Preparing Pods/EXConstants-ExpoConstants_privacy » ResourceBundle-ExpoConstants_privacy-EXConstants-Info.plist
+› Preparing expo-updates Pods/EXUpdates-EXUpdates » ResourceBundle-EXUpdates-EXUpdates-Info.plist
+› Preparing expo-constants Pods/EXConstants-EXConstants » ResourceBundle-EXConstants-EXConstants-Info.plist
+› Compiling expo-image Pods/libwebp » sharpyuv_neon.c
+› Compiling expo-image Pods/libwebp » sharpyuv_sse2.c
+› Compiling expo-image Pods/libwebp » sharpyuv_gamma.c
+› Compiling expo-image Pods/libwebp » sharpyuv_dsp.c
+› Compiling expo-image Pods/libwebp » sharpyuv_cpu.c
+› Compiling expo-image Pods/libwebp » sharpyuv.c
+› Compiling Pods/libavif » write.c
+› Compiling Pods/libavif » alpha.c
+› Compiling Pods/libavif » utils.c
+› Packaging expo-image Pods/libwebp » liblibwebp.a
+› Compiling Pods/libavif » stream.c
+› Compiling Pods/libavif » scale.c
+› Compiling Pods/libavif » reformat_libyuv.c
+› Compiling Pods/libavif » reformat_libsharpyuv.c
+› Compiling Pods/libavif » reformat.c
+› Compiling Pods/libavif » rawdata.c
+› Compiling Pods/libavif » read.c
+› Compiling Pods/libavif » obu.c
+› Compiling Pods/libavif » mem.c
+› Compiling Pods/libavif » io.c
+› Compiling Pods/libavif » exif.c
+› Compiling Pods/libavif » diag.c
+› Compiling Pods/libavif » colr.c
+› Compiling Pods/libavif » codec_dav1d.c
+› Compiling Pods/libavif » avif.c
+› Compiling Pods/libavif » libavif-dummy.m
+› Compiling expo-structured-headers Pods/EXStructuredHeaders » EXStructuredHeadersParser.m
+› Compiling expo-json-utils Pods/EXJSONUtils » NSDictionary+EXJSONUtils.m
+› Packaging expo-json-utils Pods/EXJSONUtils » libEXJSONUtils.a
+› Packaging Pods/libavif » liblibavif.a
+› Packaging expo-structured-headers Pods/EXStructuredHeaders » libEXStructuredHeaders.a
+› Packaging react-native Pods/RCTSwiftUI » libRCTSwiftUI.a
+› Executing react-native Pods/RCTSwiftUI » Copy generated compatibility header
+› Compiling react-native Pods/RCTSwiftUIWrapper » RCTSwiftUIWrapper-dummy.m
+› Compiling react-native Pods/RCTSwiftUIWrapper » RCTSwiftUIContainerViewWrapper.m
+› Packaging react-native Pods/RCTSwiftUIWrapper » libRCTSwiftUIWrapper.a
+› Executing react-native Pods/ReactNativeDependencies » [CP] Copy XCFrameworks
+› Executing react-native Pods/React-Core-prebuilt » [CP-User] [RNDeps] Replace React Native Core for the right configuration, if needed
+› Executing react-native Pods/React-Core-prebuilt » [CP] Copy XCFrameworks
+› Executing react-native Pods/React-RCTFBReactNativeSpec » [CP-User] [RN]Check FBReactNativeSpec
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXStringUtils.cpp
+› Executing unum Pods/ReactCodegen » [CP-User] Generate Specs
+› Compiling expo-modules-core Pods/ExpoModulesJSI » TypedArray.cpp
+› Compiling expo-modules-core Pods/ExpoModulesJSI » MemoryBuffer.cpp
+› Compiling expo-modules-core Pods/ExpoModulesJSI » ObjectDeallocator.cpp
+› Compiling expo-modules-core Pods/ExpoModulesJSI » JSIUtils.cpp
+› Compiling expo-modules-core Pods/ExpoModulesJSI » MainThreadInvoker.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXRawJavaScriptFunction.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » ExpoModulesJSI-dummy.m
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXRawJavaScriptArrayBuffer.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXNativeArrayBuffer.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJavaScriptWeakObject.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJavaScriptValue.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJavaScriptTypedArray.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJavaScriptRuntime.mm
+
+❌  (node_modules/expo-modules-core/ios/JSI/EXJavaScriptRuntime.mm:10:9)
+
+   8 |
+   9 | #import <jsi/jsi.h>
+> 10 | #import <hermes/hermes.h>
+     |         ^ 'hermes/hermes.h' file not found
+  11 | #import <ReactCommon/SchedulerPriority.h>
+  12 |
+  13 | @implementation EXJavaScriptRuntime {
+
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJavaScriptObjectBinding.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJavaScriptObject.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJSIUtils.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXJSIConversions.mm
+› Compiling expo-modules-core Pods/ExpoModulesJSI » EXArrayBuffer.mm
+› Compiling @expo/log-box Pods/ExpoLogBox » ExpoRedBoxSwap.mm
+› Compiling @expo/log-box Pods/ExpoLogBox » ExpoLogBox-dummy.m
+› Compiling unum Pods/ReactCodegen » rngesturehandler_codegen-generated.mm
+› Compiling unum Pods/ReactCodegen » rnreanimated-generated.mm
+› Packaging @expo/log-box Pods/ExpoLogBox » libExpoLogBox.a
+› Compiling react-native-safe-area-context Pods/react-native-safe-area-context » RNCSafeAreaViewState.cpp
+› Compiling @react-native-community/netinfo Pods/react-native-netinfo » RNCNetInfo.mm
+› Compiling unum Pods/ReactCodegen » safeareacontext-generated.mm
+⚠️  Pods/SDWebImage-SDWebImage: iOS@9.0 deployment version mismatch, expected >= 2.0 <= 26.5.99
+
+› 1 error(s), and 1 warning(s)
+
