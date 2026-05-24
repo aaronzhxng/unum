@@ -3,10 +3,10 @@ import Constants from "expo-constants";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
-import UpdateToast from "./global_components/UpdateToast";
 import { initializeDatabase } from "./utils/database";
 import { storage } from "./utils/storage";
 import { syncListItemsFromBills } from "./utils/syncListItems";
@@ -39,6 +39,10 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    if (__DEV__) {
+      LogBox.ignoreAllLogs(true);
+    }
+
     NavigationBar.setBackgroundColorAsync("#fafafa");
     NavigationBar.setButtonStyleAsync("dark");
   }, []);
@@ -110,6 +114,10 @@ export default function RootLayout() {
                 options={{ headerShown: false, animation: "slide_from_left" }}
               />
               <Stack.Screen
+                name="education_tab"
+                options={{ headerShown: false, animation: "slide_from_right" }}
+              />
+              <Stack.Screen
                 name="onboarding"
                 options={{ headerShown: false }}
               />
@@ -145,7 +153,6 @@ export default function RootLayout() {
           </TabBarProvider>
         </PolicyAreasProvider>
       </QueryClientProvider>
-      <UpdateToast />
     </GestureHandlerRootView>
   );
 }
