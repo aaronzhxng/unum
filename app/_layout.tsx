@@ -3,7 +3,6 @@ import Constants from "expo-constants";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
@@ -39,10 +38,6 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (__DEV__) {
-      LogBox.ignoreAllLogs(true);
-    }
-
     NavigationBar.setBackgroundColorAsync("#fafafa");
     NavigationBar.setButtonStyleAsync("dark");
   }, []);

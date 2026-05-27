@@ -14,7 +14,8 @@
       "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "allowBackup": false,
@@ -24,17 +25,15 @@
         "backgroundColor": "#E6F4FE"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.unuminitiative.unum"
+      "package": "com.unuminitiative.unum",
+      "googleServicesFile": "./google-services.json"
     },
     "androidStatusBar": {
       "barStyle": "dark-content",
       "translucent": true,
       "backgroundColor": "#fafafa"
     },
-    "androidNavigationBar": {
-      "barStyle": "dark-content",
-      "backgroundColor": "#fafafa"
-    },
+    
     "web": {
       "output": "static"
     },
@@ -81,19 +80,7 @@
         "projectId": "12b9a43d-7541-4d8e-b709-0e9d15418ffd"
       }
     },
-    "splash": {
-      "image": "./assets/app_icons/game-icons_olive.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#fafafa"
-    },
-    "assets": [
-      "assets/seed.db"
-    ],
-    "metro": {
-      "blockList": [
-        "scripts/.*"
-      ]
-    },
+    
     "runtimeVersion": {
       "policy": "appVersion"
     },
