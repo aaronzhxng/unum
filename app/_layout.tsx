@@ -110,6 +110,10 @@ export default function RootLayout() {
                 options={{ headerShown: false, animation: "slide_from_left" }}
               />
               <Stack.Screen
+                name="education_tab"
+                options={{ headerShown: false, animation: "slide_from_right" }}
+              />
+              <Stack.Screen
                 name="onboarding"
                 options={{ headerShown: false }}
               />

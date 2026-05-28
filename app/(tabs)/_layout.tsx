@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Platform, Pressable, Text, View } from "react-native";
+import { Dimensions, Image, Platform, Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
@@ -24,6 +25,12 @@ const TABS = [
     activeIcon: "document-text",
     inactiveIcon: "document-text-outline",
     size: 28,
+  },
+  {
+    name: "education",
+    icon: require("../../assets/education_icons/constitution.png"),
+    size: 26,
+    isRoute: true,
   },
 ];
 
@@ -262,6 +269,7 @@ function TourOverlay() {
 }
 
 function TabsLayoutInner() {
+  const router = useRouter();
   const tabBarRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const pagerRef = useRef<PagerView>(null);
@@ -321,17 +329,42 @@ function TabsLayoutInner() {
                   justifyContent: "center",
                   alignItems: "center",
                 }}
-                onPress={() => navigateToTab(index)}
-              >
-                <Ionicons
-                  name={
-                    (activeIndex === index
-                      ? tab.activeIcon
-                      : tab.inactiveIcon) as any
+                onPress={() => {
+                  if ((tab as any).isRoute) {
+                    router.push("/education_tab");
+                    return;
                   }
-                  size={tab.size}
-                  color={activeIndex === index ? "black" : "#8e8e93"}
-                />
+                  navigateToTab(index);
+                }}
+              >
+                {(tab as any).isRoute ? (
+                  <View
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 19,
+                      backgroundColor: "#f4f4f4",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Image
+                      source={(tab as any).icon}
+                      style={{ width: tab.size, height: tab.size }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                ) : (
+                  <Ionicons
+                    name={
+                      (activeIndex === index
+                        ? tab.activeIcon
+                        : tab.inactiveIcon) as any
+                    }
+                    size={tab.size}
+                    color={activeIndex === index ? "black" : "#8e8e93"}
+                  />
+                )}
               </Pressable>
             ))}
           </View>
