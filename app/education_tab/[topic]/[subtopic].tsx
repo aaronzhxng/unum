@@ -1,6 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Image, ScrollView, Text, View } from "react-native";
-import { getEducationSubtopic, getEducationTopic } from "../content";
+import { ChevronLeft } from "lucide-react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { styles as componentStyles } from "../../global_styles/styles";
+import { EducationSection, getEducationSubtopic, getEducationTopic } from "../content";
 
 export default function EducationSubtopicScreen() {
   const router = useRouter();
@@ -33,127 +35,128 @@ export default function EducationSubtopicScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
+      {/* Header */}
+      <View style={[componentStyles.headerBar, { paddingHorizontal: 16 }]}>
+        <Pressable
+          onPress={() => router.back()}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.75 : 1 }],
+          })}
+        >
+          <ChevronLeft size={24} color="#535353" />
+        </Pressable>
+      </View>
+
       <ScrollView
         contentContainerStyle={{
           padding: 20,
-          paddingTop: 56,
           paddingBottom: 36,
         }}
       >
-        <Text
-          onPress={() => router.back()}
-          style={{ marginBottom: 14, fontSize: 14, color: "#6b6b6b" }}
-        >
-          Back
-        </Text>
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 14,
-          }}
-        >
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              backgroundColor: "#fff",
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "#ececec",
-              overflow: "hidden",
-            }}
-          >
-            <Image
-              source={topicData.icon}
-              style={{ width: 26, height: 26 }}
-              resizeMode="contain"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 14, color: "#8a8a8a", marginBottom: 4 }}>
-              {topicData.title}
-            </Text>
-            <Text style={{ fontSize: 24, fontWeight: "700", color: "#1a1a1a" }}>
-              {subtopicData.title}
-            </Text>
-          </View>
+        {/* Icon + Title */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 }}>
+          <Image
+            source={topicData.icon}
+            style={{ width: 50, height: 50 }}
+            resizeMode="contain"
+          />
+          <Text style={{ fontSize: 20, fontWeight: "800", color: "#000000", flex: 1 }}>
+            {subtopicData.title}
+          </Text>
         </View>
 
+        {/* Summary node */}
         <View
           style={{
-            backgroundColor: "#fff",
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: "#ececec",
-            padding: 18,
-            shadowColor: "#000",
-            shadowOpacity: 0.04,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: 4 },
-            elevation: 1,
+            marginBottom: 12,
+            paddingVertical: 16,
+            paddingHorizontal: 16,
+            borderRadius: 24,
+            backgroundColor: "#fafafa",
+            shadowColor: "#000000",
+            shadowOpacity: 0.15,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 4,
+            elevation: 2,
           }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 14,
-            }}
-          >
-            <View
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 10,
-                backgroundColor: "#f4f4f1",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-              }}
-            >
-              <Image
-                source={topicData.icon}
-                style={{ width: 16, height: 16 }}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={{ fontSize: 13, fontWeight: "700", color: "#777" }}>
-              Lesson
-            </Text>
-          </View>
-
-          <Text
-            style={{
-              fontSize: 15,
-              lineHeight: 22,
-              color: "#3b3b3b",
-              marginBottom: 14,
-            }}
-          >
+          <Text style={{ fontSize: 14, color: "#535353", lineHeight: 20 }}>
             {subtopicData.summary}
           </Text>
+        </View>
 
-          {subtopicData.body.map((paragraph, index) => (
-            <Text
+        {/* Body section nodes */}
+        {subtopicData.body.map((section: EducationSection, index: number) => {
+          if (section.type === "image") {
+            if (!section.source) return null;
+            return (
+              <View
+                key={index}
+                style={{
+                  marginBottom: 12,
+                  borderRadius: 24,
+                  overflow: "hidden",
+                  backgroundColor: "#f0f0f0",
+                }}
+              >
+                <Image
+                  source={section.source}
+                  style={{ width: "100%", height: 200 }}
+                  resizeMode="cover"
+                />
+                {section.caption && (
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: "#7B7C81",
+                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      lineHeight: 17,
+                    }}
+                  >
+                    {section.caption}
+                  </Text>
+                )}
+              </View>
+            );
+          }
+
+          // type === "text"
+          return (
+            <View
               key={index}
               style={{
-                fontSize: 15,
-                lineHeight: 23,
-                color: "#1f1f1f",
-                marginBottom: index === subtopicData.body.length - 1 ? 0 : 12,
+                marginBottom: 12,
+                paddingVertical: 16,
+                paddingHorizontal: 16,
+                borderRadius: 24,
+                backgroundColor: "#fafafa",
+                shadowColor: "#000000",
+                shadowOpacity: 0.15,
+                shadowOffset: { width: 0, height: 2 },
+                shadowRadius: 4,
+                elevation: 2,
               }}
             >
-              {paragraph}
-            </Text>
-          ))}
-        </View>
+              {section.heading && (
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "700",
+                    color: "#1a1a1a",
+                    marginBottom: 8,
+                  }}
+                >
+                  {section.heading}
+                </Text>
+              )}
+              <Text style={{ fontSize: 14, color: "#535353", lineHeight: 20 }}>
+                {section.content}
+              </Text>
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );

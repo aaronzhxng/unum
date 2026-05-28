@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
-import React, { useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions, Image, Platform, Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
@@ -270,6 +271,7 @@ function TourOverlay() {
 function TabsLayoutInner() {
   const tabBarRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexRef = useRef(0);
   const pagerRef = useRef<PagerView>(null);
   const { tabBarHidden } = useTabBar();
   const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
@@ -277,8 +279,20 @@ function TabsLayoutInner() {
   const navigateToTab = (index: number) => {
     pagerRef.current?.setPage(index);
     setActiveIndex(index);
+    activeIndexRef.current = index;
     setVisitedTabs((prev) => new Set([...prev, index]));
   };
+
+  // When returning to (tabs) via swipe-back, the PagerView can drift to
+  // page 0. Re-snap to the correct page once the screen regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setTimeout(() => {
+        pagerRef.current?.setPage(activeIndexRef.current);
+      }, 50);
+      return () => clearTimeout(timer);
+    }, [])
+  );
 
   return (
     <TourProvider onNavigateTab={navigateToTab}>

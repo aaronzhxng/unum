@@ -1,5 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { styles as componentStyles } from "../global_styles/styles";
 import { getEducationTopic } from "./content";
 
 export default function EducationTopicScreen() {
@@ -26,53 +28,29 @@ export default function EducationTopicScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
+      {/* Header */}
+      <View style={[componentStyles.headerBar, { paddingHorizontal: 16 }]}>
+        <View style={componentStyles.headerLeft}>
+          <Pressable
+            onPress={() => router.back()}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+            })}
+          >
+            <ChevronLeft size={24} color="#535353" />
+          </Pressable>
+          <Text style={[componentStyles.header, { marginBottom: 0 }]}>
+            {topicData.title}
+          </Text>
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={{
           padding: 20,
-          paddingTop: 56,
           paddingBottom: 32,
         }}
       >
-        <Pressable onPress={() => router.back()} style={{ marginBottom: 16 }}>
-          <Text style={{ fontSize: 14, color: "#6b6b6b" }}>Back</Text>
-        </Pressable>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 18,
-          }}
-        >
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              backgroundColor: "#fff",
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "#ececec",
-            }}
-          >
-            <Image
-              source={topicData.icon}
-              style={{ width: 26, height: 26 }}
-              resizeMode="contain"
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 22, fontWeight: "700", color: "#1a1a1a" }}>
-              {topicData.title}
-            </Text>
-            <Text style={{ marginTop: 4, fontSize: 13, color: "#6b6b6b" }}>
-              {topicData.subtitle}
-            </Text>
-          </View>
-        </View>
-
         {topicData.subtopics.map((subtopic) => (
           <Pressable
             key={subtopic.id}
@@ -82,57 +60,39 @@ export default function EducationTopicScreen() {
               )
             }
             style={({ pressed }) => ({
-              backgroundColor: "#fff",
-              borderRadius: 18,
-              borderWidth: 1,
-              borderColor: "#ececec",
-              padding: 16,
-              marginBottom: 12,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-              transform: [{ scale: pressed ? 0.985 : 1 }],
-              shadowColor: "#000",
-              shadowOpacity: 0.04,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 1,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+              borderRadius: 48,
             })}
           >
             <View
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 13,
-                backgroundColor: "#f4f4f1",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-              }}
+              style={[
+                componentStyles.officialCard,
+                { paddingVertical: 16, borderWidth: 2, borderColor: "transparent" },
+              ]}
             >
-              <Image
-                source={topicData.icon}
-                style={{ width: 22, height: 22 }}
-                resizeMode="contain"
-              />
-            </View>
-
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{ fontSize: 16, fontWeight: "700", color: "#1f1f1f" }}
-              >
-                {subtopic.title}
-              </Text>
-              <Text
+              {/* Icon column — 64px wide, icon 50px */}
+              <View
                 style={{
-                  marginTop: 4,
-                  fontSize: 13,
-                  lineHeight: 18,
-                  color: "#787878",
+                  width: 64,
+                  marginRight: 12,
+                  flexShrink: 0,
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                {subtopic.summary}
-              </Text>
+                <View style={{ width: 50, height: 50 }}>
+                  <Image
+                    source={topicData.icon}
+                    style={{ width: 50, height: 50 }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </View>
+              {/* Subtopic Info */}
+              <View style={{ flex: 1 }}>
+                <Text style={componentStyles.name}>{subtopic.title}</Text>
+                <Text style={componentStyles.subtitle} numberOfLines={1} ellipsizeMode="tail">{subtopic.summary}</Text>
+              </View>
             </View>
           </Pressable>
         ))}
