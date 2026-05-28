@@ -275,6 +275,10 @@ function TabsLayoutInner() {
   const pagerRef = useRef<PagerView>(null);
   const { tabBarHidden } = useTabBar();
   const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
+  // Guard against stale onPageSelected events that fire during the
+  // focus-recovery snap. Without this, a late drift event can override
+  // the snap and land back on page 0.
+  const focusRecoveryRef = useRef(false);
 
   const navigateToTab = (index: number) => {
     pagerRef.current?.setPage(index);
@@ -285,12 +289,23 @@ function TabsLayoutInner() {
 
   // When returning to (tabs) via swipe-back, the PagerView can drift to
   // page 0. Re-snap to the correct page once the screen regains focus.
+  // The recovery guard blocks any trailing onPageSelected(0) events that
+  // arrive after the snap fires.
   useFocusEffect(
     useCallback(() => {
-      const timer = setTimeout(() => {
+      focusRecoveryRef.current = true;
+      const snapTimer = setTimeout(() => {
         pagerRef.current?.setPage(activeIndexRef.current);
+        setActiveIndex(activeIndexRef.current);
+        // Keep the guard alive long enough to absorb any trailing drift events
+        setTimeout(() => {
+          focusRecoveryRef.current = false;
+        }, 300);
       }, 50);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(snapTimer);
+        focusRecoveryRef.current = false;
+      };
     }, [])
   );
 
@@ -304,8 +319,10 @@ function TabsLayoutInner() {
           style={{ flex: 1 }}
           initialPage={0}
           onPageSelected={(e) => {
+            if (focusRecoveryRef.current) return;
             const index = e.nativeEvent.position;
             setActiveIndex(index);
+            activeIndexRef.current = index; // keep ref in sync with manual swipes
             setVisitedTabs((prev) => new Set([...prev, index]));
           }}
         >
