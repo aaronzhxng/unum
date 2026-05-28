@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { styles as componentStyles } from "../../global_styles/styles";
 import { EducationSection, getEducationSubtopic, getEducationTopic } from "../content";
 
@@ -33,6 +33,19 @@ export default function EducationSubtopicScreen() {
     );
   }
 
+  const cardStyle = {
+    marginBottom: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    backgroundColor: "#fafafa",
+    shadowColor: "#000000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
       {/* Header */}
@@ -53,7 +66,6 @@ export default function EducationSubtopicScreen() {
           paddingBottom: 36,
         }}
       >
-
         {/* Icon + Title */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 }}>
           <Image
@@ -63,26 +75,6 @@ export default function EducationSubtopicScreen() {
           />
           <Text style={{ fontSize: 20, fontWeight: "800", color: "#000000", flex: 1 }}>
             {subtopicData.title}
-          </Text>
-        </View>
-
-        {/* Summary node */}
-        <View
-          style={{
-            marginBottom: 12,
-            paddingVertical: 16,
-            paddingHorizontal: 16,
-            borderRadius: 24,
-            backgroundColor: "#fafafa",
-            shadowColor: "#000000",
-            shadowOpacity: 0.15,
-            shadowOffset: { width: 0, height: 2 },
-            shadowRadius: 4,
-            elevation: 2,
-          }}
-        >
-          <Text style={{ fontSize: 14, color: "#535353", lineHeight: 20 }}>
-            {subtopicData.summary}
           </Text>
         </View>
 
@@ -122,23 +114,48 @@ export default function EducationSubtopicScreen() {
             );
           }
 
+          if (section.type === "links") {
+            return (
+              <View key={index} style={cardStyle}>
+                {section.heading && (
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "700",
+                      color: "#1a1a1a",
+                      marginBottom: 12,
+                    }}
+                  >
+                    {section.heading}
+                  </Text>
+                )}
+                {section.items.map((item, i) => (
+                  <Pressable
+                    key={i}
+                    onPress={() => Linking.openURL(item.url)}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.6 : 1,
+                      marginBottom: i < section.items.length - 1 ? 12 : 0,
+                    })}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: "#008CFF",
+                        lineHeight: 20,
+                      }}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            );
+          }
+
           // type === "text"
           return (
-            <View
-              key={index}
-              style={{
-                marginBottom: 12,
-                paddingVertical: 16,
-                paddingHorizontal: 16,
-                borderRadius: 24,
-                backgroundColor: "#fafafa",
-                shadowColor: "#000000",
-                shadowOpacity: 0.15,
-                shadowOffset: { width: 0, height: 2 },
-                shadowRadius: 4,
-                elevation: 2,
-              }}
-            >
+            <View key={index} style={cardStyle}>
               {section.heading && (
                 <Text
                   style={{
