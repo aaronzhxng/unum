@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
-import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Image, Platform, Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
 import { getDb } from "../utils/database";
+import EducationScreen from "./education";
 import HomeScreen from "./home";
 import LegislationScreen from "./legislation";
 import OfficialsScreen from "./officials";
@@ -30,7 +30,6 @@ const TABS = [
     name: "education",
     icon: require("../../assets/education_icons/education.png"),
     size: 28,
-    isRoute: true,
   },
 ];
 
@@ -269,7 +268,6 @@ function TourOverlay() {
 }
 
 function TabsLayoutInner() {
-  const router = useRouter();
   const tabBarRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const pagerRef = useRef<PagerView>(null);
@@ -306,6 +304,9 @@ function TabsLayoutInner() {
           <View key="2" style={{ flex: 1 }}>
             {visitedTabs.has(2) && <LegislationScreen />}
           </View>
+          <View key="3" style={{ flex: 1 }}>
+            {visitedTabs.has(3) && <EducationScreen />}
+          </View>
         </PagerView>
 
         {!tabBarHidden && (
@@ -329,21 +330,15 @@ function TabsLayoutInner() {
                   justifyContent: "center",
                   alignItems: "center",
                 }}
-                onPress={() => {
-                  if ((tab as any).isRoute) {
-                    router.push("/education_tab");
-                    return;
-                  }
-                  navigateToTab(index);
-                }}
+                onPress={() => navigateToTab(index)}
               >
-                {(tab as any).isRoute ? (
+                {(tab as any).icon ? (
                   <Image
                     source={(tab as any).icon}
                     style={{
                       width: tab.size,
                       height: tab.size,
-                      tintColor: "#8e8e93",
+                      tintColor: activeIndex === index ? "black" : "#8e8e93",
                     }}
                     resizeMode="contain"
                   />
