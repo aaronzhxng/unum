@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
-import { Image, Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Dimensions, Image, Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { styles as componentStyles } from "../../global_styles/styles";
 import { EducationSection, getEducationSubtopic, getEducationTopic } from "../content";
 
@@ -83,7 +83,11 @@ export default function EducationSubtopicScreen() {
           if (section.type === "image") {
             if (!section.source) return null;
             const asset = Image.resolveAssetSource(section.source);
-            const aspectRatio = asset.width / asset.height;
+            // Available width: screen minus ScrollView's 20px padding on each side
+            const maxWidth = Dimensions.get("window").width - 40;
+            const scale = Math.min(1, maxWidth / asset.width);
+            const imgWidth = asset.width * scale;
+            const imgHeight = asset.height * scale;
             return (
               <View
                 key={index}
@@ -92,11 +96,12 @@ export default function EducationSubtopicScreen() {
                   borderRadius: 24,
                   overflow: "hidden",
                   backgroundColor: "#f0f0f0",
+                  alignSelf: "flex-start",
                 }}
               >
                 <Image
                   source={section.source}
-                  style={{ width: "100%", aspectRatio }}
+                  style={{ width: imgWidth, height: imgHeight }}
                   resizeMode="contain"
                 />
                 {section.caption && (
