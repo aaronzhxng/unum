@@ -28,8 +28,8 @@ const TABS = [
   },
   {
     name: "education",
-    icon: require("../../assets/education_icons/constitution.png"),
-    size: 26,
+    icon: require("../../assets/education_icons/education.png"),
+    size: 28,
     isRoute: true,
   },
 ];
@@ -338,22 +338,15 @@ function TabsLayoutInner() {
                 }}
               >
                 {(tab as any).isRoute ? (
-                  <View
+                  <Image
+                    source={(tab as any).icon}
                     style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 19,
-                      backgroundColor: "#f4f4f4",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      width: tab.size,
+                      height: tab.size,
+                      tintColor: "#8e8e93",
                     }}
-                  >
-                    <Image
-                      source={(tab as any).icon}
-                      style={{ width: tab.size, height: tab.size }}
-                      resizeMode="contain"
-                    />
-                  </View>
+                    resizeMode="contain"
+                  />
                 ) : (
                   <Ionicons
                     name={
