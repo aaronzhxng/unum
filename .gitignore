@@ -57,6 +57,9 @@ node_modules/
 *.log
 .DS_Store
 
+# Claude Code local settings
+.claude/
+
 # debugging 1
 .env
 credentials.json
