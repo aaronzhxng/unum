@@ -80,7 +80,7 @@ export const educationTopics: EducationTopic[] = [
           },
           {
             type: "image",
-            source: require("../../../assets/education_icons/constitution1.png"),
+            source: require("../../assets/education_icons/constitution1.png"),
             caption:
               "The U.S. Constitution on display at the National Archives in Washington, D.C.",
           },
@@ -110,7 +110,7 @@ export const educationTopics: EducationTopic[] = [
           },
           {
             type: "image",
-            source: require("../../../assets/education_icons/constitution2.png"),
+            source: require("../../assets/education_icons/constitution2.png"),
             caption: undefined,
           },
           {
