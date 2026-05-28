@@ -19,20 +19,24 @@ export type EducationTopic = {
 };
 
 export const educationTopics: EducationTopic[] = [
+  // ════════════════════════════════════════════════════════════════════════════
+  // HOW GOVERNMENT WORKS
+  // ════════════════════════════════════════════════════════════════════════════
   {
     id: "how-government-works",
     title: "How Government Works",
     subtitle: "The 3 branches, checks & balances, federalism, and more.",
     icon: require("../../assets/education_icons/how_gov_works.png"),
     subtopics: [
+      // ── Page 1: What is the U.S. Government? (intro + Executive + Congress) ─
       {
         id: "what-is-us-government",
         title: "What is the U.S. Government?",
-        summary: "How the federal government works alongside state and local governments.",
+        summary: "Federalism, the Executive Branch, and how Congress makes law.",
         body: [
           {
             type: "text",
-            heading: "What is the U.S. Government?",
+            // heading removed — matches page title
             content:
               'The United States has many governments, not just one. The decisions these governments make affect your life in countless ways. Most of us are ruled by at least four different governmental authorities: the government of the United States, the government of a state, the government of a county, and the government of a village, town, or city.\n\nWhen people talk about "the U.S. government" or the "federal government," they mean the government run from Washington, D.C. That does not mean that the other governments are unimportant. In fact, in the United States, there are rules that say there are some things a state government can do that the federal government cannot stop. This idea is called federalism. State and local governments deal with everything from fixing roads to paying the police to rezoning a vacant lot. Few people have to deal directly with the U.S. government more than a couple times per year.',
           },
@@ -54,6 +58,15 @@ export const educationTopics: EducationTopic[] = [
             content:
               "The federal government also passes many important laws every year. Laws are not made by the President or his chosen Cabinet of Secretaries, but rather the elected Legislature, called Congress. The laws they can pass include going to war and making peace, raising and lowering the main rate of income tax, and controlling how many immigrants can enter the country each year. Unlike the President's Cabinet of Secretaries, everyone in Congress is elected, either to the House of Representatives or the Senate. Members of Congress come from all fifty states. This makes sure that new laws are consistent with what voting citizens want across the country. There are also five delegates who represent American Samoa, Guam, the U.S. Virgin Islands, the Northern Mariana Islands, and Washington, D.C., and one resident commissioner from Puerto Rico. These persons sit in the House of Representatives and are not allowed to vote.",
           },
+        ],
+      },
+
+      // ── Page 2: The Constitution and Democracy ────────────────────────────
+      {
+        id: "constitution-and-democracy",
+        title: "The Constitution and Democracy",
+        summary: "How the Constitution protects rights and why civic knowledge matters.",
+        body: [
           {
             type: "text",
             heading: "The Constitution",
@@ -82,6 +95,8 @@ export const educationTopics: EducationTopic[] = [
           },
         ],
       },
+
+      // ── Stubs ─────────────────────────────────────────────────────────────
       {
         id: "three-branches",
         title: "The Three Branches",
@@ -118,20 +133,25 @@ export const educationTopics: EducationTopic[] = [
       },
     ],
   },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // THE CONSTITUTION
+  // ════════════════════════════════════════════════════════════════════════════
   {
     id: "the-constitution",
     title: "The Constitution",
     subtitle: "The Bill of Rights, civil liberties, Supreme Court basics.",
     icon: require("../../assets/education_icons/constitution.png"),
     subtopics: [
+      // ── Page 1: What is the Constitution? (intro + physical + amending) ───
       {
         id: "what-is-the-constitution",
         title: "What is the Constitution?",
-        summary: "The rules that govern the U.S. government and the rights of all Americans.",
+        summary: "What the Constitution is and how it can be amended.",
         body: [
           {
             type: "text",
-            heading: "What is the Constitution?",
+            // heading removed — matches page title
             content:
               'A constitution contains the rules that a government must follow. Every U.S. state has a constitution, and so does the national government.\n\nFirstly, it outlines how the federal government looks. It sets up the three-"branch" structure of Congress, the Executive, and the Supreme Court, explains how members are elected or appointed to each, and divides up the responsibilities of government between them. The Constitution also reserves many powers for state governments. In this way, the United States is guaranteed to be a country that is federal, democratic, and republican.',
           },
@@ -153,6 +173,15 @@ export const educationTopics: EducationTopic[] = [
             content:
               "The Constitution was purposely made very difficult to change, or amend, so that its basic structure would always stay the same. The only way amendments to the Constitution have been passed before was that:\n\n• At least two-thirds of Congress voted for it, and then\n• The governments or the citizens in at least three-thirds of the states also voted for it.\n\nIt is also possible that there could be a big meeting of all the states (called a Constitutional Convention) specifically for proposing amendments. This will happen if two-thirds of the states ask for one. However, they never have.",
           },
+        ],
+      },
+
+      // ── Page 2: Constitutional Rights (history + rights + image) ─────────
+      {
+        id: "constitutional-rights",
+        title: "Constitutional Rights",
+        summary: "The Bill of Rights and the specific freedoms it guarantees.",
+        body: [
           {
             type: "text",
             heading: "History",
@@ -170,6 +199,15 @@ export const educationTopics: EducationTopic[] = [
             source: require("../../assets/education_icons/constitution2.png"),
             caption: undefined,
           },
+        ],
+      },
+
+      // ── Page 3: The Constitution Today (13th + federal/state + SCOTUS + why)
+      {
+        id: "the-constitution-today",
+        title: "The Constitution Today",
+        summary: "The 13th Amendment, federal vs. state power, and the Supreme Court's role.",
+        body: [
           {
             type: "text",
             heading: "The 13th Amendment",
@@ -227,6 +265,8 @@ export const educationTopics: EducationTopic[] = [
           },
         ],
       },
+
+      // ── Stubs ─────────────────────────────────────────────────────────────
       {
         id: "bill-of-rights",
         title: "The Bill of Rights",
@@ -263,16 +303,21 @@ export const educationTopics: EducationTopic[] = [
       },
     ],
   },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // CONGRESS & LEGISLATION
+  // ════════════════════════════════════════════════════════════════════════════
   {
     id: "congress-legislation",
     title: "Congress & Legislation",
     subtitle: "How a bill becomes law, committees, floor votes, and more.",
     icon: require("../../assets/education_icons/congress.png"),
     subtopics: [
+      // ── Page 1: Passing Laws ──────────────────────────────────────────────
       {
-        id: "what-does-congress-do",
-        title: "What Does Congress Do?",
-        summary: "How Congress passes laws, controls government spending, and checks the Executive Branch.",
+        id: "passing-laws",
+        title: "Passing Laws",
+        summary: "How bills are introduced, debated, and signed into law.",
         body: [
           {
             type: "text",
@@ -280,11 +325,9 @@ export const educationTopics: EducationTopic[] = [
             content:
               "Congress is the legislative branch of the U.S. government. In this capacity, Congress passes laws, controls spending, and checks the work of the Executive.",
           },
-
-          // ── Passing Laws ──────────────────────────────────────────────────────
           {
             type: "text",
-            heading: "Passing Laws",
+            // heading removed — matches page title
             content:
               "The most important job of Congress is legislating, or passing new laws. The Constitution allows Congress to pass laws on almost anything that affects multiple states or the entire country at once. These include immigration, major taxes, declaring war and making peace, the national debt, international treaties, and trade with foreign countries.\n\nNew laws need to be made from time to time to keep them up to date. It could be that an old law needs to be updated, replaced, or repealed without replacement. There could also be a situation that requires entirely new laws. A draft law is called a bill or a joint resolution: they are basically the same.\n\nAny member of Congress can introduce a bill: the first person to do so becomes its \"sponsor\", and those who follow are called \"co-sponsors\". Once it is introduced, the bill gets the letters H.R. or S (standing for House of Representatives or Senate), or H.J.Res. or S.J.Res. (if it is a joint resolution), followed by a number.\n\nThe bill is then referred to one or more committees with just a few special members of the House or the Senate, who will research and debate the details of the bill and make any necessary changes. At any time, the House and Senate have, put together, about fifty committees and 150 subcommittees. Each body specializes in a specific area. The most important committees include the House Ways and Means Committee, which debates bills related to taxation, and the Senate Committee on Foreign Relations.",
           },
@@ -337,11 +380,18 @@ export const educationTopics: EducationTopic[] = [
               },
             ],
           },
+        ],
+      },
 
-          // ── Taxing and Spending ───────────────────────────────────────────────
+      // ── Page 2: Taxing and Spending ───────────────────────────────────────
+      {
+        id: "taxing-and-spending",
+        title: "Taxing and Spending",
+        summary: "How the federal government raises revenue and decides where to spend it.",
+        body: [
           {
             type: "text",
-            heading: "Taxing and Spending",
+            // heading removed — matches page title
             content:
               "One of the most important responsibilities a government has is controlling how money is raised from the public (as \"income\") and where that money is spent (as \"expenditures\" or \"outlays\"). In a federal country like the United States, these powers are shared between the national government, the state government, and smaller local governments.\n\nThe federal government raises money in several ways. The largest part of government revenue comes from taxes on individual incomes. There are also taxes taken off an employee's payroll, taxes on company earnings, taxes on harmful goods like gasoline and tobacco, and taxes on items bought from other countries (these taxes are called tariffs). Tariffs are collected by the Customs and Border Protection agency, while taxes are managed by the Internal Revenue System (IRS). The Constitution says that all bills that relate to raising money must start in the House of Representatives.",
           },
@@ -404,13 +454,21 @@ export const educationTopics: EducationTopic[] = [
               },
             ],
           },
+        ],
+      },
 
-          // ── Checking the Work of the Executive ───────────────────────────────
+      // ── Page 3: Checking the Executive Branch ─────────────────────────────
+      {
+        id: "checking-the-executive",
+        title: "Checking the Executive Branch",
+        summary: "How Congress oversees the Executive Branch and can remove federal officials.",
+        body: [
           {
             type: "text",
-            heading: "Checking the Work of the Executive",
+            // heading removed — matches page title
+            // transition fixed: "Another important responsibility" → standalone opener
             content:
-              "Another important responsibility of Congress is making sure that the Executive Branch is working properly. This is called oversight and is part of the federal government's checks and balances. Congress holds regular hearings that are usually public to determine if Executive agencies are doing their jobs well and according to law. These also give committees the chance to ask questions to all Cabinet secretaries (who lead an Executive Department).\n\nThe President is never called up for a hearing. However, Congress still has some powers to examine and challenge his or her work. For one, when a position opens up (becomes vacant) that the President wants to fill, the Senate holds hearings before voting on whether to approve the President's choice. This goes for ambassadors, Cabinet members, judges, and justices of the Supreme Court. In recent years, some of these hearings have become very political, especially when Congress rejects a nominee.",
+              "Congress has the power to make sure that the Executive Branch is working properly — a role called oversight, and a core part of the federal government's checks and balances. Congress holds regular hearings that are usually public to determine if Executive agencies are doing their jobs well and according to law. These also give committees the chance to ask questions to all Cabinet secretaries (who lead an Executive Department).\n\nThe President is never called up for a hearing. However, Congress still has some powers to examine and challenge his or her work. For one, when a position opens up (becomes vacant) that the President wants to fill, the Senate holds hearings before voting on whether to approve the President's choice. This goes for ambassadors, Cabinet members, judges, and justices of the Supreme Court. In recent years, some of these hearings have become very political, especially when Congress rejects a nominee.",
           },
           {
             type: "text",
@@ -438,6 +496,8 @@ export const educationTopics: EducationTopic[] = [
           },
         ],
       },
+
+      // ── Stubs ─────────────────────────────────────────────────────────────
       {
         id: "how-a-bill-becomes-law",
         title: "How a Bill Becomes Law",
@@ -474,6 +534,10 @@ export const educationTopics: EducationTopic[] = [
       },
     ],
   },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // ELECTIONS & VOTING
+  // ════════════════════════════════════════════════════════════════════════════
   {
     id: "elections-voting",
     title: "Elections & Voting",
@@ -516,21 +580,25 @@ export const educationTopics: EducationTopic[] = [
       },
     ],
   },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // POLITICAL PARTIES & IDEOLOGY
+  // ════════════════════════════════════════════════════════════════════════════
   {
     id: "political-parties-ideology",
     title: "Political Parties & Ideology",
     subtitle: "Party history, the spectrum, independents, and third parties.",
     icon: require("../../assets/education_icons/political_parties.png"),
     subtopics: [
+      // ── Page 1: What are Political Parties? (intro + knowing the parties) ─
       {
         id: "what-are-political-parties",
-        title: "What are Political Parties, and How Do They Work?",
-        summary: "How the U.S. party system operates — from selecting candidates to passing laws.",
+        title: "What are Political Parties?",
+        summary: "What parties are, how they differ, and how the two-party system works.",
         body: [
-          // ── Knowing the Parties ───────────────────────────────────────────────
           {
             type: "text",
-            heading: "What are Political Parties?",
+            // heading removed — matches page title
             content:
               "A political party (often shortened to \"party\") is an organization with a name, label, and set of beliefs. Almost all politicians in the U.S. belong to a political party, as do about 70% of voters. Understanding the major political parties helps you to know what politicians believe in.\n\nAdditionally, because parties are also organizations, they help select candidates, raise money, and run advertisements. Knowing how parties operate means you know more about the process of elections.\n\nFinally, the way Congress works basically forces members to organize into groups. Therefore, understanding how political parties interact will help you know how laws get passed.",
           },
@@ -601,11 +669,18 @@ export const educationTopics: EducationTopic[] = [
               },
             ],
           },
+        ],
+      },
 
-          // ── Joining a Party ───────────────────────────────────────────────────
+      // ── Page 2: Joining a Party ───────────────────────────────────────────
+      {
+        id: "joining-a-party",
+        title: "Joining a Party",
+        summary: "Registering with a party and how primary elections work.",
+        body: [
           {
             type: "text",
-            heading: "Joining a Party",
+            // heading removed — matches page title
             content:
               "In some states, you can register to join a political party when you register to vote. This is free. You can also donate, volunteer, and work with political parties as you like.\n\nThese decisions are completely optional. You can always vote for whomever you like, whether you do or do not belong to a political party. For example, if you registered as a member of the Republican Party, but you like the Democratic candidate for senator, you can vote for her instead of the Republican candidate.\n\nHowever, if you join a political party, you get a small say in how it is run. During some elections, like those for governor, Congress, and president, there will be many candidates who all want to call themselves the \"official nominee\" of the party to run against the official nominees from the other parties. To decide who this person should be, political parties hold primary elections a few months before the general election (that is, the one with all candidates from all political parties).",
           },
@@ -639,11 +714,18 @@ export const educationTopics: EducationTopic[] = [
               },
             ],
           },
+        ],
+      },
 
-          // ── Parties and Government ────────────────────────────────────────────
+      // ── Page 3: Parties and Government ───────────────────────────────────
+      {
+        id: "parties-and-government",
+        title: "Parties and Government",
+        summary: "How majority control, party discipline, and caucuses shape Congress.",
+        body: [
           {
             type: "text",
-            heading: "Parties and Government",
+            // heading removed — matches page title
             content:
               "The Constitution does not say political parties have to exist. Instead, the present party system naturally emerged because it is an efficient way to get people with similar ideas to vote the same way.\n\nAlmost all politicians in Congress belong to either the Republican or the Democratic party. Sometimes, voters will elect an independent congressperson, but he or she will always work with one of the two main parties (this cooperation is called caucusing). For this reason, we speak of one party or another having \"majority control\" of Congress, or simply a \"majority,\" while the other party is in the minority.",
           },
@@ -684,6 +766,8 @@ export const educationTopics: EducationTopic[] = [
           },
         ],
       },
+
+      // ── Stubs ─────────────────────────────────────────────────────────────
       {
         id: "history-of-us-parties",
         title: "History of U.S. Parties",
@@ -754,6 +838,10 @@ export const educationTopics: EducationTopic[] = [
       },
     ],
   },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // U.S. HISTORY FOUNDATIONS
+  // ════════════════════════════════════════════════════════════════════════════
   {
     id: "us-history-foundations",
     title: "U.S. History Foundations",
@@ -797,6 +885,10 @@ export const educationTopics: EducationTopic[] = [
       },
     ],
   },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // YOUR RIGHTS & CIVIC PARTICIPATION
+  // ════════════════════════════════════════════════════════════════════════════
   {
     id: "rights-civic-participation",
     title: "Your Rights & Civic Participation",
