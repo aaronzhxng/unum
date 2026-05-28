@@ -82,6 +82,8 @@ export default function EducationSubtopicScreen() {
         {subtopicData.body.map((section: EducationSection, index: number) => {
           if (section.type === "image") {
             if (!section.source) return null;
+            const asset = Image.resolveAssetSource(section.source);
+            const aspectRatio = asset.width / asset.height;
             return (
               <View
                 key={index}
@@ -94,8 +96,8 @@ export default function EducationSubtopicScreen() {
               >
                 <Image
                   source={section.source}
-                  style={{ width: "100%", height: 200 }}
-                  resizeMode="cover"
+                  style={{ width: "100%", aspectRatio }}
+                  resizeMode="contain"
                 />
                 {section.caption && (
                   <Text
