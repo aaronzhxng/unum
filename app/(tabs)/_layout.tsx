@@ -279,6 +279,10 @@ function TabsLayoutInner() {
   // focus-recovery snap. Without this, a late drift event can override
   // the snap and land back on page 0.
   const focusRecoveryRef = useRef(false);
+  // Stored in refs so both timers can be cancelled on every cleanup cycle,
+  // preventing a guard-release from a previous focus cycle leaking into the next.
+  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const guardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const navigateToTab = (index: number) => {
     pagerRef.current?.setPage(index);
@@ -293,17 +297,26 @@ function TabsLayoutInner() {
   // arrive after the snap fires.
   useFocusEffect(
     useCallback(() => {
+      // Cancel any timers left over from a previous focus cycle
+      if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+      if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
+
+      const targetPage = activeIndexRef.current;
       focusRecoveryRef.current = true;
-      const snapTimer = setTimeout(() => {
-        pagerRef.current?.setPage(activeIndexRef.current);
-        setActiveIndex(activeIndexRef.current);
-        // Keep the guard alive long enough to absorb any trailing drift events
-        setTimeout(() => {
+      // Correct the tab bar immediately so it never shows the wrong tab
+      setActiveIndex(targetPage);
+
+      snapTimerRef.current = setTimeout(() => {
+        pagerRef.current?.setPage(targetPage);
+        // Extended window — stale drift events can arrive hundreds of ms later
+        guardTimerRef.current = setTimeout(() => {
           focusRecoveryRef.current = false;
-        }, 300);
+        }, 800);
       }, 50);
+
       return () => {
-        clearTimeout(snapTimer);
+        if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+        if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
         focusRecoveryRef.current = false;
       };
     }, [])

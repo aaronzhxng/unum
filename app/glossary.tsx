@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import EducationOptionsMenu from "./education_tab/EducationOptionsMenu";
 import RichText from "./education_tab/RichText";
-import { glossaryEntries } from "./education_tab/glossary";
+import { capitalizeFirst, glossaryEntries } from "./education_tab/glossary";
 import GlossaryPopup from "./global_components/GlossaryPopup";
 import { styles as componentStyles } from "./global_styles/styles";
 
@@ -93,7 +93,7 @@ export default function GlossaryScreen() {
               {entry.term}
             </Text>
             <RichText
-              segments={entry.definition}
+              segments={capitalizeFirst(entry.definition)}
               style={{ fontSize: 14, color: "#535353", lineHeight: 21 }}
               onGlossaryPress={setActivePopupSlug}
               onTopicPress={handleTopicPress}

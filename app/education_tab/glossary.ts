@@ -462,11 +462,14 @@ function buildTermData() {
 export function parseRichText(text: string, skipSlug?: string): GlossarySegment[] {
   if (!_termMap || !_termPatternSource) buildTermData();
   const termMap = _termMap!;
-  // Create a fresh RegExp each call so lastIndex starts at 0
+  // Fresh RegExp each call so lastIndex starts at 0
   const pattern = new RegExp(_termPatternSource!, 'gi');
 
   const segments: GlossarySegment[] = [];
   let lastIndex = 0;
+  // Track which terms have already been highlighted in this text block.
+  // Subsequent occurrences of the same term render as plain text.
+  const seen = new Set<string>();
   let match: RegExpExecArray | null;
 
   while ((match = pattern.exec(text)) !== null) {
@@ -479,9 +482,21 @@ export function parseRichText(text: string, skipSlug?: string): GlossarySegment[
 
     if (info) {
       if (info.type === 'glossary' && info.slug !== skipSlug) {
-        segments.push({ type: 'glossary', text: matched, slug: info.slug });
+        const key = `g:${info.slug}`;
+        if (!seen.has(key)) {
+          segments.push({ type: 'glossary', text: matched, slug: info.slug });
+          seen.add(key);
+        } else {
+          segments.push({ type: 'plain', text: matched });
+        }
       } else if (info.type === 'topic') {
-        segments.push({ type: 'topic', text: matched, topicId: info.topicId });
+        const key = `t:${info.topicId}`;
+        if (!seen.has(key)) {
+          segments.push({ type: 'topic', text: matched, topicId: info.topicId });
+          seen.add(key);
+        } else {
+          segments.push({ type: 'plain', text: matched });
+        }
       } else {
         // skipSlug matched — render as plain
         segments.push({ type: 'plain', text: matched });
@@ -497,5 +512,22 @@ export function parseRichText(text: string, skipSlug?: string): GlossarySegment[
     segments.push({ type: 'plain', text: text.slice(lastIndex) });
   }
 
+  return segments;
+}
+
+/**
+ * Returns a copy of the segment array with the first character of the
+ * first plain segment uppercased. Use this when displaying a definition
+ * as a standalone sentence (glossary screen, popup).
+ */
+export function capitalizeFirst(segments: GlossarySegment[]): GlossarySegment[] {
+  if (!segments.length) return segments;
+  const [first, ...rest] = segments;
+  if (first.type === 'plain' && first.text.length > 0) {
+    return [
+      { type: 'plain', text: first.text.charAt(0).toUpperCase() + first.text.slice(1) },
+      ...rest,
+    ];
+  }
   return segments;
 }

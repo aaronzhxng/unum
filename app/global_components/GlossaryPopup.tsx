@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import RichText from "../education_tab/RichText";
-import { glossaryBySlug } from "../education_tab/glossary";
+import { capitalizeFirst, glossaryBySlug } from "../education_tab/glossary";
 
 interface Props {
   /** Slug of the term to display, or null to hide. */
@@ -76,7 +76,7 @@ export default function GlossaryPopup({ slug, onClose, onNavigateGlossary }: Pro
             showsVerticalScrollIndicator={false}
           >
             <RichText
-              segments={entry.definition}
+              segments={capitalizeFirst(entry.definition)}
               style={{ fontSize: 14, color: "#535353", lineHeight: 22 }}
               onGlossaryPress={onNavigateGlossary}
               onTopicPress={handleTopicPress}
