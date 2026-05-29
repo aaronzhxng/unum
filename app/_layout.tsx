@@ -146,7 +146,15 @@ export default function RootLayout() {
                 name="tips"
                 options={{
                   headerShown: false,
-                  animation: "slide_from_right", // standard horizontal push
+                  animation: "slide_from_right",
+                }}
+              />
+              <Stack.Screen
+                name="glossary"
+                options={{
+                  headerShown: false,
+                  gestureEnabled: true,
+                  animation: "slide_from_right",
                 }}
               />{" "}
             </Stack>

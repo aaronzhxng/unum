@@ -1,21 +1,31 @@
 import { useRouter } from "expo-router";
+import { MoreVertical } from "lucide-react-native";
+import { useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import { styles as componentStyles } from "../global_styles/styles";
+import EducationOptionsMenu from "../education_tab/EducationOptionsMenu";
 import { educationTopics } from "../education_tab/content";
+import { styles as componentStyles } from "../global_styles/styles";
 
 export default function EducationScreen() {
   const router = useRouter();
+  const [showOptions, setShowOptions] = useState(false);
 
   return (
     <View style={[componentStyles.container, { backgroundColor: "#fafafa" }]}>
       <View style={componentStyles.headerBar}>
         <Text style={componentStyles.header}>Learn the basics</Text>
+        <Pressable
+          onPress={() => setShowOptions(true)}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.75 : 1 }],
+            marginBottom: 16,
+          })}
+        >
+          <MoreVertical size={24} color="#535353" />
+        </Pressable>
       </View>
-      <ScrollView
-        contentContainerStyle={{
-          paddingBottom: 32,
-        }}
-      >
+
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <View>
           {educationTopics.map((topic) => (
             <Pressable
@@ -29,10 +39,13 @@ export default function EducationScreen() {
               <View
                 style={[
                   componentStyles.officialCard,
-                  { paddingVertical: 16, borderWidth: 2, borderColor: "transparent" },
+                  {
+                    paddingVertical: 16,
+                    borderWidth: 2,
+                    borderColor: "transparent",
+                  },
                 ]}
               >
-                {/* Icon column — 64px wide, icon 50px */}
                 <View
                   style={{
                     width: 64,
@@ -50,16 +63,27 @@ export default function EducationScreen() {
                     />
                   </View>
                 </View>
-                {/* Topic Info */}
                 <View style={{ flex: 1 }}>
                   <Text style={componentStyles.name}>{topic.title}</Text>
-                  <Text style={componentStyles.subtitle} numberOfLines={1} ellipsizeMode="tail">{topic.subtitle}</Text>
+                  <Text
+                    style={componentStyles.subtitle}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {topic.subtitle}
+                  </Text>
                 </View>
               </View>
             </Pressable>
           ))}
         </View>
       </ScrollView>
+
+      <EducationOptionsMenu
+        visible={showOptions}
+        onClose={() => setShowOptions(false)}
+        screen="education"
+      />
     </View>
   );
 }

@@ -1,13 +1,16 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, MoreVertical } from "lucide-react-native";
+import { useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import { styles as componentStyles } from "../global_styles/styles";
+import EducationOptionsMenu from "./EducationOptionsMenu";
 import { getEducationTopic } from "./content";
+import { styles as componentStyles } from "../global_styles/styles";
 
 export default function EducationTopicScreen() {
   const router = useRouter();
   const { topic } = useLocalSearchParams<{ topic: string }>();
   const topicData = getEducationTopic(String(topic ?? ""));
+  const [showOptions, setShowOptions] = useState(false);
 
   if (!topicData) {
     return (
@@ -43,14 +46,20 @@ export default function EducationTopicScreen() {
             {topicData.title}
           </Text>
         </View>
+        <View style={componentStyles.headerRight}>
+          <Pressable
+            onPress={() => setShowOptions(true)}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+              marginBottom: 16,
+            })}
+          >
+            <MoreVertical size={24} color="#535353" />
+          </Pressable>
+        </View>
       </View>
 
-      <ScrollView
-        contentContainerStyle={{
-          padding: 20,
-          paddingBottom: 32,
-        }}
-      >
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
         {topicData.subtopics.map((subtopic) => (
           <Pressable
             key={subtopic.id}
@@ -67,10 +76,13 @@ export default function EducationTopicScreen() {
             <View
               style={[
                 componentStyles.officialCard,
-                { paddingVertical: 16, borderWidth: 2, borderColor: "transparent" },
+                {
+                  paddingVertical: 16,
+                  borderWidth: 2,
+                  borderColor: "transparent",
+                },
               ]}
             >
-              {/* Icon column — 64px wide, icon 50px */}
               <View
                 style={{
                   width: 64,
@@ -88,15 +100,26 @@ export default function EducationTopicScreen() {
                   />
                 </View>
               </View>
-              {/* Subtopic Info */}
               <View style={{ flex: 1 }}>
                 <Text style={componentStyles.name}>{subtopic.title}</Text>
-                <Text style={componentStyles.subtitle} numberOfLines={1} ellipsizeMode="tail">{subtopic.summary}</Text>
+                <Text
+                  style={componentStyles.subtitle}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {subtopic.summary}
+                </Text>
               </View>
             </View>
           </Pressable>
         ))}
       </ScrollView>
+
+      <EducationOptionsMenu
+        visible={showOptions}
+        onClose={() => setShowOptions(false)}
+        screen={`education-topic/${topicData.id}`}
+      />
     </View>
   );
 }

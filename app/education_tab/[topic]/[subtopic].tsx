@@ -1,8 +1,21 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
-import { Dimensions, Image, Linking, Pressable, ScrollView, Text, View } from "react-native";
-import { styles as componentStyles } from "../../global_styles/styles";
+import { ChevronLeft, MoreVertical } from "lucide-react-native";
+import { useState } from "react";
+import {
+  Dimensions,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import EducationOptionsMenu from "../EducationOptionsMenu";
+import RichText from "../RichText";
 import { EducationSection, getEducationSubtopic, getEducationTopic } from "../content";
+import { parseRichText } from "../glossary";
+import GlossaryPopup from "../../global_components/GlossaryPopup";
+import { styles as componentStyles } from "../../global_styles/styles";
 
 export default function EducationSubtopicScreen() {
   const router = useRouter();
@@ -15,6 +28,14 @@ export default function EducationSubtopicScreen() {
     String(topic ?? ""),
     String(subtopic ?? ""),
   );
+
+  const [showOptions, setShowOptions] = useState(false);
+  const [activePopupSlug, setActivePopupSlug] = useState<string | null>(null);
+
+  const handleTopicPress = (topicId: string) => {
+    setActivePopupSlug(null);
+    setTimeout(() => router.push(`/education_tab/${topicId}` as any), 150);
+  };
 
   if (!topicData || !subtopicData) {
     return (
@@ -58,6 +79,14 @@ export default function EducationSubtopicScreen() {
         >
           <ChevronLeft size={24} color="#535353" />
         </Pressable>
+        <Pressable
+          onPress={() => setShowOptions(true)}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.75 : 1 }],
+          })}
+        >
+          <MoreVertical size={24} color="#535353" />
+        </Pressable>
       </View>
 
       <ScrollView
@@ -67,13 +96,27 @@ export default function EducationSubtopicScreen() {
         }}
       >
         {/* Icon + Title */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 16,
+            marginBottom: 20,
+          }}
+        >
           <Image
             source={topicData.icon}
             style={{ width: 50, height: 50 }}
             resizeMode="contain"
           />
-          <Text style={{ fontSize: 20, fontWeight: "800", color: "#000000", flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "800",
+              color: "#000000",
+              flex: 1,
+            }}
+          >
             {subtopicData.title}
           </Text>
         </View>
@@ -83,7 +126,6 @@ export default function EducationSubtopicScreen() {
           if (section.type === "image") {
             if (!section.source) return null;
             const asset = Image.resolveAssetSource(section.source);
-            // Available width: screen minus ScrollView's 20px padding on each side
             const maxWidth = Dimensions.get("window").width - 40;
             const scale = Math.min(1, maxWidth / asset.width);
             const imgWidth = asset.width * scale;
@@ -175,13 +217,28 @@ export default function EducationSubtopicScreen() {
                   {section.heading}
                 </Text>
               )}
-              <Text style={{ fontSize: 14, color: "#535353", lineHeight: 20 }}>
-                {section.content}
-              </Text>
+              <RichText
+                segments={parseRichText(section.content)}
+                style={{ fontSize: 14, color: "#535353", lineHeight: 20 }}
+                onGlossaryPress={setActivePopupSlug}
+                onTopicPress={handleTopicPress}
+              />
             </View>
           );
         })}
       </ScrollView>
+
+      <EducationOptionsMenu
+        visible={showOptions}
+        onClose={() => setShowOptions(false)}
+        screen={`education-subtopic/${topic}/${subtopic}`}
+      />
+
+      <GlossaryPopup
+        slug={activePopupSlug}
+        onClose={() => setActivePopupSlug(null)}
+        onNavigateGlossary={setActivePopupSlug}
+      />
     </View>
   );
 }
