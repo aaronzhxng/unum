@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, MoreVertical } from "lucide-react-native";
+import { ChevronLeft, ExternalLink, MoreVertical } from "lucide-react-native";
 import { useState } from "react";
 import {
   Dimensions,
@@ -12,10 +12,16 @@ import {
 } from "react-native";
 import EducationOptionsMenu from "../EducationOptionsMenu";
 import RichText from "../RichText";
-import { EducationSection, getEducationSubtopic, getEducationTopic } from "../content";
+import {
+  EducationSection,
+  getEducationSubtopic,
+  getEducationTopic,
+} from "../content";
 import { parseRichText } from "../glossary";
 import GlossaryPopup from "../../global_components/GlossaryPopup";
 import { styles as componentStyles } from "../../global_styles/styles";
+
+const CONTENT_PADDING = 20;
 
 export default function EducationSubtopicScreen() {
   const router = useRouter();
@@ -42,7 +48,7 @@ export default function EducationSubtopicScreen() {
       <View
         style={{
           flex: 1,
-          backgroundColor: "#fafafa",
+          backgroundColor: "#fff",
           padding: 20,
           paddingTop: 56,
         }}
@@ -54,23 +60,19 @@ export default function EducationSubtopicScreen() {
     );
   }
 
-  const cardStyle = {
-    marginBottom: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    backgroundColor: "#fafafa",
-    shadowColor: "#000000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
-  };
+  const { width: SCREEN_WIDTH } = Dimensions.get("window");
+  // Index of the first "text" section — rendered as a lead paragraph
+  const leadIndex = subtopicData.body.findIndex((s) => s.type === "text");
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
-      {/* Header */}
-      <View style={[componentStyles.headerBar, { paddingHorizontal: 16 }]}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* ── Nav bar ── */}
+      <View
+        style={[
+          componentStyles.headerBar,
+          { paddingHorizontal: 16, backgroundColor: "#fff" },
+        ]}
+      >
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => ({
@@ -90,108 +92,213 @@ export default function EducationSubtopicScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{
-          padding: 20,
-          paddingBottom: 36,
-        }}
+        contentContainerStyle={{ paddingBottom: 56 }}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Icon + Title */}
+        {/* ── Hero / title block ── */}
         <View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 16,
-            marginBottom: 20,
+            paddingHorizontal: CONTENT_PADDING,
+            paddingTop: 16,
+            paddingBottom: 20,
           }}
         >
-          <Image
-            source={topicData.icon}
-            style={{ width: 50, height: 50 }}
-            resizeMode="contain"
-          />
+          {/* Topic breadcrumb — text only, no icon */}
           <Text
             style={{
-              fontSize: 20,
-              fontWeight: "800",
-              color: "#000000",
-              flex: 1,
+              fontSize: 11,
+              fontWeight: "700",
+              color: "#008CFF",
+              letterSpacing: 0.8,
+              marginBottom: 10,
             }}
           >
-            {subtopicData.title}
+            {topicData.title.toUpperCase()}
           </Text>
+
+          {/* Icon + article title row */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 14,
+            }}
+          >
+            <Image
+              source={topicData.icon}
+              style={{ width: 50, height: 50, flexShrink: 0 }}
+              resizeMode="contain"
+            />
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "800",
+                color: "#0d0d0d",
+                lineHeight: 32,
+                flex: 1,
+              }}
+            >
+              {subtopicData.title}
+            </Text>
+          </View>
         </View>
 
-        {/* Body section nodes */}
+        {/* Thin rule */}
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#e8e8e8",
+            marginHorizontal: CONTENT_PADDING,
+            marginBottom: 28,
+          }}
+        />
+
+        {/* ── Body sections ── */}
         {subtopicData.body.map((section: EducationSection, index: number) => {
+          /* ── Image ── */
           if (section.type === "image") {
             if (!section.source) return null;
             const asset = Image.resolveAssetSource(section.source);
-            const maxWidth = Dimensions.get("window").width - 40;
-            const scale = Math.min(1, maxWidth / asset.width);
-            const imgWidth = asset.width * scale;
-            const imgHeight = asset.height * scale;
+            const imgWidth = SCREEN_WIDTH - CONTENT_PADDING * 2;
+            const imgHeight = (asset.height / asset.width) * imgWidth;
+
             return (
               <View
                 key={index}
                 style={{
-                  marginBottom: 12,
-                  borderRadius: 24,
-                  overflow: "hidden",
-                  backgroundColor: "#f0f0f0",
-                  alignSelf: "flex-start",
+                  marginHorizontal: CONTENT_PADDING,
+                  marginBottom: 28,
                 }}
               >
-                <Image
-                  source={section.source}
-                  style={{ width: imgWidth, height: imgHeight }}
-                  resizeMode="contain"
-                />
-                {section.caption && (
+                <View
+                  style={{
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    backgroundColor: "#f0f0f0",
+                  }}
+                >
+                  <Image
+                    source={section.source}
+                    style={{ width: imgWidth, height: imgHeight }}
+                    resizeMode="cover"
+                  />
+                </View>
+                {section.caption ? (
                   <Text
                     style={{
                       fontSize: 12,
-                      color: "#7B7C81",
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
-                      lineHeight: 17,
+                      color: "#8a8a8a",
+                      lineHeight: 18,
+                      marginTop: 8,
+                      paddingHorizontal: 2,
                     }}
                   >
                     {section.caption}
                   </Text>
-                )}
+                ) : null}
               </View>
             );
           }
 
-          if (section.type === "links") {
+          /* ── Callout ── */
+          if (section.type === "callout") {
             return (
-              <View key={index} style={cardStyle}>
-                {section.heading && (
+              <View
+                key={index}
+                style={{
+                  marginHorizontal: CONTENT_PADDING,
+                  marginBottom: 28,
+                  backgroundColor: "#EFF7FF",
+                  borderLeftWidth: 3,
+                  borderLeftColor: "#008CFF",
+                  borderRadius: 10,
+                  paddingVertical: 14,
+                  paddingRight: 16,
+                  paddingLeft: 14,
+                }}
+              >
+                {section.heading ? (
                   <Text
                     style={{
-                      fontSize: 15,
+                      fontSize: 11,
                       fontWeight: "700",
-                      color: "#1a1a1a",
-                      marginBottom: 12,
+                      color: "#008CFF",
+                      letterSpacing: 0.8,
+                      marginBottom: 6,
                     }}
                   >
-                    {section.heading}
+                    {section.heading.toUpperCase()}
                   </Text>
-                )}
+                ) : null}
+                <RichText
+                  segments={parseRichText(section.content)}
+                  style={{
+                    fontSize: 15,
+                    color: "#1a3a5c",
+                    lineHeight: 24,
+                    fontWeight: "500",
+                  }}
+                  onGlossaryPress={setActivePopupSlug}
+                  onTopicPress={handleTopicPress}
+                />
+              </View>
+            );
+          }
+
+          /* ── Links ── */
+          if (section.type === "links") {
+            return (
+              <View
+                key={index}
+                style={{
+                  marginHorizontal: CONTENT_PADDING,
+                  marginBottom: 28,
+                }}
+              >
+                {/* Divider above the resources block */}
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: "#e8e8e8",
+                    marginBottom: 18,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "700",
+                    color: "#8a8a8a",
+                    letterSpacing: 0.9,
+                    marginBottom: 14,
+                  }}
+                >
+                  {section.heading
+                    ? section.heading.toUpperCase()
+                    : "LEARN MORE"}
+                </Text>
                 {section.items.map((item, i) => (
                   <Pressable
                     key={i}
                     onPress={() => Linking.openURL(item.url)}
                     style={({ pressed }) => ({
-                      opacity: pressed ? 0.6 : 1,
-                      marginBottom: i < section.items.length - 1 ? 12 : 0,
+                      opacity: pressed ? 0.55 : 1,
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      gap: 9,
+                      paddingVertical: 9,
+                      borderBottomWidth: i < section.items.length - 1 ? 1 : 0,
+                      borderBottomColor: "#f0f0f0",
                     })}
                   >
+                    <View style={{ marginTop: 4 }}>
+                      <ExternalLink size={13} color="#008CFF" />
+                    </View>
                     <Text
                       style={{
                         fontSize: 14,
                         color: "#008CFF",
-                        lineHeight: 20,
+                        lineHeight: 22,
+                        flex: 1,
                       }}
                     >
                       {item.label}
@@ -202,24 +309,55 @@ export default function EducationSubtopicScreen() {
             );
           }
 
-          // type === "text"
+          /* ── Text (default) ── */
+          const isLead = index === leadIndex;
           return (
-            <View key={index} style={cardStyle}>
-              {section.heading && (
-                <Text
+            <View
+              key={index}
+              style={{
+                marginHorizontal: CONTENT_PADDING,
+                marginBottom: 28,
+              }}
+            >
+              {section.heading ? (
+                <View
                   style={{
-                    fontSize: 15,
-                    fontWeight: "700",
-                    color: "#1a1a1a",
-                    marginBottom: 8,
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: 10,
+                    marginBottom: 10,
                   }}
                 >
-                  {section.heading}
-                </Text>
-              )}
+                  {/* Colored left accent bar */}
+                  <View
+                    style={{
+                      width: 3,
+                      borderRadius: 2,
+                      backgroundColor: "#008CFF",
+                      alignSelf: "stretch",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 17,
+                      fontWeight: "700",
+                      color: "#0d0d0d",
+                      lineHeight: 24,
+                      flex: 1,
+                    }}
+                  >
+                    {section.heading}
+                  </Text>
+                </View>
+              ) : null}
+
               <RichText
                 segments={parseRichText(section.content)}
-                style={{ fontSize: 14, color: "#535353", lineHeight: 20 }}
+                style={{
+                  fontSize: isLead ? 16 : 15,
+                  color: "#444",
+                  lineHeight: isLead ? 27 : 26,
+                }}
                 onGlossaryPress={setActivePopupSlug}
                 onTopicPress={handleTopicPress}
               />

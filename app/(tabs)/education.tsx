@@ -13,7 +13,7 @@ export default function EducationScreen() {
   return (
     <View style={[componentStyles.container, { backgroundColor: "#fafafa" }]}>
       <View style={componentStyles.headerBar}>
-        <Text style={componentStyles.header}>Learn the basics</Text>
+        <Text style={componentStyles.header}>Reference Articles</Text>
         <Pressable
           onPress={() => setShowOptions(true)}
           style={({ pressed }) => ({

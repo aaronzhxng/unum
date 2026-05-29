@@ -292,32 +292,37 @@ function TabsLayoutInner() {
   };
 
   // When returning to (tabs) via swipe-back, the PagerView can drift to
-  // page 0. Re-snap to the correct page once the screen regains focus.
-  // The recovery guard blocks any trailing onPageSelected(0) events that
-  // arrive after the snap fires.
+  // page 0. The guard must be active BEFORE we lose focus so that any
+  // onPageSelected(0) drift event that fires before useFocusEffect runs on
+  // the way back is blocked. Cleanup sets the guard to true (not false) so
+  // activeIndexRef is never corrupted while we are away.
   useFocusEffect(
     useCallback(() => {
       // Cancel any timers left over from a previous focus cycle
       if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
       if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
 
+      // activeIndexRef was protected by the guard while we were away, so it
+      // still holds the correct page even if the PagerView drifted.
       const targetPage = activeIndexRef.current;
-      focusRecoveryRef.current = true;
       // Correct the tab bar immediately so it never shows the wrong tab
       setActiveIndex(targetPage);
 
       snapTimerRef.current = setTimeout(() => {
         pagerRef.current?.setPage(targetPage);
-        // Extended window — stale drift events can arrive hundreds of ms later
+        // Release the guard once the drift window has passed (drift events
+        // typically arrive within ~100 ms of the snap)
         guardTimerRef.current = setTimeout(() => {
           focusRecoveryRef.current = false;
-        }, 800);
+        }, 200);
       }, 50);
 
       return () => {
         if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
         if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
-        focusRecoveryRef.current = false;
+        // KEY: keep the guard ON while we are away so drift events that fire
+        // before the next useFocusEffect callback cannot corrupt activeIndexRef.
+        focusRecoveryRef.current = true;
       };
     }, [])
   );
@@ -332,8 +337,16 @@ function TabsLayoutInner() {
           style={{ flex: 1 }}
           initialPage={0}
           onPageSelected={(e) => {
-            if (focusRecoveryRef.current) return;
             const index = e.nativeEvent.position;
+            // A drift event always snaps multiple pages (e.g. 3→0); a user swipe
+            // only ever moves one page at a time. Block multi-page jumps during
+            // recovery so they can never corrupt activeIndexRef.
+            if (
+              focusRecoveryRef.current &&
+              Math.abs(index - activeIndexRef.current) > 1
+            ) {
+              return;
+            }
             setActiveIndex(index);
             activeIndexRef.current = index; // keep ref in sync with manual swipes
             setVisitedTabs((prev) => new Set([...prev, index]));
