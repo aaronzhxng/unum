@@ -1,4 +1,5 @@
 import { getDb } from "../utils/database";
+import { queryClient } from "../utils/queryClient";
 import { apiClient } from "./api";
 
 interface Bill {
@@ -184,6 +185,10 @@ const runDeltaSync = async (): Promise<void> => {
 
     if (fresh.bills.length > 0) {
       upsertBills(fresh.bills);
+      // New bills were written to SQLite — tell React Query so the UI
+      // re-reads the cache immediately without waiting for the next
+      // focus-triggered staleness check.
+      queryClient.invalidateQueries({ queryKey: ["bills", "v2"] });
     }
 
     const today = new Date().toISOString().split("T")[0];

@@ -65,11 +65,7 @@ export default function EducationScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={componentStyles.name}>{topic.title}</Text>
-                  <Text
-                    style={componentStyles.subtitle}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
+                  <Text style={componentStyles.subtitle}>
                     {topic.subtitle}
                   </Text>
                 </View>

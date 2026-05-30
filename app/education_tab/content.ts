@@ -7,6 +7,7 @@ export type EducationSection =
 
 export type EducationSubtopic = {
   id: string;
+  icon?: any;
   title: string;
   summary: string;
   body: EducationSection[];
@@ -33,6 +34,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 1: What is the U.S. Government? ────────────────────────────────
       {
         id: "what-is-us-government",
+        icon: require("../../assets/education_icons/govworksicon1.png"),
         title: "What is the U.S. Government?",
         summary: "Federalism and the many layers of American government.",
         body: [
@@ -72,6 +74,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 2: What Does the Executive Do? ──────────────────────────────
       {
         id: "what-does-executive-do",
+        icon: require("../../assets/education_icons/govworksicon2.png"),
         title: "What Does the Executive Do?",
         summary: "Executive Orders, the Cabinet, and Congress making law.",
         body: [
@@ -106,6 +109,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 3: What is the Basis for American Law? ──────────────────────
       {
         id: "basis-for-american-law",
+        icon: require("../../assets/education_icons/govworksicon3.png"),
         title: "What is the Basis for American Law?",
         summary: "The Constitution, democracy, and the three branches as a tree.",
         body: [
@@ -187,6 +191,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 1: What is the Constitution? ────────────────────────────────
       {
         id: "what-is-the-constitution",
+        icon: require("../../assets/education_icons/constitutionicon1.png"),
         title: "What is the Constitution?",
         summary: "The rules the government must follow and how the federal government is structured.",
         body: [
@@ -233,6 +238,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 2: How Has the Constitution Been Changed? ────────────────────
       {
         id: "how-constitution-changed",
+        icon: require("../../assets/education_icons/constitutionicon2.png"),
         title: "How Has the Constitution Been Changed?",
         summary: "The amendment process and the Bill of Rights.",
         body: [
@@ -283,6 +289,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 3: What Are My Rights? ───────────────────────────────────────
       {
         id: "what-are-my-rights",
+        icon: require("../../assets/education_icons/constitutionicon3.png"),
         title: "What Are My Rights?",
         summary: "The constitutional rights guaranteed to everyone in the United States.",
         body: [
@@ -329,6 +336,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 4: How Can We Read the Constitution? ─────────────────────────
       {
         id: "how-to-read-constitution",
+        icon: require("../../assets/education_icons/constitutionicon4.png"),
         title: "How Can We Read the Constitution?",
         summary: "How the Supreme Court interprets the Constitution's language.",
         body: [
@@ -369,6 +377,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 5: Why Should I Care? ────────────────────────────────────────
       {
         id: "why-care-constitution",
+        icon: require("../../assets/education_icons/constitutionicon5.png"),
         title: "Why Should I Care?",
         summary: "Why understanding the Constitution matters for everyday life.",
         body: [
@@ -425,6 +434,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 1: What does Congress do? ───────────────────────────────────
       {
         id: "what-does-congress-do",
+        icon: require("../../assets/education_icons/congressicon1.png"),
         title: "What does Congress do?",
         summary: "The legislative role of Congress: passing laws, controlling spending, and checking the Executive.",
         body: [
@@ -453,6 +463,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 2: Who introduces a law? ─────────────────────────────────────
       {
         id: "who-introduces-a-law",
+        icon: require("../../assets/education_icons/congressicon2.png"),
         title: "Who introduces a law?",
         summary: "How bills are drafted, introduced, and assigned to committees.",
         body: [
@@ -481,6 +492,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 3: What are committees? ──────────────────────────────────────
       {
         id: "what-are-committees",
+        icon: require("../../assets/education_icons/congressicon3.png"),
         title: "What are committees?",
         summary: "How congressional committees research, debate, and shape legislation.",
         body: [
@@ -509,6 +521,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 4: What happens after a committee approves a bill? ───────────
       {
         id: "what-happens-after-committee",
+        icon: require("../../assets/education_icons/congressicon4.png"),
         title: "What happens after a committee approves a bill?",
         summary: "Floor debate, chamber votes, conference committee, and the presidential decision.",
         body: [
@@ -537,6 +550,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 5: Example bills becoming law ────────────────────────────────
       {
         id: "example-bills-becoming-law",
+        icon: require("../../assets/education_icons/congressicon5.png"),
         title: "Example bills becoming law",
         summary: "A real example showing every stage a bill passes through on Congress.gov.",
         body: [
@@ -593,6 +607,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 6: Using Unum to track a bill ────────────────────────────────
       {
         id: "using-unum-to-track-a-bill",
+        icon: require("../../assets/education_icons/congressicon6.png"),
         title: "Using Unum to track a bill",
         summary: "A step-by-step walkthrough of tracking a real bill through Unum.",
         body: [
@@ -651,6 +666,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 7: What about other resolutions? ─────────────────────────────
       {
         id: "what-about-other-resolutions",
+        icon: require("../../assets/education_icons/congressicon7.png"),
         title: "What about other resolutions?",
         summary: "Simple and concurrent resolutions that change how Congress operates but never become law.",
         body: [
@@ -679,6 +695,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 8: Making money ───────────────────────────────────────────────
       {
         id: "making-money",
+        icon: require("../../assets/education_icons/congressicon8.png"),
         title: "Making money",
         summary: "How the federal government raises revenue through taxes and tariffs.",
         body: [
@@ -715,6 +732,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 9: Spending money ─────────────────────────────────────────────
       {
         id: "spending-money",
+        icon: require("../../assets/education_icons/congressicon9.png"),
         title: "Spending money",
         summary: "Mandatory versus discretionary spending and how the federal budget is divided.",
         body: [
@@ -751,6 +769,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 10: How the budget is made ───────────────────────────────────
       {
         id: "how-the-budget-is-made",
+        icon: require("../../assets/education_icons/congressicon10.png"),
         title: "How the budget is made",
         summary: "The step-by-step process Congress uses to write the federal budget each year.",
         body: [
@@ -804,6 +823,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 11: What if there's a problem? ───────────────────────────────
       {
         id: "what-if-theres-a-problem",
+        icon: require("../../assets/education_icons/congressicon11.png"),
         title: "What if there's a problem?",
         summary: "Government shutdowns, continuing resolutions, and supplemental appropriations.",
         body: [
@@ -840,6 +860,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 12: Checking the work of the Executive ───────────────────────
       {
         id: "checking-the-work-of-the-executive",
+        icon: require("../../assets/education_icons/congressicon12.png"),
         title: "Checking the work of the Executive",
         summary: "Congressional oversight, Senate confirmations, and how Congress investigates wrongdoing.",
         body: [
@@ -868,6 +889,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 13: What is impeachment? ─────────────────────────────────────
       {
         id: "what-is-impeachment",
+        icon: require("../../assets/education_icons/congressicon13.png"),
         title: "What is impeachment?",
         summary: "The constitutional process for charging and removing a federal official from office.",
         body: [
@@ -958,6 +980,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 1: Why should I care about political parties? ───────────────
       {
         id: "why-should-i-care-about-political-parties",
+        icon: require("../../assets/education_icons/partiesicon1.png"),
         title: "Why should I care about political parties?",
         summary: "Why understanding political parties helps you follow politics, elections, and lawmaking.",
         body: [
@@ -986,6 +1009,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 2: How can I learn more? ─────────────────────────────────────
       {
         id: "how-can-i-learn-more",
+        icon: require("../../assets/education_icons/partiesicon2.png"),
         title: "How can I learn more?",
         summary: "Where to find official party information, platforms, and registration data.",
         body: [
@@ -1043,6 +1067,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 3: Why do politicians join parties? ──────────────────────────
       {
         id: "why-do-politicians-join-parties",
+        icon: require("../../assets/education_icons/partiesicon3.png"),
         title: "Why do politicians join parties?",
         summary: "The advantages of party membership for candidates, and what it means to run as an independent.",
         body: [
@@ -1082,6 +1107,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 4: What are America's "big two?" ─────────────────────────────
       {
         id: "whats-americas-big-two",
+        icon: require("../../assets/education_icons/partiesicon4.png"),
         title: "What are America's \"big two?\"",
         summary: "The two-party system, the Republican and Democratic parties, and what they stand for.",
         body: [
@@ -1122,6 +1148,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 5: What are the other parties? ───────────────────────────────
       {
         id: "what-are-the-other-parties",
+        icon: require("../../assets/education_icons/partiesicon5.png"),
         title: "What are the other parties?",
         summary: "Minor parties, ballot-access challenges, and local parties.",
         body: [
@@ -1146,6 +1173,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 6: Joining a party ────────────────────────────────────────────
       {
         id: "joining-a-party",
+        icon: require("../../assets/education_icons/partiesicon6.png"),
         title: "Joining a party",
         summary: "How to register with a party and what membership means for voting.",
         body: [
@@ -1170,6 +1198,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 7: Primaries and caucuses ────────────────────────────────────
       {
         id: "primaries-and-caucuses",
+        icon: require("../../assets/education_icons/partiesicon7.png"),
         title: "Primaries and caucuses",
         summary: "How parties choose their official candidates before the general election.",
         body: [
@@ -1205,6 +1234,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 8: Majority governments ──────────────────────────────────────
       {
         id: "majority-governments",
+        icon: require("../../assets/education_icons/partiesicon1-1.png"),
         title: "Majority governments",
         summary: "What majority control of Congress means and how supermajorities work.",
         body: [
@@ -1229,6 +1259,7 @@ export const educationTopics: EducationTopic[] = [
       // ── Page 9: Why do we care about majorities? ──────────────────────────
       {
         id: "why-do-we-care-about-majorities",
+        icon: require("../../assets/education_icons/partiesicon1-2.png"),
         title: "Why do we care about majorities?",
         summary: "Party discipline, party leaders, whips, and congressional caucuses.",
         body: [

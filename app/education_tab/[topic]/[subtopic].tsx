@@ -101,41 +101,37 @@ export default function EducationSubtopicScreen() {
             paddingHorizontal: CONTENT_PADDING,
             paddingTop: 16,
             paddingBottom: 20,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
           }}
         >
-          {/* Topic breadcrumb — text only, no icon */}
-          <Text
-            style={{
-              fontSize: 11,
-              fontWeight: "700",
-              color: "#008CFF",
-              letterSpacing: 0.8,
-              marginBottom: 10,
-            }}
-          >
-            {topicData.title.toUpperCase()}
-          </Text>
+          {/* Icon — subtopic-specific if available, else topic icon */}
+          <Image
+            source={subtopicData.icon ?? topicData.icon}
+            style={{ width: 72, height: 72, flexShrink: 0 }}
+            resizeMode="contain"
+          />
 
-          {/* Icon + article title row */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 14,
-            }}
-          >
-            <Image
-              source={topicData.icon}
-              style={{ width: 50, height: 50, flexShrink: 0 }}
-              resizeMode="contain"
-            />
+          {/* Topic breadcrumb + subtopic title stacked */}
+          <View style={{ flex: 1 }}>
             <Text
               style={{
-                fontSize: 24,
+                fontSize: 11,
+                fontWeight: "700",
+                color: "#008CFF",
+                letterSpacing: 0.8,
+                marginBottom: 4,
+              }}
+            >
+              {topicData.title.toUpperCase()}
+            </Text>
+            <Text
+              style={{
+                fontSize: 22,
                 fontWeight: "800",
                 color: "#0d0d0d",
-                lineHeight: 32,
-                flex: 1,
+                lineHeight: 29,
               }}
             >
               {subtopicData.title}

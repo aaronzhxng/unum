@@ -94,7 +94,7 @@ export default function EducationTopicScreen() {
               >
                 <View style={{ width: 50, height: 50 }}>
                   <Image
-                    source={topicData.icon}
+                    source={subtopic.icon ?? topicData.icon}
                     style={{ width: 50, height: 50 }}
                     resizeMode="contain"
                   />
@@ -102,11 +102,7 @@ export default function EducationTopicScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={componentStyles.name}>{subtopic.title}</Text>
-                <Text
-                  style={componentStyles.subtitle}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
+                <Text style={componentStyles.subtitle}>
                   {subtopic.summary}
                 </Text>
               </View>

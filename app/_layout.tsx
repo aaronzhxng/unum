@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack, useRouter } from "expo-router";
@@ -8,20 +8,9 @@ import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
 import UpdateToast from "./global_components/UpdateToast";
 import { initializeDatabase } from "./utils/database";
+import { queryClient } from "./utils/queryClient";
 import { storage } from "./utils/storage";
 import { syncListItemsFromBills } from "./utils/syncListItems";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      retry: 1,
-      retryDelay: 1000,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    },
-  },
-});
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);

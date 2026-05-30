@@ -283,6 +283,10 @@ function TabsLayoutInner() {
   // preventing a guard-release from a previous focus cycle leaking into the next.
   const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const guardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // scrollEnabled is disabled while the tabs screen is not in focus.
+  // This stops the native PagerView from drifting at all, rather than
+  // trying to correct it after the fact.
+  const [pagerScrollEnabled, setPagerScrollEnabled] = useState(true);
 
   const navigateToTab = (index: number) => {
     pagerRef.current?.setPage(index);
@@ -292,36 +296,39 @@ function TabsLayoutInner() {
   };
 
   // When returning to (tabs) via swipe-back, the PagerView can drift to
-  // page 0. The guard must be active BEFORE we lose focus so that any
-  // onPageSelected(0) drift event that fires before useFocusEffect runs on
-  // the way back is blocked. Cleanup sets the guard to true (not false) so
-  // activeIndexRef is never corrupted while we are away.
+  // page 0. Two-layer defence:
+  //   1. scrollEnabled=false while we are away  → native layer cannot move the
+  //      pager at all, so the drift never happens in the first place.
+  //   2. focusRecoveryRef guard + snap           → catches anything that still
+  //      slips through (e.g. a programmatic reset from RN reconciliation).
+  // Cleanup sets the guard to true and disables scroll BEFORE we leave so
+  // both protections are in place before any native events can fire.
   useFocusEffect(
     useCallback(() => {
       // Cancel any timers left over from a previous focus cycle
       if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
       if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
 
-      // activeIndexRef was protected by the guard while we were away, so it
-      // still holds the correct page even if the PagerView drifted.
+      // activeIndexRef was protected while we were away, so it still holds
+      // the correct page even if the PagerView internally drifted.
       const targetPage = activeIndexRef.current;
-      // Correct the tab bar immediately so it never shows the wrong tab
       setActiveIndex(targetPage);
 
+      // Snap, then re-enable scroll and release the guard
       snapTimerRef.current = setTimeout(() => {
         pagerRef.current?.setPage(targetPage);
-        // Release the guard once the drift window has passed (drift events
-        // typically arrive within ~100 ms of the snap)
+        setPagerScrollEnabled(true);
         guardTimerRef.current = setTimeout(() => {
           focusRecoveryRef.current = false;
-        }, 200);
+        }, 300);
       }, 50);
 
       return () => {
         if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
         if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
-        // KEY: keep the guard ON while we are away so drift events that fire
-        // before the next useFocusEffect callback cannot corrupt activeIndexRef.
+        // Disable scroll and raise the guard the moment we leave.
+        // This must happen before any native drift event can fire.
+        setPagerScrollEnabled(false);
         focusRecoveryRef.current = true;
       };
     }, [])
@@ -336,17 +343,13 @@ function TabsLayoutInner() {
           ref={pagerRef}
           style={{ flex: 1 }}
           initialPage={0}
+          scrollEnabled={pagerScrollEnabled}
           onPageSelected={(e) => {
+            // Drop every event while the guard is active. scrollEnabled=false
+            // already prevents user-initiated moves; this catches any
+            // programmatic/reconciliation events that still slip through.
+            if (focusRecoveryRef.current) return;
             const index = e.nativeEvent.position;
-            // A drift event always snaps multiple pages (e.g. 3→0); a user swipe
-            // only ever moves one page at a time. Block multi-page jumps during
-            // recovery so they can never corrupt activeIndexRef.
-            if (
-              focusRecoveryRef.current &&
-              Math.abs(index - activeIndexRef.current) > 1
-            ) {
-              return;
-            }
             setActiveIndex(index);
             activeIndexRef.current = index; // keep ref in sync with manual swipes
             setVisitedTabs((prev) => new Set([...prev, index]));
