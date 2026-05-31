@@ -1,6 +1,7 @@
 import { ChevronLeft, Plus } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Dimensions,
   FlatList,
   Image,
   Keyboard,
@@ -11,6 +12,8 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+
+const SHORT_SCREEN = Dimensions.get("window").height < 750;
 import Modal from "react-native-modal";
 import officialNicknames from "../data/nicknames.json";
 import { styles as componentStyles } from "../global_styles/styles";
@@ -261,7 +264,7 @@ export default function SearchModal({
       useNativeDriver
       coverScreen={true}
     >
-      <View style={[componentStyles.container, { paddingBottom: 96 }]}>
+      <View style={[componentStyles.container, { paddingBottom: SHORT_SCREEN ? 48 : 96 }]}>
         {/* Search Header */}
         <View style={componentStyles.headerBar}>
           <TouchableOpacity

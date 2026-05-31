@@ -16,9 +16,10 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   Text,
-  View,
   useWindowDimensions,
+  View,
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useTabBar } from "../context/TabBarContext";
@@ -609,7 +610,10 @@ export default function HomeScreen() {
 
       {/* List Content */}
       {items.length === 0 ? (
-        <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
           {!voterCardDismissed && <VoterCard onDismiss={dismissVoterCard} />}
           {!suggestedBillsDismissed &&
             featuredData?.bills &&
@@ -805,7 +809,9 @@ export default function HomeScreen() {
               justifyContent: "center",
               alignItems: "center",
               paddingHorizontal: 32,
+              paddingVertical: 32,
               gap: 8,
+              minHeight: 180,
             }}
           >
             <Text style={{ fontSize: 32, marginBottom: 16 }}>📋</Text>
@@ -832,7 +838,7 @@ export default function HomeScreen() {
               matters to you.
             </Text>
           </View>
-        </View>
+        </ScrollView>
       ) : isEditMode ? (
         <DraggableFlatList
           data={items}

@@ -10,6 +10,8 @@ import {
   Text,
   View,
 } from "react-native";
+import GlossaryPopup from "../../global_components/GlossaryPopup";
+import { styles as componentStyles } from "../../global_styles/styles";
 import EducationOptionsMenu from "../EducationOptionsMenu";
 import RichText from "../RichText";
 import {
@@ -18,8 +20,6 @@ import {
   getEducationTopic,
 } from "../content";
 import { parseRichText } from "../glossary";
-import GlossaryPopup from "../../global_components/GlossaryPopup";
-import { styles as componentStyles } from "../../global_styles/styles";
 
 const CONTENT_PADDING = 20;
 
@@ -70,7 +70,7 @@ export default function EducationSubtopicScreen() {
       <View
         style={[
           componentStyles.headerBar,
-          { paddingHorizontal: 16, backgroundColor: "#fff" },
+          { paddingHorizontal: 16, backgroundColor: "#fff", marginBottom: 12 },
         ]}
       >
         <Pressable
@@ -170,7 +170,9 @@ export default function EducationSubtopicScreen() {
                   style={{
                     borderRadius: 16,
                     overflow: "hidden",
-                    backgroundColor: "#f0f0f0",
+                    backgroundColor: section.transparent
+                      ? "transparent"
+                      : "#f0f0f0",
                   }}
                 >
                   <Image
@@ -227,7 +229,18 @@ export default function EducationSubtopicScreen() {
                   </Text>
                 ) : null}
                 <RichText
-                  segments={parseRichText(section.content)}
+                  segments={parseRichText(
+                    section.content,
+                    subtopic === "senate-leadership" ||
+                      subtopic === "house-leadership"
+                      ? [
+                          "vice-president",
+                          "majority-party",
+                          "trifecta",
+                          "president",
+                        ]
+                      : undefined,
+                  )}
                   style={{
                     fontSize: 15,
                     color: "#1a3a5c",
@@ -305,6 +318,48 @@ export default function EducationSubtopicScreen() {
             );
           }
 
+          /* ── List ── */
+          if (section.type === "list") {
+            return (
+              <View
+                key={index}
+                style={{ marginHorizontal: CONTENT_PADDING, marginBottom: 28 }}
+              >
+                {section.items.map((item, i) => (
+                  <View
+                    key={i}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      marginBottom: i < section.items.length - 1 ? 12 : 0,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 3,
+                        borderRadius: 2,
+                        backgroundColor: "#008CFF",
+                        alignSelf: "stretch",
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "700",
+                        color: "#0d0d0d",
+                        lineHeight: 22,
+                        flex: 1,
+                      }}
+                    >
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            );
+          }
+
           /* ── Text (default) ── */
           const isLead = index === leadIndex;
           return (
@@ -348,7 +403,18 @@ export default function EducationSubtopicScreen() {
               ) : null}
 
               <RichText
-                segments={parseRichText(section.content)}
+                segments={parseRichText(
+                  section.content,
+                  subtopic === "senate-leadership" ||
+                    subtopic === "house-leadership"
+                    ? [
+                        "vice-president",
+                        "majority-party",
+                        "trifecta",
+                        "president",
+                      ]
+                    : undefined,
+                )}
                 style={{
                   fontSize: isLead ? 16 : 15,
                   color: "#444",

@@ -32,8 +32,8 @@ export default function EducationTopicScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
       {/* Header */}
-      <View style={[componentStyles.headerBar, { paddingHorizontal: 16 }]}>
-        <View style={componentStyles.headerLeft}>
+      <View style={[componentStyles.headerBar, { paddingHorizontal: 16, marginBottom: 12 }]}>
+        <View style={[componentStyles.headerLeft, { flex: 1, marginRight: 8 }]}>
           <Pressable
             onPress={() => router.back()}
             style={({ pressed }) => ({
@@ -42,16 +42,20 @@ export default function EducationTopicScreen() {
           >
             <ChevronLeft size={24} color="#535353" />
           </Pressable>
-          <Text style={[componentStyles.header, { marginBottom: 0 }]}>
+          <Text
+            style={[componentStyles.header, { marginBottom: 0, flexShrink: 1 }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
+          >
             {topicData.title}
           </Text>
         </View>
-        <View style={componentStyles.headerRight}>
+        <View style={[componentStyles.headerRight, { marginBottom: 0 }]}>
           <Pressable
             onPress={() => setShowOptions(true)}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
-              marginBottom: 16,
             })}
           >
             <MoreVertical size={24} color="#535353" />

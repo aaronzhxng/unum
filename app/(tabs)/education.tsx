@@ -27,7 +27,7 @@ export default function EducationScreen() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <View>
-          {educationTopics.map((topic) => (
+          {educationTopics.filter(t => t.id !== "elections-voting" && t.id !== "us-history-foundations").map((topic) => (
             <Pressable
               key={topic.id}
               onPress={() => router.push(`/education_tab/${topic.id}` as any)}

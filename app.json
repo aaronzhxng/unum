@@ -2,7 +2,7 @@
   "expo": {
     "name": "Unum",
     "slug": "unum",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "scheme": "unum",
     "userInterfaceStyle": "automatic",
@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.unuminitiative.unum",
       "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/app_icons/app_icon_ios.png",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -90,13 +90,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#fafafa"
     },
-    "assets": [
-      "assets/seed.db"
-    ],
+    "assets": ["assets/seed.db"],
     "metro": {
-      "blockList": [
-        "scripts/.*"
-      ]
+      "blockList": ["scripts/.*"]
     },
     "runtimeVersion": {
       "policy": "appVersion"

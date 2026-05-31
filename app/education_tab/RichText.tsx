@@ -12,10 +12,15 @@ interface Props {
 /**
  * Renders an array of GlossarySegments as inline React Native Text.
  * - glossary segments → red, opens definition popup
- * - topic segments    → bold, navigates to education topic
+ * - topic segments    → blue bold, navigates to education topic
  * - plain segments    → unstyled
  */
-export default function RichText({ segments, style, onGlossaryPress, onTopicPress }: Props) {
+export default function RichText({
+  segments,
+  style,
+  onGlossaryPress,
+  onTopicPress,
+}: Props) {
   return (
     <Text style={style}>
       {segments.map((seg, i) => {
@@ -30,16 +35,19 @@ export default function RichText({ segments, style, onGlossaryPress, onTopicPres
             </Text>
           );
         }
+        // if (seg.type === "topic") {
+        //   return (
+        //     <Text
+        //       key={i}
+        //       style={{ fontWeight: "700", color: "#1a1a1a", textDecorationLine: "underline" }}
+        //       onPress={() => onTopicPress(seg.topicId)}
+        //     >
+        //       {seg.text}
+        //     </Text>
+        //   );
+        // }
         if (seg.type === "topic") {
-          return (
-            <Text
-              key={i}
-              style={{ fontWeight: "700", color: "#1a1a1a" }}
-              onPress={() => onTopicPress(seg.topicId)}
-            >
-              {seg.text}
-            </Text>
-          );
+          return <Text key={i}>{seg.text}</Text>;
         }
         return <Text key={i}>{seg.text}</Text>;
       })}

@@ -1,6 +1,8 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Dimensions, Modal, Pressable, ScrollView, Text, View } from "react-native";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 import RichText from "../education_tab/RichText";
 import { capitalizeFirst, glossaryBySlug } from "../education_tab/glossary";
 
@@ -72,7 +74,7 @@ export default function GlossaryPopup({ slug, onClose, onNavigateGlossary }: Pro
             {entry.term}
           </Text>
           <ScrollView
-            style={{ maxHeight: 280 }}
+            style={{ maxHeight: Math.min(280, SCREEN_HEIGHT * 0.38) }}
             showsVerticalScrollIndicator={false}
           >
             <RichText

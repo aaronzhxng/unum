@@ -19,7 +19,7 @@ export default function GlossaryScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* Header */}
       <View
         style={[
@@ -40,12 +40,11 @@ export default function GlossaryScreen() {
             Glossary
           </Text>
         </View>
-        <View style={componentStyles.headerRight}>
+        <View style={[componentStyles.headerRight, { marginBottom: 0 }]}>
           <Pressable
             onPress={() => setShowOptions(true)}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.75 : 1 }],
-              marginBottom: 16,
             })}
           >
             <MoreVertical size={24} color="#535353" />
@@ -60,41 +59,52 @@ export default function GlossaryScreen() {
           style={{
             fontSize: 13,
             color: "#7B7C81",
+            marginTop: 12,
             marginBottom: 20,
             lineHeight: 18,
           }}
         >
           Important words used when talking about U.S. government and politics.
-          Tap a{" "}
-          <Text style={{ color: "#FF3B30" }}>red word</Text> for its
-          definition, or a{" "}
-          <Text style={{ fontWeight: "700", color: "#1a1a1a" }}>bold word</Text>{" "}
-          to go to that topic.
+          Tap a <Text style={{ color: "#FF3B30" }}>red word</Text> for its
+          definition.
+          {/* , or a{" "}
+          <Text style={{ fontWeight: "700", color: "#1a1a1a", textDecorationLine: "underline" }}>bold word</Text>{" "}
+          to go to that topic. */}
         </Text>
 
-        {glossaryEntries.map((entry, i) => (
-          <View
-            key={entry.slug}
-            style={{
-              marginBottom: 20,
-              paddingBottom: 20,
-              borderBottomWidth: i < glossaryEntries.length - 1 ? 1 : 0,
-              borderBottomColor: "#e8e8e8",
-            }}
-          >
-            <Text
+        {glossaryEntries.map((entry) => (
+          <View key={entry.slug} style={{ marginBottom: 28 }}>
+            <View
               style={{
-                fontSize: 15,
-                fontWeight: "700",
-                color: "#1a1a1a",
-                marginBottom: 5,
+                flexDirection: "row",
+                alignItems: "flex-start",
+                gap: 10,
+                marginBottom: 10,
               }}
             >
-              {entry.term}
-            </Text>
+              <View
+                style={{
+                  width: 3,
+                  borderRadius: 2,
+                  backgroundColor: "#008CFF",
+                  alignSelf: "stretch",
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 17,
+                  fontWeight: "700",
+                  color: "#0d0d0d",
+                  lineHeight: 24,
+                  flex: 1,
+                }}
+              >
+                {entry.term}
+              </Text>
+            </View>
             <RichText
               segments={capitalizeFirst(entry.definition)}
-              style={{ fontSize: 14, color: "#535353", lineHeight: 21 }}
+              style={{ fontSize: 15, color: "#444", lineHeight: 26 }}
               onGlossaryPress={setActivePopupSlug}
               onTopicPress={handleTopicPress}
             />

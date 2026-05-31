@@ -3,6 +3,7 @@ import Constants from "expo-constants";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
@@ -11,6 +12,13 @@ import { initializeDatabase } from "./utils/database";
 import { queryClient } from "./utils/queryClient";
 import { storage } from "./utils/storage";
 import { syncListItemsFromBills } from "./utils/syncListItems";
+
+// Disable system font scaling globally
+(Text as any).defaultProps = (Text as any).defaultProps || {};
+(Text as any).defaultProps.allowFontScaling = false;
+
+(TextInput as any).defaultProps = (TextInput as any).defaultProps || {};
+(TextInput as any).defaultProps.allowFontScaling = false;
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
@@ -100,11 +108,19 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="education_tab/[topic]"
-                options={{ headerShown: false, gestureEnabled: true, animation: "slide_from_right" }}
+                options={{
+                  headerShown: false,
+                  gestureEnabled: true,
+                  animation: "slide_from_right",
+                }}
               />
               <Stack.Screen
                 name="education_tab/[topic]/[subtopic]"
-                options={{ headerShown: false, gestureEnabled: true, animation: "slide_from_right" }}
+                options={{
+                  headerShown: false,
+                  gestureEnabled: true,
+                  animation: "slide_from_right",
+                }}
               />
               <Stack.Screen
                 name="onboarding"

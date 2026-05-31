@@ -1,6 +1,9 @@
 import React from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Dimensions, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const SHORT_SCREEN = SCREEN_HEIGHT < 750;
 
 interface FilterOption {
   id: string;
@@ -202,6 +205,7 @@ export default function LegislationFilterModal({
                       flexDirection: "row",
                       justifyContent: "space-between",
                       alignItems: "center",
+                      paddingVertical: SHORT_SCREEN ? 10 : 16,
                     },
                   ]}
                   onPress={() => {
@@ -251,7 +255,7 @@ export default function LegislationFilterModal({
           <View
             style={[
               componentStyles.dropdownMulti,
-              { marginTop: 12, height: 200 },
+              { marginTop: SHORT_SCREEN ? 8 : 12, maxHeight: SHORT_SCREEN ? 150 : 200 },
             ]}
           >
             <View
@@ -297,7 +301,7 @@ export default function LegislationFilterModal({
             </View>
 
             <ScrollView
-              style={{ maxHeight: 200 }}
+              style={{ maxHeight: SHORT_SCREEN ? 100 : 200 }}
               nestedScrollEnabled
               showsVerticalScrollIndicator={true}
             >
@@ -319,6 +323,7 @@ export default function LegislationFilterModal({
                         flexDirection: "row",
                         justifyContent: "space-between",
                         alignItems: "center",
+                        paddingVertical: SHORT_SCREEN ? 10 : 16,
                       },
                     ]}
                     onPress={() => {
@@ -371,7 +376,7 @@ export default function LegislationFilterModal({
           <View
             style={[
               componentStyles.dropdownMulti,
-              { marginTop: 12, height: 200 },
+              { marginTop: SHORT_SCREEN ? 8 : 12, maxHeight: SHORT_SCREEN ? 150 : 200 },
             ]}
           >
             <View
@@ -416,7 +421,7 @@ export default function LegislationFilterModal({
             </View>
 
             <ScrollView
-              style={{ maxHeight: 200 }}
+              style={{ maxHeight: SHORT_SCREEN ? 100 : 200 }}
               nestedScrollEnabled
               showsVerticalScrollIndicator={true}
             >
@@ -437,6 +442,7 @@ export default function LegislationFilterModal({
                         flexDirection: "row",
                         justifyContent: "space-between",
                         alignItems: "center",
+                        paddingVertical: SHORT_SCREEN ? 10 : 16,
                       },
                     ]}
                     onPress={() => {

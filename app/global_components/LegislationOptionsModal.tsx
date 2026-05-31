@@ -1,7 +1,9 @@
 import { useRouter } from "expo-router";
 import { Bell } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Dimensions, Modal, Pressable, ScrollView, Text, View } from "react-native";
+
+const SHORT_SCREEN = Dimensions.get("window").height < 750;
 import { styles as componentStyles } from "../global_styles/styles";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
@@ -184,7 +186,7 @@ export default function LegislationOptionsModal({
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
               >
-                <Text style={[componentStyles.dropdownItemTextLabel]}>
+                <Text style={[componentStyles.dropdownItemTextLabel, { fontSize: SHORT_SCREEN ? 13 : 16 }]}>
                   Policy Area Notifications
                 </Text>
                 <Bell
@@ -194,12 +196,12 @@ export default function LegislationOptionsModal({
                 />
               </View>
               <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 24 }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12, marginLeft: 16 }}
               >
                 <Text
                   style={[
                     componentStyles.dropdownItemTextLabel,
-                    { fontSize: 14 },
+                    { fontSize: SHORT_SCREEN ? 11 : 14 },
                   ]}
                 >
                   {selectedPolicyAreas.length === POLICY_AREA_OPTIONS.length
@@ -286,7 +288,7 @@ export default function LegislationOptionsModal({
                     ]}
                     onPress={() => togglePolicyArea(option.id)}
                   >
-                    <Text style={componentStyles.dropdownItemText}>
+                    <Text style={[componentStyles.dropdownItemText, { flex: 1, fontSize: 13, marginRight: 8 }]}>
                       {option.label}
                     </Text>
                     <View
