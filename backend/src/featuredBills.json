@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-05-18",
-  "weekEnd": "2026-05-24",
+  "weekOf": "2026-06-01",
+  "weekEnd": "2026-06-07",
   "bills": [
     {
-      "billId": "hr2853",
-      "note": "This bill punishes interstate retail crime by broadening what qualifies as an offense to the interstate transportation or sale of stolen property."
+      "billId": "hr1761",
+      "note": "This bill requires the Department of the Treasury to print $250 paper currency featuring President Trump. Currently, portraits may only feature a deceased person. The bill creates an exception."
     },
     {
-      "billId": "hr8469",
-      "note": "This is the appropriations bill for the military, Department of Defense, and Department of Veterans Affairs. It directs the FY2027 budget for construction in the army, navy, air force, marines, NATO security investment program, veterans benefits administration, veterans health administration, and more."
+      "billId": "hr2616",
+      "note": "This bill requires public elementary and middle schools, as a condition of receiving certain federal funds, to obtain parental consent before changing a student's gender on school forms."
     }
   ]
 }
