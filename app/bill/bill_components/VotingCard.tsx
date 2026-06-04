@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import JargonFootnotes from "../../../components/JargonFootnotes";
 import LoadingSpinner from "../../global_components/LoadingSpinner";
 import { styles as componentStyles } from "../styles";
 
@@ -497,6 +498,7 @@ const SingleVoteCard = ({
           <Text style={{ fontSize: 11, color: "#535353" }}>Independent</Text>
         </View>
       </View>
+      <JargonFootnotes text={[vote.question, vote.result].filter(Boolean).join(" ")} />
     </View>
   );
 };
