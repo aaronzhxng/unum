@@ -179,7 +179,7 @@ export default function TipsScreen() {
           </View>
         </Pressable>
         {/* Section label */}
-        <Text style={localStyles.sectionLabel}>CIVICS REFERENCE</Text>
+        <Text style={localStyles.sectionLabel}>REFERENCE</Text>
         {/* Accordion sections — styled like amendmentsSection */}
         {TIPS_SECTIONS.map((section, index) => (
           <Pressable

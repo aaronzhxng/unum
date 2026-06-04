@@ -1479,10 +1479,22 @@ export default function BillDetail() {
                 </Text>
               )}
               <Pressable
-                onPress={() => {
-                  const url = `https://www.congress.gov/bill/${bill.congress}th-congress/${bill.originChamber?.toLowerCase() === "house" ? "house" : "senate"}-bill/${bill.number}`;
-                  Linking.openURL(url);
-                }}
+              onPress={() => {
+                const typeMap: Record<string, string> = {
+                  HR: "house-bill",
+                  HRES: "house-resolution",
+                  HJRES: "house-joint-resolution",
+                  HCONRES: "house-concurrent-resolution",
+                  S: "senate-bill",
+                  SRES: "senate-resolution",
+                  SJRES: "senate-joint-resolution",
+                  SCONRES: "senate-concurrent-resolution",
+                };
+                const billType = typeMap[bill.type?.toUpperCase()] ?? "house-bill";
+                const congress = bill.congress ?? 119;
+                const url = `https://www.congress.gov/bill/${congress}th-congress/${billType}/${bill.number}`;
+                Linking.openURL(url);
+              }}
                 style={{
                   flexDirection: "row",
                   gap: 4,
