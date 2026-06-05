@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
 import UpdateToast from "./global_components/UpdateToast";
+import { billCache } from "./utils/billCache";
 import { initializeDatabase } from "./utils/database";
 import { queryClient } from "./utils/queryClient";
 import { storage } from "./utils/storage";
@@ -56,12 +57,18 @@ export default function RootLayout() {
         }),
       });
 
+      const invalidateBill = (billId: string) => {
+        billCache.clearBill(billId);
+        queryClient.invalidateQueries({ queryKey: ["bill", billId] });
+      };
+
       // Handle cold start — app opened from notification
       const initialResponse =
         await Notifications.getLastNotificationResponseAsync();
       if (initialResponse) {
         const data = initialResponse.notification.request.content.data;
         if (data?.billId) {
+          invalidateBill(data.billId);
           setTimeout(() => router.navigate(`/bill/${data.billId}`), 500);
         } else if (data?.officialId) {
           setTimeout(
@@ -76,6 +83,7 @@ export default function RootLayout() {
         Notifications.addNotificationResponseReceivedListener((response) => {
           const data = response.notification.request.content.data;
           if (data?.billId) {
+            invalidateBill(data.billId);
             router.navigate(`/bill/${data.billId}`);
           } else if (data?.officialId) {
             router.navigate(`/official/${data.officialId}`);

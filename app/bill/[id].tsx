@@ -59,7 +59,11 @@ import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
-import VotingCard, { FollowedOfficial } from "./bill_components/VotingCard";
+import VotingCard, {
+  FollowedOfficial,
+  VoteData,
+  VoteDetailModal,
+} from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
 import { storage } from "../utils/storage";
@@ -268,6 +272,7 @@ export default function BillDetail() {
 
   const [titleExpanded, setTitleExpanded] = useState(false);
   const [titleExceedsLimit, setTitleExceedsLimit] = useState(false);
+  const [selectedVote, setSelectedVote] = useState<VoteData | null>(null);
 
   const { width: screenWidth } = useWindowDimensions();
 
@@ -1747,6 +1752,7 @@ export default function BillDetail() {
                   voiceVotes={votesData?.voiceVotes ?? []}
                   isLoading={votesLoading}
                   followedOfficials={followedOfficials}
+                  onSeeAll={setSelectedVote}
                 />
               )}
             </View>
@@ -1802,6 +1808,11 @@ export default function BillDetail() {
       </PagerView>
 
       {/* Modals - outside PagerView */}
+      <VoteDetailModal
+        vote={selectedVote}
+        onClose={() => setSelectedVote(null)}
+        followedOfficials={followedOfficials}
+      />
       <SortDropdown
         showSortDropdown={showAmendmentsSort}
         setShowSortDropdown={setShowAmendmentsSort}

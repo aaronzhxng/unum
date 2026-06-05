@@ -28,14 +28,15 @@ dotenv.config();
 
 // ─── Congress.gov response cache ─────────────────────────────────────────────
 // ─── Congress.gov response cache (SQLite-backed, survives deploys) ────────────
-const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes — for search/bill detail endpoints
+const MEMBER_LEGISLATION_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — sponsored/cosponsored lists; refreshed by cron
 const memoryCache = new Map<string, { data: any; timestamp: number }>();
 
-function getCached(key: string): any | null {
+function getCached(key: string, ttl: number = CONGRESS_CACHE_TTL): any | null {
   // Check memory cache first (fastest)
   const mem = memoryCache.get(key);
   if (mem) {
-    if (Date.now() - mem.timestamp < CONGRESS_CACHE_TTL) return mem.data;
+    if (Date.now() - mem.timestamp < ttl) return mem.data;
     memoryCache.delete(key);
   }
 
@@ -46,7 +47,7 @@ function getCached(key: string): any | null {
       .get(key) as { data: string; cached_at: number } | undefined;
 
     if (!row) return null;
-    if (Date.now() - row.cached_at > CONGRESS_CACHE_TTL) {
+    if (Date.now() - row.cached_at > ttl) {
       db.prepare(`DELETE FROM congress_cache WHERE cache_key = ?`).run(key);
       return null;
     }
@@ -86,11 +87,11 @@ function setCache(key: string, data: any): void {
   }
 }
 
-// Clean up expired cache entries once on startup
+// Clean up entries older than 48h — covers both short- and long-TTL cache keys
 try {
   const deleted = db
     .prepare(`DELETE FROM congress_cache WHERE cached_at < ?`)
-    .run(Date.now() - CONGRESS_CACHE_TTL);
+    .run(Date.now() - 48 * 60 * 60 * 1000);
   if (deleted.changes > 0) {
     console.log(`Cleared ${deleted.changes} expired cache entries`);
   }
@@ -687,6 +688,8 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
         lastName: string;
         party: string;
         vote: string;
+        state?: string;
+        district?: string;
       }[] = [];
       const get = (tag: string) => {
         const m = xml.match(
@@ -724,8 +727,10 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
             inner.match(/<first_name>(.*?)<\/first_name>/i)?.[1]?.trim() ?? "";
           const lastName =
             inner.match(/<last_name>(.*?)<\/last_name>/i)?.[1]?.trim() ?? "";
+          const state =
+            inner.match(/<state>(.*?)<\/state>/i)?.[1]?.trim() ?? "";
           if (firstName || lastName) {
-            members.push({ firstName, lastName, party, vote: voteCast });
+            members.push({ firstName, lastName, party, vote: voteCast, state: state || undefined });
           }
           if (party === "D") {
             dem.yea += isYea ? 1 : 0;
@@ -807,9 +812,13 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
           const nameParts = nameAttr.split(",").map((s: string) => s.trim());
           const lastName = nameParts[0] ?? "";
           const firstName = nameParts[1] ?? "";
+          const state =
+            inner.match(/<legislator[^>]*\bstate="([^"]*)"[^>]*>/i)?.[1]?.trim() ?? "";
+          const district =
+            inner.match(/<legislator[^>]*\bdistrict="([^"]*)"[^>]*>/i)?.[1]?.trim() ?? "";
 
           if (lastName) {
-            members.push({ firstName, lastName, party, vote: voteCast });
+            members.push({ firstName, lastName, party, vote: voteCast, state: state || undefined, district: district || undefined });
           }
         }
 
@@ -995,7 +1004,7 @@ app.get(
         return res.status(400).json({ error: "Invalid bioguideId" });
       }
       const cacheKey = `sponsored-${bioguideId}`;
-      const cached = getCached(cacheKey);
+      const cached = getCached(cacheKey, MEMBER_LEGISLATION_CACHE_TTL);
       if (cached) return res.json(cached);
       let allLegislation: any[] = [];
       let offset = 0;
@@ -1072,7 +1081,7 @@ app.get(
         return res.status(400).json({ error: "Invalid bioguideId" });
       }
       const cacheKey = `cosponsored-${bioguideId}`;
-      const cached = getCached(cacheKey);
+      const cached = getCached(cacheKey, MEMBER_LEGISLATION_CACHE_TTL);
       if (cached) return res.json(cached);
       let allLegislation: any[] = [];
       let offset = 0;

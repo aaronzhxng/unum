@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, MoreVertical } from "lucide-react-native";
-import { useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Image, PanResponder, Pressable, ScrollView, Text, View } from "react-native";
 import EducationOptionsMenu from "./EducationOptionsMenu";
 import { getEducationTopic } from "./content";
 import { styles as componentStyles } from "../global_styles/styles";
@@ -29,8 +29,30 @@ export default function EducationTopicScreen() {
     );
   }
 
+  const backSwipePanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) =>
+        g.dx > 20 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderRelease: (_, g) => {
+        if (g.dx > 50 && Math.abs(g.vx) > 0.3) router.back();
+      },
+    }),
+  ).current;
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
+      {/* Left-edge swipe strip — matches router.back() like the back button */}
+      <View
+        {...backSwipePanResponder.panHandlers}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 20,
+          zIndex: 10,
+        }}
+      />
       {/* Header */}
       <View style={[componentStyles.headerBar, { paddingHorizontal: 16, marginBottom: 12 }]}>
         <View style={[componentStyles.headerLeft, { flex: 1, marginRight: 8 }]}>

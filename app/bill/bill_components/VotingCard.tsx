@@ -1,6 +1,9 @@
+import { ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";
 import {
+  Keyboard,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -20,7 +23,7 @@ interface PartyVotes {
   notVoting: number;
 }
 
-interface VoteData {
+export interface VoteData {
   chamber: string;
   date: string;
   question: string;
@@ -56,6 +59,7 @@ interface VotingCardProps {
   voiceVotes?: VoiceVote[];
   isLoading?: boolean;
   followedOfficials?: FollowedOfficial[];
+  onSeeAll: (vote: VoteData) => void;
 }
 
 interface MemberVote {
@@ -63,6 +67,8 @@ interface MemberVote {
   lastName: string;
   party: string;
   vote: string;
+  state?: string;
+  district?: string;
 }
 
 const STATE_TO_ABBR: Record<string, string> = {
@@ -120,10 +126,13 @@ const STATE_TO_ABBR: Record<string, string> = {
 
 const extractStateAbbr = (role: string): string => {
   const dotMatch = role.match(/·\s*([^,]+)/);
-  const fullState = dotMatch
+  const raw = dotMatch
     ? dotMatch[1].trim()
     : (role.match(/(?:Representative|Senator),\s*([^,]+)/)?.[1]?.trim() ?? "");
-  return STATE_TO_ABBR[fullState] ?? fullState;
+  const stateOnly = raw.replace(/\s*-\s*District\s*\d+/i, "").trim();
+  const stateAbbr = STATE_TO_ABBR[stateOnly] ?? stateOnly;
+  const districtMatch = role.match(/District\s*(\d+)/i);
+  return districtMatch ? `${stateAbbr}, ${districtMatch[1]}` : stateAbbr;
 };
 
 const PartyBar = ({
@@ -316,6 +325,7 @@ const SingleVoteCard = ({
               );
             })()
           : null}
+        <JargonFootnotes text={[vote.question, vote.result].filter(Boolean).join(" ")} />
       </View>
 
       {/* Followed officials callout */}
@@ -339,9 +349,14 @@ const SingleVoteCard = ({
               const memberLastName = m.lastName
                 .replace(/\s*\([^)]+\)$/, "")
                 .trim();
-              const lastNameMatch =
-                memberLastName.toLowerCase() === lastName.toLowerCase();
-              if (!lastNameMatch) return false;
+              if (memberLastName.toLowerCase() !== lastName.toLowerCase())
+                return false;
+              if (m.state) {
+                const followedState = extractStateAbbr(official.role ?? "")
+                  .split(",")[0]
+                  .trim();
+                if (followedState && m.state !== followedState) return false;
+              }
               if (m.firstName === "") return true;
               return (
                 firstName === "" ||
@@ -498,7 +513,6 @@ const SingleVoteCard = ({
           <Text style={{ fontSize: 11, color: "#535353" }}>Independent</Text>
         </View>
       </View>
-      <JargonFootnotes text={[vote.question, vote.result].filter(Boolean).join(" ")} />
     </View>
   );
 };
@@ -508,9 +522,8 @@ const VotingCard: React.FC<VotingCardProps> = ({
   voiceVotes = [],
   isLoading,
   followedOfficials,
+  onSeeAll,
 }) => {
-  const [selectedVote, setSelectedVote] = useState<VoteData | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   if (isLoading) {
     return (
       <View style={{ padding: 40, alignItems: "center" }}>
@@ -582,132 +595,180 @@ const VotingCard: React.FC<VotingCardProps> = ({
           key={`${vote.chamber}-${vote.rollNumber ?? i}`}
           vote={vote}
           followedOfficials={followedOfficials}
-          onSeeAll={() => setSelectedVote(vote)}
+          onSeeAll={() => onSeeAll(vote)}
         />
       ))}
-      {/* Full vote list modal */}
-      <Modal
-        visible={selectedVote !== null}
-        animationType="slide"
-        onRequestClose={() => setSelectedVote(null)}
-        statusBarTranslucent
-      >
-        <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
-          {/* Header */}
+    </View>
+  );
+};
+
+export const VoteDetailModal: React.FC<{
+  vote: VoteData | null;
+  onClose: () => void;
+  followedOfficials?: FollowedOfficial[];
+}> = ({ vote, onClose, followedOfficials }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroup = (label: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  };
+
+  const handleClose = () => {
+    Keyboard.dismiss();
+    setSearchQuery("");
+    setCollapsedGroups(new Set());
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={vote !== null}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={handleClose}
+    >
+      <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
+        <View
+          style={{
+            paddingTop: Platform.OS === "ios" ? 56 : 16,
+            paddingHorizontal: 16,
+            paddingBottom: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: "#f0f0f0",
+            gap: 12,
+          }}
+        >
           <View
             style={{
-              paddingTop: 56,
-              paddingHorizontal: 16,
-              paddingBottom: 12,
-              borderBottomWidth: 1,
-              borderBottomColor: "#f0f0f0",
-              gap: 12,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#1a1a1a" }}>
+              {vote?.chamber} ·{" "}
+              {vote?.date
+                ? new Date(vote.date).toLocaleDateString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric",
+                  })
+                : ""}
+            </Text>
+            <TouchableOpacity
+              onPress={handleClose}
+              hitSlop={{ top: 12, bottom: 12, left: 16, right: 16 }}
+              style={{ padding: 4 }}
             >
-              <Text
-                style={{ fontSize: 16, fontWeight: "700", color: "#1a1a1a" }}
-              >
-                {selectedVote?.chamber} ·{" "}
-                {selectedVote?.date
-                  ? new Date(selectedVote.date).toLocaleDateString("en-US", {
-                      month: "2-digit",
-                      day: "2-digit",
-                      year: "numeric",
-                    })
-                  : ""}
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setSelectedVote(null);
-                  setSearchQuery("");
-                }}
-              >
-                <Text style={{ fontSize: 15, color: "#008CFF" }}>Done</Text>
-              </TouchableOpacity>
-            </View>
-            <TextInput
-              placeholder="Search by name..."
-              placeholderTextColor="#7B7C81"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              style={{
-                backgroundColor: "#f0f0f0",
-                borderRadius: 10,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                fontSize: 15,
-                color: "#1a1a1a",
-              }}
-            />
+              <Text style={{ fontSize: 15, color: "#008CFF" }}>Done</Text>
+            </TouchableOpacity>
           </View>
+          <TextInput
+            placeholder="Search by name..."
+            placeholderTextColor="#7B7C81"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={{
+              backgroundColor: "#f0f0f0",
+              borderRadius: 10,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              fontSize: 15,
+              color: "#1a1a1a",
+            }}
+          />
+        </View>
 
-          <ScrollView contentContainerStyle={{ paddingBottom: 48 }}>
-            {selectedVote?.members &&
-              (() => {
-                const query = searchQuery.toLowerCase();
-                const filtered = selectedVote.members.filter(
-                  (m) =>
-                    query === "" ||
-                    m.firstName.toLowerCase().includes(query) ||
-                    m.lastName.toLowerCase().includes(query),
-                );
+        <ScrollView contentContainerStyle={{ paddingBottom: 48 }}>
+          {vote?.members &&
+            (() => {
+              const query = searchQuery.toLowerCase();
+              const filtered = vote.members.filter(
+                (m) =>
+                  query === "" ||
+                  m.firstName.toLowerCase().includes(query) ||
+                  m.lastName.toLowerCase().includes(query),
+              );
 
-                const groups: {
-                  label: string;
-                  color: string;
-                  members: typeof filtered;
-                }[] = [
-                  {
-                    label: "Yea",
-                    color: "#16a34a",
-                    members: filtered.filter(
-                      (m) => m.vote === "Yea" || m.vote === "Aye",
-                    ),
-                  },
-                  {
-                    label: "Nay",
-                    color: "#dc2626",
-                    members: filtered.filter(
-                      (m) => m.vote === "Nay" || m.vote === "No",
-                    ),
-                  },
-                  {
-                    label: "Present",
-                    color: "#535353",
-                    members: filtered.filter((m) => m.vote === "Present"),
-                  },
-                  {
-                    label: "Not Voting",
-                    color: "#7B7C81",
-                    members: filtered.filter(
-                      (m) => m.vote === "Not Voting" || m.vote === "Absent",
-                    ),
-                  },
-                ].filter((g) => g.members.length > 0);
+              const groups: {
+                label: string;
+                color: string;
+                members: typeof filtered;
+              }[] = [
+                {
+                  label: "Yea",
+                  color: "#16a34a",
+                  members: filtered.filter(
+                    (m) => m.vote === "Yea" || m.vote === "Aye",
+                  ),
+                },
+                {
+                  label: "Nay",
+                  color: "#dc2626",
+                  members: filtered.filter(
+                    (m) => m.vote === "Nay" || m.vote === "No",
+                  ),
+                },
+                {
+                  label: "Present",
+                  color: "#535353",
+                  members: filtered.filter((m) => m.vote === "Present"),
+                },
+                {
+                  label: "Not Voting",
+                  color: "#7B7C81",
+                  members: filtered.filter(
+                    (m) => m.vote === "Not Voting" || m.vote === "Absent",
+                  ),
+                },
+              ].filter((g) => g.members.length > 0);
 
-                return groups.map((group) => (
-                  <View key={group.label} style={{ marginTop: 16 }}>
+              return groups.map((group) => {
+                const isCollapsed = collapsedGroups.has(group.label);
+                return (
+                <View key={group.label} style={{ marginTop: 20 }}>
+                  <Pressable
+                    onPress={() => toggleGroup(group.label)}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      opacity: pressed ? 0.6 : 1,
+                    })}
+                  >
                     <Text
                       style={{
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: "700",
                         color: group.color,
-                        paddingHorizontal: 16,
-                        marginBottom: 4,
+                        letterSpacing: 0.6,
                       }}
                     >
-                      {group.label} ({group.members.length})
+                      {group.label.toUpperCase()} · {group.members.length}
                     </Text>
+                    {isCollapsed
+                      ? <ChevronDown size={14} color="#1a1a1a" />
+                      : (
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                          <Text style={{ fontSize: 12, color: "#1a1a1a", fontWeight: "600" }}>Close</Text>
+                          <ChevronUp size={14} color="#1a1a1a" />
+                        </View>
+                      )
+                    }
+                  </Pressable>
+                  {!isCollapsed && (
+                  <View style={{ paddingHorizontal: 12, gap: 6, marginTop: 8 }}>
                     {group.members.map((m, i) => {
                       const isSenateVote =
-                        selectedVote?.chamber?.toLowerCase() === "senate";
+                        vote?.chamber?.toLowerCase() === "senate";
                       const isFollowed = followedOfficials?.some((o) => {
                         if (o.isSenator && !isSenateVote) return false;
                         const hasComma = o.name.includes(",");
@@ -717,22 +778,15 @@ const VotingCard: React.FC<VotingCardProps> = ({
                         const memberLastName = m.lastName
                           .replace(/\s*\([^)]+\)$/, "")
                           .trim();
-                        if (
-                          memberLastName.toLowerCase() !==
-                          oLastName.toLowerCase()
-                        )
+                        if (memberLastName.toLowerCase() !== oLastName.toLowerCase())
                           return false;
-
-                        // If member row already has a state abbr in lastName, use it to disambiguate
-                        const memberStateMatch =
-                          m.lastName.match(/\(([A-Z]{2})\)$/);
-                        if (memberStateMatch) {
-                          const memberState = memberStateMatch[1];
-                          const followedState = extractStateAbbr(o.role ?? "");
-                          return memberState === followedState;
+                        if (m.state) {
+                          const followedState = extractStateAbbr(o.role ?? "")
+                            .split(",")[0]
+                            .trim();
+                          if (followedState && m.state !== followedState)
+                            return false;
                         }
-
-                        // Fall back to first name prefix match
                         if (m.firstName === "") return true;
                         const oFirstName = hasComma
                           ? (o.name.split(",")[1]?.split(" ")[0] ?? "").trim()
@@ -744,78 +798,66 @@ const VotingCard: React.FC<VotingCardProps> = ({
                             .startsWith(oFirstName.toLowerCase())
                         );
                       });
+                      const cleanLast = m.lastName
+                        .replace(/\s*\([^)]+\)$/, "")
+                        .trim();
+                      const statePart = m.state
+                        ? m.district
+                          ? `${m.state}, ${m.district}`
+                          : m.state
+                        : "";
+                      const displayName = `${[m.firstName, cleanLast].filter(Boolean).join(" ")}${statePart ? ` (${statePart})` : ""}`;
+                      const partyColor =
+                        m.party === "D"
+                          ? "#008CFF"
+                          : m.party === "R"
+                            ? "#D45252"
+                            : "#9B8500";
                       return (
                         <View
                           key={i}
                           style={{
                             flexDirection: "row",
-                            justifyContent: "space-between",
                             alignItems: "center",
-                            paddingHorizontal: 16,
-                            paddingVertical: 8,
-                            borderBottomWidth: 1,
-                            borderBottomColor: "#f0f0f0",
-                            backgroundColor: isFollowed
-                              ? "#F0F7FF"
-                              : "transparent",
+                            paddingHorizontal: 12,
+                            paddingVertical: 10,
+                            borderRadius: 12,
+                            backgroundColor: isFollowed ? "#F0F7FF" : "#fff",
+                            shadowColor: "#000",
+                            shadowOpacity: 0.06,
+                            shadowOffset: { width: 0, height: 1 },
+                            shadowRadius: 3,
+                            elevation: 1,
                           }}
                         >
                           <View
                             style={{
-                              flexDirection: "row",
-                              alignItems: "center",
-                              gap: 8,
+                              width: 10,
+                              height: 10,
+                              borderRadius: 5,
+                              backgroundColor: partyColor,
+                              marginRight: 10,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              color: "#1a1a1a",
+                              fontWeight: isFollowed ? "600" : "400",
+                              flex: 1,
                             }}
                           >
-                            {(() => {
-                              const cleanLast = m.lastName
-                                .replace(/\s*\([^)]+\)$/, "")
-                                .trim();
-                              const alreadyHasState = /\([A-Z]{2}\)$/.test(
-                                m.lastName.trim(),
-                              );
-
-                              // Find the matched followed official for state
-                              const matchedFollowed = followedOfficials?.find(
-                                (o) => {
-                                  const hasComma = o.name.includes(",");
-                                  const oLastName = hasComma
-                                    ? o.name.split(",")[0].trim()
-                                    : o.name.split(" ").slice(-1)[0].trim();
-                                  return (
-                                    oLastName.toLowerCase() ===
-                                    cleanLast.toLowerCase()
-                                  );
-                                },
-                              );
-                              const stateAbbr = matchedFollowed
-                                ? extractStateAbbr(matchedFollowed.role ?? "")
-                                : "";
-
-                              const displayName = alreadyHasState
-                                ? [m.firstName, m.lastName]
-                                    .filter(Boolean)
-                                    .join(" ")
-                                : stateAbbr
-                                  ? `${[m.firstName, cleanLast].filter(Boolean).join(" ")} (${stateAbbr})`
-                                  : [m.firstName, m.lastName]
-                                      .filter(Boolean)
-                                      .join(" ");
-
-                              return (
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    color: "#1a1a1a",
-                                    fontWeight: isFollowed ? "600" : "400",
-                                  }}
-                                >
-                                  {displayName}
-                                </Text>
-                              );
-                            })()}
-                          </View>
-                          <Text style={{ fontSize: 12, color: "#7B7C81" }}>
+                            {displayName}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              color: partyColor,
+                              fontWeight: "600",
+                              marginLeft: 8,
+                            }}
+                          >
                             {m.party === "D"
                               ? "D"
                               : m.party === "R"
@@ -827,13 +869,28 @@ const VotingCard: React.FC<VotingCardProps> = ({
                         </View>
                       );
                     })}
+                    <Pressable
+                      onPress={() => toggleGroup(group.label)}
+                      style={({ pressed }) => ({
+                        alignItems: "flex-end",
+                        paddingVertical: 10,
+                        paddingHorizontal: 4,
+                        opacity: pressed ? 0.6 : 1,
+                      })}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <Text style={{ fontSize: 12, color: "#1a1a1a", fontWeight: "600" }}>Close</Text>
+                        <ChevronUp size={14} color="#1a1a1a" />
+                      </View>
+                    </Pressable>
                   </View>
-                ));
-              })()}
-          </ScrollView>
-        </View>
-      </Modal>
-    </View>
+                  )}
+                </View>
+              );})
+            })()}
+        </ScrollView>
+      </View>
+    </Modal>
   );
 };
 

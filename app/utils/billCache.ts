@@ -70,6 +70,16 @@ export const billCache = {
     }
   },
 
+  // Clear a single bill by its app-level billId (e.g. "hr22"), ignoring congress prefix
+  clearBill: (billId: string): void => {
+    try {
+      const db = getDb();
+      db.runSync(`DELETE FROM bill_cache WHERE bill_id LIKE ?`, [`%-${billId}`]);
+    } catch (error) {
+      console.error("Error clearing bill from cache:", error);
+    }
+  },
+
   // Clear all cached bills
   clearAll: (): void => {
     try {

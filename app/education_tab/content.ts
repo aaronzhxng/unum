@@ -1798,7 +1798,62 @@ export const educationTopics: EducationTopic[] = [
     subtitle: "Voting, local government, advocacy, and how to get involved.",
     icon: require("../../assets/education_icons/your_rights.png"),
     subtopics: [
-      // ── Page 1: What Are My Rights? (moved from The Constitution) ─────────
+      // ── Page 1: Voter Registration ──────────────────────────────────────────
+      {
+        id: "voter-registration",
+        icon: require("../../assets/education_icons/elections_voting.png"),
+        title: "Voter registration",
+        summary:
+          "How to register, check your registration, and prepare to vote.",
+        body: [
+          {
+            type: "text",
+            content:
+              "The bills and officials you track on Unum are shaped by elections.",
+          },
+          {
+            type: "callout",
+            content:
+              "Almost every United States citizen aged eighteen or older has the right and the responsibility to vote.",
+          },
+          {
+            type: "callout",
+            content:
+              "You can vote by mail, early, or on the day, so long as you are registered.",
+          },
+          {
+            type: "links",
+            heading: "Get started",
+            items: [
+              {
+                label: "Check or update your registration",
+                url: "https://vote.gov",
+              },
+              {
+                label: "Register to vote",
+                url: "https://vote.org/register-to-vote/",
+              },
+              {
+                label: "Check registration deadlines by state",
+                url: "https://vote.org/voter-registration-deadlines/",
+              },
+            ],
+          },
+          {
+            type: "text",
+            content:
+              "Registration deadlines and rules vary by state, but the links above will walk you through everything based on where you live.\n\nMake sure you get your information about registering to vote from trustworthy sources, such as vote.gov, usa.gov/voting-and-elections, or the website of your state's board of elections.",
+          },
+          {
+            type: "text",
+            heading: "Before you vote",
+            content:
+              "Before you go to actually vote, you should know all of the following:\n\n1. How, when, and where to vote.\n\n2. What documents, if any, you need to bring to the polling booth.\n\n3. Who is up for election. Elections to Congress take place every two years. Presidential elections take place every four years. A ballot can include many races for different offices.\n\n4. How to mark a ballot. Before an election, you can find voter guides and example ballots online, and you can bring notes with you into the polling place.\n\n5. Who you want to vote for. The decision you make could impact the lives of yourself and millions of others.\n\n6. If you need any help. If you have problems with vision, if English is not your first language, or if you have any other concerns, call your local board of elections to see what assistance is available.",
+          },
+        ],
+      },
+
+      // ── Page 2: What Are My Rights? (moved from The Constitution) ─────────
       {
         id: "what-are-my-rights",
         icon: require("../../assets/education_icons/yourrights1.png"),
@@ -2026,6 +2081,7 @@ export const educationTopics: EducationTopic[] = [
           },
         ],
       },
+
     ],
   },
 ];

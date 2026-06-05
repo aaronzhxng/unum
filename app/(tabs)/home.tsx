@@ -38,6 +38,8 @@ import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { ListItem, storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+import { syncListItemsFromBills } from "../utils/syncListItems";
+import { educationTopics } from "../education_tab/content";
 type Item = ListItem;
 
 export default function HomeScreen() {
@@ -430,6 +432,7 @@ export default function HomeScreen() {
     React.useCallback(() => {
       // console.log("HomeScreen focused:", Date.now());
       const loadAllLists = async () => {
+        syncListItemsFromBills();
         const db = getDb();
         const row = db.getFirstSync<{ value: string }>(
           `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
@@ -1839,111 +1842,80 @@ const Card = React.memo(function Card({
 
 function VoterCard({ onDismiss }: { onDismiss: () => void }) {
   const router = useRouter();
-  const [showMenu, setShowMenu] = useState(false);
+
+  const allSubtopics = educationTopics
+    .filter(
+      (t) => t.id !== "elections-voting" && t.id !== "us-history-foundations",
+    )
+    .flatMap((t) =>
+      t.subtopics.map((s) => ({
+        topicId: t.id,
+        topicIcon: t.icon,
+        subtopic: s,
+      })),
+    );
+  const slotIndex = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
+  const current = allSubtopics[slotIndex % allSubtopics.length];
 
   return (
     <Pressable
-      onPress={() => router.navigate("/voter-registration" as any)}
+      onPress={() =>
+        router.navigate(
+          `/education_tab/${current.topicId}/${current.subtopic.id}` as any,
+        )
+      }
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.98 : 1 }],
-        // marginHorizontal: 16,
-        marginTop: 8,
-        marginBottom: 12,
-        backgroundColor: "#E8F4FF",
-        borderRadius: 16,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: "#008CFF33",
       })}
     >
       <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
+        style={[
+          componentStyles.officialCard,
+          {
+            backgroundColor: "#E8F4FF",
+            borderWidth: 1,
+            borderColor: "#008CFF33",
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+        ]}
       >
-        <View style={{ flex: 1, flexDirection: "row" }}>
-          <View
-            style={{
-              width: 64,
-              // height: 64,
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 12,
-            }}
-          >
-            <Text style={{ fontSize: 24 }}>🗳️</Text>
-          </View>
-          <View style={{ flexDirection: "column", flex: 1, minWidth: 0 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "700",
-                color: "#1a1a1a",
-                marginBottom: 4,
-              }}
-            >
-              Are you registered to vote?
-            </Text>
-            <Text style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}>
-              Your vote shapes who makes the laws you're tracking.
-            </Text>
-          </View>
-        </View>
-        {/* <Pressable
-          onPress={(e) => {
-            e.stopPropagation();
-            setShowMenu(true);
+        <View
+          style={{
+            width: 64,
+            height: 50,
+            marginRight: 12,
+            flexShrink: 0,
+            alignItems: "center",
+            justifyContent: "center",
           }}
-          style={{ padding: 4, marginLeft: 8 }}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <MoreVertical size={18} color="#7B7C81" />
-        </Pressable> */}
-      </View>
-
-      <Modal
-        visible={showMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowMenu(false)}
-        statusBarTranslucent
-      >
-        <Pressable style={{ flex: 1 }} onPress={() => setShowMenu(false)}>
-          <View
+          <Image
+            source={current.subtopic.icon ?? current.topicIcon}
+            style={{ width: 50, height: 50 }}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text
             style={{
-              position: "absolute",
-              right: 24,
-              top: 120,
-              backgroundColor: "#fff",
-              borderRadius: 12,
-              padding: 4,
-              shadowColor: "#1a1a1a",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.12,
-              shadowRadius: 12,
-              elevation: 8,
+              fontSize: 15,
+              fontWeight: "600",
+              color: "#1a1a1a",
+              marginBottom: 4,
             }}
+            numberOfLines={2}
           >
-            <Pressable
-              onPress={() => {
-                setShowMenu(false);
-                onDismiss();
-              }}
-              style={({ pressed }) => ({
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <Text style={{ fontSize: 15, color: "#FF3B30" }}>
-                Hide this card
-              </Text>
-            </Pressable>
-          </View>
-        </Pressable>
-      </Modal>
+            {current.subtopic.title}
+          </Text>
+          <Text
+            style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}
+            numberOfLines={2}
+          >
+            {current.subtopic.summary}
+          </Text>
+        </View>
+      </View>
     </Pressable>
   );
 }

@@ -171,7 +171,7 @@ export default function TipsScreen() {
         >
           <View style={localStyles.accordionHeader}>
             <Text style={localStyles.accordionTitle}>
-              Show voter registration card
+              Show suggested reference articles
             </Text>
             <Text style={{ fontSize: 15, color: "#008CFF", fontWeight: "600" }}>
               {voterCardDismissed ? "Off" : "On"}

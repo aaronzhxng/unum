@@ -1,10 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, ExternalLink, MoreVertical } from "lucide-react-native";
-import { useState } from "react";
+import { ChevronLeft, ChevronRight, ExternalLink, MoreVertical } from "lucide-react-native";
+import { useRef, useState } from "react";
 import {
   Dimensions,
   Image,
   Linking,
+  PanResponder,
   Pressable,
   ScrollView,
   Text,
@@ -64,8 +65,38 @@ export default function EducationSubtopicScreen() {
   // Index of the first "text" section — rendered as a lead paragraph
   const leadIndex = subtopicData.body.findIndex((s) => s.type === "text");
 
+  const backSwipePanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) =>
+        g.dx > 20 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderRelease: (_, g) => {
+        if (g.dx > 50 && Math.abs(g.vx) > 0.3) router.back();
+      },
+    }),
+  ).current;
+
+  const currentIndex = topicData.subtopics.findIndex(
+    (s) => s.id === String(subtopic ?? ""),
+  );
+  const nextSubtopic =
+    currentIndex >= 0 && currentIndex < topicData.subtopics.length - 1
+      ? topicData.subtopics[currentIndex + 1]
+      : null;
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* Left-edge swipe strip — matches router.back() like the back button */}
+      <View
+        {...backSwipePanResponder.panHandlers}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 20,
+          zIndex: 10,
+        }}
+      />
       {/* ── Nav bar ── */}
       <View
         style={[
@@ -426,6 +457,39 @@ export default function EducationSubtopicScreen() {
             </View>
           );
         })}
+
+        {nextSubtopic && (
+          <Pressable
+            onPress={() =>
+              router.push(
+                `/education_tab/${topic}/${nextSubtopic.id}` as any,
+              )
+            }
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: CONTENT_PADDING,
+              paddingVertical: 20,
+              borderTopWidth: 1,
+              borderTopColor: "#e8e8e8",
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: "600",
+                flex: 1,
+                marginRight: 8,
+              }}
+            >
+              <Text style={{ color: "#0d0d0d" }}>Read Next: </Text>
+              <Text style={{ color: "#008CFF" }}>{nextSubtopic.title}</Text>
+            </Text>
+            <ChevronRight size={18} color="#008CFF" />
+          </Pressable>
+        )}
       </ScrollView>
 
       <EducationOptionsMenu
