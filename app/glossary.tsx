@@ -1,12 +1,20 @@
 import { useRouter } from "expo-router";
 import { ChevronLeft, MoreVertical } from "lucide-react-native";
-import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  BackHandler,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import EducationOptionsMenu from "./education_tab/EducationOptionsMenu";
 import RichText from "./education_tab/RichText";
 import { capitalizeFirst, glossaryEntries } from "./education_tab/glossary";
 import GlossaryPopup from "./global_components/GlossaryPopup";
 import { styles as componentStyles } from "./global_styles/styles";
+import { trySwipeBack } from "./utils/swipeBackGuard";
 
 export default function GlossaryScreen() {
   const router = useRouter();
@@ -18,8 +26,44 @@ export default function GlossaryScreen() {
     setTimeout(() => router.push(`/education_tab/${topicId}` as any), 150);
   };
 
+  const backSwipePanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) =>
+        g.dx > 20 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderRelease: (_, g) => {
+        if (g.dx > 50 && Math.abs(g.vx) > 0.3 && trySwipeBack()) router.back();
+      },
+    }),
+  ).current;
+
+  // Claim the OS-level back gesture too — otherwise it falls through to the
+  // default navigation handler and pops alongside the strip's router.back(),
+  // double-popping straight to the tab.
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (trySwipeBack()) router.back();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* Left-edge swipe strip — matches router.back() like the back button */}
+      <View
+        {...backSwipePanResponder.panHandlers}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 20,
+          zIndex: 10,
+        }}
+      />
       {/* Header */}
       <View
         style={[

@@ -1,10 +1,19 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, MoreVertical } from "lucide-react-native";
-import { useRef, useState } from "react";
-import { Image, PanResponder, Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  BackHandler,
+  Image,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import EducationOptionsMenu from "./EducationOptionsMenu";
 import { getEducationTopic } from "./content";
 import { styles as componentStyles } from "../global_styles/styles";
+import { trySwipeBack } from "../utils/swipeBackGuard";
 
 export default function EducationTopicScreen() {
   const router = useRouter();
@@ -34,10 +43,24 @@ export default function EducationTopicScreen() {
       onMoveShouldSetPanResponder: (_, g) =>
         g.dx > 20 && Math.abs(g.dx) > Math.abs(g.dy),
       onPanResponderRelease: (_, g) => {
-        if (g.dx > 50 && Math.abs(g.vx) > 0.3) router.back();
+        if (g.dx > 50 && Math.abs(g.vx) > 0.3 && trySwipeBack()) router.back();
       },
     }),
   ).current;
+
+  // Claim the OS-level back gesture too — otherwise it falls through to the
+  // default navigation handler and pops alongside the strip's router.back(),
+  // double-popping past the topic list straight to the tab.
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (trySwipeBack()) router.back();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fafafa" }}>

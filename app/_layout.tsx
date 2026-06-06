@@ -118,7 +118,7 @@ export default function RootLayout() {
                 name="education_tab/[topic]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: true,
+                  gestureEnabled: false, // screen has its own edge-swipe strip
                   animation: "slide_from_right",
                 }}
               />
@@ -126,7 +126,7 @@ export default function RootLayout() {
                 name="education_tab/[topic]/[subtopic]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: true,
+                  gestureEnabled: false, // screen has its own edge-swipe strip
                   animation: "slide_from_right",
                 }}
               />
@@ -139,7 +139,7 @@ export default function RootLayout() {
                 name="bill/[id]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: true,
+                  gestureEnabled: false, // screen has its own edge-swipe strip
                   animation: "slide_from_right",
                 }}
               />
@@ -147,7 +147,7 @@ export default function RootLayout() {
                 name="official/[id]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: true,
+                  gestureEnabled: false, // screen has its own edge-swipe strip
                   animation: "slide_from_right",
                 }}
               />
@@ -166,7 +166,7 @@ export default function RootLayout() {
                 name="glossary"
                 options={{
                   headerShown: false,
-                  gestureEnabled: true,
+                  gestureEnabled: false, // screen has its own edge-swipe strip
                   animation: "slide_from_right",
                 }}
               />{" "}

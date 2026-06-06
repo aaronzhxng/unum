@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight, ExternalLink, MoreVertical } from "lucide-react-native";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  BackHandler,
   Dimensions,
   Image,
   Linking,
@@ -21,6 +22,7 @@ import {
   getEducationTopic,
 } from "../content";
 import { parseRichText } from "../glossary";
+import { trySwipeBack } from "../../utils/swipeBackGuard";
 
 const CONTENT_PADDING = 20;
 
@@ -70,10 +72,24 @@ export default function EducationSubtopicScreen() {
       onMoveShouldSetPanResponder: (_, g) =>
         g.dx > 20 && Math.abs(g.dx) > Math.abs(g.dy),
       onPanResponderRelease: (_, g) => {
-        if (g.dx > 50 && Math.abs(g.vx) > 0.3) router.back();
+        if (g.dx > 50 && Math.abs(g.vx) > 0.3 && trySwipeBack()) router.back();
       },
     }),
   ).current;
+
+  // Claim the OS-level back gesture too — otherwise it falls through to the
+  // default navigation handler and pops alongside the strip's router.back(),
+  // double-popping past the topic list straight to the tab.
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (trySwipeBack()) router.back();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
 
   const currentIndex = topicData.subtopics.findIndex(
     (s) => s.id === String(subtopic ?? ""),

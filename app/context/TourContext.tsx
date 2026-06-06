@@ -34,7 +34,7 @@ const TOUR_STEPS: TourStep[] = [
     tab: 0,
     title: "Navigate",
     description:
-      "Use these three tabs to switch between your lists, browse officials, and explore legislation.",
+      "Use these four tabs to switch between your lists, browse officials, explore legislation, and read articles on how government works.",
   },
   {
     tab: 1,
@@ -58,6 +58,12 @@ const TOUR_STEPS: TourStep[] = [
     title: "Get Notified",
     description:
       "Tap the bell to get notified about new bills in policy areas you care about.",
+  },
+  {
+    tab: 3,
+    title: "Education Articles",
+    description:
+      "These are some civics topics — tap any one to read articles and learn about its specific subtopics.",
   },
 ];
 

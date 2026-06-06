@@ -252,6 +252,7 @@ export default function BillDetail() {
   const [createdListName, setCreatedListName] = useState("");
 
   const [tourActive, setTourActive] = useState(false);
+  const [tourPending, setTourPending] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [tourLayouts, setTourLayouts] = useState<
     ({ x: number; y: number; width: number; height: number } | null)[]
@@ -705,17 +706,29 @@ export default function BillDetail() {
       if (isRelaunch) {
         await screenTour.clearRelaunchBillTour();
         await screenTour.markBillTourSeen();
-        setTimeout(() => setTourActive(true), 800);
+        setTourPending(true);
         return;
       }
       const seen = await screenTour.hasSeenBillTour();
       if (!seen) {
         await screenTour.markBillTourSeen();
-        setTimeout(() => setTourActive(true), 800);
+        setTourPending(true);
       }
     };
     checkTour();
   }, []);
+
+  // Wait for the bill content (and its refs) to actually be on screen before
+  // activating the tour — a fixed delay races the data fetch on slow loads
+  // and silently leaves the tour layouts null, so it never appears.
+  useEffect(() => {
+    if (!tourPending || tourActive || isLoading || error || !bill) return;
+    const timeout = setTimeout(() => {
+      setTourActive(true);
+      setTourPending(false);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [tourPending, tourActive, isLoading, error, bill]);
 
   useEffect(() => {
     if (!tourActive) return;
