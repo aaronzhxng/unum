@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import {
   Keyboard,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -636,7 +635,7 @@ export const VoteDetailModal: React.FC<{
       <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
         <View
           style={{
-            paddingTop: Platform.OS === "ios" ? 56 : 16,
+            paddingTop: componentStyles.headerBar.paddingTop,
             paddingHorizontal: 16,
             paddingBottom: 12,
             borderBottomWidth: 1,
