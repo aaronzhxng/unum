@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronDown, ChevronLeft, ChevronUp } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { styles as componentStyles } from "./global_styles/styles";
 import { getDb } from "./utils/database";
 
@@ -34,6 +34,7 @@ const TIPS_SECTIONS = [
 ];
 
 export default function TipsScreen() {
+  const { width: screenWidth } = useWindowDimensions();
   const router = useRouter();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [suggestedBillsDismissed, setSuggestedBillsDismissed] = useState(false);
@@ -102,9 +103,12 @@ export default function TipsScreen() {
               color="#008CFF"
               style={{ marginRight: 12 }}
             />
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={localStyles.tourCardTitle}>Relaunch App Tour</Text>
-              <Text style={componentStyles.subtitle}>
+              <Text
+                style={componentStyles.subtitle}
+                numberOfLines={screenWidth < 390 ? 2 : 1}
+              >
                 Revisit the walkthrough of Unum's features
               </Text>
             </View>
