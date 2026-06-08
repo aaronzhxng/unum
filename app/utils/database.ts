@@ -296,7 +296,15 @@ export const initializeDatabase = async (): Promise<void> => {
     );
   } catch {}
   try {
+    database.execSync(
+      `ALTER TABLE notification_preferences ADD COLUMN name TEXT`,
+    );
+  } catch {}
+  try {
     database.execSync(`ALTER TABLE bills ADD COLUMN congress_order INTEGER`);
+  } catch {}
+  try {
+    database.execSync(`ALTER TABLE bills ADD COLUMN latest_action_text TEXT`);
   } catch {}
 
   // Copy seed.db into bills table if this is a fresh install

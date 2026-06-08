@@ -44,6 +44,7 @@ import ScreenTourOverlay, {
 } from "../global_components/ScreenTourOverlay";
 import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
+import { abbrevBillType } from "../utils/billTypeAbbr";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
@@ -154,7 +155,7 @@ function LegislationCard({ item }: { item: any }) {
               style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
               numberOfLines={1}
             >
-              {item.type}.{item.number}
+              {abbrevBillType(item.type)}.{item.number}
             </Text>
           </View>
           <Image
@@ -262,11 +263,12 @@ export default function OfficialDetail() {
   const [selectedSort, setSelectedSort] = useState("Most Recent Action");
 
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [selectedChambers, setSelectedChambers] = useState<string[]>([]);
-  const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
-  const [selectedLegislationTypes, setSelectedLegislationTypes] = useState<
-    string[]
-  >([]);
+  const [sponsoredChambers, setSponsoredChambers] = useState<string[]>([]);
+  const [sponsoredPolicyAreas, setSponsoredPolicyAreas] = useState<string[]>([]);
+  const [sponsoredLegislationTypes, setSponsoredLegislationTypes] = useState<string[]>([]);
+  const [cosponsoredChambers, setCosponsoredChambers] = useState<string[]>([]);
+  const [cosponsoredPolicyAreas, setCosponsoredPolicyAreas] = useState<string[]>([]);
+  const [cosponsoredLegislationTypes, setCosponsoredLegislationTypes] = useState<string[]>([]);
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -464,27 +466,30 @@ export default function OfficialDetail() {
   }
 
   const toggleChamber = (id: string) => {
-    setSelectedChambers((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
+    const set = activeTab === 2 ? setSponsoredChambers : setCosponsoredChambers;
+    set((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
 
   const togglePolicyArea = (id: string) => {
-    setSelectedPolicyAreas((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
+    const set = activeTab === 2 ? setSponsoredPolicyAreas : setCosponsoredPolicyAreas;
+    set((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
 
   const toggleLegislationType = (id: string) => {
-    setSelectedLegislationTypes((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
+    const set = activeTab === 2 ? setSponsoredLegislationTypes : setCosponsoredLegislationTypes;
+    set((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
 
   const handleCancel = () => {
-    setSelectedChambers([]);
-    setSelectedPolicyAreas([]);
-    setSelectedLegislationTypes([]);
+    if (activeTab === 2) {
+      setSponsoredChambers([]);
+      setSponsoredPolicyAreas([]);
+      setSponsoredLegislationTypes([]);
+    } else {
+      setCosponsoredChambers([]);
+      setCosponsoredPolicyAreas([]);
+      setCosponsoredLegislationTypes([]);
+    }
     setShowFilterModal(false);
   };
 
@@ -575,36 +580,25 @@ export default function OfficialDetail() {
   );
 
   const { filteredSponsored, filteredCosponsored } = useMemo(() => {
-    const filterAndSort = (bills: any[]) => {
+    const filterAndSort = (
+      bills: any[],
+      chambers: string[],
+      policyAreas: string[],
+      legTypes: string[],
+    ) => {
       let filtered = bills;
 
-      if (selectedChambers.length > 0) {
+      if (chambers.length > 0) {
         const houseTypes = ["HR", "HRES", "HJRES", "HCONRES", "HAMDT"];
-        const senateTypes = [
-          "S",
-          "SRES",
-          "SJRES",
-          "SCONRES",
-          "SAMDT",
-          "PN",
-          "TREATY",
-        ];
+        const senateTypes = ["S", "SRES", "SJRES", "SCONRES", "SAMDT", "PN", "TREATY"];
         filtered = filtered.filter((bill: any) => {
-          if (
-            selectedChambers.includes("house") &&
-            houseTypes.includes(bill.type)
-          )
-            return true;
-          if (
-            selectedChambers.includes("senate") &&
-            senateTypes.includes(bill.type)
-          )
-            return true;
+          if (chambers.includes("house") && houseTypes.includes(bill.type)) return true;
+          if (chambers.includes("senate") && senateTypes.includes(bill.type)) return true;
           return false;
         });
       }
 
-      if (selectedLegislationTypes.length > 0) {
+      if (legTypes.length > 0) {
         const typeMap: { [key: string]: string[] } = {
           bill: ["HR", "S"],
           joint_resolution: ["HJRES", "SJRES"],
@@ -614,10 +608,16 @@ export default function OfficialDetail() {
           nomination: ["PN"],
           treaty: ["TREATY"],
         };
-        const apiTypes = selectedLegislationTypes.flatMap(
-          (id) => typeMap[id] || [],
-        );
+        const apiTypes = legTypes.flatMap((id) => typeMap[id] || []);
         filtered = filtered.filter((bill: any) => apiTypes.includes(bill.type));
+      }
+
+      if (policyAreas.length > 0) {
+        filtered = filtered.filter((bill: any) => {
+          const area = bill.policyArea?.name ?? null;
+          if (policyAreas.includes("none") && !area) return true;
+          return area !== null && policyAreas.includes(area);
+        });
       }
 
       const sorted = [...filtered];
@@ -625,12 +625,8 @@ export default function OfficialDetail() {
         case "Most Recent Action":
           return sorted.sort(
             (a, b) =>
-              new Date(
-                b.latestAction?.actionDate ?? b.introducedDate ?? 0,
-              ).getTime() -
-              new Date(
-                a.latestAction?.actionDate ?? a.introducedDate ?? 0,
-              ).getTime(),
+              new Date(b.latestAction?.actionDate ?? b.introducedDate ?? 0).getTime() -
+              new Date(a.latestAction?.actionDate ?? a.introducedDate ?? 0).getTime(),
           );
         case "Newest First":
           return sorted.sort(
@@ -651,19 +647,23 @@ export default function OfficialDetail() {
     };
 
     return {
-      filteredSponsored: filterAndSort(sponsoredBills),
-      filteredCosponsored: filterAndSort(cosponsoredBills),
+      filteredSponsored: filterAndSort(sponsoredBills, sponsoredChambers, sponsoredPolicyAreas, sponsoredLegislationTypes),
+      filteredCosponsored: filterAndSort(cosponsoredBills, cosponsoredChambers, cosponsoredPolicyAreas, cosponsoredLegislationTypes),
     };
   }, [
     sponsoredBills,
     cosponsoredBills,
-    selectedLegislationTypes,
-    selectedChambers,
+    sponsoredChambers,
+    sponsoredPolicyAreas,
+    sponsoredLegislationTypes,
+    cosponsoredChambers,
+    cosponsoredPolicyAreas,
+    cosponsoredLegislationTypes,
     selectedSort,
   ]);
 
   const { signedIntoLaw, signedSponsored, signedCosponsored } = useMemo(() => {
-    if (sponsoredLoading || cosponsoredLoading) {
+    if (sponsoredLoading) {
       return { signedIntoLaw: [], signedSponsored: [], signedCosponsored: [] };
     }
 
@@ -746,7 +746,7 @@ export default function OfficialDetail() {
     }));
 
   const topPolicyAreas: { name: string; count: number }[] = useMemo(() => {
-    if (sponsoredLoading || cosponsoredLoading) return [];
+    if (sponsoredLoading) return [];
     const counts: Record<string, number> = {};
     for (const bill of [...sponsoredBills, ...cosponsoredBills]) {
       const area =
@@ -938,7 +938,7 @@ export default function OfficialDetail() {
 
           {/* Name + Buttons */}
           <View
-            style={{ flex: 1, height: 64, justifyContent: "space-between" }}
+            style={{ flex: 1, justifyContent: "space-between", gap: 6 }}
           >
             <Text style={componentStyles.name}>{official.directOrderName}</Text>
             {official.officialWebsiteUrl && (
@@ -1051,7 +1051,7 @@ export default function OfficialDetail() {
                 Bills Signed Into Law (2025 - )
               </Text>
             </View>
-            {!sponsoredLoading && !cosponsoredLoading ? (
+            {!sponsoredLoading ? (
               <>
                 {signedSponsored.length > 0 ? (
                   <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
@@ -1143,7 +1143,7 @@ export default function OfficialDetail() {
                     </View>
                   );
                 })
-              ) : sponsoredLoading || cosponsoredLoading ? (
+              ) : sponsoredLoading ? (
                 <View
                   style={{
                     paddingTop: 12,
@@ -1660,22 +1660,18 @@ export default function OfficialDetail() {
       <LegislationFilterModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
-        selectedChambers={selectedChambers}
-        selectedPolicyAreas={selectedPolicyAreas}
-        selectedLegislationTypes={selectedLegislationTypes}
+        selectedChambers={activeTab === 2 ? sponsoredChambers : cosponsoredChambers}
+        selectedPolicyAreas={activeTab === 2 ? sponsoredPolicyAreas : cosponsoredPolicyAreas}
+        selectedLegislationTypes={activeTab === 2 ? sponsoredLegislationTypes : cosponsoredLegislationTypes}
         toggleChamber={toggleChamber}
         togglePolicyArea={togglePolicyArea}
         toggleLegislationType={toggleLegislationType}
         onCancel={handleCancel}
         onApply={handleApply}
-        setSelectedChambers={setSelectedChambers}
-        setSelectedPolicyAreas={setSelectedPolicyAreas}
-        setSelectedLegislationTypes={setSelectedLegislationTypes}
-        resultCount={
-          activeTab === 1
-            ? filteredSponsored.length
-            : filteredCosponsored.length
-        }
+        setSelectedChambers={activeTab === 2 ? setSponsoredChambers : setCosponsoredChambers}
+        setSelectedPolicyAreas={activeTab === 2 ? setSponsoredPolicyAreas : setCosponsoredPolicyAreas}
+        setSelectedLegislationTypes={activeTab === 2 ? setSponsoredLegislationTypes : setCosponsoredLegislationTypes}
+        resultCount={activeTab === 2 ? filteredSponsored.length : filteredCosponsored.length}
       />
 
       <AddModal
@@ -1713,6 +1709,7 @@ export default function OfficialDetail() {
         setSelectedNotifications={setSelectedNotifications}
         itemId={officialNotifId}
         itemType="official"
+        officialName={official?.directOrderName}
       />
 
       <NewListNameModal

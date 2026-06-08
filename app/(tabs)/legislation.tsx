@@ -39,6 +39,7 @@ import ReportErrorModal from "../global_components/ReportErrorModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
+import { abbrevBillType } from "../utils/billTypeAbbr";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
@@ -60,8 +61,10 @@ export default function LegislationScreen() {
   const { setTabBarHidden } = useTabBar();
 
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchInstantOpen, setSearchInstantOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFallbackResults, setSearchFallbackResults] = useState<any[]>([]);
+  const searchNavigatedAwayRef = useRef(false);
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -210,6 +213,18 @@ export default function LegislationScreen() {
         queryClient.invalidateQueries({ queryKey: ["bills", "v2"] });
       }
     }, []),
+  );
+
+  // Reopen the search modal when returning from a bill/official detail screen
+  // that was opened from within the search results.
+  useFocusEffect(
+    useCallback(() => {
+      if (searchNavigatedAwayRef.current && searchQuery) {
+        searchNavigatedAwayRef.current = false;
+        setSearchInstantOpen(true);
+        setShowSearchModal(true);
+      }
+    }, [searchQuery]),
   );
 
   const allBills: any[] = useMemo(() => data?.bills || [], [data?.bills]);
@@ -629,7 +644,12 @@ export default function LegislationScreen() {
 
       <SearchModal
         isVisible={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
+        skipEntryAnimation={searchInstantOpen}
+        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onNavigatingAway={() => {
+          searchNavigatedAwayRef.current = true;
+          setShowSearchModal(false);
+        }}
         onSearch={setSearchQuery}
         searchContext={getFilterLabel()}
         items={[
@@ -987,7 +1007,7 @@ const BillCard = React.memo(function BillCard({
               style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
               numberOfLines={1}
             >
-              {item.type}.{item.number}
+              {abbrevBillType(item.type)}.{item.number}
             </Text>
           </View>
           <Image

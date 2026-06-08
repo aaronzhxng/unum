@@ -1,20 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import {
-    Dimensions,
-    Image,
-    Platform,
-    Pressable,
-    Text,
-    View,
-} from "react-native";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Dimensions, Image, Platform, Pressable, Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
 import { getDb } from "../utils/database";
+import EducationScreen from "./education";
 import HomeScreen from "./home";
 import LegislationScreen from "./legislation";
 import OfficialsScreen from "./officials";
@@ -35,9 +29,8 @@ const TABS = [
   },
   {
     name: "education",
-    icon: require("../../assets/education_icons/constitution.png"),
-    size: 26,
-    isRoute: true,
+    icon: require("../../assets/education_icons/education.png"),
+    size: 28,
   },
 ];
 
@@ -276,18 +269,70 @@ function TourOverlay() {
 }
 
 function TabsLayoutInner() {
-  const router = useRouter();
   const tabBarRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexRef = useRef(0);
   const pagerRef = useRef<PagerView>(null);
   const { tabBarHidden } = useTabBar();
   const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
+  // Guard against stale onPageSelected events that fire during the
+  // focus-recovery snap. Without this, a late drift event can override
+  // the snap and land back on page 0.
+  const focusRecoveryRef = useRef(false);
+  // Stored in refs so both timers can be cancelled on every cleanup cycle,
+  // preventing a guard-release from a previous focus cycle leaking into the next.
+  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const guardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // scrollEnabled is disabled while the tabs screen is not in focus.
+  // This stops the native PagerView from drifting at all, rather than
+  // trying to correct it after the fact.
+  const [pagerScrollEnabled, setPagerScrollEnabled] = useState(true);
 
   const navigateToTab = (index: number) => {
     pagerRef.current?.setPage(index);
     setActiveIndex(index);
+    activeIndexRef.current = index;
     setVisitedTabs((prev) => new Set([...prev, index]));
   };
+
+  // When returning to (tabs) via swipe-back, the PagerView can drift to
+  // page 0. Two-layer defence:
+  //   1. scrollEnabled=false while we are away  → native layer cannot move the
+  //      pager at all, so the drift never happens in the first place.
+  //   2. focusRecoveryRef guard + snap           → catches anything that still
+  //      slips through (e.g. a programmatic reset from RN reconciliation).
+  // Cleanup sets the guard to true and disables scroll BEFORE we leave so
+  // both protections are in place before any native events can fire.
+  useFocusEffect(
+    useCallback(() => {
+      // Cancel any timers left over from a previous focus cycle
+      if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+      if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
+
+      // activeIndexRef was protected while we were away, so it still holds
+      // the correct page even if the PagerView internally drifted.
+      const targetPage = activeIndexRef.current;
+      setActiveIndex(targetPage);
+
+      // Snap, then re-enable scroll and release the guard
+      snapTimerRef.current = setTimeout(() => {
+        pagerRef.current?.setPage(targetPage);
+        setPagerScrollEnabled(true);
+        guardTimerRef.current = setTimeout(() => {
+          focusRecoveryRef.current = false;
+        }, 300);
+      }, 50);
+
+      return () => {
+        if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+        if (guardTimerRef.current) clearTimeout(guardTimerRef.current);
+        // Disable scroll and raise the guard the moment we leave.
+        // This must happen before any native drift event can fire.
+        setPagerScrollEnabled(false);
+        focusRecoveryRef.current = true;
+      };
+    }, [])
+  );
 
   return (
     <TourProvider onNavigateTab={navigateToTab}>
@@ -298,9 +343,15 @@ function TabsLayoutInner() {
           ref={pagerRef}
           style={{ flex: 1 }}
           initialPage={0}
+          scrollEnabled={pagerScrollEnabled}
           onPageSelected={(e) => {
+            // Drop every event while the guard is active. scrollEnabled=false
+            // already prevents user-initiated moves; this catches any
+            // programmatic/reconciliation events that still slip through.
+            if (focusRecoveryRef.current) return;
             const index = e.nativeEvent.position;
             setActiveIndex(index);
+            activeIndexRef.current = index; // keep ref in sync with manual swipes
             setVisitedTabs((prev) => new Set([...prev, index]));
           }}
         >
@@ -312,6 +363,9 @@ function TabsLayoutInner() {
           </View>
           <View key="2" style={{ flex: 1 }}>
             {visitedTabs.has(2) && <LegislationScreen />}
+          </View>
+          <View key="3" style={{ flex: 1 }}>
+            {visitedTabs.has(3) && <EducationScreen />}
           </View>
         </PagerView>
 
@@ -336,32 +390,18 @@ function TabsLayoutInner() {
                   justifyContent: "center",
                   alignItems: "center",
                 }}
-                onPress={() => {
-                  if ((tab as any).isRoute) {
-                    router.push("/education_tab");
-                    return;
-                  }
-
-                  navigateToTab(index);
-                }}
+                onPress={() => navigateToTab(index)}
               >
-                {(tab as any).isRoute ? (
-                  <View
+                {(tab as any).icon ? (
+                  <Image
+                    source={(tab as any).icon}
                     style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 19,
-                      backgroundColor: "#f4f4f4",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      width: tab.size,
+                      height: tab.size,
+                      tintColor: activeIndex === index ? "black" : "#8e8e93",
                     }}
-                  >
-                    <Image
-                      source={(tab as any).icon}
-                      style={{ width: tab.size, height: tab.size }}
-                      resizeMode="contain"
-                    />
-                  </View>
+                    resizeMode="contain"
+                  />
                 ) : (
                   <Ionicons
                     name={

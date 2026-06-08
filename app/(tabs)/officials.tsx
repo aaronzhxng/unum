@@ -115,7 +115,9 @@ export default function OfficialsScreen() {
   const { isActive, currentStep, setTargetLayout } = useTour();
   // console.log("Official Screen render:", Date.now());
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchInstantOpen, setSearchInstantOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const searchNavigatedAwayRef = useRef(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedNotifications, setSelectedNotifications] =
     useState("New York");
@@ -323,6 +325,16 @@ export default function OfficialsScreen() {
     }, [isActive, currentStep]),
   );
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (searchNavigatedAwayRef.current && searchQuery) {
+        searchNavigatedAwayRef.current = false;
+        setSearchInstantOpen(true);
+        setShowSearchModal(true);
+      }
+    }, [searchQuery]),
+  );
+
   useEffect(() => {
     if (!isActive) return;
     if (isLoading) return;
@@ -482,7 +494,12 @@ export default function OfficialsScreen() {
       {/* Search Modal */}
       <SearchModal
         isVisible={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
+        skipEntryAnimation={searchInstantOpen}
+        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onNavigatingAway={() => {
+          searchNavigatedAwayRef.current = true;
+          setShowSearchModal(false);
+        }}
         onSearch={setSearchQuery}
         searchContext={selectedList}
         items={officials}
@@ -918,7 +935,7 @@ const OfficialCard = React.memo(function OfficialCard({
         </View>
         {/* Official Info */}
         <View style={{ flex: 1 }}>
-          <Text style={componentStyles.name}>
+          <Text style={componentStyles.name} numberOfLines={1}>
             {item.name?.includes(",")
               ? item.name
                   .split(",")

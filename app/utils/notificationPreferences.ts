@@ -85,13 +85,15 @@ export const notificationPreferences = {
     id: string,
     type: "bill" | "official" | "list",
     subTypes: string[],
+    name?: string,
   ): void => {
     try {
       const db = getDb();
       db.runSync(
-        `INSERT INTO notification_preferences (id, type, enabled, sub_types) VALUES (?, ?, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled, sub_types = excluded.sub_types`,
-        [id, type, subTypes.length > 0 ? 1 : 0, JSON.stringify(subTypes)],
+        `INSERT INTO notification_preferences (id, type, enabled, sub_types, name) VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled, sub_types = excluded.sub_types,
+           name = COALESCE(excluded.name, notification_preferences.name)`,
+        [id, type, subTypes.length > 0 ? 1 : 0, JSON.stringify(subTypes), name ?? null],
       );
     } catch {}
   },

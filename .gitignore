@@ -60,9 +60,21 @@ backend/dist/
 backend/.env
 backend/.env.*
 
-# =========================
-# FIREBASE / SECRETS
-# =========================
+# Keep frontend ignores
+node_modules/
+.expo/
+.expo-shared/
+
+# Both
+*.log
+.DS_Store
+
+# Claude Code local settings
+.claude/
+
+# debugging 1
+.env
+credentials.json
 GoogleService-Info.plist
 google-services.json
 credentials.json

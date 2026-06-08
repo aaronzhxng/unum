@@ -12,6 +12,7 @@ interface Props {
   setSelectedNotifications: React.Dispatch<React.SetStateAction<string[]>>;
   itemId: string;
   itemType: "bill" | "official";
+  officialName?: string;
 }
 
 const listOptions = [
@@ -29,6 +30,7 @@ export default function OptionsModal({
   setSelectedNotifications,
   itemId,
   itemType,
+  officialName,
 }: Props) {
   const closeModal = () => setShowOptionsModal(false);
 
@@ -62,6 +64,7 @@ export default function OptionsModal({
       itemId,
       itemType,
       selectedNotifications,
+      itemType === "official" ? officialName : undefined,
     );
     syncPreferencesToBackend();
     closeModal();

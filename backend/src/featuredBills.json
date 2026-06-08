@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-05-18",
-  "weekEnd": "2026-05-24",
+  "weekOf": "2026-06-08",
+  "weekEnd": "2026-06-14",
   "bills": [
     {
-      "billId": "hr2853",
-      "note": "This bill punishes interstate retail crime by broadening what qualifies as an offense to the interstate transportation or sale of stolen property."
+      "billId": "hr2913",
+      "note": "This bill establishes assistance via a reconstruction trust fund, reviving the President’s authority to lend weapons to Ukraine or Eastern European countries affected by the war through FY2028."
     },
     {
-      "billId": "hr8469",
-      "note": "This is the appropriations bill for the military, Department of Defense, and Department of Veterans Affairs. It directs the FY2027 budget for construction in the army, navy, air force, marines, NATO security investment program, veterans benefits administration, veterans health administration, and more."
+      "billId": "hconres86",
+      "note": "This resolution would require the President to withdraw U.S. forces from hostilities against Iran unless Congress formally declares war or authorizes military force, though it is largely symbolic and cannot be vetoed. It is now headed to the Senate."
     }
   ]
 }

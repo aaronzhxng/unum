@@ -52,6 +52,11 @@ try {
   );
 } catch {}
 
+// Migration: add latest_action_text column
+try {
+  db.exec(`ALTER TABLE bills ADD COLUMN latest_action_text TEXT`);
+} catch {}
+
 // Migration: add notified_bills table if it doesn't exist
 try {
   db.exec(`

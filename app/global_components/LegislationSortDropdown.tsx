@@ -1,6 +1,9 @@
 import React from "react"; // ✅ 1. ADD React
-import { Modal, Pressable, Text, View } from "react-native"; // ✅ 2. ADD Text
+import { Dimensions, Modal, Pressable, ScrollView, Text, View } from "react-native"; // ✅ 2. ADD Text
 import { styles as componentStyles } from "../global_styles/styles"; // ✅ 3. ADD styles
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const SHORT_SCREEN = SCREEN_HEIGHT < 750;
 
 interface Props {
   // ✅ 4. ADD Props interface
@@ -30,58 +33,68 @@ export default function SortDropdown({
         onPress={() => setShowSortDropdown(false)}
       >
         <View style={componentStyles.dropdown}>
-          <Pressable
-            style={({ pressed }) =>
-              pressed
-                ? componentStyles.dropdownItemPressed
-                : componentStyles.dropdownItem
-            }
-            onPress={() => {
-              setSelectedSort("Recent Action");
-              setShowSortDropdown(false);
-            }}
+          <ScrollView
+            scrollEnabled={false}
+            style={{ maxHeight: SCREEN_HEIGHT * 0.35 }}
+            showsVerticalScrollIndicator={false}
           >
-            <Text style={componentStyles.dropdownItemText}>Recent Action</Text>
-          </Pressable>
-          {/* <Pressable
-            style={({ pressed }) =>
-              pressed
-                ? componentStyles.dropdownItemPressed
-                : componentStyles.dropdownItem
-            }
-            onPress={() => {
-              setSelectedSort("Most Popular");
-              setShowSortDropdown(false);
-            }}
-          >
-            <Text style={componentStyles.dropdownItemText}>Most Popular</Text>
-          </Pressable> */}
-          {/* <Pressable
-            style={({ pressed }) =>
-              pressed
-                ? componentStyles.dropdownItemPressed
-                : componentStyles.dropdownItem
-            }
-            onPress={() => {
-              setSelectedSort("Newest First");
-              setShowSortDropdown(false);
-            }}
-          >
-            <Text style={componentStyles.dropdownItemText}>Newest First</Text>
-          </Pressable> */}
-          <Pressable
-            style={({ pressed }) =>
-              pressed
-                ? componentStyles.dropdownItemPressed
-                : componentStyles.dropdownItem
-            }
-            onPress={() => {
-              setSelectedSort("Oldest First");
-              setShowSortDropdown(false);
-            }}
-          >
-            <Text style={componentStyles.dropdownItemText}>Oldest First</Text>
-          </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem,
+                { paddingVertical: SHORT_SCREEN ? 12 : 16 },
+              ]}
+              onPress={() => {
+                setSelectedSort("Recent Action");
+                setShowSortDropdown(false);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>Recent Action</Text>
+            </Pressable>
+            {/* <Pressable
+              style={({ pressed }) => [
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem,
+                { paddingVertical: SHORT_SCREEN ? 12 : 16 },
+              ]}
+              onPress={() => {
+                setSelectedSort("Most Popular");
+                setShowSortDropdown(false);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>Most Popular</Text>
+            </Pressable> */}
+            {/* <Pressable
+              style={({ pressed }) => [
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem,
+                { paddingVertical: SHORT_SCREEN ? 12 : 16 },
+              ]}
+              onPress={() => {
+                setSelectedSort("Newest First");
+                setShowSortDropdown(false);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>Newest First</Text>
+            </Pressable> */}
+            <Pressable
+              style={({ pressed }) => [
+                pressed
+                  ? componentStyles.dropdownItemPressed
+                  : componentStyles.dropdownItem,
+                { paddingVertical: SHORT_SCREEN ? 12 : 16 },
+              ]}
+              onPress={() => {
+                setSelectedSort("Oldest First");
+                setShowSortDropdown(false);
+              }}
+            >
+              <Text style={componentStyles.dropdownItemText}>Oldest First</Text>
+            </Pressable>
+          </ScrollView>
         </View>
       </Pressable>
     </Modal>

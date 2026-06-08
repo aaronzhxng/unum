@@ -3,7 +3,7 @@
 
 import { getDb } from "./database";
 
-const getCacheExpiryMs = (billData: any): number => {
+const getCacheExpiryMs = (billData: any, fetchedAt: number): number => {
   const latestActionDate = billData?.latestAction?.actionDate;
   const status = billData?.latestAction?.text?.toLowerCase() ?? "";
 
@@ -20,9 +20,13 @@ const getCacheExpiryMs = (billData: any): number => {
 
   if (!latestActionDate) return 7 * 24 * 60 * 60 * 1000; // fallback: 7 days
 
+  // Measured from when this snapshot was fetched, not from "now" — otherwise
+  // a cache entry looks progressively more "dormant" the longer it sits
+  // unrefreshed, pushing it into a slower tier right when it most needs a
+  // refresh (e.g. a bill that just passed the House but hasn't been re-fetched).
   const [y, m, d] = latestActionDate.split("-").map(Number);
   const daysSinceAction =
-    (Date.now() - new Date(y, m - 1, d).getTime()) / (1000 * 60 * 60 * 24);
+    (fetchedAt - new Date(y, m - 1, d).getTime()) / (1000 * 60 * 60 * 24);
 
   if (daysSinceAction < 30) return 2 * 24 * 60 * 60 * 1000; // active: 2 days
   if (daysSinceAction < 180) return 7 * 24 * 60 * 60 * 1000; // slow: 7 days
@@ -58,7 +62,7 @@ export const billCache = {
       if (!row) return null;
 
       const billData = JSON.parse(row.data);
-      if (Date.now() - row.fetched_at > getCacheExpiryMs(billData)) {
+      if (Date.now() - row.fetched_at > getCacheExpiryMs(billData, row.fetched_at)) {
         db.runSync(`DELETE FROM bill_cache WHERE bill_id = ?`, [billId]);
         return null;
       }
@@ -67,6 +71,16 @@ export const billCache = {
     } catch (error) {
       console.error("Error reading bill from cache:", error);
       return null;
+    }
+  },
+
+  // Clear a single bill by its app-level billId (e.g. "hr22"), ignoring congress prefix
+  clearBill: (billId: string): void => {
+    try {
+      const db = getDb();
+      db.runSync(`DELETE FROM bill_cache WHERE bill_id LIKE ?`, [`%-${billId}`]);
+    } catch (error) {
+      console.error("Error clearing bill from cache:", error);
     }
   },
 

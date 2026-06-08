@@ -236,7 +236,7 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
             )}
           </View>
           <View style={componentStyles.cardText}>
-            <Text style={componentStyles.name}>{item.name}</Text>
+            <Text style={componentStyles.name} numberOfLines={1}>{item.name}</Text>
             <View style={componentStyles.metaRow}>
               <Text style={componentStyles.subtitle}>{item.party}</Text>
               <Text style={componentStyles.separator}>·</Text>

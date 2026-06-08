@@ -59,7 +59,11 @@ import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
-import VotingCard, { FollowedOfficial } from "./bill_components/VotingCard";
+import VotingCard, {
+  FollowedOfficial,
+  VoteData,
+  VoteDetailModal,
+} from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
 import { storage } from "../utils/storage";
@@ -248,6 +252,7 @@ export default function BillDetail() {
   const [createdListName, setCreatedListName] = useState("");
 
   const [tourActive, setTourActive] = useState(false);
+  const [tourPending, setTourPending] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [tourLayouts, setTourLayouts] = useState<
     ({ x: number; y: number; width: number; height: number } | null)[]
@@ -268,6 +273,7 @@ export default function BillDetail() {
 
   const [titleExpanded, setTitleExpanded] = useState(false);
   const [titleExceedsLimit, setTitleExceedsLimit] = useState(false);
+  const [selectedVote, setSelectedVote] = useState<VoteData | null>(null);
 
   const { width: screenWidth } = useWindowDimensions();
 
@@ -700,17 +706,29 @@ export default function BillDetail() {
       if (isRelaunch) {
         await screenTour.clearRelaunchBillTour();
         await screenTour.markBillTourSeen();
-        setTimeout(() => setTourActive(true), 800);
+        setTourPending(true);
         return;
       }
       const seen = await screenTour.hasSeenBillTour();
       if (!seen) {
         await screenTour.markBillTourSeen();
-        setTimeout(() => setTourActive(true), 800);
+        setTourPending(true);
       }
     };
     checkTour();
   }, []);
+
+  // Wait for the bill content (and its refs) to actually be on screen before
+  // activating the tour — a fixed delay races the data fetch on slow loads
+  // and silently leaves the tour layouts null, so it never appears.
+  useEffect(() => {
+    if (!tourPending || tourActive || isLoading || error || !bill) return;
+    const timeout = setTimeout(() => {
+      setTourActive(true);
+      setTourPending(false);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [tourPending, tourActive, isLoading, error, bill]);
 
   useEffect(() => {
     if (!tourActive) return;
@@ -867,9 +885,12 @@ export default function BillDetail() {
         id: c.bioguideId,
         name: c.name,
         party: c.party,
-        role: c.district
-          ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
-          : `Sen, ${STATE_NAMES[c.state] || c.state}`,
+        role:
+          c.district != null
+            ? c.district > 0
+              ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
+              : `Rep, ${STATE_NAMES[c.state] || c.state}`
+            : `Sen, ${STATE_NAMES[c.state] || c.state}`,
         photoUrl: c.photoUrl,
         update: c.isOriginalCosponsor
           ? "Original cosponsor"
@@ -1479,10 +1500,22 @@ export default function BillDetail() {
                 </Text>
               )}
               <Pressable
-                onPress={() => {
-                  const url = `https://www.congress.gov/bill/${bill.congress}th-congress/${bill.originChamber?.toLowerCase() === "house" ? "house" : "senate"}-bill/${bill.number}`;
-                  Linking.openURL(url);
-                }}
+              onPress={() => {
+                const typeMap: Record<string, string> = {
+                  HR: "house-bill",
+                  HRES: "house-resolution",
+                  HJRES: "house-joint-resolution",
+                  HCONRES: "house-concurrent-resolution",
+                  S: "senate-bill",
+                  SRES: "senate-resolution",
+                  SJRES: "senate-joint-resolution",
+                  SCONRES: "senate-concurrent-resolution",
+                };
+                const billType = typeMap[bill.type?.toUpperCase()] ?? "house-bill";
+                const congress = bill.congress ?? 119;
+                const url = `https://www.congress.gov/bill/${congress}th-congress/${billType}/${bill.number}`;
+                Linking.openURL(url);
+              }}
                 style={{
                   flexDirection: "row",
                   gap: 4,
@@ -1735,6 +1768,7 @@ export default function BillDetail() {
                   voiceVotes={votesData?.voiceVotes ?? []}
                   isLoading={votesLoading}
                   followedOfficials={followedOfficials}
+                  onSeeAll={setSelectedVote}
                 />
               )}
             </View>
@@ -1790,6 +1824,11 @@ export default function BillDetail() {
       </PagerView>
 
       {/* Modals - outside PagerView */}
+      <VoteDetailModal
+        vote={selectedVote}
+        onClose={() => setSelectedVote(null)}
+        followedOfficials={followedOfficials}
+      />
       <SortDropdown
         showSortDropdown={showAmendmentsSort}
         setShowSortDropdown={setShowAmendmentsSort}
@@ -2042,9 +2081,15 @@ export default function BillDetail() {
     const { width: screenWidth } = useWindowDimensions();
     const stateName = STATE_NAMES[sponsor.state] ?? sponsor.state;
     const role = (() => {
-      if (sponsor.district) {
-        const full = `Representative, ${stateName}, District ${sponsor.district}`;
-        const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
+      if (sponsor.district != null) {
+        if (sponsor.district > 0) {
+          const full = `Representative, ${stateName}, District ${sponsor.district}`;
+          const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
+          return screenWidth < 390 ? abbr : full;
+        }
+        // district === 0: at-large delegate (DC, Guam, etc.) — no district number
+        const full = `Representative, ${stateName}`;
+        const abbr = `Rep, ${stateName}`;
         return screenWidth < 390 ? abbr : full;
       }
       const full = `Senator, ${stateName}`;
@@ -2090,7 +2135,7 @@ export default function BillDetail() {
             )}
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={componentStyles.name}>
+            <Text style={componentStyles.name} numberOfLines={1}>
               {sponsor.firstName} {sponsor.lastName}
             </Text>
             <View style={componentStyles.metaRow}>

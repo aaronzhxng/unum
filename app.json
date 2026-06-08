@@ -2,38 +2,43 @@
   "expo": {
     "name": "Unum",
     "slug": "unum",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "scheme": "unum",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "icon": "./assets/app_icons/app_icon_ios.png",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.unuminitiative.unum",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/app_icons/app_icon_ios.png",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "googleServicesFile": "./GoogleService-Info.plist"
+      }
     },
     "android": {
       "allowBackup": false,
-      "versionCode": 1,
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/app_icons/app_icon_android.png",
         "backgroundColor": "#E6F4FE"
       },
+      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.unuminitiative.unum",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.unuminitiative.unum"
     },
     "androidStatusBar": {
       "barStyle": "dark-content",
       "translucent": true,
       "backgroundColor": "#fafafa"
     },
-    
+    "androidNavigationBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#fafafa"
+    },
     "web": {
       "output": "static"
     },
@@ -80,7 +85,15 @@
         "projectId": "12b9a43d-7541-4d8e-b709-0e9d15418ffd"
       }
     },
-    
+    "splash": {
+      "image": "./assets/app_icons/game-icons_olive.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fafafa"
+    },
+    "assets": ["assets/seed.db"],
+    "metro": {
+      "blockList": ["scripts/.*"]
+    },
     "runtimeVersion": {
       "policy": "appVersion"
     },

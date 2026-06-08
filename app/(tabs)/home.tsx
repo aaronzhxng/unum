@@ -9,16 +9,17 @@ import {
   MoreVertical,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   Image,
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   Text,
-  View,
   useWindowDimensions,
+  View,
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import { useTabBar } from "../context/TabBarContext";
@@ -31,12 +32,15 @@ import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
+import { abbrevBillType } from "../utils/billTypeAbbr";
 import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { ListItem, storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+import { syncListItemsFromBills } from "../utils/syncListItems";
+import { educationTopics } from "../education_tab/content";
 type Item = ListItem;
 
 export default function HomeScreen() {
@@ -61,7 +65,9 @@ export default function HomeScreen() {
   };
 
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchInstantOpen, setSearchInstantOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const searchNavigatedAwayRef = useRef(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState("My List");
   const [showListSelection, setShowListSelection] = useState(false);
@@ -78,6 +84,24 @@ export default function HomeScreen() {
 
   const [items, setItems] = useState<ListItem[]>([]);
   const [newItemIds, setNewItemIds] = useState<Set<string>>(new Set());
+
+  // Normalise list items into the shape SearchModal expects:
+  // bills get billType/number parsed from id; officials get bioguideId aliased from id.
+  const searchItems = useMemo(
+    () =>
+      items.map((item) => {
+        if (item.type === "bill") {
+          const match = item.id.match(/^([a-z]+)(\d+)$/i);
+          return {
+            ...item,
+            billType: match ? match[1].toUpperCase() : item.id,
+            number: match ? match[2] : "",
+          };
+        }
+        return { ...item, bioguideId: item.id };
+      }),
+    [items],
+  );
 
   const allSelected = items.length > 0 && selectedIds.size === items.length;
 
@@ -429,6 +453,7 @@ export default function HomeScreen() {
     React.useCallback(() => {
       // console.log("HomeScreen focused:", Date.now());
       const loadAllLists = async () => {
+        syncListItemsFromBills();
         const db = getDb();
         const row = db.getFirstSync<{ value: string }>(
           `SELECT value FROM meta WHERE key = 'voter_card_dismissed'`,
@@ -463,6 +488,16 @@ export default function HomeScreen() {
         setNewItemIds(new Set());
       };
     }, [selectedList]),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (searchNavigatedAwayRef.current && searchQuery) {
+        searchNavigatedAwayRef.current = false;
+        setSearchInstantOpen(true);
+        setShowSearchModal(true);
+      }
+    }, [searchQuery]),
   );
 
   const { data: featuredData } = useQuery({
@@ -609,7 +644,10 @@ export default function HomeScreen() {
 
       {/* List Content */}
       {items.length === 0 ? (
-        <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
           {!voterCardDismissed && <VoterCard onDismiss={dismissVoterCard} />}
           {!suggestedBillsDismissed &&
             featuredData?.bills &&
@@ -693,7 +731,7 @@ export default function HomeScreen() {
                               }}
                               numberOfLines={1}
                             >
-                              {`${bill.type}.${bill.number}`}
+                              {`${abbrevBillType(bill.type)}.${bill.number}`}
                             </Text>
                           </View>
                           <Image
@@ -805,7 +843,9 @@ export default function HomeScreen() {
               justifyContent: "center",
               alignItems: "center",
               paddingHorizontal: 32,
+              paddingVertical: 32,
               gap: 8,
+              minHeight: 180,
             }}
           >
             <Text style={{ fontSize: 32, marginBottom: 16 }}>📋</Text>
@@ -832,7 +872,7 @@ export default function HomeScreen() {
               matters to you.
             </Text>
           </View>
-        </View>
+        </ScrollView>
       ) : isEditMode ? (
         <DraggableFlatList
           data={items}
@@ -971,7 +1011,7 @@ export default function HomeScreen() {
                                     }}
                                     numberOfLines={1}
                                   >
-                                    {`${bill.type}.${bill.number}`}
+                                    {`${abbrevBillType(bill.type)}.${bill.number}`}
                                   </Text>
                                 </View>
                                 <Image
@@ -1275,10 +1315,15 @@ export default function HomeScreen() {
       {/* Search Modal */}
       <SearchModal
         isVisible={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
+        skipEntryAnimation={searchInstantOpen}
+        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onNavigatingAway={() => {
+          searchNavigatedAwayRef.current = true;
+          setShowSearchModal(false);
+        }}
         onSearch={setSearchQuery}
         searchContext={selectedList}
-        items={items}
+        items={searchItems}
         onItemPress={(item) => {
           if (item.type === "official") {
             router.navigate(`/official/${item.id}`);
@@ -1730,7 +1775,7 @@ const Card = React.memo(function Card({
                 >
                   {item.id?.replace(
                     /^([a-zA-Z]+)(\d+)$/,
-                    (_, t, n) => `${t.toUpperCase()}.${n}`,
+                    (_, t, n) => `${abbrevBillType(t)}.${n}`,
                   ) ?? item.name}{" "}
                 </Text>
               </View>
@@ -1833,111 +1878,80 @@ const Card = React.memo(function Card({
 
 function VoterCard({ onDismiss }: { onDismiss: () => void }) {
   const router = useRouter();
-  const [showMenu, setShowMenu] = useState(false);
+
+  const allSubtopics = educationTopics
+    .filter(
+      (t) => t.id !== "elections-voting" && t.id !== "us-history-foundations",
+    )
+    .flatMap((t) =>
+      t.subtopics.map((s) => ({
+        topicId: t.id,
+        topicIcon: t.icon,
+        subtopic: s,
+      })),
+    );
+  const slotIndex = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
+  const current = allSubtopics[slotIndex % allSubtopics.length];
 
   return (
     <Pressable
-      onPress={() => router.navigate("/voter-registration" as any)}
+      onPress={() =>
+        router.navigate(
+          `/education_tab/${current.topicId}/${current.subtopic.id}` as any,
+        )
+      }
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.98 : 1 }],
-        // marginHorizontal: 16,
-        marginTop: 8,
-        marginBottom: 12,
-        backgroundColor: "#E8F4FF",
-        borderRadius: 16,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: "#008CFF33",
       })}
     >
       <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
+        style={[
+          componentStyles.officialCard,
+          {
+            backgroundColor: "#E8F4FF",
+            borderWidth: 1,
+            borderColor: "#008CFF33",
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+        ]}
       >
-        <View style={{ flex: 1, flexDirection: "row" }}>
-          <View
-            style={{
-              width: 64,
-              // height: 64,
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 12,
-            }}
-          >
-            <Text style={{ fontSize: 24 }}>🗳️</Text>
-          </View>
-          <View style={{ flexDirection: "column", flex: 1, minWidth: 0 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "700",
-                color: "#1a1a1a",
-                marginBottom: 4,
-              }}
-            >
-              Are you registered to vote?
-            </Text>
-            <Text style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}>
-              Your vote shapes who makes the laws you're tracking.
-            </Text>
-          </View>
-        </View>
-        {/* <Pressable
-          onPress={(e) => {
-            e.stopPropagation();
-            setShowMenu(true);
+        <View
+          style={{
+            width: 64,
+            height: 50,
+            marginRight: 12,
+            flexShrink: 0,
+            alignItems: "center",
+            justifyContent: "center",
           }}
-          style={{ padding: 4, marginLeft: 8 }}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <MoreVertical size={18} color="#7B7C81" />
-        </Pressable> */}
-      </View>
-
-      <Modal
-        visible={showMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowMenu(false)}
-        statusBarTranslucent
-      >
-        <Pressable style={{ flex: 1 }} onPress={() => setShowMenu(false)}>
-          <View
+          <Image
+            source={current.subtopic.icon ?? current.topicIcon}
+            style={{ width: 50, height: 50 }}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text
             style={{
-              position: "absolute",
-              right: 24,
-              top: 120,
-              backgroundColor: "#fff",
-              borderRadius: 12,
-              padding: 4,
-              shadowColor: "#1a1a1a",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.12,
-              shadowRadius: 12,
-              elevation: 8,
+              fontSize: 15,
+              fontWeight: "600",
+              color: "#1a1a1a",
+              marginBottom: 4,
             }}
+            numberOfLines={2}
           >
-            <Pressable
-              onPress={() => {
-                setShowMenu(false);
-                onDismiss();
-              }}
-              style={({ pressed }) => ({
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <Text style={{ fontSize: 15, color: "#FF3B30" }}>
-                Hide this card
-              </Text>
-            </Pressable>
-          </View>
-        </Pressable>
-      </Modal>
+            {current.subtopic.title}
+          </Text>
+          <Text
+            style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}
+            numberOfLines={2}
+          >
+            {current.subtopic.summary}
+          </Text>
+        </View>
+      </View>
     </Pressable>
   );
 }

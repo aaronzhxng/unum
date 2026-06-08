@@ -61,9 +61,16 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
             .join(" ")
         : (rawName ?? null);
 
-      // Fall back to static list, then bioguideId as last resort
+      // Only hit notification_preferences if list_items didn't have a name
+      const storedNotifName = formattedName === null
+        ? (db.getFirstSync<{ name: string }>(
+            `SELECT name FROM notification_preferences WHERE id = ? AND name IS NOT NULL LIMIT 1`,
+            [id],
+          )?.name ?? null)
+        : null;
+
       const name =
-        formattedName ?? SUGGESTED_OFFICIAL_NAMES[bioguideId] ?? bioguideId;
+        formattedName ?? storedNotifName ?? SUGGESTED_OFFICIAL_NAMES[bioguideId] ?? bioguideId;
 
       return {
         bioguideId,

@@ -46,6 +46,12 @@ export const POLITICAL_JARGON: Record<string, string> = {
     "A formal request to end the current legislative session for the day.",
   "tabling motion":
     "See 'motion to table' — a procedural tool to kill a measure without a direct up-or-down vote.",
+  "motion to discharge":
+    "A petition to force a bill out of committee when the committee refuses to act. Requires 218 House signatures.",
+  "motion to rise":
+    "A motion to end a session of the Committee of the Whole and return to regular House proceedings.",
+  "motion to strike":
+    "A motion to remove a specific word, phrase, or section from a bill during floor debate.",
 
   // --- AMENDMENTS ---
   // amendment:
@@ -82,6 +88,18 @@ export const POLITICAL_JARGON: Record<string, string> = {
     "A temporary joint committee formed to reconcile differences between House and Senate versions of a bill.",
   "conference report":
     "The final compromise version of a bill produced by a conference committee, voted on by both chambers.",
+  "hearing":
+    "A formal committee session where members gather testimony from witnesses on a bill or issue.",
+  "markup calendar":
+    "The committee's schedule of bills lined up for review and amendment sessions.",
+  "sequential referral":
+    "When a bill is sent to multiple committees in sequence, each reviewing it before the next.",
+  "concurrent referral":
+    "When a bill is sent to multiple committees simultaneously for review.",
+  "discharge petition":
+    "The formal document House members sign to force a bill out of committee. Requires 218 signatures.",
+  "ordered to be reported":
+    "A committee vote to approve a bill and send it to the full chamber for consideration.",
 
   // --- FLOOR PROCEDURE ---
   engrossed:
@@ -110,6 +128,16 @@ export const POLITICAL_JARGON: Record<string, string> = {
   "suspension of the rules":
     "A House procedure to fast-track non-controversial bills, requiring a two-thirds vote to pass.",
   rule: "In the House, a special resolution from the Rules Committee that sets the terms for debating a specific bill.",
+  "call of the house":
+  "A roll call to compel absent House members to appear on the floor, used to establish a quorum.",
+  "order of business":
+    "The official sequence in which items are taken up during a legislative session.",
+  "yielding":
+    "When a member temporarily gives up their speaking time to allow another member to speak.",
+  "yield back":
+    "When a member formally returns unused speaking time to the presiding officer.",
+  "pair":
+    "An informal agreement between two opposing members to both abstain from a vote, canceling each other out.",
   "closed rule": "Prohibits any floor amendments to a bill during debate.",
   "open rule":
     "Allows any germane amendments to be offered during floor debate.",
@@ -241,10 +269,20 @@ export const POLITICAL_JARGON: Record<string, string> = {
   "legislative history":
     "The record of a bill's progress through Congress, including hearings, debates, and reports, used to interpret the law's intent.",
   "enrolled bill":
-    "See 'enrolled' — the final version signed by both chamber leaders before going to the President.",
+      "The final version of a bill passed by both chambers, signed by House and Senate leaders before going to the President.",
   pocket:
     "To pocket a bill means the President takes no action on it; if Congress is adjourned, this becomes a pocket veto.",
-};
+  "private bill":
+    "Legislation that applies to a specific individual or entity rather than the general public.",
+  "public law":
+    "A bill that has been signed into law and assigned an official public law number (e.g., P.L. 118-1).",
+  "slip law":
+    "The first official publication of a new law, printed individually before being compiled into the U.S. Code.",
+  "engrossment":
+    "The official preparation of the final text of a bill as passed by one chamber before being sent to the other.",
+  "chaptering":
+    "The process of assigning a chapter number to a newly enacted law for inclusion in official statute compilations.",
+  };
 
 /**
  * Scans a text string and returns all matching jargon entries found within it.
