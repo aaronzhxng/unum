@@ -9,7 +9,7 @@ import {
   MoreVertical,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   Image,
@@ -32,6 +32,7 @@ import OptionsModal from "../global_components/OptionsModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
 import { billsService } from "../services/bills";
+import { abbrevBillType } from "../utils/billTypeAbbr";
 import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
@@ -64,7 +65,9 @@ export default function HomeScreen() {
   };
 
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchInstantOpen, setSearchInstantOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const searchNavigatedAwayRef = useRef(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState("My List");
   const [showListSelection, setShowListSelection] = useState(false);
@@ -81,6 +84,24 @@ export default function HomeScreen() {
 
   const [items, setItems] = useState<ListItem[]>([]);
   const [newItemIds, setNewItemIds] = useState<Set<string>>(new Set());
+
+  // Normalise list items into the shape SearchModal expects:
+  // bills get billType/number parsed from id; officials get bioguideId aliased from id.
+  const searchItems = useMemo(
+    () =>
+      items.map((item) => {
+        if (item.type === "bill") {
+          const match = item.id.match(/^([a-z]+)(\d+)$/i);
+          return {
+            ...item,
+            billType: match ? match[1].toUpperCase() : item.id,
+            number: match ? match[2] : "",
+          };
+        }
+        return { ...item, bioguideId: item.id };
+      }),
+    [items],
+  );
 
   const allSelected = items.length > 0 && selectedIds.size === items.length;
 
@@ -469,6 +490,16 @@ export default function HomeScreen() {
     }, [selectedList]),
   );
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (searchNavigatedAwayRef.current && searchQuery) {
+        searchNavigatedAwayRef.current = false;
+        setSearchInstantOpen(true);
+        setShowSearchModal(true);
+      }
+    }, [searchQuery]),
+  );
+
   const { data: featuredData } = useQuery({
     queryKey: ["featuredBills"],
     queryFn: () => billsService.getFeatured(),
@@ -700,7 +731,7 @@ export default function HomeScreen() {
                               }}
                               numberOfLines={1}
                             >
-                              {`${bill.type}.${bill.number}`}
+                              {`${abbrevBillType(bill.type)}.${bill.number}`}
                             </Text>
                           </View>
                           <Image
@@ -980,7 +1011,7 @@ export default function HomeScreen() {
                                     }}
                                     numberOfLines={1}
                                   >
-                                    {`${bill.type}.${bill.number}`}
+                                    {`${abbrevBillType(bill.type)}.${bill.number}`}
                                   </Text>
                                 </View>
                                 <Image
@@ -1284,10 +1315,15 @@ export default function HomeScreen() {
       {/* Search Modal */}
       <SearchModal
         isVisible={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
+        skipEntryAnimation={searchInstantOpen}
+        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onNavigatingAway={() => {
+          searchNavigatedAwayRef.current = true;
+          setShowSearchModal(false);
+        }}
         onSearch={setSearchQuery}
         searchContext={selectedList}
-        items={items}
+        items={searchItems}
         onItemPress={(item) => {
           if (item.type === "official") {
             router.navigate(`/official/${item.id}`);
@@ -1739,7 +1775,7 @@ const Card = React.memo(function Card({
                 >
                   {item.id?.replace(
                     /^([a-zA-Z]+)(\d+)$/,
-                    (_, t, n) => `${t.toUpperCase()}.${n}`,
+                    (_, t, n) => `${abbrevBillType(t)}.${n}`,
                   ) ?? item.name}{" "}
                 </Text>
               </View>

@@ -1,9 +1,7 @@
 import { useRouter } from "expo-router";
 import { Bell } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { Dimensions, Modal, Pressable, ScrollView, Text, View } from "react-native";
-
-const SHORT_SCREEN = Dimensions.get("window").height < 750;
+import { Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
@@ -77,6 +75,8 @@ export default function LegislationOptionsModal({
   setShowOptionsModal,
   onReportError,
 }: Props) {
+  const { width: screenWidth } = useWindowDimensions();
+  const smallScreen = screenWidth < 390;
   const [selectedPolicyAreas, setSelectedPolicyAreas] = useState<string[]>([]);
   const router = useRouter();
 
@@ -186,7 +186,7 @@ export default function LegislationOptionsModal({
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
               >
-                <Text style={[componentStyles.dropdownItemTextLabel, { fontSize: SHORT_SCREEN ? 13 : 16 }]}>
+                <Text style={[componentStyles.dropdownItemTextLabel, { fontSize: smallScreen ? 13 : 16 }]}>
                   Policy Area Notifications
                 </Text>
                 <Bell
@@ -201,7 +201,7 @@ export default function LegislationOptionsModal({
                 <Text
                   style={[
                     componentStyles.dropdownItemTextLabel,
-                    { fontSize: SHORT_SCREEN ? 11 : 14 },
+                    { fontSize: smallScreen ? 11 : 14 },
                   ]}
                 >
                   {selectedPolicyAreas.length === POLICY_AREA_OPTIONS.length
@@ -288,7 +288,7 @@ export default function LegislationOptionsModal({
                     ]}
                     onPress={() => togglePolicyArea(option.id)}
                   >
-                    <Text style={[componentStyles.dropdownItemText, { flex: 1, fontSize: 13, marginRight: 8 }]}>
+                    <Text style={[componentStyles.dropdownItemText, { flex: 1, fontSize: smallScreen ? 13 : 16, marginRight: 8 }]}>
                       {option.label}
                     </Text>
                     <View

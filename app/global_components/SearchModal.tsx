@@ -17,6 +17,7 @@ const SHORT_SCREEN = Dimensions.get("window").height < 750;
 import Modal from "react-native-modal";
 import officialNicknames from "../data/nicknames.json";
 import { styles as componentStyles } from "../global_styles/styles";
+import { abbrevBillType, BILL_TYPE_SEARCH_ALIASES } from "../utils/billTypeAbbr";
 import { getBillIcon } from "../utils/billIcons";
 import AddModal from "./AddModal";
 
@@ -63,6 +64,11 @@ interface SearchModalProps {
   items?: any[]; // The items to search through
   onItemPress?: (item: any) => void; // Handle item selection
   onNewListPress: (item?: any) => void;
+  // Called instead of onClose when navigation is the reason for dismissal —
+  // lets the parent hide the modal without clearing search state so it can
+  // be restored when the user presses back from the detail screen.
+  onNavigatingAway?: () => void;
+  skipEntryAnimation?: boolean;
 }
 
 export default function SearchModal({
@@ -74,6 +80,8 @@ export default function SearchModal({
   items = [],
   onItemPress,
   onNewListPress,
+  onNavigatingAway,
+  skipEntryAnimation = false,
 }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState(query || "");
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
@@ -138,6 +146,29 @@ export default function SearchModal({
       );
     };
 
+    // Returns true if the query refers to this item's bill type via an
+    // abbreviated or natural-language alias (e.g. "hcr" → HCONRES,
+    // "senate joint resolution" → SJRES).
+    const matchesBillTypeAlias = (item: any): boolean => {
+      const itemType = (item.billType ?? item.type ?? "").toUpperCase();
+      const aliases = BILL_TYPE_SEARCH_ALIASES[itemType];
+      if (!aliases) return false;
+      const num = String(item.number ?? "");
+      return aliases.some((alias) => {
+        // Alias itself prefix-matches the query, or query equals alias
+        if (alias.startsWith(lowercaseQuery) || lowercaseQuery === alias)
+          return true;
+        // Multi-word query like "senate joint resolution" — all words in alias
+        if (matchesAll(alias)) return true;
+        // "hcr 123" / "hcr.123"
+        if (`${alias} ${num}`.startsWith(lowercaseQuery)) return true;
+        // "hcr123" flat
+        if (`${alias.replace(/\s+/g, "")}${num}`.startsWith(normalizedQuery))
+          return true;
+        return false;
+      });
+    };
+
     const scoreItem = (item: any): number => {
       const name = (item.name ?? item.title ?? "").toLowerCase();
       const title = (item.title ?? "").toLowerCase();
@@ -161,6 +192,7 @@ export default function SearchModal({
       const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
       if (billIdFlat === normalizedQuery) return 95;
       if (billIdFlat.startsWith(normalizedQuery)) return 85;
+      if (matchesBillTypeAlias(item)) return 85;
       if (matchesNickname(item)) return 75;
 
       const wordPositions = queryWords.map((w) => name.indexOf(w));
@@ -191,6 +223,7 @@ export default function SearchModal({
           return true;
         const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
         if (billIdFlat.startsWith(normalizedQuery)) return true;
+        if (matchesBillTypeAlias(item)) return true;
         if (matchesNickname(item)) return true;
         return false;
       })
@@ -213,8 +246,15 @@ export default function SearchModal({
 
   const handleItemPress = (item: any) => {
     if (onItemPress) {
-      onItemPress(item);
-      handleClose();
+      if (onNavigatingAway) {
+        // Keep query/results intact so they're visible immediately on return.
+        Keyboard.dismiss();
+        onItemPress(item);
+        onNavigatingAway();
+      } else {
+        onItemPress(item);
+        handleClose();
+      }
     }
   };
 
@@ -258,7 +298,7 @@ export default function SearchModal({
       backdropColor="#fff"
       animationIn="slideInRight"
       animationOut="slideOutRight"
-      animationInTiming={250}
+      animationInTiming={skipEntryAnimation ? 1 : 250}
       animationOutTiming={200}
       statusBarTranslucent
       useNativeDriver
@@ -363,7 +403,17 @@ export default function SearchModal({
                     <View style={componentStyles.officialCard}>
                       {/* Avatar */}
                       {item.type === "bill" ? null : (
-                        <OfficialAvatar item={item} />
+                        <View
+                          style={{
+                            width: 64,
+                            marginRight: 12,
+                            flexShrink: 0,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <OfficialAvatar item={item} style={{ marginRight: 0 }} />
+                        </View>
                       )}
 
                       {/* Content */}
@@ -407,7 +457,7 @@ export default function SearchModal({
                                     }}
                                     numberOfLines={1}
                                   >
-                                    {item.billType || item.type}.{item.number}
+                                    {abbrevBillType(item.billType || item.type)}.{item.number}
                                   </Text>
                                 </View>
                                 <Image
@@ -495,7 +545,7 @@ export default function SearchModal({
                       ) : (
                         // Official info
                         <View style={{ flex: 1 }}>
-                          <Text style={componentStyles.name}>
+                          <Text style={componentStyles.name} numberOfLines={1}>
                             {item.name?.includes(",")
                               ? item.name
                                   .split(",")
@@ -515,7 +565,11 @@ export default function SearchModal({
                                     item.district,
                                     screenWidth,
                                   )
-                                : (item.role ?? "")}
+                                : screenWidth < 400
+                                  ? (item.role ?? "")
+                                      .replace(/^Representative/, "Rep")
+                                      .replace(/^Senator/, "Sen")
+                                  : (item.role ?? "")}
                             </Text>
                           </View>
                         </View>
@@ -597,24 +651,23 @@ function formatRole(
   district?: number | null,
   screenWidth?: number,
 ): string {
+  const small = !!(screenWidth && screenWidth < 400);
   if (chamber === "House of Representatives") {
     const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
     const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
-    if (screenWidth && screenWidth < 390) return abbr;
-    return full.length > 39 ? abbr : full;
+    return small ? abbr : full;
   }
   const full = `Senator, ${state}`;
   const abbr = `Sen, ${state}`;
-  if (screenWidth && screenWidth < 390) return abbr;
-  return full.length > 40 ? abbr : full;
+  return small ? abbr : full;
 }
 
-function OfficialAvatar({ item }: { item: any }) {
+function OfficialAvatar({ item, style }: { item: any; style?: any }) {
   const [imageError, setImageError] = useState(false);
   const imageUrl = item.depiction?.imageUrl || item.photoUrl || null;
 
   return (
-    <View style={componentStyles.avatar}>
+    <View style={[componentStyles.avatar, style]}>
       {imageUrl && !imageError ? (
         <Image
           source={{ uri: imageUrl }}

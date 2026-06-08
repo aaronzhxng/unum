@@ -885,9 +885,12 @@ export default function BillDetail() {
         id: c.bioguideId,
         name: c.name,
         party: c.party,
-        role: c.district
-          ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
-          : `Sen, ${STATE_NAMES[c.state] || c.state}`,
+        role:
+          c.district != null
+            ? c.district > 0
+              ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
+              : `Rep, ${STATE_NAMES[c.state] || c.state}`
+            : `Sen, ${STATE_NAMES[c.state] || c.state}`,
         photoUrl: c.photoUrl,
         update: c.isOriginalCosponsor
           ? "Original cosponsor"
@@ -2078,9 +2081,15 @@ export default function BillDetail() {
     const { width: screenWidth } = useWindowDimensions();
     const stateName = STATE_NAMES[sponsor.state] ?? sponsor.state;
     const role = (() => {
-      if (sponsor.district) {
-        const full = `Representative, ${stateName}, District ${sponsor.district}`;
-        const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
+      if (sponsor.district != null) {
+        if (sponsor.district > 0) {
+          const full = `Representative, ${stateName}, District ${sponsor.district}`;
+          const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
+          return screenWidth < 390 ? abbr : full;
+        }
+        // district === 0: at-large delegate (DC, Guam, etc.) — no district number
+        const full = `Representative, ${stateName}`;
+        const abbr = `Rep, ${stateName}`;
         return screenWidth < 390 ? abbr : full;
       }
       const full = `Senator, ${stateName}`;
@@ -2126,7 +2135,7 @@ export default function BillDetail() {
             )}
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={componentStyles.name}>
+            <Text style={componentStyles.name} numberOfLines={1}>
               {sponsor.firstName} {sponsor.lastName}
             </Text>
             <View style={componentStyles.metaRow}>

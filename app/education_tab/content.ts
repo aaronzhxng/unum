@@ -1538,15 +1538,15 @@ export const educationTopics: EducationTopic[] = [
           },
           {
             type: "image",
-            source: require("../../assets/education_images/parties6.png"),
-            caption:
-              "Andrew Jackson (1829–1837), the first Democratic president, pursued policies that many historians consider deeply racist, including the forced removal of Native American tribes from their lands.",
-          },
-          {
-            type: "image",
             source: require("../../assets/education_images/parties7.png"),
             caption:
               "Throughout U.S. history, the two major parties have stood for very different things. For example, Lyndon Johnson (1963–1969), a Democrat, passed the Civil Rights Act of 1964, which banned discrimination based on race, sex, or religion.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/parties6.png"),
+            caption:
+              "By contrast, Andrew Jackson (1829–1837), the first Democratic president, pursued policies that many historians consider deeply racist, including the forced removal of Native American tribes from their lands.",
           },
           {
             type: "links",
@@ -2081,7 +2081,6 @@ export const educationTopics: EducationTopic[] = [
           },
         ],
       },
-
     ],
   },
 ];

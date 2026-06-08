@@ -3,12 +3,16 @@ import Constants from "expo-constants";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, TextInput } from "react-native";
+import { Alert, Linking, Platform, Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PolicyAreasProvider } from "./context/PolicyAreasContext";
 import { TabBarProvider } from "./context/TabBarContext";
 import UpdateToast from "./global_components/UpdateToast";
 import { billCache } from "./utils/billCache";
+import {
+  getStoreVersionInfo,
+  isNewerVersion,
+} from "./utils/storeUpdateCheck";
 import { initializeDatabase } from "./utils/database";
 import { queryClient } from "./utils/queryClient";
 import { storage } from "./utils/storage";
@@ -39,6 +43,30 @@ export default function RootLayout() {
   useEffect(() => {
     NavigationBar.setBackgroundColorAsync("#fafafa");
     NavigationBar.setButtonStyleAsync("dark");
+  }, []);
+
+  useEffect(() => {
+    if (isExpoGo || __DEV__) return;
+    const currentVersion = Constants.expoConfig?.version;
+    if (!currentVersion) return;
+
+    (async () => {
+      const info = await getStoreVersionInfo();
+      if (!info) return;
+      if (!isNewerVersion(info.version, currentVersion))
+        return;
+      Alert.alert(
+        "Update available",
+        `A new version of Unum is available in the ${Platform.OS === "ios" ? "App Store" : "Play Store"}. Update now for the latest features and fixes.`,
+        [
+          { text: "Later", style: "cancel" },
+          {
+            text: "Update",
+            onPress: () => Linking.openURL(info.storeUrl),
+          },
+        ],
+      );
+    })();
   }, []);
 
   useEffect(() => {

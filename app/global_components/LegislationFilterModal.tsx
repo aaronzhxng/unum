@@ -1,7 +1,8 @@
 import React from "react";
-import { Dimensions, Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Dimensions, Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
 
+// Used only for scroll-area height constraints (content fitting on screen).
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHORT_SCREEN = SCREEN_HEIGHT < 750;
 
@@ -120,6 +121,11 @@ export default function LegislationFilterModal({
   setSelectedLegislationTypes,
   resultCount,
 }: LegislationFilterModalProps) {
+  // Width < 390 = genuinely narrow phone (SE, mini). Used for visual density
+  // and font size only — scroll-area maxHeight still uses SHORT_SCREEN above.
+  const { width: screenWidth } = useWindowDimensions();
+  const smallScreen = screenWidth < 390;
+
   const handleCancel = () => {
     onCancel();
     onClose();
@@ -220,7 +226,7 @@ export default function LegislationFilterModal({
                     }
                   }}
                 >
-                  <Text style={componentStyles.dropdownItemText}>
+                  <Text style={[componentStyles.dropdownItemText, smallScreen && { fontSize: 14 }]}>
                     {option.label}
                   </Text>
                   <View
@@ -323,7 +329,7 @@ export default function LegislationFilterModal({
                         flexDirection: "row",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        paddingVertical: SHORT_SCREEN ? 10 : 16,
+                        paddingVertical: smallScreen ? 10 : 16,
                       },
                     ]}
                     onPress={() => {
@@ -442,7 +448,7 @@ export default function LegislationFilterModal({
                         flexDirection: "row",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        paddingVertical: SHORT_SCREEN ? 10 : 16,
+                        paddingVertical: smallScreen ? 10 : 16,
                       },
                     ]}
                     onPress={() => {

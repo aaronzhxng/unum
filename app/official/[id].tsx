@@ -44,6 +44,7 @@ import ScreenTourOverlay, {
 } from "../global_components/ScreenTourOverlay";
 import SearchModal from "../global_components/SearchModal";
 import { officialsService } from "../services/officials";
+import { abbrevBillType } from "../utils/billTypeAbbr";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
 import { getDb } from "../utils/database";
@@ -154,7 +155,7 @@ function LegislationCard({ item }: { item: any }) {
               style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
               numberOfLines={1}
             >
-              {item.type}.{item.number}
+              {abbrevBillType(item.type)}.{item.number}
             </Text>
           </View>
           <Image
@@ -937,7 +938,7 @@ export default function OfficialDetail() {
 
           {/* Name + Buttons */}
           <View
-            style={{ flex: 1, height: 64, justifyContent: "space-between" }}
+            style={{ flex: 1, justifyContent: "space-between", gap: 6 }}
           >
             <Text style={componentStyles.name}>{official.directOrderName}</Text>
             {official.officialWebsiteUrl && (
