@@ -582,12 +582,12 @@ export const educationTopics: EducationTopic[] = [
           {
             type: "text",
             content:
-              "Finally, if no candidate for President wins a majority of the Electoral Votes, the House can select one from the top three best-performing candidates. If this happens, each state delegation would get one vote, rather than each member, and a candidate would need votes from 26 of the 50 states to win. This has happened twice in U.S. history, in 1800 and once in 1824.",
+              "Finally, if no candidate for President wins a majority of the Electoral Votes, the House can select one from the top three best-performing candidates. If this happens, each state delegation would get one vote, rather than each member, and a candidate would need votes from 26 of the 50 states to win. This has happened twice in U.S. history, in 1800 and in 1824.",
           },
           {
             type: "text",
             content:
-              "Of course, the House is also one of the two houses of Congress, and shares in its responsibilities such as passing legislation, holding hearings, organizing committees, and more. You can learn more about these steps in the Congress & Legislation section.",
+              "Of course, the House is also one of the two houses of Congress, and shares in its responsibilities such as passing legislation, holding hearings, organizing committees, and more. You can learn more about these steps in the What can the Senate do section.",
           },
         ],
       },
@@ -734,7 +734,7 @@ export const educationTopics: EducationTopic[] = [
           {
             type: "text",
             content:
-              "Of course, the Senate is one of the two houses of Congress, and shares in its responsibilities such as passing legislation, holding hearings, organizing committees, and more. You can learn more about these steps in the Congress & Legislation section.",
+              "Of course, the Senate is one of the two houses of Congress, and shares in its responsibilities such as passing legislation, holding hearings, organizing committees, and more. You can learn more about these steps in the What can the House do section.",
           },
         ],
       },
