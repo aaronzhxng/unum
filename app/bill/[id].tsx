@@ -67,6 +67,7 @@ import VotingCard, {
 import { styles as componentStyles } from "./styles";
 
 import { storage } from "../utils/storage";
+import { trySwipeBack } from "../utils/swipeBackGuard";
 
 const TABS = ["details", "voting", "actions", "cosponsors"] as const;
 type TabName = (typeof TABS)[number];
@@ -503,7 +504,7 @@ export default function BillDetail() {
         );
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
+        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3 && trySwipeBack()) {
           handleBack();
         }
       },
@@ -1103,6 +1104,18 @@ export default function BillDetail() {
 
   return (
     <View style={componentStyles.screen}>
+      {/* Edge swipe strip — must be outside PagerView so it isn't intercepted by horizontal page swipes */}
+      <View
+        {...backSwipePanResponder.panHandlers}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 20,
+          zIndex: 10,
+        }}
+      />
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
         <Pressable
@@ -1258,18 +1271,6 @@ export default function BillDetail() {
       >
         {/* Page 0: Details */}
         <View key="0" style={{ flex: 1 }}>
-          {/* Edge swipe strip for back navigation */}
-          <View
-            {...backSwipePanResponder.panHandlers}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 20,
-              zIndex: 10,
-            }}
-          />
           <ScrollView keyboardShouldPersistTaps="handled">
             {/* Bill Progress - Option B */}
             {(() => {

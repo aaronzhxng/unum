@@ -94,6 +94,8 @@ export default function EducationSubtopicScreen() {
   const currentIndex = topicData.subtopics.findIndex(
     (s) => s.id === String(subtopic ?? ""),
   );
+  const prevSubtopic =
+    currentIndex > 0 ? topicData.subtopics[currentIndex - 1] : null;
   const nextSubtopic =
     currentIndex >= 0 && currentIndex < topicData.subtopics.length - 1
       ? topicData.subtopics[currentIndex + 1]
@@ -474,11 +476,11 @@ export default function EducationSubtopicScreen() {
           );
         })}
 
-        {nextSubtopic && (
+        {prevSubtopic && (
           <Pressable
             onPress={() =>
-              router.push(
-                `/education_tab/${topic}/${nextSubtopic.id}` as any,
+              router.replace(
+                `/education_tab/${topic}/${prevSubtopic.id}` as any,
               )
             }
             style={({ pressed }) => ({
@@ -488,6 +490,38 @@ export default function EducationSubtopicScreen() {
               paddingHorizontal: CONTENT_PADDING,
               paddingVertical: 20,
               borderTopWidth: 1,
+              borderTopColor: "#e8e8e8",
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <ChevronLeft size={18} color="#008CFF" />
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: "600",
+                flex: 1,
+                marginLeft: 8,
+              }}
+            >
+              <Text style={{ color: "#0d0d0d" }}>Read Previous: </Text>
+              <Text style={{ color: "#008CFF" }}>{prevSubtopic.title}</Text>
+            </Text>
+          </Pressable>
+        )}
+        {nextSubtopic && (
+          <Pressable
+            onPress={() =>
+              router.replace(
+                `/education_tab/${topic}/${nextSubtopic.id}` as any,
+              )
+            }
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: CONTENT_PADDING,
+              paddingVertical: 20,
+              borderTopWidth: prevSubtopic ? 0 : 1,
               borderTopColor: "#e8e8e8",
               opacity: pressed ? 0.6 : 1,
             })}

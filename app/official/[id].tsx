@@ -54,6 +54,7 @@ import { officialBillsCache } from "../utils/officialBillsCache";
 import { screenTour } from "../utils/screenTour";
 import { storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+import { trySwipeBack } from "../utils/swipeBackGuard";
 import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
 
@@ -252,7 +253,7 @@ export default function OfficialDetail() {
         );
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3) {
+        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3 && trySwipeBack()) {
           handleBack();
         }
       },
@@ -832,6 +833,18 @@ export default function OfficialDetail() {
 
   return (
     <View style={componentStyles.screen}>
+      {/* Edge swipe strip — must be outside PagerView so it isn't intercepted by horizontal page swipes */}
+      <View
+        {...backSwipePanResponder.panHandlers}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 20,
+          zIndex: 10,
+        }}
+      />
       {/* Header Bar */}
       <View style={componentStyles.headerBar}>
         <Pressable
@@ -1024,18 +1037,6 @@ export default function OfficialDetail() {
       >
         {/* Page 0: Profile */}
         <View key="0" style={{ flex: 1 }}>
-          {/* Edge swipe strip for back navigation */}
-          <View
-            {...backSwipePanResponder.panHandlers}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 20,
-              zIndex: 10,
-            }}
-          />
           <ScrollView keyboardShouldPersistTaps="handled">
             {/* Bills Signed Into Law */}
             <View
