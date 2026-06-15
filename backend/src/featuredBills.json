@@ -1,14 +1,14 @@
 {
-  "weekOf": "2026-06-08",
-  "weekEnd": "2026-06-14",
+  "weekOf": "2026-06-15",
+  "weekEnd": "2026-06-21",
   "bills": [
     {
-      "billId": "hr2913",
-      "note": "This bill establishes assistance via a reconstruction trust fund, reviving the President’s authority to lend weapons to Ukraine or Eastern European countries affected by the war through FY2028."
+      "billId": "s2",
+      "note": "This reconciliation bill provides roughly $70 billion to ICE and Border Patrol through FY2029."
     },
     {
-      "billId": "hconres86",
-      "note": "This resolution would require the President to withdraw U.S. forces from hostilities against Iran unless Congress formally declares war or authorizes military force, though it is largely symbolic and cannot be vetoed. It is now headed to the Senate."
+      "billId": "hr9238",
+      "note": "This bill failed to pass the house, but would have extended FISA Section 702 powers, which allow for the collection of information on foreigner's communications by the federal government."
     }
   ]
 }
