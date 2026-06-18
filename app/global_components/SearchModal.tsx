@@ -100,9 +100,9 @@ export default function SearchModal({
     onClose();
   }, [onClose]);
 
-  // Focus input when modal opens
+  // Focus input when modal opens fresh; skip on return-from-navigation
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || skipEntryAnimation) return;
     const timer = setTimeout(() => inputRef.current?.focus(), 150);
     return () => clearTimeout(timer);
   }, [isVisible]);

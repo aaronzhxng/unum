@@ -308,7 +308,16 @@ export default function BillDetail() {
     }, []),
   );
 
-  type StageStatus = "empty" | "half" | "full";
+  type StageStatus =
+    | "empty"
+    | "half"
+    | "full"
+    | "vetoed"
+    | "pocket_vetoed"
+    | "veto_sustained";
+
+  const isVetoStatus = (s: StageStatus) =>
+    s === "vetoed" || s === "pocket_vetoed" || s === "veto_sustained";
 
   const getBillStages = (bill: any): StageStatus[] => {
     const type = bill.type?.toUpperCase();
@@ -360,19 +369,24 @@ export default function BillDetail() {
       return ["full", "half", "empty"];
     }
 
-    // Standard bills and joint resolutions
-    if (
-      any("became public law") ||
-      any("signed by president") ||
-      any("veto overridden")
-    )
+    // Standard bills and joint resolutions — veto/president cases (check in order)
+    if (any("became public law") || any("signed by president") || any("veto overridden"))
       return ["full", "full", "full", "full"];
 
-    if (
-      any("presented to president") ||
-      any("to president") ||
-      any("vetoed by president")
-    )
+    // Pocket veto — no override possible since Congress was adjourned
+    if (any("pocket veto"))
+      return ["full", "full", "full", "pocket_vetoed"];
+
+    // Veto sustained — override vote attempted but failed
+    if (any("veto sustained") || any("override failed") || any("failed to override"))
+      return ["full", "full", "full", "veto_sustained"];
+
+    // Regular presidential veto — override may still be attempted
+    if (any("vetoed by president"))
+      return ["full", "full", "full", "vetoed"];
+
+    // Presented to president, awaiting action
+    if (any("presented to president") || any("to president"))
       return ["full", "full", "full", "half"];
 
     if (type?.startsWith("H")) {
@@ -444,22 +458,41 @@ export default function BillDetail() {
         stages[2] === "full" ? "Ratified" : "Pending",
       ];
 
-    const signedLabel =
-      stages[3] === "full" ? "Signed Into Law" : "To President";
+    // Determine the president-stage label based on what actually happened
+    const presidentLabel = (() => {
+      const s = stages[3];
+      if (s === "vetoed") return "Vetoed";
+      if (s === "pocket_vetoed") return "Pocket Vetoed";
+      if (s === "veto_sustained") return "Veto Sustained";
+      if (s === "full") {
+        // Distinguish a veto override from a regular signing
+        const texts: string[] = [];
+        if (bill.latestAction?.text)
+          texts.push(bill.latestAction.text.toLowerCase());
+        if (Array.isArray(bill.actions))
+          bill.actions.forEach((a: any) => {
+            if (a.text) texts.push(a.text.toLowerCase());
+          });
+        if (texts.some((t) => t.includes("veto overridden")))
+          return "Veto Overridden";
+        return "Signed Into Law";
+      }
+      return "To President";
+    })();
 
     if (type?.startsWith("S"))
       return [
         "Introduced",
         stages[1] === "full" ? "Passed Senate" : "In Senate",
         stages[2] === "full" ? "Passed House" : "In House",
-        signedLabel,
+        presidentLabel,
       ];
 
     return [
       "Introduced",
       stages[1] === "full" ? "Passed House" : "In House",
       stages[2] === "full" ? "Passed Senate" : "In Senate",
-      signedLabel,
+      presidentLabel,
     ];
   };
 
@@ -823,6 +856,10 @@ export default function BillDetail() {
                 text.includes("presented to president") ||
                 text.includes("became public law") ||
                 text.includes("vetoed by president") ||
+                text.includes("pocket veto") ||
+                text.includes("veto overridden") ||
+                text.includes("veto sustained") ||
+                text.includes("override failed") ||
                 text.includes("enacted")
               );
             })
@@ -962,6 +999,10 @@ export default function BillDetail() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          {...backSwipePanResponder.panHandlers}
+          style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 20, zIndex: 10 }}
+        />
         <LoadingSpinner />
         <Text style={{ color: "#7B7C81", marginTop: 24 }}>
           {`Loading ${(id as string).toUpperCase()}...`}
@@ -972,17 +1013,34 @@ export default function BillDetail() {
 
   if (error || !bill) {
     return (
-      <ErrorScreen
-        onRetry={refetch}
-        onBack={handleBack}
-        message="Could not load this bill"
-      />
+      <View style={{ flex: 1 }}>
+        <View
+          {...backSwipePanResponder.panHandlers}
+          style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 20, zIndex: 10 }}
+        />
+        <ErrorScreen
+          onRetry={refetch}
+          onBack={handleBack}
+          message="Could not load this bill"
+        />
+      </View>
     );
   }
 
   if (!bill.latestAction?.actionDate) {
     return (
       <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View
+          {...backSwipePanResponder.panHandlers}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 20,
+            zIndex: 10,
+          }}
+        />
         <View style={componentStyles.headerBar}>
           <Pressable
             onPress={handleBack}
@@ -1289,13 +1347,18 @@ export default function BillDetail() {
                       if (!label)
                         return <View key={index} style={{ flex: 1 }} />;
                       const status = stages[index];
+                      const isVeto = isVetoStatus(status);
                       return (
                         <Text
                           key={index}
                           style={{
                             flex: 1,
                             fontSize: screenWidth < 390 ? 8 : 10,
-                            color: status === "empty" ? "#7B7C81" : "#1a1a1a",
+                            color: isVeto
+                              ? "#FF3B30"
+                              : status === "empty"
+                                ? "#7B7C81"
+                                : "#1a1a1a",
                             fontWeight: status === "empty" ? "400" : "600",
                             textAlign: "left",
                             lineHeight: screenWidth < 390 ? 11 : 13,
@@ -1309,32 +1372,35 @@ export default function BillDetail() {
                     })}
                   </View>
                   <View style={{ flexDirection: "row", gap: 3 }}>
-                    {stages.map((status, index) => (
-                      <View
-                        key={index}
-                        style={{
-                          flex: 1,
-                          height: 6,
-                          borderRadius: 3,
-                          backgroundColor: "#e0e0e0",
-                          overflow: "hidden",
-                        }}
-                      >
+                    {stages.map((status, index) => {
+                      const isVeto = isVetoStatus(status);
+                      return (
                         <View
+                          key={index}
                           style={{
-                            height: "100%",
-                            width:
-                              status === "full"
-                                ? "100%"
-                                : status === "half"
-                                  ? "50%"
-                                  : "0%",
-                            backgroundColor: "#008CFF",
+                            flex: 1,
+                            height: 6,
                             borderRadius: 3,
+                            backgroundColor: "#e0e0e0",
+                            overflow: "hidden",
                           }}
-                        />
-                      </View>
-                    ))}
+                        >
+                          <View
+                            style={{
+                              height: "100%",
+                              width:
+                                status === "full" || isVeto
+                                  ? "100%"
+                                  : status === "half"
+                                    ? "50%"
+                                    : "0%",
+                              backgroundColor: isVeto ? "#FF3B30" : "#008CFF",
+                              borderRadius: 3,
+                            }}
+                          />
+                        </View>
+                      );
+                    })}
                   </View>
                 </View>
               );

@@ -384,7 +384,7 @@ export const educationTopics: EducationTopic[] = [
   // ════════════════════════════════════════════════════════════════════════════
   {
     id: "house-of-representatives",
-    title: "What is the House of Representatives",
+    title: "What is the House of Representatives?",
     subtitle:
       "Districts, redistricting, leadership, and the House's special powers.",
     icon: require("../../assets/education_icons/house.png"),
@@ -599,7 +599,7 @@ export const educationTopics: EducationTopic[] = [
   // ════════════════════════════════════════════════════════════════════════════
   {
     id: "us-senate",
-    title: "What is the Senate",
+    title: "What is the Senate?",
     subtitle:
       "Senators, classes, leadership, special powers, and the filibuster.",
     icon: require("../../assets/education_icons/senate.png"),
@@ -768,11 +768,11 @@ export const educationTopics: EducationTopic[] = [
   },
 
   // ════════════════════════════════════════════════════════════════════════════
-  // The Legislative Process
+  // Responsibilities of Congress
   // ════════════════════════════════════════════════════════════════════════════
   {
     id: "congress-legislation",
-    title: "The Legislative Process",
+    title: "Responsibilities of Congress",
     subtitle: "How a bill becomes law, committees, floor votes, and more.",
     icon: require("../../assets/education_icons/congress.png"),
     subtopics: [
