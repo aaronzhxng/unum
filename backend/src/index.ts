@@ -1452,6 +1452,27 @@ app.post("/api/debug/token", requireAdminToken, (req, res) => {
   res.json({ success: true });
 });
 
+// ─── Public redirect routes ───────────────────────────────────────────────────
+
+const IOS_STORE_URL =
+  "https://apps.apple.com/us/app/unum-congress-tracker/id6763620957";
+// Replace with Play Store URL once Android goes live:
+const ANDROID_STORE_URL = IOS_STORE_URL;
+const JOIN_FORM_URL =
+  "https://docs.google.com/forms/d/1URY5cukTP2hzervCDSJBsUsnUyflMjEnHY-3YlPV1KE/viewform";
+
+app.get("/join", (_req, res) => {
+  res.redirect(302, JOIN_FORM_URL);
+});
+
+app.get("/download", (req, res) => {
+  const ua = req.headers["user-agent"] ?? "";
+  const isAndroid = /android/i.test(ua);
+  res.redirect(302, isAndroid ? ANDROID_STORE_URL : IOS_STORE_URL);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.listen(PORT, () => {
   startCronScheduler();
 });
