@@ -326,6 +326,10 @@ app.get("/api/bills/policy-areas", (req, res) => {
 });
 
 app.get("/api/bills/featured", async (req, res) => {
+  const cacheKey = `featured:${FEATURED_BILLS.weekOf}`;
+  const cached = getCached(cacheKey, 60 * 60 * 1000); // 1 hour
+  if (cached) return res.json(cached);
+
   try {
     const results = await Promise.allSettled(
       FEATURED_BILLS.bills.map(async (entry) => {
@@ -357,11 +361,13 @@ app.get("/api/bills/featured", async (req, res) => {
     const bills = results
       .filter((r) => r.status === "fulfilled" && r.value !== null)
       .map((r) => (r as PromiseFulfilledResult<any>).value);
-    res.json({
+    const responseData = {
       bills,
       weekOf: FEATURED_BILLS.weekOf,
       weekEnd: FEATURED_BILLS.weekEnd,
-    });
+    };
+    if (bills.length > 0) setCache(cacheKey, responseData);
+    res.json(responseData);
   } catch (error) {
     console.error("Error fetching featured bills:", error);
     res.status(500).json({ error: "Failed to fetch featured bills" });
