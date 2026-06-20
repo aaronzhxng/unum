@@ -30,10 +30,12 @@ dotenv.config();
 // when their servers are slow or rate-limiting. Per-call timeouts override this.
 axios.defaults.timeout = 20000;
 
-// ─── Congress.gov response cache ─────────────────────────────────────────────
 // ─── Congress.gov response cache (SQLite-backed, survives deploys) ────────────
 const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes — for search/bill detail endpoints
-const MEMBER_LEGISLATION_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — sponsored/cosponsored lists; refreshed by cron
+const MEMBER_LEGISLATION_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — sponsored/cosponsored lists
+const VOTE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — vote records are permanent
+const COSPONSOR_CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours — cosponsors rarely change
+const OFFICIAL_DETAIL_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — official details are static
 const memoryCache = new Map<string, { data: any; timestamp: number }>();
 
 function getCached(key: string, ttl: number = CONGRESS_CACHE_TTL): any | null {
@@ -611,27 +613,37 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
     const cacheKey = `votes-${congress}-${billId}`;
-    const cached = getCached(cacheKey);
+    const cached = getCached(cacheKey, VOTE_CACHE_TTL);
     if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
-    let allActions: any[] = [];
-    let offset = 0;
-    const limit = 250;
-    let hasMore = true;
+    // Reuse already-fetched actions if the actions tab was visited first
+    const actionsCacheKey = `actions-${congress}-${billId}`;
+    const cachedActions = getCached(actionsCacheKey);
 
-    while (hasMore) {
-      const response = await axios.get(
-        `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
-        {
-          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { offset, limit, format: "json" },
-        },
-      );
-      allActions = allActions.concat(response.data.actions || []);
-      hasMore = response.data.pagination?.next != null;
-      offset += limit;
+    let allActions: any[] = [];
+    if (cachedActions?.actions) {
+      allActions = cachedActions.actions;
+    } else {
+      let offset = 0;
+      const limit = 250;
+      let hasMore = true;
+
+      while (hasMore) {
+        const response = await axios.get(
+          `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
+          {
+            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+            params: { offset, limit, format: "json" },
+          },
+        );
+        allActions = allActions.concat(response.data.actions || []);
+        hasMore = response.data.pagination?.next != null;
+        offset += limit;
+      }
+      // Populate the actions cache so the actions tab is instant next visit
+      setCache(actionsCacheKey, { actions: allActions, pagination: { count: allActions.length } });
     }
 
     const recordedVotes: any[] = [];
@@ -906,7 +918,7 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
     const cacheKey = `cosponsors-${congress}-${billId}`;
-    const cached = getCached(cacheKey);
+    const cached = getCached(cacheKey, COSPONSOR_CACHE_TTL);
     if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
@@ -990,7 +1002,7 @@ app.get("/api/officials", async (req, res) => {
 app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
     const cacheKey = `official-${req.params.bioguideId}`;
-    const cached = getCached(cacheKey);
+    const cached = getCached(cacheKey, OFFICIAL_DETAIL_CACHE_TTL);
     if (cached) return res.json(cached);
     const { bioguideId } = req.params;
     const response = await axios.get(
