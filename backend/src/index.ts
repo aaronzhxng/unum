@@ -87,11 +87,12 @@ function setCache(key: string, data: any): void {
   }
 }
 
-// Clean up entries older than 48h — covers both short- and long-TTL cache keys
+// Clean up entries older than 7 days — keeps officials (24h TTL) and member
+// legislation (24h TTL) warm across restarts without unbounded growth
 try {
   const deleted = db
     .prepare(`DELETE FROM congress_cache WHERE cached_at < ?`)
-    .run(Date.now() - 48 * 60 * 60 * 1000);
+    .run(Date.now() - 7 * 24 * 60 * 60 * 1000);
   if (deleted.changes > 0) {
     console.log(`Cleared ${deleted.changes} expired cache entries`);
   }
@@ -945,6 +946,11 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
 
 // Get officials
 app.get("/api/officials", async (req, res) => {
+  const cacheKey = "officials-all";
+  const OFFICIALS_TTL = 24 * 60 * 60 * 1000; // 24 hours — roster changes rarely
+  const cached = getCached(cacheKey, OFFICIALS_TTL);
+  if (cached) return res.json(cached);
+
   try {
     let allMembers: any[] = [];
     let offset = 0;
@@ -967,7 +973,9 @@ app.get("/api/officials", async (req, res) => {
       offset += limit;
     }
 
-    res.json({ officials: allMembers, count: allMembers.length });
+    const responseData = { officials: allMembers, count: allMembers.length };
+    setCache(cacheKey, responseData);
+    res.json(responseData);
   } catch (error) {
     console.error("Error fetching officials:", error);
     res.status(500).json({ error: "Failed to fetch officials" });
