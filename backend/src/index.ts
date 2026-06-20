@@ -26,6 +26,10 @@ for (const line of csvLines.slice(1)) {
 
 dotenv.config();
 
+// Default 20s timeout on all Congress.gov API calls — prevents infinite hangs
+// when their servers are slow or rate-limiting. Per-call timeouts override this.
+axios.defaults.timeout = 20000;
+
 // ─── Congress.gov response cache ─────────────────────────────────────────────
 // ─── Congress.gov response cache (SQLite-backed, survives deploys) ────────────
 const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes — for search/bill detail endpoints
