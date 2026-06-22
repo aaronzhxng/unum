@@ -1,14 +1,10 @@
 {
-  "weekOf": "2026-06-15",
-  "weekEnd": "2026-06-21",
+  "weekOf": "2026-06-22",
+  "weekEnd": "2026-06-28",
   "bills": [
     {
-      "billId": "s2",
-      "note": "This reconciliation bill provides roughly $70 billion to ICE and Border Patrol through FY2029."
-    },
-    {
-      "billId": "hr9238",
-      "note": "This bill failed to pass the house, but would have extended FISA Section 702 powers, which allow for the collection of information on foreigner's communications by the federal government."
+      "billId": "hr6644",
+      "note": "This bill would overhaul federal housing programs to boost the housing supply and puts limits on large investors buying single-family homes."
     }
   ]
 }
