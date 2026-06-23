@@ -382,6 +382,30 @@ const checkFollowedBills = async () => {
   );
 };
 
+// ── Resolve a stored official name that may be a raw bioguideId ───────────────
+// If the sync previously stored the bioguideId as the name (name lookup failed
+// on device), we recover the real name from the officials-all SQLite cache.
+const BIOGUIDE_RE = /^[A-Z][0-9A-Z]{6}$/;
+
+const resolveOfficialName = (bioguideId: string, storedName: string): string => {
+  if (storedName && !BIOGUIDE_RE.test(storedName)) return storedName;
+  try {
+    const row = db
+      .prepare(`SELECT data FROM congress_cache WHERE cache_key = 'officials-all' LIMIT 1`)
+      .get() as { data: string } | undefined;
+    if (!row) return storedName || bioguideId;
+    const officials: any[] = JSON.parse(row.data)?.officials ?? [];
+    const found = officials.find((o: any) => o.bioguideId === bioguideId);
+    if (!found?.name) return storedName || bioguideId;
+    const n: string = found.name;
+    return n.includes(",")
+      ? n.split(",").reverse().map((s: string) => s.trim()).join(" ")
+      : n;
+  } catch {
+    return storedName || bioguideId;
+  }
+};
+
 // ── Check 3: Activity from followed officials ─────────────────────────────────
 
 const checkFollowedOfficials = async () => {
@@ -401,10 +425,11 @@ const checkFollowedOfficials = async () => {
 
     for (const {
       bioguideId: rawId,
-      name: officialName,
+      name: rawOfficialName,
       subTypes,
     } of followedOfficials) {
       const bioguideId = rawId.replace(/^official_/, "");
+      const officialName = resolveOfficialName(bioguideId, rawOfficialName);
       const wantsSponsored =
         subTypes.includes("all-notications") ||
         subTypes.includes("bills-introduced");
