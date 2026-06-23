@@ -3,11 +3,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Dimensions, Image, Platform, Pressable, Text, View } from "react-native";
+import {
+    Dimensions,
+    Image,
+    Platform,
+    Pressable,
+    Text,
+    View,
+} from "react-native";
 import PagerView from "react-native-pager-view";
 import { useTabBar } from "../context/TabBarContext";
 import { TourProvider, useTour } from "../context/TourContext";
 import { getDb } from "../utils/database";
+import DistrictExplorerScreen from "./district-explorer";
 import EducationScreen from "./education";
 import HomeScreen from "./home";
 import LegislationScreen from "./legislation";
@@ -15,6 +23,12 @@ import OfficialsScreen from "./officials";
 
 const TABS = [
   { name: "home", activeIcon: "home", inactiveIcon: "home-outline", size: 28 },
+  {
+    name: "districts",
+    activeIcon: "map",
+    inactiveIcon: "map-outline",
+    size: 28,
+  },
   {
     name: "officials",
     activeIcon: "people",
@@ -331,7 +345,7 @@ function TabsLayoutInner() {
         setPagerScrollEnabled(false);
         focusRecoveryRef.current = true;
       };
-    }, [])
+    }, []),
   );
 
   return (
@@ -359,13 +373,16 @@ function TabsLayoutInner() {
             {visitedTabs.has(0) && <HomeScreen />}
           </View>
           <View key="1" style={{ flex: 1 }}>
-            {visitedTabs.has(1) && <OfficialsScreen />}
+            {visitedTabs.has(1) && <DistrictExplorerScreen />}
           </View>
           <View key="2" style={{ flex: 1 }}>
-            {visitedTabs.has(2) && <LegislationScreen />}
+            {visitedTabs.has(2) && <OfficialsScreen />}
           </View>
           <View key="3" style={{ flex: 1 }}>
-            {visitedTabs.has(3) && <EducationScreen />}
+            {visitedTabs.has(3) && <LegislationScreen />}
+          </View>
+          <View key="4" style={{ flex: 1 }}>
+            {visitedTabs.has(4) && <EducationScreen />}
           </View>
         </PagerView>
 

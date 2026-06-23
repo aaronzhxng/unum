@@ -94,3 +94,5 @@ credentials.json
 *.orig.*
 .aider*
 .venv/
+
+.fake
