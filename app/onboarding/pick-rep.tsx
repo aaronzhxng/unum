@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
+import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import { officialsService } from "../services/officials";
 
 // State name → abbreviation lookup
@@ -123,6 +124,13 @@ interface RepResult {
   photoUrl: string;
 }
 
+interface DistrictSelection {
+  geoid: string;
+  stateAbbr: string;
+  district: number;
+  label: string;
+}
+
 export default function PickRepScreen() {
   const router = useRouter();
   const {
@@ -144,6 +152,8 @@ export default function PickRepScreen() {
   const [multipleReps, setMultipleReps] = useState<RepResult[]>([]);
   const [selectedRepId, setSelectedRepId] = useState<string | null>(null);
   const [showAllReps, setShowAllReps] = useState(false);
+  const [districtSelection, setDistrictSelection] =
+    useState<DistrictSelection | null>(null);
   const { width: screenWidth } = useWindowDimensions();
 
   const stateAbbrForLookup = priorityState
@@ -154,6 +164,92 @@ export default function PickRepScreen() {
     if (!name.includes(",")) return name;
     const [last, first] = name.split(",").map((s) => s.trim());
     return `${first} ${last}`;
+  };
+
+  const matchDistrictToRep = async ({
+    geoid,
+    stateAbbr,
+    district,
+    label,
+  }: DistrictSelection) => {
+    setLoading(true);
+    setError(null);
+    setRep(null);
+    setRepSelected(false);
+    setSelectedRepId(null);
+    setMultipleReps([]);
+    setShowAllReps(false);
+    setDistrictSelection({
+      geoid,
+      stateAbbr,
+      district,
+      label,
+    });
+
+    try {
+      const officialsData = await officialsService.getAll();
+      const officials = officialsData.officials as any[];
+
+      const match = officials.find((o) => {
+        const termInfo = o.terms?.item?.[o.terms.item.length - 1];
+        const isHouse =
+          termInfo?.chamber === "House of Representatives" ||
+          o.chamber === "House of Representatives";
+        const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
+        const officialDistrict = parseInt(
+          termInfo?.district ?? o.district ?? "0",
+          10,
+        );
+        return (
+          isHouse &&
+          officialStateAbbr === stateAbbr &&
+          officialDistrict === district
+        );
+      });
+
+      if (!match) {
+        setError("Found the district, but couldn't match it to our database.");
+        return;
+      }
+
+      const districtSuffix = match.district
+        ? `, District ${match.district}`
+        : "";
+      const stateName = ABBR_TO_STATE[stateAbbr] ?? stateAbbr;
+      const repResult: RepResult = {
+        bioguideId: match.bioguideId,
+        name: formatName(match.name),
+        party:
+          match.partyName ??
+          match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
+          "Unknown",
+        role: (() => {
+          const full = `Representative, ${stateName}${districtSuffix}`;
+          const abbr = `Rep, ${stateName}${districtSuffix}`;
+          if (screenWidth < 390) return abbr;
+          return full.length > 39 ? abbr : full;
+        })(),
+        photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
+      };
+
+      setResolvedState(stateAbbr);
+      setStateMismatch(
+        Boolean(stateAbbrForLookup && stateAbbr !== stateAbbrForLookup),
+      );
+      setRep(repResult);
+      setFoundRepBioguideId(repResult.bioguideId);
+      setRepSelected(true);
+      setSelectedRepId(repResult.bioguideId);
+      setUserRepBioguideId(repResult.bioguideId);
+      if (!selectedOfficials.includes(repResult.bioguideId)) {
+        setSelectedOfficials([...selectedOfficials, repResult.bioguideId]);
+      }
+    } catch (lookupError) {
+      console.error("District tap lookup failed:", lookupError);
+      setError("Something went wrong. You can still try ZIP lookup.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const [resolvedState, setResolvedState] = useState<string | null>(null);
@@ -206,6 +302,7 @@ export default function PickRepScreen() {
     setLoading(true);
     setError(null);
     setRep(null);
+    setDistrictSelection(null);
     setMultipleReps([]);
     setShowAllReps(false);
 
@@ -352,6 +449,7 @@ export default function PickRepScreen() {
     setLoading(true);
     setError(null);
     setRep(null);
+    setDistrictSelection(null);
 
     try {
       const stateAbbr =
@@ -452,6 +550,14 @@ export default function PickRepScreen() {
         }}
         keyboardShouldPersistTaps="handled"
       >
+        {!SINGLE_REP_STATES.has(priorityState ?? "") &&
+          !TERRITORIES.has(priorityState ?? "") && (
+            <CongressionalDistrictMap
+              stateAbbr={stateAbbrForLookup}
+              onSelectDistrict={matchDistrictToRep}
+            />
+          )}
+
         {/* Only show zip input for normal multi-rep states */}
         {!SINGLE_REP_STATES.has(priorityState ?? "") &&
           !TERRITORIES.has(priorityState ?? "") && (
@@ -462,6 +568,7 @@ export default function PickRepScreen() {
                   setZip(t.replace(/[^0-9]/g, "").slice(0, 5));
                   setError(null);
                   setRep(null);
+                  setDistrictSelection(null);
                   setRepSelected(false);
                 }}
                 onSubmitEditing={lookupRep}
@@ -542,6 +649,22 @@ export default function PickRepScreen() {
           >
             <Text style={{ fontSize: 13, color: "#8B6914" }}>
               This zip code is from a different state than the one you selected.
+            </Text>
+          </View>
+        )}
+        {districtSelection && !error && (
+          <View
+            style={{
+              backgroundColor: "#EEF7FF",
+              borderRadius: 12,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: "#B7D7F5",
+            }}
+          >
+            <Text style={{ fontSize: 13, color: "#005EA8", lineHeight: 18 }}>
+              Selected {districtSelection.label}. The matching representative is
+              shown below.
             </Text>
           </View>
         )}
