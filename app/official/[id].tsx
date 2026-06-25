@@ -885,7 +885,13 @@ export default function OfficialDetail() {
           {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
           {(() => {
             const lastTerm = official.terms?.[official.terms.length - 1];
-            if (lastTerm?.chamber === "House of Representatives") {
+            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
+            const isHouse =
+              lastTerm?.chamber === "House of Representatives" ||
+              lastTerm?.chamber === "House" ||
+              TERRITORY_STATES.has(official.state) ||
+              lastTerm?.district != null;
+            if (isHouse) {
               const district = lastTerm?.district
                 ? ` - District ${lastTerm.district}`
                 : "";
@@ -1689,10 +1695,18 @@ export default function OfficialDetail() {
           type: "official",
           name: official.directOrderName,
           party: official.partyHistory?.[0]?.partyName?.charAt(0) || "",
-          role:
-            official.terms?.[0]?.chamber === "House of Representatives"
-              ? `Representative, ${official.state}${official.terms?.[0]?.district ? ` - District ${official.terms[0].district}` : ""}`
-              : `Senator, ${official.state}`,
+          role: (() => {
+            const t = official.terms?.[official.terms.length - 1];
+            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
+            const isHouse =
+              t?.chamber === "House of Representatives" ||
+              t?.chamber === "House" ||
+              TERRITORY_STATES.has(official.state) ||
+              t?.district != null;
+            return isHouse
+              ? `Representative, ${official.state}${t?.district ? ` - District ${t.district}` : ""}`
+              : `Senator, ${official.state}`;
+          })(),
           photoUrl: official.depiction?.imageUrl,
         }}
       />

@@ -125,6 +125,8 @@ const STATE_NAMES: { [key: string]: string } = {
   WY: "Wyoming",
 };
 
+const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
+
 const BILL_STAGES: Record<string, string[]> = {
   // Standard bills
   HR: [
@@ -924,7 +926,7 @@ export default function BillDetail() {
         name: c.name,
         party: c.party,
         role:
-          c.district != null
+          c.district != null || TERRITORY_STATES.has(c.state)
             ? c.district > 0
               ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
               : `Rep, ${STATE_NAMES[c.state] || c.state}`
@@ -2148,13 +2150,12 @@ export default function BillDetail() {
     const { width: screenWidth } = useWindowDimensions();
     const stateName = STATE_NAMES[sponsor.state] ?? sponsor.state;
     const role = (() => {
-      if (sponsor.district != null) {
+      if (sponsor.district != null || TERRITORY_STATES.has(sponsor.state)) {
         if (sponsor.district > 0) {
           const full = `Representative, ${stateName}, District ${sponsor.district}`;
           const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
           return screenWidth < 390 ? abbr : full;
         }
-        // district === 0: at-large delegate (DC, Guam, etc.) — no district number
         const full = `Representative, ${stateName}`;
         const abbr = `Rep, ${stateName}`;
         return screenWidth < 390 ? abbr : full;

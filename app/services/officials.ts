@@ -5,7 +5,8 @@ interface Official {
   bioguideId: string;
   name: string;
   state: string;
-  district?: string;
+  district?: number | null;
+  chamber?: string;
   partyName: string;
   updateDate: string;
 }

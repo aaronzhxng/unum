@@ -160,7 +160,10 @@ export default function OfficialsScreen() {
               pendingItemForNewList.partyName?.charAt(0),
             role:
               pendingItemForNewList.role ??
-              (pendingItemForNewList.chamber === "House of Representatives"
+              (pendingItemForNewList.chamber === "House of Representatives" ||
+              pendingItemForNewList.chamber === "House" ||
+              TERRITORY_STATES.has(pendingItemForNewList.state) ||
+              pendingItemForNewList.district != null
                 ? `Representative, ${pendingItemForNewList.state}${pendingItemForNewList.district ? `, District ${pendingItemForNewList.district}` : ""}`
                 : `Senator, ${pendingItemForNewList.state}`),
             date: pendingItemForNewList.date,
@@ -483,9 +486,13 @@ export default function OfficialsScreen() {
             type: "official" as const,
             name: official.name,
             party: official.partyName?.charAt(0) || "",
-            role: official.district
-              ? `Representative, ${official.state}, District ${official.district}`
-              : `Senator, ${official.state}`,
+            role:
+              official.chamber === "House of Representatives" ||
+              official.chamber === "House" ||
+              TERRITORY_STATES.has(official.state) ||
+              official.district != null
+                ? `Representative, ${official.state}${official.district ? `, District ${official.district}` : ""}`
+                : `Senator, ${official.state}`,
             photoUrl: (official as any).depiction?.imageUrl || undefined,
           };
         })()}
@@ -827,6 +834,9 @@ const STATE_ABBR: Record<string, string> = {
   Wyoming: "WY",
 };
 
+// US territories have delegates/resident commissioners (House members), never senators
+const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
+
 function formatRole(
   chamber: string,
   state: string,
@@ -842,6 +852,7 @@ function formatRole(
   const isHouse =
     chamber === "House of Representatives" ||
     chamber === "House" ||
+    TERRITORY_STATES.has(state) ||
     (!chamber?.toLowerCase().includes("senate") && district != null);
 
   if (isHouse) {

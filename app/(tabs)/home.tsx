@@ -320,12 +320,16 @@ export default function HomeScreen() {
 
       setCreatedListName(trimmedName);
       setLists(allLists.map((l) => ({ id: l.id, name: l.name })));
-      setShowNewListProgressModal(true);
       setNewListName("");
       setShowNewListModal(false);
       setPendingItemForNewList(null);
       setPendingEditAction(null);
-      setTimeout(() => showToast(`Added to ${trimmedName}`), 1000);
+      if (itemsForNewList.length > 0) {
+        setShowNewListProgressModal(true);
+        setTimeout(() => showToast(`Added to ${trimmedName}`), 1000);
+      } else {
+        showToast(`Created ${trimmedName}`);
+      }
     }
   };
 
