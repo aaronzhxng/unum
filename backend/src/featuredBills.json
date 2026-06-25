@@ -1,14 +1,10 @@
 {
-  "weekOf": "2026-06-08",
-  "weekEnd": "2026-06-14",
+  "weekOf": "2026-06-22",
+  "weekEnd": "2026-06-28",
   "bills": [
     {
-      "billId": "hr2913",
-      "note": "This bill establishes assistance via a reconstruction trust fund, reviving the President’s authority to lend weapons to Ukraine or Eastern European countries affected by the war through FY2028."
-    },
-    {
-      "billId": "hconres86",
-      "note": "This resolution would require the President to withdraw U.S. forces from hostilities against Iran unless Congress formally declares war or authorizes military force, though it is largely symbolic and cannot be vetoed. It is now headed to the Senate."
+      "billId": "hr6644",
+      "note": "This bill would overhaul federal housing programs to boost the housing supply and put limits on large investors buying single-family homes."
     }
   ]
 }

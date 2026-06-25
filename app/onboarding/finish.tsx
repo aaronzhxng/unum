@@ -260,11 +260,11 @@ export default function FinishScreen() {
           }
         }
 
-        // 3. Sync preferences to backend
-        await pushToken.register();
-
-        // 4. NOW sync — the token is in local DB so this will include it
-        await syncPreferencesToBackend();
+        // 3 & 4. Register token and sync — fire-and-forget so a network hang
+        //        never blocks the 4-second timer below.
+        pushToken.register()
+          .then(() => syncPreferencesToBackend())
+          .catch(() => {});
         // 4. Build list items from onboarding selections.
         //    Bills come from SUGGESTED_BILLS directly — no SQLite lookup needed
         //    since seed.db is already in place from initializeDatabase().

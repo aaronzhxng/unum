@@ -46,6 +46,26 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
       P000603: "Rand Paul",
     };
 
+    const getNameFromOfficialsCache = (bioguideId: string): string | null => {
+      try {
+        const cacheRow = db.getFirstSync<{ data: string }>(
+          `SELECT data FROM officials_list_cache WHERE id = 1`,
+        );
+        if (!cacheRow) return null;
+        const parsed = JSON.parse(cacheRow.data);
+        const found = (parsed?.officials ?? []).find(
+          (o: any) => o.bioguideId === bioguideId,
+        );
+        if (!found?.name) return null;
+        const n: string = found.name;
+        return n.includes(",")
+          ? n.split(",").reverse().map((s: string) => s.trim()).join(" ")
+          : n;
+      } catch {
+        return null;
+      }
+    };
+
     const followedOfficials = allEnabledOfficials.map((id) => {
       const bioguideId = id.replace(/^official_/, "");
       const row = db.getFirstSync<{ name: string }>(
@@ -70,7 +90,11 @@ export const syncPreferencesToBackend = async (): Promise<void> => {
         : null;
 
       const name =
-        formattedName ?? storedNotifName ?? SUGGESTED_OFFICIAL_NAMES[bioguideId] ?? bioguideId;
+        formattedName ??
+        storedNotifName ??
+        SUGGESTED_OFFICIAL_NAMES[bioguideId] ??
+        getNameFromOfficialsCache(bioguideId) ??
+        bioguideId;
 
       return {
         bioguideId,

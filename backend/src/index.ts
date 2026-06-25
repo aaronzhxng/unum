@@ -26,10 +26,16 @@ for (const line of csvLines.slice(1)) {
 
 dotenv.config();
 
-// ─── Congress.gov response cache ─────────────────────────────────────────────
+// Default 20s timeout on all Congress.gov API calls — prevents infinite hangs
+// when their servers are slow or rate-limiting. Per-call timeouts override this.
+axios.defaults.timeout = 20000;
+
 // ─── Congress.gov response cache (SQLite-backed, survives deploys) ────────────
 const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes — for search/bill detail endpoints
-const MEMBER_LEGISLATION_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — sponsored/cosponsored lists; refreshed by cron
+const MEMBER_LEGISLATION_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — sponsored/cosponsored lists
+const VOTE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — vote records are permanent
+const COSPONSOR_CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours — cosponsors rarely change
+const OFFICIAL_DETAIL_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — official details are static
 const memoryCache = new Map<string, { data: any; timestamp: number }>();
 
 function getCached(key: string, ttl: number = CONGRESS_CACHE_TTL): any | null {
@@ -87,11 +93,12 @@ function setCache(key: string, data: any): void {
   }
 }
 
-// Clean up entries older than 48h — covers both short- and long-TTL cache keys
+// Clean up entries older than 7 days — keeps officials (24h TTL) and member
+// legislation (24h TTL) warm across restarts without unbounded growth
 try {
   const deleted = db
     .prepare(`DELETE FROM congress_cache WHERE cached_at < ?`)
-    .run(Date.now() - 48 * 60 * 60 * 1000);
+    .run(Date.now() - 7 * 24 * 60 * 60 * 1000);
   if (deleted.changes > 0) {
     console.log(`Cleared ${deleted.changes} expired cache entries`);
   }
@@ -326,6 +333,10 @@ app.get("/api/bills/policy-areas", (req, res) => {
 });
 
 app.get("/api/bills/featured", async (req, res) => {
+  const cacheKey = `featured:${FEATURED_BILLS.weekOf}`;
+  const cached = getCached(cacheKey, 60 * 60 * 1000); // 1 hour
+  if (cached) return res.json(cached);
+
   try {
     const results = await Promise.allSettled(
       FEATURED_BILLS.bills.map(async (entry) => {
@@ -357,11 +368,13 @@ app.get("/api/bills/featured", async (req, res) => {
     const bills = results
       .filter((r) => r.status === "fulfilled" && r.value !== null)
       .map((r) => (r as PromiseFulfilledResult<any>).value);
-    res.json({
+    const responseData = {
       bills,
       weekOf: FEATURED_BILLS.weekOf,
       weekEnd: FEATURED_BILLS.weekEnd,
-    });
+    };
+    if (bills.length > 0) setCache(cacheKey, responseData);
+    res.json(responseData);
   } catch (error) {
     console.error("Error fetching featured bills:", error);
     res.status(500).json({ error: "Failed to fetch featured bills" });
@@ -600,27 +613,37 @@ app.get("/api/bills/:billId/votes", async (req, res) => {
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
     const cacheKey = `votes-${congress}-${billId}`;
-    const cached = getCached(cacheKey);
+    const cached = getCached(cacheKey, VOTE_CACHE_TTL);
     if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
 
-    let allActions: any[] = [];
-    let offset = 0;
-    const limit = 250;
-    let hasMore = true;
+    // Reuse already-fetched actions if the actions tab was visited first
+    const actionsCacheKey = `actions-${congress}-${billId}`;
+    const cachedActions = getCached(actionsCacheKey);
 
-    while (hasMore) {
-      const response = await axios.get(
-        `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
-        {
-          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { offset, limit, format: "json" },
-        },
-      );
-      allActions = allActions.concat(response.data.actions || []);
-      hasMore = response.data.pagination?.next != null;
-      offset += limit;
+    let allActions: any[] = [];
+    if (cachedActions?.actions) {
+      allActions = cachedActions.actions;
+    } else {
+      let offset = 0;
+      const limit = 250;
+      let hasMore = true;
+
+      while (hasMore) {
+        const response = await axios.get(
+          `https://api.congress.gov/v3/bill/${congress}/${billType}/${billNumber}/actions`,
+          {
+            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+            params: { offset, limit, format: "json" },
+          },
+        );
+        allActions = allActions.concat(response.data.actions || []);
+        hasMore = response.data.pagination?.next != null;
+        offset += limit;
+      }
+      // Populate the actions cache so the actions tab is instant next visit
+      setCache(actionsCacheKey, { actions: allActions, pagination: { count: allActions.length } });
     }
 
     const recordedVotes: any[] = [];
@@ -895,7 +918,7 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
     if (!match)
       return res.status(400).json({ error: "Invalid bill ID format" });
     const cacheKey = `cosponsors-${congress}-${billId}`;
-    const cached = getCached(cacheKey);
+    const cached = getCached(cacheKey, COSPONSOR_CACHE_TTL);
     if (cached) return res.json(cached);
     const billType = match[1].toLowerCase();
     const billNumber = match[2];
@@ -939,6 +962,11 @@ app.get("/api/bills/:billId/cosponsors", async (req, res) => {
 
 // Get officials
 app.get("/api/officials", async (req, res) => {
+  const cacheKey = "officials-all";
+  const OFFICIALS_TTL = 24 * 60 * 60 * 1000; // 24 hours — roster changes rarely
+  const cached = getCached(cacheKey, OFFICIALS_TTL);
+  if (cached) return res.json(cached);
+
   try {
     let allMembers: any[] = [];
     let offset = 0;
@@ -961,7 +989,9 @@ app.get("/api/officials", async (req, res) => {
       offset += limit;
     }
 
-    res.json({ officials: allMembers, count: allMembers.length });
+    const responseData = { officials: allMembers, count: allMembers.length };
+    setCache(cacheKey, responseData);
+    res.json(responseData);
   } catch (error) {
     console.error("Error fetching officials:", error);
     res.status(500).json({ error: "Failed to fetch officials" });
@@ -972,7 +1002,7 @@ app.get("/api/officials", async (req, res) => {
 app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
     const cacheKey = `official-${req.params.bioguideId}`;
-    const cached = getCached(cacheKey);
+    const cached = getCached(cacheKey, OFFICIAL_DETAIL_CACHE_TTL);
     if (cached) return res.json(cached);
     const { bioguideId } = req.params;
     const response = await axios.get(
@@ -1451,6 +1481,27 @@ app.post("/api/debug/token", requireAdminToken, (req, res) => {
   console.log("DEBUG TOKEN RECEIVED:", JSON.stringify(req.body));
   res.json({ success: true });
 });
+
+// ─── Public redirect routes ───────────────────────────────────────────────────
+
+const IOS_STORE_URL =
+  "https://apps.apple.com/us/app/unum-congress-tracker/id6763620957";
+// Replace with Play Store URL once Android goes live:
+const ANDROID_STORE_URL = IOS_STORE_URL;
+const JOIN_FORM_URL =
+  "https://docs.google.com/forms/d/1URY5cukTP2hzervCDSJBsUsnUyflMjEnHY-3YlPV1KE/viewform";
+
+app.get("/join", (_req, res) => {
+  res.redirect(302, JOIN_FORM_URL);
+});
+
+app.get("/download", (req, res) => {
+  const ua = req.headers["user-agent"] ?? "";
+  const isAndroid = /android/i.test(ua);
+  res.redirect(302, isAndroid ? ANDROID_STORE_URL : IOS_STORE_URL);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
   startCronScheduler();

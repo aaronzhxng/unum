@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -301,6 +302,18 @@ function TabsLayoutInner() {
   // This stops the native PagerView from drifting at all, rather than
   // trying to correct it after the fact.
   const [pagerScrollEnabled, setPagerScrollEnabled] = useState(true);
+
+  useEffect(() => {
+    const SYNC_KEY = "push_token_last_synced";
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    AsyncStorage.getItem(SYNC_KEY).then((raw) => {
+      const last = raw ? parseInt(raw, 10) : 0;
+      if (Date.now() - last > ONE_DAY) {
+        syncPreferencesToBackend().catch(() => {});
+        AsyncStorage.setItem(SYNC_KEY, String(Date.now()));
+      }
+    });
+  }, []);
 
   const navigateToTab = (index: number) => {
     pagerRef.current?.setPage(index);

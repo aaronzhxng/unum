@@ -592,12 +592,33 @@ export default function PickRepScreen() {
                   elevation: 2,
                 }}
               />
-              {loading && (
+              {loading ? (
                 <View
                   style={{ justifyContent: "center", paddingHorizontal: 8 }}
                 >
                   <ActivityIndicator color="#008CFF" />
                 </View>
+              ) : (
+                <Pressable
+                  onPress={lookupRep}
+                  style={({ pressed }) => ({
+                    backgroundColor: zip.length === 5 ? "#008CFF" : "#d0d0d0",
+                    borderRadius: 16,
+                    paddingHorizontal: 18,
+                    justifyContent: "center",
+                    opacity: pressed ? 0.75 : 1,
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "600",
+                      color: "#fff",
+                    }}
+                  >
+                    Find
+                  </Text>
+                </Pressable>
               )}
             </View>
           )}
@@ -903,7 +924,7 @@ export default function PickRepScreen() {
                 ))}
           </View>
         )}
-        {!rep && !loading && !error && (
+        {!rep && !loading && (
           <Text
             style={{
               fontSize: 13,
