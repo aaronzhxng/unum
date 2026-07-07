@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronDown, ChevronLeft, ChevronUp } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { styles as componentStyles } from "./global_styles/styles";
 import { getDb } from "./utils/database";
 
@@ -26,6 +26,39 @@ const CREDITS_SECTIONS = [
   },
 ];
 
+const SOCIAL_LINKS = [
+  {
+    label: "Instagram",
+    url: "https://www.instagram.com/unuminitiative/",
+    icon: require("../assets/social_icons/instagram.png"),
+  },
+  {
+    label: "X",
+    url: "https://x.com/unuminitiative",
+    icon: require("../assets/social_icons/x.png"),
+  },
+  {
+    label: "Threads",
+    url: "https://www.threads.com/@unuminitiative",
+    icon: require("../assets/social_icons/threads.png"),
+  },
+  {
+    label: "Bluesky",
+    url: "https://bsky.app/profile/unuminitiative.bsky.social",
+    icon: require("../assets/social_icons/bluesky.png"),
+  },
+  {
+    label: "LinkedIn",
+    url: "https://www.linkedin.com/company/unuminitiative",
+    icon: require("../assets/social_icons/linkedin.png"),
+  },
+  {
+    label: "Website",
+    url: "https://www.unuminitiative.com/",
+    icon: require("../assets/social_icons/website.png"),
+  },
+];
+
 const TIPS_SECTIONS = [
   {
     title: "How to Use Unum",
@@ -35,6 +68,8 @@ const TIPS_SECTIONS = [
 
 export default function TipsScreen() {
   const { width: screenWidth } = useWindowDimensions();
+  // 32px outer padding + 16px for two 8px gaps between 3 columns
+  const socialItemSize = Math.floor((screenWidth - 48) / 3);
   const router = useRouter();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [suggestedBillsDismissed, setSuggestedBillsDismissed] = useState(false);
@@ -87,6 +122,29 @@ export default function TipsScreen() {
         contentContainerStyle={localStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Follow Us ── */}
+        <Text style={[localStyles.sectionLabel, { marginTop: 4 }]}>FOLLOW US</Text>
+        <View style={localStyles.socialGrid}>
+          {SOCIAL_LINKS.map((item, index) => (
+            <Pressable
+              key={index}
+              onPress={() => Linking.openURL(item.url)}
+              style={({ pressed }) => [
+                localStyles.socialCard,
+                { width: socialItemSize, height: socialItemSize },
+                pressed && { transform: [{ scale: 0.93 }] },
+              ]}
+            >
+              <Image
+                source={item.icon}
+                style={localStyles.socialIcon}
+                resizeMode="contain"
+              />
+              <Text style={localStyles.socialLabel}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+
         {/* Relaunch Tour Card — styled like officialCard */}
         <Pressable
           style={({ pressed }) => [
@@ -321,5 +379,32 @@ const localStyles = StyleSheet.create({
     fontSize: 14,
     color: "#535353",
     lineHeight: 22,
+  },
+  socialGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 10,
+  },
+  socialCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    shadowColor: "#000000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  socialIcon: {
+    width: 38,
+    height: 38,
+  },
+  socialLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#535353",
   },
 });

@@ -1403,6 +1403,891 @@ export const educationTopics: EducationTopic[] = [
   },
 
   // ════════════════════════════════════════════════════════════════════════════
+  // THE U.S. JUDICIAL SYSTEM
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    id: "us-judicial-system",
+    title: "The U.S. Judicial System",
+    subtitle: "Federal courts, judges, the Supreme Court, and the rule of law.",
+    icon: require("../../assets/education_icons/judiciary.png"),
+    subtopics: [
+      // ── Page 1: What are the basic principles of U.S. law? ──────────────────
+      {
+        id: "what-are-basic-principles-of-us-law",
+        icon: require("../../assets/education_icons/judiciaryicon1.png"),
+        title: "What are the basic principles of U.S. law?",
+        summary: "The role of the Constitution and common law in American justice.",
+        body: [
+          {
+            type: "text",
+            content:
+              "As a country colonized by Great Britain, the U.S. legal system is based on the English traditions of fairness and equality.",
+          },
+          {
+            type: "text",
+            heading: "The Constitution",
+            content:
+              "This shows up in two ways. First, the Constitution and its amendments set out certain legal rights all Americans have, including the right to know what someone is accusing you of having done and the right to receive a trial by a fair jury. No law, treaty, regulation, or act by any part of government can go against these founding documents.",
+          },
+          {
+            type: "text",
+            heading: "Common law",
+            content:
+              "Second, the U.S. operates on English common law, which believes in the existence of natural rights. This means that instead of defining big legal ideas on paper, they should come from precedents (also called stare decisis): that is, the conclusions reached from previous cases.",
+          },
+          {
+            type: "text",
+            content:
+              "For example, a judge deciding whether somebody today did not fulfill his part of a contract will look at how judges in the past dealt with similar situations. The current judge then trusts that these historic decisions were decided based on the principles of natural rights, like individual freedom and personal responsibility. But if the judge checks and finds they were not, she can say so and establish a new, fairer precedent by overruling, or overturning, the previous decision.",
+          },
+          {
+            type: "callout",
+            content:
+              "In this way, common law creates a legal culture that is both flexible and suspicious of bad rulers.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/judiciary1.png"),
+            caption:
+              "Judges consult a wide variety of English and American legal and even philosophical texts in order to determine what to do in unclear situations. For example, the Magna Carta, a document against the English king from 1215, is used to say that government power should be limited. Other important documents include the 1689 English Bill of Rights and Sir William Blackstone's Commentaries on the Laws of England (1765).",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/judiciary2.png"),
+            caption:
+              "All public federal laws are included in the United States Code, and all regulations in the Code of Federal Regulations (above). Both are huge, multi-volume books, but there are regularly updated versions online, too.",
+          },
+          {
+            type: "text",
+            content:
+              "That said, the majority of criminal cases are less uncertain: usually, somebody directly broke the law of an Act of Congress (called a statute) or an administrative law introduced by an executive agency (called a regulation). It's just that, if someone argues that the law or act itself goes against natural or constitutional rights, he or she might succeed in getting it overturned at the state or federal level.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "Search all laws passed by Congress",
+                url: "https://www.congress.gov/",
+              },
+              {
+                label: "Search the U.S. Code",
+                url: "https://uscode.house.gov/",
+              },
+              {
+                label: "Search the Code of Federal Regulations",
+                url: "https://www.ecfr.gov/",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 2: What do U.S. courts look like? ──────────────────────────────
+      {
+        id: "what-do-us-courts-look-like",
+        icon: require("../../assets/education_icons/judiciaryicon2.png"),
+        title: "What do U.S. courts look like?",
+        summary: "From local trials to federal appeals, how American courts work.",
+        body: [
+          {
+            type: "text",
+            content:
+              "The U.S. has courts at the local, state, and federal level. Almost all cases go to the state or local level, because the federalist system of government means that most matters are not handled by the government in Washington.",
+          },
+          {
+            type: "text",
+            heading: "State courts",
+            content:
+              "Matters handled at the state level include divorce, inheritance, property, assault, theft, and—usually—murder. Depending on the area, county or city (municipal) courts may deal with smaller offenses still, like speeding or drunk driving.",
+          },
+          {
+            type: "text",
+            heading: "Federal courts",
+            content:
+              "Federal courts, meanwhile, deal with matters like bankruptcy, immigration, smuggling, violations of federal laws, and cases where a higher level of government is needed, like if one state sues another, or a U.S. citizen is sued by someone of another country.",
+          },
+          {
+            type: "text",
+            heading: "Parties",
+            content:
+              "Proceedings emerge when one or more parties accuse others of wrongdoing. The accuser, either an individual, individuals, or the government, is called the plaintiff or petitioner. Their lawyer is called a prosecutor. The person, persons, or institutions being accused is called a defendant or respondent. Their lawyer is called a defense attorney.",
+          },
+          {
+            type: "text",
+            heading: "Pre-trial",
+            content:
+              "First, the two sides get together and see if a deal can be made between them. For example, if the sides are suing over a disagreement, they might agree to get a government-appointed mediator who helps them solve their problem out of court. Alternatively, if a defendant is accused of breaking the law, he or she might agree to plead guilty and accept a lesser punishment. This is called a plea bargain.",
+          },
+          {
+            type: "text",
+            heading: "Trial",
+            content:
+              "If they cannot come to an agreement, then a trial begins. The two sides' attorneys argue back and forth and call up witnesses to testify as to what happened and how this proves or does not prove that the charges are just. At the end, either a jury of twelve randomly selected citizens or a judge (in very minor offenses) will rule for one side or another.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/judiciary3.png"),
+            caption:
+              "Courts have very strict rules against photographs and videos, so courtroom drawings have become popular for big cases. In this case from 1986, members of an international drug-smuggling group are on trial in a federal court. Unlike in other countries, in the U.S., attorneys have no special dress and simply wear professional clothes, while judges have just a special black robe.",
+          },
+          {
+            type: "text",
+            heading: "Appeals",
+            content:
+              "If one side disagrees with the results of a trial, they can try to appeal it to a higher-level state or federal court, theoretically up to the state or federal Supreme Court or equivalent. If it gets up there, then the issue is almost always no longer that the trial proceeded incorrectly, but that the law itself violated the state or national constitution, and should be repealed.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "Learn more about the federal court system",
+                url: "https://www.uscourts.gov/about-federal-courts/court-role-and-structure",
+              },
+              {
+                label: "Search how each state's court system works",
+                url: "https://www.ncsc.org/resources-courts/understanding-state-court-jurisdictions",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 3: Who are judges in the U.S.? ─────────────────────────────────
+      {
+        id: "who-are-judges-in-the-us",
+        icon: require("../../assets/education_icons/judiciaryicon3.png"),
+        title: "Who are judges in the U.S.?",
+        summary: "How federal and state judges are chosen and how long they serve.",
+        body: [
+          {
+            type: "text",
+            heading: "Federal judges",
+            content:
+              "All U.S. federal judges are appointed by the President and confirmed by the Senate. Most serve for life or until they resign.",
+          },
+          {
+            type: "text",
+            heading: "State judges",
+            content:
+              "Meanwhile, state judges are chosen in a variety of different ways. Some are elected, others chosen by a government commission, and still others simply by the governor. Some states give judges term limits, and most require that they retire at age 70 or 75.",
+          },
+          {
+            type: "text",
+            content:
+              "Because there are so many judges even at the federal level, very few nominations ever make the news. When a low-level vacancy opens up, the president will be advised by that state's members of Congress to choose some long-serving, qualified lawyer to make a judge. That judge will go before the Senate's Judiciary Committee, respond to some questions, and eventually be confirmed.",
+          },
+          {
+            type: "text",
+            content:
+              "However, judgeships can be controversial, especially for the justices in the U.S. Supreme Court.",
+          },
+        ],
+      },
+
+      // ── Page 4: What is the Supreme Court? ──────────────────────────────────
+      {
+        id: "what-is-the-supreme-court",
+        icon: require("../../assets/education_icons/judiciaryicon4.png"),
+        title: "What is the Supreme Court?",
+        summary: "The highest court in the land and its landmark rulings.",
+        body: [
+          {
+            type: "text",
+            content:
+              "The national Supreme Court is the very highest court in the U.S., often called the \"court of last resort.\" This is because, apart from a few very technical matters that the Constitution requires it to decide, the Supreme Court only considers (\"grants certiorari to\") appeals in cases where the question concerns what the law even means, or whether it goes against the Constitution. This includes even decisions by state supreme courts.",
+          },
+          {
+            type: "callout",
+            content:
+              "So, the rulings the Supreme Court issues can dramatically change how a law is understood or interpreted, or simply invalidate the law and all similar laws altogether, federal and state.",
+          },
+          {
+            type: "text",
+            content:
+              "The Supreme Court is, therefore, very powerful, and is considered one of the three branches of government all by itself. Although in the past the Supreme Court was mostly unpolitical and even obscure, in the last century it has dealt with many controversial issues that split social liberals and social conservatives. Some of these cases include:",
+          },
+          {
+            type: "list",
+            items: [
+              "Brown v. Board of Education (1954), that found state laws allowing schools to be segregated by race violates the Fourteenth Amendment.",
+              "Roe v. Wade (1973), that found state laws banning abortion up to an extent violated the Fourteenth Amendment.",
+              "Obergefell v. Hodges (2015), that found state laws banning gay marriage violated the Fourteenth Amendment.",
+              "Dobbs v. Jackson Women's Health Organization (2022), that reversed Roe v. Wade.",
+            ],
+          },
+          {
+            type: "text",
+            content:
+              "As the example of Roe v. Wade shows, many Supreme Court rulings have also ended up being overturned in part or in full.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "See the website for the Supreme Court",
+                url: "https://www.supremecourt.gov/",
+              },
+              {
+                label:
+                  "See some more significant, \"landmark\" Supreme Court cases that significantly changed how people understood the Constitution",
+                url: "https://www.uscourts.gov/about-federal-courts/educational-resources/supreme-court-landmarks",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 5: Who are the justices on the Supreme Court? ──────────────────
+      {
+        id: "who-are-the-justices-on-the-supreme-court",
+        icon: require("../../assets/education_icons/judiciaryicon5.png"),
+        title: "Who are the justices on the Supreme Court?",
+        summary: "How Supreme Court justices are appointed and who serves today.",
+        body: [
+          {
+            type: "text",
+            content:
+              "There are nine justices on the Supreme Court: one chief justice, who leads discussions, and eight associate justices. All their votes count the same and a majority must vote to issue a ruling that goes against what a lower court found. Then, each justice chooses if they want to write an opinion, explaining why they voted as they did.",
+          },
+          {
+            type: "text",
+            heading: "Appointment",
+            content:
+              "The nine justices are appointed by the president and must be approved by the Senate. They serve until they die or voluntarily retire, and there is no election or term limit.",
+          },
+          {
+            type: "text",
+            heading: "Diversity",
+            content:
+              "Usually, presidents try to balance the number of Supreme Court justices from each region of the country. Since 1967, there has also always been at least one African-American justice (there are now two), and since 1981, at least one woman justice (there are now four).",
+          },
+          {
+            type: "text",
+            heading: "Qualifications",
+            content:
+              "Presidents also consider qualifications. Usually, Supreme Court justices have a long history as lawyers and judges, although they do not have to. And, they consider personal character.",
+          },
+          {
+            type: "callout",
+            content:
+              "As discussed in the last section, the Supreme Court has become more political in the last century as they take on more social issues. These days, there are even two major ways of reading the Constitution, one of which is more popular among liberals, and the other among conservatives.",
+          },
+          {
+            type: "text",
+            content:
+              "Therefore, the media and Congress have increased how much attention they give to Supreme Court nominees and their prior record. After all, because justices serve for so long, they can reflect a political reality that has long gone from the other parts of government. Right now, the majority of Supreme Court justices are considered conservative. Even if the Democrats win the presidency and Congress in a while, this Supreme Court majority will probably last for at least twenty more years.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/judiciary4.png"),
+            caption:
+              "Clarence Thomas, dressed in a judge's robe. After Mr. Thomas was nominated to be an associate justice in 1990, Congress questioned both his character and strong conservatism. In particular, one woman, Anita Hill, alleged that he had sexually harassed her. Since he was approved by a very narrow margin over three decades ago, Mr. Thomas has been considered the Court's most conservative justice.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label:
+                  "See current and past Supreme Court justices, their biographies, and something about their beliefs",
+                url: "https://www.oyez.org/justices",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // THE EXECUTIVE BRANCH
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    id: "executive-branch",
+    title: "The Executive Branch",
+    subtitle: "The President, Vice President, Cabinet, and how the executive works.",
+    icon: require("../../assets/education_icons/executive.png"),
+    subtopics: [
+      // ── Page 1: What is the Executive Branch? ───────────────────────────────
+      {
+        id: "what-is-the-executive-branch",
+        icon: require("../../assets/education_icons/executiveicon1.png"),
+        title: "What is the Executive Branch?",
+        summary: "The branch that carries out laws, led by the President and the civil service.",
+        body: [
+          {
+            type: "text",
+            content:
+              "In the balance of powers of the federal government, the legislature (Congress) writes laws and the judiciary (Supreme Court) makes sure all laws follow the Constitution.",
+          },
+          {
+            type: "text",
+            content:
+              "But it is the executive that works to make sure these laws are actually carried out, whether a new regulation that needs to be enforced or a new tax that has to be collected.",
+          },
+          {
+            type: "callout",
+            content:
+              "Therefore, the executive includes a large bureaucracy, also called the civil service, and the entire national military.",
+          },
+          {
+            type: "text",
+            content:
+              "The head of the executive branch is the President. He or she is head of the civil service and commander-in-chief of the military. The President is also head of state, meaning he or she represents the U.S. in foreign countries.",
+          },
+          {
+            type: "text",
+            content:
+              "The jobs of the civil service and military are largely organized into departments. Although individual civil servants and soldiers are not meant to be political, and serve whomever is President, every department is led by a secretary that the President appoints. The most important of these secretaries make up the President's Cabinet.",
+          },
+          {
+            type: "text",
+            content:
+              "The President is the most important single person in the U.S. government and knowing how he or she thinks and even behaves is necessary to understand and predict the nation's future. The President is also very famous, and the election every four years to elect or re-elect the President is usually the one that most people care about.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "The official website of the Executive Branch",
+                url: "https://www.whitehouse.gov/",
+              },
+              {
+                label: "The official X (formerly Twitter) account of President Trump",
+                url: "https://x.com/POTUS",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 2: Who can become U.S. President? ──────────────────────────────
+      {
+        id: "who-can-become-us-president",
+        icon: require("../../assets/education_icons/executiveicon2.png"),
+        title: "Who can become U.S. President?",
+        summary: "The Constitutional requirements and typical profile of U.S. presidents.",
+        body: [
+          {
+            type: "text",
+            content: "The Constitution requires that the President must:",
+          },
+          {
+            type: "list",
+            items: [
+              "Be at least 35 years old,",
+              "Have lived in the U.S. for at least 14 years, and",
+              "Be a \"natural-born citizen\" (either born in the U.S., or born outside the U.S. to at least one citizen parent).",
+            ],
+          },
+          {
+            type: "text",
+            content:
+              "The same basic requirements apply to the Vice President, except that while no president can serve more than two full terms of office, a vice president has no term limit.",
+          },
+          {
+            type: "text",
+            content:
+              "In practice, presidents are usually quite accomplished politicians, businessmen, and/or lawyers who were already well known nationally before being elected.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive1.png"),
+            caption:
+              "Two recent presidents had very different levels of experience. Donald Trump (left, 2017–2021; 2025–present) never worked for the government before he became president. Meanwhile, Joe Biden (2021–2025) was senator for 36 years and vice president for 8 years.",
+          },
+          {
+            type: "text",
+            content:
+              "Of the five men who have been president since the start of the 21st century, two were state governors (Bill Clinton and George W. Bush) and two were senators (Barack Obama and Joe Biden). Before he took office for the first time in 2017, the current President, Donald Trump, had never worked for any government before, but was a well-known billionaire businessman and television show host.",
+          },
+          {
+            type: "text",
+            content:
+              "Finally, every president for the past 200 years has belonged to a political party. In fact, because the President is so famous, he or she usually ends up speaking on behalf of the party, influencing its official positions and platform.",
+          },
+          {
+            type: "callout",
+            content:
+              "45 men have been U.S. president, although we say there have been 47 presidents, because two of them served more than once. So, Mr. Trump is both the 45th and 47th president.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive2.png"),
+            caption:
+              "Like congresspeople and vice presidents, the President gets an inauguration ceremony, where the Chief Justice asks him or her to swear an oath. The presidential inauguration, which takes place on the January 20th after the election, has many ceremonies, including an inaugural (first) speech and a ball, where the President and First Lady have a dance.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "Essays and reflections on all presidents, past and present",
+                url: "https://millercenter.org/president",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 3: How is the U.S. President elected? ──────────────────────────
+      {
+        id: "how-is-the-us-president-elected",
+        icon: require("../../assets/education_icons/executiveicon3.png"),
+        title: "How is the U.S. President elected?",
+        summary: "The Electoral College and how Americans choose their president.",
+        body: [
+          {
+            type: "text",
+            content:
+              "Every four years in November, in addition to electing every member of the House of Representatives and one-third of the Senate, people across the U.S. vote for a president and vice president.",
+          },
+          {
+            type: "text",
+            content:
+              "However, they do this in a unique way called the Electoral College. Essentially, even though a ballot paper lists the name of a presidential and vice-presidential candidate, voters are really only voting for obscure local party members called electors. But these electors promise to vote for the candidate on the voter's behalf, and whoever wins the most votes among these electors (or electoral votes) actually becomes President and Vice President.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive3.png"),
+            caption:
+              "For example, on the ballot given to voters in Vermont on November 5, 2024, only the names of the presidential and vice-presidential candidates were listed.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive4.png"),
+            caption:
+              "In the end, more Vermont voters wanted Democratic candidates Kamala Harris and Tim Walz to be president and vice president, respectively, than anybody else. So, they elected three electors: Stephen Amos, Timothy Jerman, and Mary Sullivan.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive5.png"),
+            caption:
+              "Then, when Mr. Amos, Mr. Jerman, and Ms. Sullivan met on December 17, 2024, they all voted for Kamala Harris and Tim Walz, as the voters instructed.",
+          },
+          {
+            type: "callout",
+            content:
+              "Although this process is indirect, it does not actually affect the results. When electors meet a month after the presidential election in November, they nearly always vote for whomever the voters in their state asked them to.",
+          },
+          {
+            type: "text",
+            content:
+              "If they rebel, however, and vote for somebody other than the person the voters wanted them to, then they are called \"faithless electors.\" In many states, faithless electors are illegal. The last time faithless electors affected an election in any significant way was in 1836.",
+          },
+        ],
+      },
+
+      // ── Page 4: How are electors chosen? ────────────────────────────────────
+      {
+        id: "how-are-electors-chosen",
+        icon: require("../../assets/education_icons/executiveicon4.png"),
+        title: "How are electors chosen?",
+        summary: "How electoral votes are distributed and why swing states matter.",
+        body: [
+          {
+            type: "text",
+            content:
+              "Each state is assigned a number of electors based on the number of seats it has in the House plus the number of senators it has (two). This means that each state has at least three electoral votes, although the exact number changes after every census, as that is when the House seat count changes, too.",
+          },
+          {
+            type: "text",
+            content:
+              "Additionally, even though Washington, D.C. cannot elect its own voting members to Congress, it gets three electoral votes. However, the U.S. territories still have no electoral votes.",
+          },
+          {
+            type: "text",
+            content:
+              "As you may remember, the U.S. purposely gives two senators to each state so that all states have an equal say. What this means is that voters in less-populated states generally have more of a say in determining who becomes President.",
+          },
+          {
+            type: "text",
+            content:
+              "Further, in all but two states—Nebraska and Maine—electors are given in a \"winner-take-all\" way. What this means is that the candidate who wins more votes than anyone else in the state gets all that state's electoral votes.",
+          },
+          {
+            type: "text",
+            content:
+              "One instance where this made a big difference was in 2000, when George W. Bush was running for President against Al Gore. The race was very close, and it all came down to Florida. There, Mr. Bush received 2,912,790 votes, but Mr. Gore won 2,912,253 votes. Considering votes for neither candidate, Mr. Bush only had the support of 48.847% of Floridians. However, because he had more than anyone else, all 25 of Florida's electoral votes went to him, and he became President.",
+          },
+          {
+            type: "callout",
+            content:
+              "For these two reasons, the persons that become President and Vice President might not have received the largest number of votes nationwide. This was the case in 1824, 1876, 1888, 2000, and 2016. Usually, this is because the losing candidate is very popular, but only in a few states. So, they win more electoral votes, but not more votes in total.",
+          },
+          {
+            type: "text",
+            content:
+              "Because it does not matter how many votes you get in one state, so long as it is more than anybody else, candidates usually spend lots of time in states where they are winning or losing by just a hair. These are called \"swing states.\" For example, in the 2016 election, 68 percent of campaign events took place in just 6 states.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive6.png"),
+            caption:
+              "In 2016, Donald Trump won 304 electoral votes and therefore the presidency. However, he won only 62,984,828 votes, or 46.09% of all votes. Meanwhile, Hillary Clinton won 65,853,514 votes, or 48.18% of all votes, but only 227 electoral votes. This is because Mr. Trump was popular in the swing states and in states with fewer people per electoral vote. 2016 was also a strange election because seven electors voted faithlessly.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "See how many electoral votes each state gets",
+                url: "https://www.archives.gov/electoral-college/allocation",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 5: What can the President do? ──────────────────────────────────
+      {
+        id: "what-can-the-president-do",
+        icon: require("../../assets/education_icons/executiveicon5.png"),
+        title: "What can the President do?",
+        summary: "The President's enumerated and implied powers under the Constitution.",
+        body: [
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive7.png"),
+            caption:
+              "President Ronald Reagan at work in 1988 in the Oval Office of the president's official home, the White House, located at 1600 Pennsylvania Ave., Washington, D.C. — one of the most famous addresses on Earth.",
+          },
+          {
+            type: "text",
+            content:
+              "The U.S. President is the most powerful single person in the country, and has both enumerated and implied powers.",
+          },
+          {
+            type: "text",
+            heading: "Enumerated powers",
+            content:
+              "The Constitution gives the President enumerated powers. These include the power to negotiate treaties, lead the military, veto bills, pardon criminals or grant them clemency, and work out how the vast Executive Branch should work in order to make sure the laws that Congress passes actually go into effect.",
+          },
+          {
+            type: "text",
+            content:
+              "For the last of these responsibilities, the President nominates a huge assortment of government officials, including judges, heads of the military, and a Cabinet of secretaries.",
+          },
+          {
+            type: "text",
+            heading: "Implied powers",
+            content:
+              "But the President also has many implied powers. These are things that presidents have, throughout the centuries, just gradually started doing.",
+          },
+          {
+            type: "text",
+            content:
+              "The next articles discuss how the President's enumerated and implied powers work in practice.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "See the President's public schedule",
+                url: "https://rollcall.com/factbase/trump/topic/calendar/",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 6: How does the President influence lawmaking? ─────────────────
+      {
+        id: "how-does-president-influence-lawmaking",
+        icon: require("../../assets/education_icons/executiveicon6.png"),
+        title: "How does the President influence lawmaking?",
+        summary: "Vetoes, party leadership, the State of the Union, and the budget.",
+        body: [
+          {
+            type: "text",
+            content:
+              "Under the balance of powers, Congress holds the power to make laws, and the Supreme Court rules if that law follows the Constitution.",
+          },
+          {
+            type: "text",
+            heading: "Veto",
+            content:
+              "The President has a few powers to influence this process. First, the President signs a bill to make it law. If he or she refuses, a larger number of congresspeople must approve the bill or it does not become law. The President can also summon Congress to an emergency session at any time, although no president has done this since 1948.",
+          },
+          {
+            type: "text",
+            content:
+              "Unlike countries that have prime ministers, the President does not have direct control over members of Congress and is not the formal leader of the party. However, the President is so well-known to voters that he or she will often speak on behalf of the party anyway.",
+          },
+          {
+            type: "callout",
+            content:
+              "The strong party discipline in the United States Congress means that for key bills, Congress almost always votes how the President wants. For example, a news report from 2025 showed that almost every Republican member of Congress voted the way President Trump wanted them to vote at least 93 percent of the time.",
+          },
+          {
+            type: "text",
+            heading: "State of the Union",
+            content:
+              "Each year, the President is responsible for telling Congress what he or she wants them to be focusing on. For over one hundred years, presidents have chosen to give televised speeches called a \"State of the Union\" to both chambers of Congress.",
+          },
+          {
+            type: "text",
+            heading: "Budget",
+            content:
+              "Finally, the Executive Branch takes the first step in outlining how much money should be taxed, spent, and borrowed. Congress therefore begins the budget process with proposals that reflect the president's priorities.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label:
+                  "Learn more about the State of the Union address and read some past examples",
+                url: "https://www.presidency.ucsb.edu/documents/presidential-documents-archive-guidebook/annual-messages-congress-the-state-the-union",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 7: What is the bureaucracy? ────────────────────────────────────
+      {
+        id: "what-is-the-bureaucracy",
+        icon: require("../../assets/education_icons/executiveicon7.png"),
+        title: "What is the bureaucracy?",
+        summary: "The two million civil servants who carry out federal laws day to day.",
+        body: [
+          {
+            type: "text",
+            content:
+              "A \"bureaucracy\" just means the part of government that is run by hired employees rather than politicians. Over two million bureaucrats, or civil servants, are employed by the federal government, from postal clerks to health inspectors to soldiers and sailors. They work to make sure the laws Congress writes actually show up in day-to-day life.",
+          },
+          {
+            type: "text",
+            content:
+              "As head of the civil service, the President nominates a huge assortment of government officials, including ambassadors, the secretaries of all the Cabinet departments, federal attorneys and judges (including the Supreme Court justices), the heads and generals of the military, and the head of the central bank (the Federal Reserve).",
+          },
+          {
+            type: "text",
+            content:
+              "These top officials have to be approved by the Senate. Usually, these go through without a problem, but sometimes, especially if the person the President wants to nominate is very politically extreme or has had personal scandals in the past, the Senate will vigorously question and sometimes reject the nominee. Additionally, Cabinet secretaries can be impeached and removed from office just like the President can.",
+          },
+          {
+            type: "text",
+            content:
+              "The President appoints middle-tier civil servants without the Senate. And, of course, the vast majority of people who work for the federal government, including the military, are hired and fired based on their merit just like any other job without the President's involvement.",
+          },
+        ],
+      },
+
+      // ── Page 8: How does the President lead the bureaucracy? ────────────────
+      {
+        id: "how-does-president-lead-bureaucracy",
+        icon: require("../../assets/education_icons/executiveicon8.png"),
+        title: "How does the President lead the bureaucracy?",
+        summary: "Executive orders, memoranda, and command of the military.",
+        body: [
+          {
+            type: "text",
+            content:
+              "Although the Executive Branch must follow all laws Congress writes, the President can direct the civil service in several key ways.",
+          },
+          {
+            type: "text",
+            heading: "Executive orders",
+            content:
+              "First, the President can tell them to change how they operate by writing memoranda or executive orders. These can have big consequences: for example, in 1948, President Harry S. Truman passed an executive order to stop segregation in the military. Executive orders can also shift authority between agencies, create and destroy agencies (within limits), and direct them to prioritize certain goals.",
+          },
+          {
+            type: "text",
+            heading: "Commander in chief",
+            content:
+              "Additionally, the President acts as the nation's commander in chief. He or she receives top military and spy information almost no-one else gets to see. During times of war or other national emergencies, the President closely works with military leaders to direct overall strategy, where soldiers should be deployed, and other high-level decisions, like air-strikes or naval blockades. Only the President can decide whether to drop an atomic bomb.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive8.png"),
+            caption:
+              "This is a very famous photograph from 2011, when the U.S. was hunting down Osama bin Laden, the terrorist responsible for the September 11, 2001, attacks. In addition to top military and intelligence people, President Barack Obama (second from left) and several of his top civilian advisers (the Vice President, Secretary of State, Secretary of Defense, and Chief of Staff) are working to make sure the operation succeeds.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "Learn more about executive orders",
+                url: "https://www.ebsco.com/research-starters/law/executive-orders",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 9: What is the President's cabinet? ────────────────────────────
+      {
+        id: "what-is-the-presidents-cabinet",
+        icon: require("../../assets/education_icons/executiveicon9.png"),
+        title: "What is the President's cabinet?",
+        summary: "The secretaries and advisers who help the President run the government.",
+        body: [
+          {
+            type: "text",
+            content:
+              "To help make sure the government is working as he or she would like it to, the President appoints secretaries to lead the fifteen executive departments. Most government authority lies within the boundaries of one of these departments. Therefore, these secretaries are greatly influential in themselves.",
+          },
+          {
+            type: "text",
+            content:
+              "These secretaries, together with the Vice President and a number of advisers and agency heads, form the President's cabinet. The Cabinet, which meets about once per month, influences the President's decisions.",
+          },
+          {
+            type: "callout",
+            content:
+              "The most important members of the President's cabinet are the Vice President, the Secretary of State (responsible for foreign relations), the Secretary of the Treasury (responsible for finance), the Secretary of Defense (responsible for military administration), and the attorney general (head of the Department of Justice who gives legal advice to the President).",
+          },
+          {
+            type: "text",
+            content:
+              "The President also appoints a number of staffers who have earned the President's loyalty and trust, including a Chief of Staff, Press Secretary, and other advisers.",
+          },
+          {
+            type: "text",
+            content:
+              "Secretaries are sometimes individuals in private life with a lot of experience in their area. More often, they are politicians or influential fundraisers. Presidents will try to choose people whose qualifications overlap. For example, in 2006, President George W. Bush made Henry Paulson his Secretary of the Treasury: Mr. Paulson was previously CEO of Goldman Sachs, one of the largest U.S. investment banks, and helped raise $100,000 for Mr. Bush's re-election in 2004.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive9.png"),
+            caption:
+              "Because cabinet secretaries are public representatives for their departments, some Presidents make a point to appoint diverse people, such as people of color, women, and religious minorities. Joe Biden's cabinet had a historically large number of non-white and female members.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "Members of the U.S. Cabinet",
+                url: "https://www.whitehouse.gov/administration/cabinet/",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 10: How does the President represent the country? ───────────────
+      {
+        id: "how-does-president-represent-the-country",
+        icon: require("../../assets/education_icons/executiveicon10.png"),
+        title: "How does the President represent the country?",
+        summary: "Foreign relations, treaties, diplomacy, and ceremonial duties.",
+        body: [
+          {
+            type: "text",
+            content:
+              "The Executive Branch handles almost all of the country's day-to-day foreign relations. The President appoints ambassadors and consuls, manages war operations, and makes sure the executive agencies working with trade and diplomacy are working well.",
+          },
+          {
+            type: "text",
+            content:
+              "The President does for the United States what a king or prime minister might do elsewhere, meeting foreign leaders when they come to this country and going abroad to meet them. The President also represents the United States at big meetings of international organizations, like the United Nations, the G7, and NATO.",
+          },
+          {
+            type: "text",
+            content:
+              "To this end, the President, Secretary of State, and senior diplomats are responsible for negotiating international treaties and trade agreements on behalf of the United States. That said, the Senate must ratify U.S. participation in any treaty with a two-thirds vote, which is not guaranteed.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive10.png"),
+            caption:
+              "U.S. presidents have great diplomatic power. In the 1970s, President Jimmy Carter (center) took an interest in the war between Israel and Egypt, so he invited the leaders of Egypt (left, Anwar Sadat) and Israel (right, Menachem Begin) to the president's official country home at Camp David. There, Mr. Sadat and Mr. Begin negotiated the start of a peace treaty that they signed the following year at the White House.",
+          },
+          {
+            type: "text",
+            content:
+              "Finally, the President often performs many symbolic, or \"ceremonial\" duties, like giving weekly addresses to the public or opening big sporting and cultural events. American children are taught to learn and care about the presidents, and most presidents are far more famous than any member of Congress or Supreme Court justice.",
+          },
+          {
+            type: "text",
+            content:
+              "This popularity even extends to the president's female partner, who is called the \"First Lady.\" While not a government job, a first lady, usually the president's wife, helps with hosting events, goes with the president to foreign countries, and sponsors her own minor initiatives, like child literacy or recycling.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "Some famous First Ladies' initiatives in history",
+                url: "https://www.gilderlehrman.org/history-resources/essays/first-ladies%E2%80%99-contributions-political-issues-and-national-welfare",
+              },
+            ],
+          },
+        ],
+      },
+
+      // ── Page 11: What does the Vice President do? ────────────────────────────
+      {
+        id: "what-does-the-vice-president-do",
+        icon: require("../../assets/education_icons/executiveicon11.png"),
+        title: "What does the Vice President do?",
+        summary: "The VP's limited formal powers and critical role in succession.",
+        body: [
+          {
+            type: "text",
+            content:
+              "The Vice President has almost no enumerated powers (meaning powers given to him or her by the Constitution). All that it says is that the Vice President is elected alongside the President and serves as president of the Senate. In this job, he or she can cast a vote, but only if the Senate is exactly tied.",
+          },
+          {
+            type: "text",
+            content:
+              "However, the Vice President can exercise great power and influence as the President's chief adviser. This is because the two work together both while campaigning and in the Cabinet. This can help even out the President's ideas, as the Vice President usually comes from a different part of the country, and may even come from a different wing of the political party, so that more voters would elect the two together.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/executive11.png"),
+            caption:
+              "In 2008, Barack Obama (left), a liberal, inexperienced Senator from Illinois, and Joe Biden (right), a more centrist, long-time Senator from Delaware, were rivals for the Democratic presidential nomination. When Mr. Obama won, he chose Mr. Biden to be his vice president, and the two developed a famously close bond over eight years in government. Even though Mr. Biden never once cast a tie-breaking vote in Congress, he influenced Mr. Obama and helped get the bills they wanted passed.",
+          },
+          {
+            type: "text",
+            content:
+              "Additionally, the President sometimes deputizes the Vice President to perform diplomatic or ceremonial duties, or to influence members of the Senate in a way that the President cannot.",
+          },
+          {
+            type: "text",
+            heading: "Succession",
+            content:
+              "Because the Vice President is often a high-level politician, and perhaps even a former rival for the nomination, six vice presidents have gone on to be elected president. But also, if the President dies or resigns in office (throughout history, nine have), the Vice President immediately becomes president to serve out the rest of the term. This is called succession.",
+          },
+          {
+            type: "text",
+            content:
+              "If the Vice President also could not serve, next in line would be the leaders of the House and Senate, and then Cabinet secretaries. But it has never been necessary to go down further than vice president.\n\nAdditionally, if the President is momentarily disabled, such as during a surgery with anesthetic, the Vice President may be designated acting president.",
+          },
+          {
+            type: "links",
+            heading: "Learn More",
+            items: [
+              {
+                label: "See a list of previous vice presidents",
+                url: "https://www.britannica.com/topic/vice-president-of-the-United-States-of-America",
+              },
+              {
+                label: "See the full order of presidential succession",
+                url: "https://www.usa.gov/presidential-succession",
+              },
+              {
+                label: "Official X (formerly Twitter) account of Vice President Vance",
+                url: "https://x.com/VP",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
   // POLITICAL PARTIES & IDEOLOGY
   // ════════════════════════════════════════════════════════════════════════════
   {
