@@ -526,18 +526,18 @@ export default function EducationSubtopicScreen() {
               opacity: pressed ? 0.6 : 1,
             })}
           >
+            <ChevronRight size={18} color="#008CFF" />
             <Text
               style={{
                 fontSize: 15,
                 fontWeight: "600",
                 flex: 1,
-                marginRight: 8,
+                marginLeft: 8,
               }}
             >
               <Text style={{ color: "#0d0d0d" }}>Read Next: </Text>
               <Text style={{ color: "#008CFF" }}>{nextSubtopic.title}</Text>
             </Text>
-            <ChevronRight size={18} color="#008CFF" />
           </Pressable>
         )}
       </ScrollView>
