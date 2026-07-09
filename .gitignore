@@ -95,4 +95,5 @@ credentials.json
 .aider*
 .venv/
 
-.fake
+.fakenode_modules
+node_modules 2/
