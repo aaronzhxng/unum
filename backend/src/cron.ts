@@ -67,7 +67,7 @@ const sendNotifications = async (
   }
   for (const chunk of chunks) {
     try {
-      await axios.post(
+      const pushResponse = await axios.post(
         EXPO_PUSH_URL,
         chunk.map((msg) => ({
           ...msg,
@@ -78,6 +78,7 @@ const sendNotifications = async (
           headers: { "Content-Type": "application/json" },
         },
       );
+      console.log("Push API response:", JSON.stringify(pushResponse.data));
     } catch (error) {
       console.error("Error sending push notifications:", error);
     }
