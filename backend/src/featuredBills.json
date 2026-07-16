@@ -1,14 +1,10 @@
 {
-  "weekOf": "2026-07-06",
-  "weekEnd": "2026-07-12",
+  "weekOf": "2026-07-13",
+  "weekEnd": "2026-07-19",
   "bills": [
     {
-      "billId": "hr7757",
-      "note": "This bill requires social media platforms to screen minors' accounts for dangerous behavior like drug use or self-harm and alert parents."
-    },
-    {
-      "billId": "hr9495",
-      "note": "This bill funds the U.S. military for fiscal year 2027, covering weapons systems, troop pay raises, counter-drug operations, and new defense technologies."
+      "billId": "hjres1",
+      "note": "This Consitutional Amendment would require that the Supreme Court be composed of nine judges, making future changes to this number more difficult."
     }
   ]
 }
