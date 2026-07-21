@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-07-13",
-  "weekEnd": "2026-07-19",
+  "weekOf": "2026-07-20",
+  "weekEnd": "2026-07-26",
   "bills": [
     {
-      "billId": "hjres1",
-      "note": "This Consitutional Amendment would require that the Supreme Court be composed of nine judges, making future changes to this number more difficult."
+      "billId": "hr8595",
+      "note": "This bill funds the State Department and U.S. foreign assistance programs for FY2027 at $47.32 billion. The amendment to strip military aid to Israel failed."
     }
   ]
 }
