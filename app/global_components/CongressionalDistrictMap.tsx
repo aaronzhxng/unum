@@ -1,9 +1,10 @@
 import { geoIdentity, geoPath } from "d3-geo";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Pressable,
     Text,
+    TextInput,
     View,
     useWindowDimensions,
 } from "react-native";
@@ -35,9 +36,15 @@ type DistrictSelection = {
   label: string;
 };
 
+type FocusDistrict = {
+  stateAbbr: string;
+  district: number;
+};
+
 type Props = {
   stateAbbr?: string | null;
   onSelectDistrict: (district: DistrictSelection) => void;
+  focusDistricts?: FocusDistrict[] | null;
 };
 
 const STATE_ABBR_TO_FIPS: Record<string, string> = {
@@ -99,6 +106,10 @@ const STATE_ABBR_TO_FIPS: Record<string, string> = {
   VI: "78",
 };
 
+const FIPS_TO_ABBR: Record<string, string> = Object.fromEntries(
+  Object.entries(STATE_ABBR_TO_FIPS).map(([abbr, fips]) => [fips, abbr]),
+);
+
 const BASE_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/54/query";
 
@@ -120,9 +131,51 @@ function buildQueryUrl(stateAbbr?: string | null): string {
   return `${BASE_URL}?${params.toString()}`;
 }
 
+function computeBBox(
+  features: DistrictFeature[],
+  projection: ReturnType<typeof geoIdentity> | null,
+): { x: number; y: number; w: number; h: number } | null {
+  if (!projection || !features.length) return null;
+
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+
+  for (const feature of features) {
+    const coords =
+      feature.geometry.type === "Polygon"
+        ? feature.geometry.coordinates
+        : feature.geometry.coordinates.flat();
+
+    for (const ring of coords) {
+      for (const [lon, lat] of ring) {
+        const projected = projection([lon, lat]);
+        if (!projected) continue;
+        const [px, py] = projected;
+        if (px < minX) minX = px;
+        if (py < minY) minY = py;
+        if (px > maxX) maxX = px;
+        if (py > maxY) maxY = py;
+      }
+    }
+  }
+
+  if (minX === Infinity) return null;
+
+  const pad = 40;
+  return {
+    x: minX - pad,
+    y: minY - pad,
+    w: maxX - minX + pad * 2,
+    h: maxY - minY + pad * 2,
+  };
+}
+
 export default function CongressionalDistrictMap({
   stateAbbr,
   onSelectDistrict,
+  focusDistricts,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const mapWidth = Math.max(240, screenWidth - 64);
@@ -130,6 +183,17 @@ export default function CongressionalDistrictMap({
   const [error, setError] = useState<string | null>(null);
   const [features, setFeatures] = useState<DistrictFeature[]>([]);
   const [selectedGEOID, setSelectedGEOID] = useState<string | null>(null);
+  const [highlightGeoids, setHighlightGeoids] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const initialViewBox = useMemo(
+    () => ({ x: 0, y: 0, w: mapWidth, h: 0 }),
+    [mapWidth],
+  );
+  const [viewBox, setViewBox] = useState(initialViewBox);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const savedViewBox = useRef(initialViewBox);
 
   useEffect(() => {
     let active = true;
@@ -139,6 +203,7 @@ export default function CongressionalDistrictMap({
       setLoading(true);
       setError(null);
       setSelectedGEOID(null);
+      setHighlightGeoids(new Set());
 
       try {
         const response = await fetch(buildQueryUrl(stateAbbr), {
@@ -181,15 +246,98 @@ export default function CongressionalDistrictMap({
       type: "FeatureCollection",
       features,
     };
-    // TIGER GeoJSON rings are best treated as planar coordinates here.
-    // Using geoIdentity avoids spherical winding/complement artifacts.
-    return geoIdentity().reflectY(true).fitSize([mapWidth, mapHeight], collection as any);
+    return geoIdentity()
+      .reflectY(true)
+      .fitSize([mapWidth, mapHeight], collection as any);
   }, [features, mapHeight, mapWidth]);
 
   const pathGenerator = useMemo(() => {
     if (!projection) return null;
     return geoPath(projection);
   }, [projection]);
+
+  const viewBoxStr = useMemo(() => {
+    const h = viewBox.h || mapHeight;
+    return `${viewBox.x} ${viewBox.y} ${viewBox.w} ${h}`;
+  }, [viewBox, mapHeight]);
+
+  const handleZoomIn = useCallback(() => {
+    setViewBox((prev) => {
+      const h = prev.h || mapHeight;
+      const factor = 0.7;
+      const newW = Math.max(prev.w * factor, mapWidth * 0.15);
+      const newH = Math.max(h * factor, mapHeight * 0.15);
+      return {
+        x: prev.x + (prev.w - newW) / 2,
+        y: prev.y + (h - newH) / 2,
+        w: newW,
+        h: newH,
+      };
+    });
+    setIsZoomed(true);
+  }, [mapWidth, mapHeight]);
+
+  const handleZoomOut = useCallback(() => {
+    setViewBox((prev) => {
+      const h = prev.h || mapHeight;
+      const factor = 1.4;
+      return {
+        x: prev.x + (prev.w - prev.w * factor) / 2,
+        y: prev.y + (h - h * factor) / 2,
+        w: prev.w * factor,
+        h: h * factor,
+      };
+    });
+    setIsZoomed(true);
+  }, [mapHeight]);
+
+  const handleResetZoom = useCallback(() => {
+    setViewBox({ x: 0, y: 0, w: mapWidth, h: mapHeight });
+    setIsZoomed(false);
+  }, [mapWidth, mapHeight]);
+
+  useEffect(() => {
+    setViewBox({ x: 0, y: 0, w: mapWidth, h: mapHeight });
+    setIsZoomed(false);
+    savedViewBox.current = { x: 0, y: 0, w: mapWidth, h: mapHeight };
+  }, [mapWidth, mapHeight]);
+
+  useEffect(() => {
+    if (!focusDistricts?.length || !features.length || !projection) return;
+
+    const matched = features.filter((f) => {
+      const fips = f.properties.STATE;
+      const abbr = FIPS_TO_ABBR[fips];
+      const distNum = parseInt(f.properties.BASENAME, 10);
+      return focusDistricts.some(
+        (fd) => fd.stateAbbr === abbr && fd.district === distNum,
+      );
+    });
+
+    if (!matched.length) return;
+
+    const geoids = new Set(matched.map((f) => f.properties.GEOID));
+    setHighlightGeoids(geoids);
+
+    const bbox = computeBBox(matched, projection);
+    if (bbox) {
+      savedViewBox.current = { x: 0, y: 0, w: mapWidth, h: mapHeight };
+      setViewBox(bbox);
+      setIsZoomed(true);
+    }
+
+    const first = matched[0];
+    const firstFips = first.properties.STATE;
+    const firstAbbr = FIPS_TO_ABBR[firstFips];
+    const firstDist = parseInt(first.properties.BASENAME, 10);
+    setSelectedGEOID(first.properties.GEOID);
+    onSelectDistrict({
+      geoid: first.properties.GEOID,
+      stateAbbr: firstAbbr,
+      district: firstDist,
+      label: first.properties.NAME,
+    });
+  }, [focusDistricts, features, projection, mapWidth, mapHeight]);
 
   return (
     <View
@@ -266,37 +414,145 @@ export default function CongressionalDistrictMap({
             </Text>
           </View>
         ) : (
-          <Svg
-            width={mapWidth}
-            height={mapHeight}
-            viewBox={`0 0 ${mapWidth} ${mapHeight}`}
-          >
-            {features.map((feature) => {
-              const districtNumber = parseInt(feature.properties.BASENAME, 10);
-              const selected = selectedGEOID === feature.properties.GEOID;
-              const d = pathGenerator(feature as any) ?? "";
+          <View>
+            <Svg
+              width={mapWidth}
+              height={mapHeight}
+              viewBox={viewBoxStr}
+            >
+              {features.map((feature) => {
+                const districtNumber = parseInt(
+                  feature.properties.BASENAME,
+                  10,
+                );
+                const selected = selectedGEOID === feature.properties.GEOID;
+                const highlighted = highlightGeoids.has(
+                  feature.properties.GEOID,
+                );
+                const d = pathGenerator(feature as any) ?? "";
 
-              return (
-                <Path
-                  key={feature.properties.GEOID}
-                  d={d}
-                  fill={selected ? "#008CFF" : "#E8F4FF"}
-                  fillOpacity={selected ? 0.95 : 0.9}
-                  stroke={selected ? "#005EA8" : "#B7CBE0"}
-                  strokeWidth={selected ? 1.8 : 0.8}
-                  onPress={() => {
-                    setSelectedGEOID(feature.properties.GEOID);
-                    onSelectDistrict({
-                      geoid: feature.properties.GEOID,
-                      stateAbbr: feature.properties.STATE,
-                      district: districtNumber,
-                      label: feature.properties.NAME,
-                    });
+                const isFocused = selected || highlighted;
+
+                return (
+                  <Path
+                    key={feature.properties.GEOID}
+                    d={d}
+                    fill={isFocused ? "#008CFF" : "#E8F4FF"}
+                    fillOpacity={isFocused ? 0.95 : 0.9}
+                    stroke={isFocused ? "#005EA8" : "#B7CBE0"}
+                    strokeWidth={isFocused ? 1.8 : 0.8}
+                    onPress={() => {
+                      setSelectedGEOID(feature.properties.GEOID);
+                      onSelectDistrict({
+                        geoid: feature.properties.GEOID,
+                        stateAbbr: feature.properties.STATE,
+                        district: districtNumber,
+                        label: feature.properties.NAME,
+                      });
+                    }}
+                  />
+                );
+              })}
+            </Svg>
+
+            <View
+              style={{
+                position: "absolute",
+                bottom: 12,
+                right: 12,
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              <Pressable
+                onPress={handleZoomIn}
+                style={({ pressed }) => ({
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: "#fff",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 3,
+                  elevation: 3,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "600",
+                    color: "#1a1a1a",
+                    lineHeight: 22,
                   }}
-                />
-              );
-            })}
-          </Svg>
+                >
+                  +
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={handleZoomOut}
+                style={({ pressed }) => ({
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: "#fff",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 3,
+                  elevation: 3,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "600",
+                    color: "#1a1a1a",
+                    lineHeight: 22,
+                  }}
+                >
+                  −
+                </Text>
+              </Pressable>
+
+              {isZoomed && (
+                <Pressable
+                  onPress={handleResetZoom}
+                  style={({ pressed }) => ({
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: "#008CFF",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 3,
+                    elevation: 3,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "700",
+                      color: "#fff",
+                    }}
+                  >
+                    ↺
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
         )}
       </View>
 
@@ -316,7 +572,12 @@ export default function CongressionalDistrictMap({
           <Text style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}>
             District selected
           </Text>
-          <Pressable onPress={() => setSelectedGEOID(null)}>
+          <Pressable
+            onPress={() => {
+              setSelectedGEOID(null);
+              setHighlightGeoids(new Set());
+            }}
+          >
             <Text style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}>
               Clear
             </Text>
