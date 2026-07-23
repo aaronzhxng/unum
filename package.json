@@ -81,5 +81,10 @@
     "puppeteer": "^24.40.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true,
+    "puppeteer@24.43.1": true,
+    "unrs-resolver@1.12.2": true
+  }
 }
