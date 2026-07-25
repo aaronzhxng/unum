@@ -94,7 +94,7 @@ export default function RootLayout() {
       const initialResponse =
         await Notifications.getLastNotificationResponseAsync();
       if (initialResponse) {
-        const data = initialResponse.notification.request.content.data;
+        const data = initialResponse.notification.request.content.data as { billId?: string; officialId?: string };
         if (data?.billId) {
           invalidateBill(data.billId);
           setTimeout(() => router.navigate(`/bill/${data.billId}`), 500);
@@ -109,7 +109,7 @@ export default function RootLayout() {
       // Handle foreground/background tap
       const subscription =
         Notifications.addNotificationResponseReceivedListener((response) => {
-          const data = response.notification.request.content.data;
+          const data = response.notification.request.content.data as { billId?: string; officialId?: string };
           if (data?.billId) {
             invalidateBill(data.billId);
             router.navigate(`/bill/${data.billId}`);
@@ -162,7 +162,6 @@ export default function RootLayout() {
                 name="onboarding"
                 options={{ headerShown: false }}
               />
-              {/* ADD THIS */}
               <Stack.Screen
                 name="bill/[id]"
                 options={{
@@ -197,7 +196,7 @@ export default function RootLayout() {
                   gestureEnabled: false, // screen has its own edge-swipe strip
                   animation: "slide_from_right",
                 }}
-              />{" "}
+              />
             </Stack>
           </TabBarProvider>
         </PolicyAreasProvider>
