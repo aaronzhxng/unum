@@ -1,10 +1,14 @@
 {
-  "weekOf": "2026-07-20",
-  "weekEnd": "2026-07-26",
+  "weekOf": "2026-07-27",
+  "weekEnd": "2026-08-02",
   "bills": [
     {
-      "billId": "hr8595",
-      "note": "This bill funds the State Department and U.S. foreign assistance programs for FY2027 at $47.32 billion. The amendment to strip military aid to Israel failed."
+      "billId": "hr7008",
+      "note": "This bill would prohibit members of Congress from owning or trading stocks while in office. The bill notably includes voter ID provisions from the SAVE America Act."
+    },
+    {
+      "billId": "hr9770",
+      "note": "This bill would provide temporary funding for federal agencies through 12/4/26 to prevent a full goverment shutdown while Congress works on a full-year appropriations bill."
     }
   ]
 }
