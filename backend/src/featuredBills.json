@@ -1,14 +1,10 @@
 {
-  "weekOf": "2026-07-27",
-  "weekEnd": "2026-08-02",
+  "weekOf": "2026-08-03",
+  "weekEnd": "2026-08-09",
   "bills": [
     {
-      "billId": "hr7008",
-      "note": "This bill would prohibit members of Congress from owning or trading stocks while in office. The bill notably includes voter ID provisions from the SAVE America Act."
-    },
-    {
-      "billId": "hr9770",
-      "note": "This bill would provide temporary funding for federal agencies through 12/4/26 to prevent a full goverment shutdown while Congress works on a full-year appropriations bill."
+      "billId": "s3018",
+      "note": "This bill would require the Departments of State and Defense to permit visiting Taiwanese government officials to display the Taiwan flag."
     }
   ]
 }
