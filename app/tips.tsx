@@ -303,13 +303,19 @@ export default function TipsScreen() {
           </Pressable>
         ))}
         <Pressable
-          onPress={() => {
-            const token = pushToken.get();
-            Alert.alert("Push Token", token ?? "No token found");
+          onPress={async () => {
+            const token = await pushToken.register();
+            if (token) {
+              const { syncPreferencesToBackend } = await import("./utils/syncPreferences");
+              await syncPreferencesToBackend();
+              Alert.alert("Push Token", token);
+            } else {
+              Alert.alert("Push Token", "Registration failed — check notification permissions");
+            }
           }}
           style={{ alignItems: "center", paddingVertical: 16 }}
         >
-          <Text style={{ fontSize: 11, color: "#c0c0c0" }}>Debug: show push token</Text>
+          <Text style={{ fontSize: 11, color: "#c0c0c0" }}>Debug: register &amp; sync push token</Text>
         </Pressable>
         <View style={{ height: 48 }} />
       </ScrollView>
