@@ -304,13 +304,22 @@ export default function TipsScreen() {
         ))}
         <Pressable
           onPress={async () => {
-            const token = await pushToken.register();
-            if (token) {
+            try {
+              const Notifications = await import("expo-notifications");
+              const Constants = (await import("expo-constants")).default;
+              const { status } = await Notifications.getPermissionsAsync();
+              const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+              if (status !== "granted") {
+                Alert.alert("Debug", `Permission denied — status: ${status}`);
+                return;
+              }
+              Alert.alert("Debug", `Permission: ${status}\nProjectId: ${projectId ?? "UNDEFINED"}\nAttempting token fetch...`);
+              const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
               const { syncPreferencesToBackend } = await import("./utils/syncPreferences");
               await syncPreferencesToBackend();
-              Alert.alert("Push Token", token);
-            } else {
-              Alert.alert("Push Token", "Registration failed — check notification permissions");
+              Alert.alert("Success", tokenData.data);
+            } catch (err: any) {
+              Alert.alert("Error", String(err?.message ?? err));
             }
           }}
           style={{ alignItems: "center", paddingVertical: 16 }}
