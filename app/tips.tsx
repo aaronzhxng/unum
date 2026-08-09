@@ -3,9 +3,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronDown, ChevronLeft, ChevronUp } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { styles as componentStyles } from "./global_styles/styles";
 import { getDb } from "./utils/database";
+import { pushToken } from "./utils/pushToken";
 
 const CREDITS_SECTIONS = [
   {
@@ -301,6 +302,15 @@ export default function TipsScreen() {
             )}
           </Pressable>
         ))}
+        <Pressable
+          onPress={() => {
+            const token = pushToken.get();
+            Alert.alert("Push Token", token ?? "No token found");
+          }}
+          style={{ alignItems: "center", paddingVertical: 16 }}
+        >
+          <Text style={{ fontSize: 11, color: "#c0c0c0" }}>Debug: show push token</Text>
+        </Pressable>
         <View style={{ height: 48 }} />
       </ScrollView>
     </View>
