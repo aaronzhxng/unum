@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-08-03",
-  "weekEnd": "2026-08-09",
+  "weekOf": "2026-08-10",
+  "weekEnd": "2026-08-16",
   "bills": [
     {
-      "billId": "s3018",
-      "note": "This bill would require the Departments of State and Defense to permit visiting Taiwanese government officials to display the Taiwan flag."
+      "billId": "sjres181",
+      "note": "This bill would direct the removal of U.S. Armed Forces from Iran that have not been authorized by Congress."
     }
   ]
 }
