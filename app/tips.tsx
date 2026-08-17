@@ -3,10 +3,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronDown, ChevronLeft, ChevronUp } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { styles as componentStyles } from "./global_styles/styles";
 import { getDb } from "./utils/database";
-import { pushToken } from "./utils/pushToken";
 
 const CREDITS_SECTIONS = [
   {
@@ -302,30 +301,6 @@ export default function TipsScreen() {
             )}
           </Pressable>
         ))}
-        <Pressable
-          onPress={async () => {
-            try {
-              const Notifications = await import("expo-notifications");
-              const Constants = (await import("expo-constants")).default;
-              const { status } = await Notifications.getPermissionsAsync();
-              const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-              if (status !== "granted") {
-                Alert.alert("Debug", `Permission denied — status: ${status}`);
-                return;
-              }
-              Alert.alert("Debug", `Permission: ${status}\nProjectId: ${projectId ?? "UNDEFINED"}\nAttempting token fetch...`);
-              const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-              const { syncPreferencesToBackend } = await import("./utils/syncPreferences");
-              await syncPreferencesToBackend();
-              Alert.alert("Success", tokenData.data);
-            } catch (err: any) {
-              Alert.alert("Error", String(err?.message ?? err));
-            }
-          }}
-          style={{ alignItems: "center", paddingVertical: 16 }}
-        >
-          <Text style={{ fontSize: 11, color: "#c0c0c0" }}>Debug: register &amp; sync push token</Text>
-        </Pressable>
         <View style={{ height: 48 }} />
       </ScrollView>
     </View>
