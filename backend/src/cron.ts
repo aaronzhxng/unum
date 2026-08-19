@@ -85,8 +85,12 @@ const sendNotifications = async (
   }
 };
 
-const getAllRegistrations = () => {
-  return db.prepare("SELECT * FROM push_registrations").all() as {
+const getAllRegistrations = (filterToken?: string) => {
+  const sql = filterToken
+    ? "SELECT * FROM push_registrations WHERE token = ?"
+    : "SELECT * FROM push_registrations";
+  const args = filterToken ? [filterToken] : [];
+  return db.prepare(sql).all(...args) as {
     token: string;
     policy_areas: string;
     followed_states: string;
@@ -108,9 +112,9 @@ const getLastChecked = (): string => {
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 // Uses Railway SQLite bills table — no Congress.gov API needed
 
-const checkNewBills = async () => {
+const checkNewBills = async (filterToken?: string) => {
   console.log("Checking for new bills...");
-  const registrations = getAllRegistrations();
+  const registrations = getAllRegistrations(filterToken);
   const messages: { to: string; title: string; body: string; data?: any }[] =
     [];
   const since = getLastChecked();
@@ -216,9 +220,9 @@ const checkNewBills = async () => {
 
 // ── Check 2: Status changes on followed bills ─────────────────────────────────
 
-const checkFollowedBills = async () => {
+const checkFollowedBills = async (filterToken?: string) => {
   console.log("Checking followed bills for updates...");
-  const registrations = getAllRegistrations();
+  const registrations = getAllRegistrations(filterToken);
   const messages: { to: string; title: string; body: string; data?: any }[] =
     [];
 
@@ -409,9 +413,9 @@ const resolveOfficialName = (bioguideId: string, storedName: string): string => 
 
 // ── Check 3: Activity from followed officials ─────────────────────────────────
 
-const checkFollowedOfficials = async () => {
+const checkFollowedOfficials = async (filterToken?: string) => {
   console.log("Checking followed officials for updates...");
-  const registrations = getAllRegistrations();
+  const registrations = getAllRegistrations(filterToken);
   const messages: { to: string; title: string; body: string; data?: any }[] =
     [];
   const since = getLastChecked();
@@ -747,6 +751,14 @@ export const runCronJob = async () => {
   await checkFollowedBills();
   await checkFollowedOfficials();
   console.log("Cron job complete.");
+};
+
+export const runCronJobForToken = async (token: string) => {
+  console.log(`Running single-token cron test for ${token}`, new Date().toISOString());
+  await checkNewBills(token);
+  await checkFollowedBills(token);
+  await checkFollowedOfficials(token);
+  console.log("Single-token cron test complete.");
 };
 
 // ── Scheduler — runs every day at 8am and 4pm EST ─────────────────────────────────

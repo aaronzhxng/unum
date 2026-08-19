@@ -5,7 +5,7 @@ import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import fs from "fs";
 import path from "path";
-import { runCronJob, startCronScheduler } from "./cron";
+import { runCronJob, runCronJobForToken, startCronScheduler } from "./cron";
 import db from "./db";
 
 // Load zip-to-districts crosswalk
@@ -1282,6 +1282,20 @@ app.post("/api/cron/run", requireAdminToken, async (req, res) => {
   } catch (error) {
     console.error("Manual cron trigger error:", error);
     res.status(500).json({ error: "Cron job failed" });
+  }
+});
+
+app.post("/api/cron/test-token", requireAdminToken, async (req, res) => {
+  const { token } = req.body;
+  if (!token || typeof token !== "string") {
+    return res.status(400).json({ error: "token required" });
+  }
+  try {
+    await runCronJobForToken(token);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Single-token cron test error:", error);
+    res.status(500).json({ error: String(error) });
   }
 });
 
