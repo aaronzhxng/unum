@@ -1,21 +1,23 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import { Search, X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
+    ActivityIndicator,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    Text,
+    TextInput,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
 import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import { officialsService } from "../services/officials";
+import { geocodeAddress } from "../services/osmGeocoding";
 
 // State name → abbreviation lookup
 const STATE_TO_ABBR: Record<string, string> = {
@@ -144,7 +146,9 @@ export default function PickRepScreen() {
   } = useOnboarding();
 
   const [zip, setZip] = useState("");
+  const [addressQuery, setAddressQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [addressSearching, setAddressSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rep, setRep] = useState<RepResult | null>(null);
   const [repSelected, setRepSelected] = useState(false);
@@ -294,8 +298,10 @@ export default function PickRepScreen() {
     });
   }, [rep]);
 
-  const lookupRep = async () => {
-    if (zip.length !== 5) {
+  const lookupRepForZipCode = async (zipCode: string) => {
+    const trimmed = zipCode.trim();
+
+    if (trimmed.length !== 5) {
       setError("Please enter a valid 5-digit zip code.");
       return;
     }
@@ -308,7 +314,7 @@ export default function PickRepScreen() {
 
     try {
       const res = await fetch(
-        `https://unum-production.up.railway.app/api/zip-districts/${zip}`,
+        `https://unum-production.up.railway.app/api/zip-districts/${trimmed}`,
       );
 
       if (!res.ok) {
@@ -409,6 +415,43 @@ export default function PickRepScreen() {
       setError("Something went wrong. You can skip this step.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const lookupRep = async () => {
+    await lookupRepForZipCode(zip);
+  };
+
+  const handleAddressSearch = async () => {
+    const trimmed = addressQuery.trim();
+
+    if (!trimmed) {
+      setError("Enter an address or ZIP code first.");
+      return;
+    }
+
+    setAddressSearching(true);
+    setError(null);
+    setRep(null);
+    setDistrictSelection(null);
+    setMultipleReps([]);
+    setShowAllReps(false);
+
+    try {
+      const location = await geocodeAddress(trimmed);
+
+      if (!location?.postcode) {
+        setError("Couldn't resolve a ZIP code for that address.");
+        return;
+      }
+
+      setZip(location.postcode);
+      await lookupRepForZipCode(location.postcode);
+    } catch (lookupError) {
+      console.error("Address lookup failed:", lookupError);
+      setError("Something went wrong. You can still try ZIP lookup.");
+    } finally {
+      setAddressSearching(false);
     }
   };
 
@@ -550,6 +593,104 @@ export default function PickRepScreen() {
         }}
         keyboardShouldPersistTaps="handled"
       >
+        {!SINGLE_REP_STATES.has(priorityState ?? "") &&
+          !TERRITORIES.has(priorityState ?? "") && (
+            <View style={{ marginBottom: 4 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: "#1a1a1a",
+                  marginBottom: 8,
+                }}
+              >
+                Search by address
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "#fff",
+                  borderRadius: 24,
+                  paddingHorizontal: 16,
+                  shadowColor: "#000000",
+                  shadowOpacity: 0.15,
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}
+              >
+                <Search size={18} color="#7B7C81" />
+                <TextInput
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    paddingVertical: 14,
+                    paddingHorizontal: 10,
+                    color: "#1a1a1a",
+                  }}
+                  placeholder="e.g. 1600 Pennsylvania Ave NW"
+                  placeholderTextColor="#bbb"
+                  value={addressQuery}
+                  onChangeText={(text) => {
+                    setAddressQuery(text);
+                    if (error) setError(null);
+                  }}
+                  onSubmitEditing={handleAddressSearch}
+                  returnKeyType="search"
+                />
+                {addressQuery.length > 0 && (
+                  <Pressable onPress={() => setAddressQuery("")} hitSlop={8}>
+                    <X size={18} color="#999" />
+                  </Pressable>
+                )}
+                {addressSearching ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#008CFF"
+                    style={{ marginLeft: 8 }}
+                  />
+                ) : (
+                  <Pressable
+                    onPress={handleAddressSearch}
+                    style={({ pressed }) => ({
+                      marginLeft: 8,
+                      backgroundColor: addressQuery.trim()
+                        ? "#008CFF"
+                        : "#E0E0E0",
+                      borderRadius: 16,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      opacity: pressed ? 0.8 : 1,
+                    })}
+                    disabled={!addressQuery.trim()}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: "600",
+                        color: addressQuery.trim() ? "#fff" : "#999",
+                      }}
+                    >
+                      Search
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#7B7C81",
+                  marginTop: 6,
+                  marginLeft: 4,
+                }}
+              >
+                OSM geocoding resolves the address to a ZIP code, then we match
+                the district.
+              </Text>
+            </View>
+          )}
+
         {!SINGLE_REP_STATES.has(priorityState ?? "") &&
           !TERRITORIES.has(priorityState ?? "") && (
             <CongressionalDistrictMap

@@ -1,14 +1,11 @@
-import { geoIdentity, geoPath } from "d3-geo";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
-    Pressable,
     Text,
-    TextInput,
     View,
     useWindowDimensions,
 } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import { WebView, type WebViewMessageEvent } from "react-native-webview";
 
 type DistrictFeature = {
   type: "Feature";
@@ -131,45 +128,285 @@ function buildQueryUrl(stateAbbr?: string | null): string {
   return `${BASE_URL}?${params.toString()}`;
 }
 
-function computeBBox(
-  features: DistrictFeature[],
-  projection: ReturnType<typeof geoIdentity> | null,
-): { x: number; y: number; w: number; h: number } | null {
-  if (!projection || !features.length) return null;
+function escapeJsonForHtml(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
 
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
+function buildOpenStreetMapHtml(params: {
+  features: DistrictFeature[];
+  highlightGeoids: string[];
+  initialSelectedGEOID: string | null;
+}): string {
+  const payload = escapeJsonForHtml(params);
 
-  for (const feature of features) {
-    const coords =
-      feature.geometry.type === "Polygon"
-        ? feature.geometry.coordinates
-        : feature.geometry.coordinates.flat();
-
-    for (const ring of coords) {
-      for (const [lon, lat] of ring) {
-        const projected = projection([lon, lat]);
-        if (!projected) continue;
-        const [px, py] = projected;
-        if (px < minX) minX = px;
-        if (py < minY) minY = py;
-        if (px > maxX) maxX = px;
-        if (py > maxY) maxY = py;
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      html,
+      body,
+      #map {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: #f7f4ef;
       }
-    }
-  }
 
-  if (minX === Infinity) return null;
+      body {
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
 
-  const pad = 40;
-  return {
-    x: minX - pad,
-    y: minY - pad,
-    w: maxX - minX + pad * 2,
-    h: maxY - minY + pad * 2,
-  };
+      .leaflet-container {
+        background: #f7f4ef;
+      }
+
+      .leaflet-control-zoom {
+        border: none;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+        overflow: hidden;
+      }
+
+      .leaflet-control-zoom a {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-bottom: 1px solid #edf1f5;
+      }
+
+      .leaflet-control-zoom a:hover {
+        background: #f4f9ff;
+      }
+
+      .map-toolbar {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .map-button {
+        width: 38px;
+        height: 38px;
+        border-radius: 19px;
+        border: none;
+        background: #ffffff;
+        color: #1a1a1a;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 38px;
+        text-align: center;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+      }
+
+      .map-button:active {
+        transform: scale(0.97);
+      }
+
+      .attribution-note {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        z-index: 1000;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #4e5560;
+        font-size: 11px;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div class="map-toolbar">
+      <button id="zoom-in" class="map-button" type="button">+</button>
+      <button id="zoom-out" class="map-button" type="button">−</button>
+      <button id="reset-view" class="map-button" type="button">↺</button>
+    </div>
+    <div class="attribution-note">Map tiles © OpenStreetMap contributors</div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      (function () {
+        const payload = ${payload};
+        const features = Array.isArray(payload.features) ? payload.features : [];
+        const highlightGeoids = new Set(
+          Array.isArray(payload.highlightGeoids) ? payload.highlightGeoids : [],
+        );
+        const initialSelectedGEOID = payload.initialSelectedGEOID || null;
+
+        const map = L.map("map", {
+          zoomControl: false,
+          attributionControl: true,
+          preferCanvas: true,
+        });
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+
+        let selectedGEOID = initialSelectedGEOID;
+
+        function styleForFeature(feature) {
+          const properties = feature && feature.properties ? feature.properties : {};
+          const geoid = properties.GEOID || null;
+          const isSelected = selectedGEOID && selectedGEOID === geoid;
+          const isHighlighted = highlightGeoids.has(geoid);
+
+          if (isSelected) {
+            return {
+              color: "#003d6b",
+              weight: 2.2,
+              opacity: 1,
+              fillColor: "#008cff",
+              fillOpacity: 0.52,
+            };
+          }
+
+          if (isHighlighted) {
+            return {
+              color: "#005ea8",
+              weight: 1.6,
+              opacity: 1,
+              fillColor: "#008cff",
+              fillOpacity: 0.34,
+            };
+          }
+
+          return {
+            color: "#b7cbe0",
+            weight: 1,
+            opacity: 1,
+            fillColor: "#e8f4ff",
+            fillOpacity: 0.22,
+          };
+        }
+
+        function emitSelection(feature) {
+          const properties = feature && feature.properties ? feature.properties : {};
+          const districtNumber = Number.parseInt(properties.BASENAME || "", 10);
+          const stateAbbr = properties.STATE ? ${JSON.stringify(FIPS_TO_ABBR)}[properties.STATE] : null;
+
+          if (!window.ReactNativeWebView || !properties.GEOID || !stateAbbr) {
+            return;
+          }
+
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              type: "select",
+              district: {
+                geoid: properties.GEOID,
+                stateAbbr: stateAbbr,
+                district: Number.isFinite(districtNumber) ? districtNumber : 0,
+                label: properties.NAME,
+              },
+            }),
+          );
+        }
+
+        function refreshStyles(layer) {
+          if (layer && typeof layer.setStyle === "function") {
+            layer.setStyle(styleForFeature);
+          }
+        }
+
+        const geojsonLayer = L.geoJSON(features, {
+          style: styleForFeature,
+          onEachFeature: function (feature, layer) {
+            layer.on("click", function () {
+              const properties = feature && feature.properties ? feature.properties : {};
+              if (!properties.GEOID) {
+                return;
+              }
+
+              selectedGEOID = properties.GEOID;
+              refreshStyles(geojsonLayer);
+              emitSelection(feature);
+            });
+          },
+        }).addTo(map);
+
+        function getFocusBounds() {
+          const focusLayers = [];
+
+          geojsonLayer.eachLayer(function (layer) {
+            const feature = layer && layer.feature ? layer.feature : null;
+            const properties = feature && feature.properties ? feature.properties : {};
+            if (properties.GEOID && highlightGeoids.has(properties.GEOID)) {
+              focusLayers.push(layer);
+            }
+          });
+
+          if (focusLayers.length) {
+            return L.featureGroup(focusLayers).getBounds();
+          }
+
+          return geojsonLayer.getBounds();
+        }
+
+        function fitInitialView() {
+          const bounds = getFocusBounds();
+          if (bounds && bounds.isValid()) {
+            map.fitBounds(bounds.pad(highlightGeoids.size ? 0.14 : 0.08));
+          } else {
+            map.setView([39.5, -98.35], 4);
+          }
+        }
+
+        document.getElementById("zoom-in").addEventListener("click", function () {
+          map.zoomIn();
+        });
+
+        document.getElementById("zoom-out").addEventListener("click", function () {
+          map.zoomOut();
+        });
+
+        document.getElementById("reset-view").addEventListener("click", function () {
+          fitInitialView();
+        });
+
+        fitInitialView();
+
+        if (selectedGEOID) {
+          refreshStyles(geojsonLayer);
+        }
+      })();
+    </script>
+  </body>
+</html>`;
+}
+
+function matchesFocusDistrict(
+  feature: DistrictFeature,
+  focusDistricts: FocusDistrict[] | null | undefined,
+): boolean {
+  if (!focusDistricts?.length) return false;
+
+  const fips = feature.properties.STATE;
+  const abbr = FIPS_TO_ABBR[fips];
+  const districtNumber = Number.parseInt(feature.properties.BASENAME, 10);
+
+  return focusDistricts.some(
+    (district) =>
+      district.stateAbbr === abbr && district.district === districtNumber,
+  );
 }
 
 export default function CongressionalDistrictMap({
@@ -182,18 +419,7 @@ export default function CongressionalDistrictMap({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [features, setFeatures] = useState<DistrictFeature[]>([]);
-  const [selectedGEOID, setSelectedGEOID] = useState<string | null>(null);
-  const [highlightGeoids, setHighlightGeoids] = useState<Set<string>>(
-    new Set(),
-  );
-
-  const initialViewBox = useMemo(
-    () => ({ x: 0, y: 0, w: mapWidth, h: 0 }),
-    [mapWidth],
-  );
-  const [viewBox, setViewBox] = useState(initialViewBox);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const savedViewBox = useRef(initialViewBox);
+  const autoSelectRef = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -202,8 +428,6 @@ export default function CongressionalDistrictMap({
     const loadMap = async () => {
       setLoading(true);
       setError(null);
-      setSelectedGEOID(null);
-      setHighlightGeoids(new Set());
 
       try {
         const response = await fetch(buildQueryUrl(stateAbbr), {
@@ -240,104 +464,74 @@ export default function CongressionalDistrictMap({
     return Math.min(440, Math.max(300, screenWidth * 0.78));
   }, [screenWidth, stateAbbr]);
 
-  const projection = useMemo(() => {
-    if (!features.length) return null;
-    const collection: DistrictCollection = {
-      type: "FeatureCollection",
-      features,
-    };
-    return geoIdentity()
-      .reflectY(true)
-      .fitSize([mapWidth, mapHeight], collection as any);
-  }, [features, mapHeight, mapWidth]);
+  const matchedFocusDistricts = useMemo(() => {
+    if (!focusDistricts?.length || !features.length) return [];
+    return features.filter((feature) =>
+      matchesFocusDistrict(feature, focusDistricts),
+    );
+  }, [features, focusDistricts]);
 
-  const pathGenerator = useMemo(() => {
-    if (!projection) return null;
-    return geoPath(projection);
-  }, [projection]);
+  const highlightGeoids = useMemo(
+    () => matchedFocusDistricts.map((feature) => feature.properties.GEOID),
+    [matchedFocusDistricts],
+  );
 
-  const viewBoxStr = useMemo(() => {
-    const h = viewBox.h || mapHeight;
-    return `${viewBox.x} ${viewBox.y} ${viewBox.w} ${h}`;
-  }, [viewBox, mapHeight]);
-
-  const handleZoomIn = useCallback(() => {
-    setViewBox((prev) => {
-      const h = prev.h || mapHeight;
-      const factor = 0.7;
-      const newW = Math.max(prev.w * factor, mapWidth * 0.15);
-      const newH = Math.max(h * factor, mapHeight * 0.15);
-      return {
-        x: prev.x + (prev.w - newW) / 2,
-        y: prev.y + (h - newH) / 2,
-        w: newW,
-        h: newH,
-      };
-    });
-    setIsZoomed(true);
-  }, [mapWidth, mapHeight]);
-
-  const handleZoomOut = useCallback(() => {
-    setViewBox((prev) => {
-      const h = prev.h || mapHeight;
-      const factor = 1.4;
-      return {
-        x: prev.x + (prev.w - prev.w * factor) / 2,
-        y: prev.y + (h - h * factor) / 2,
-        w: prev.w * factor,
-        h: h * factor,
-      };
-    });
-    setIsZoomed(true);
-  }, [mapHeight]);
-
-  const handleResetZoom = useCallback(() => {
-    setViewBox({ x: 0, y: 0, w: mapWidth, h: mapHeight });
-    setIsZoomed(false);
-  }, [mapWidth, mapHeight]);
+  const initialSelectedGEOID =
+    matchedFocusDistricts[0]?.properties.GEOID ?? null;
 
   useEffect(() => {
-    setViewBox({ x: 0, y: 0, w: mapWidth, h: mapHeight });
-    setIsZoomed(false);
-    savedViewBox.current = { x: 0, y: 0, w: mapWidth, h: mapHeight };
-  }, [mapWidth, mapHeight]);
-
-  useEffect(() => {
-    if (!focusDistricts?.length || !features.length || !projection) return;
-
-    const matched = features.filter((f) => {
-      const fips = f.properties.STATE;
-      const abbr = FIPS_TO_ABBR[fips];
-      const distNum = parseInt(f.properties.BASENAME, 10);
-      return focusDistricts.some(
-        (fd) => fd.stateAbbr === abbr && fd.district === distNum,
-      );
-    });
-
-    if (!matched.length) return;
-
-    const geoids = new Set(matched.map((f) => f.properties.GEOID));
-    setHighlightGeoids(geoids);
-
-    const bbox = computeBBox(matched, projection);
-    if (bbox) {
-      savedViewBox.current = { x: 0, y: 0, w: mapWidth, h: mapHeight };
-      setViewBox(bbox);
-      setIsZoomed(true);
+    if (!matchedFocusDistricts.length) {
+      autoSelectRef.current = null;
+      return;
     }
 
-    const first = matched[0];
-    const firstFips = first.properties.STATE;
-    const firstAbbr = FIPS_TO_ABBR[firstFips];
-    const firstDist = parseInt(first.properties.BASENAME, 10);
-    setSelectedGEOID(first.properties.GEOID);
+    const first = matchedFocusDistricts[0];
+    const autoSelectKey = `${first.properties.GEOID}:${matchedFocusDistricts.length}`;
+    if (autoSelectRef.current === autoSelectKey) {
+      return;
+    }
+
+    autoSelectRef.current = autoSelectKey;
+    const firstAbbr = FIPS_TO_ABBR[first.properties.STATE];
+    const firstDistrict = Number.parseInt(first.properties.BASENAME, 10);
+
     onSelectDistrict({
       geoid: first.properties.GEOID,
       stateAbbr: firstAbbr,
-      district: firstDist,
+      district: Number.isFinite(firstDistrict) ? firstDistrict : 0,
       label: first.properties.NAME,
     });
-  }, [focusDistricts, features, projection, mapWidth, mapHeight]);
+  }, [matchedFocusDistricts, onSelectDistrict]);
+
+  const webViewSource = useMemo(
+    () =>
+      buildOpenStreetMapHtml({
+        features,
+        highlightGeoids,
+        initialSelectedGEOID,
+      }),
+    [features, highlightGeoids, initialSelectedGEOID],
+  );
+
+  const webViewKey = useMemo(
+    () =>
+      `${stateAbbr ?? "all"}-${features.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}`,
+    [stateAbbr, features.length, highlightGeoids, initialSelectedGEOID],
+  );
+
+  const handleWebViewMessage = (event: WebViewMessageEvent) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data) as {
+        type?: string;
+        district?: DistrictSelection;
+      };
+
+      if (message.type !== "select" || !message.district) return;
+      onSelectDistrict(message.district);
+    } catch (error) {
+      console.warn("Ignored district map message:", error);
+    }
+  };
 
   return (
     <View
@@ -405,7 +599,7 @@ export default function CongressionalDistrictMap({
               You can still use ZIP lookup below.
             </Text>
           </View>
-        ) : !features.length || !pathGenerator ? (
+        ) : !features.length ? (
           <View style={{ alignItems: "center", padding: 24 }}>
             <Text
               style={{ fontSize: 14, color: "#7B7C81", textAlign: "center" }}
@@ -414,176 +608,22 @@ export default function CongressionalDistrictMap({
             </Text>
           </View>
         ) : (
-          <View>
-            <Svg
-              width={mapWidth}
-              height={mapHeight}
-              viewBox={viewBoxStr}
-            >
-              {features.map((feature) => {
-                const districtNumber = parseInt(
-                  feature.properties.BASENAME,
-                  10,
-                );
-                const selected = selectedGEOID === feature.properties.GEOID;
-                const highlighted = highlightGeoids.has(
-                  feature.properties.GEOID,
-                );
-                const d = pathGenerator(feature as any) ?? "";
-
-                const isFocused = selected || highlighted;
-
-                return (
-                  <Path
-                    key={feature.properties.GEOID}
-                    d={d}
-                    fill={isFocused ? "#008CFF" : "#E8F4FF"}
-                    fillOpacity={isFocused ? 0.95 : 0.9}
-                    stroke={isFocused ? "#005EA8" : "#B7CBE0"}
-                    strokeWidth={isFocused ? 1.8 : 0.8}
-                    onPress={() => {
-                      setSelectedGEOID(feature.properties.GEOID);
-                      onSelectDistrict({
-                        geoid: feature.properties.GEOID,
-                        stateAbbr: feature.properties.STATE,
-                        district: districtNumber,
-                        label: feature.properties.NAME,
-                      });
-                    }}
-                  />
-                );
-              })}
-            </Svg>
-
-            <View
-              style={{
-                position: "absolute",
-                bottom: 12,
-                right: 12,
-                flexDirection: "column",
-                gap: 6,
-              }}
-            >
-              <Pressable
-                onPress={handleZoomIn}
-                style={({ pressed }) => ({
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  backgroundColor: "#fff",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 3,
-                  elevation: 3,
-                  opacity: pressed ? 0.7 : 1,
-                })}
-              >
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "600",
-                    color: "#1a1a1a",
-                    lineHeight: 22,
-                  }}
-                >
-                  +
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={handleZoomOut}
-                style={({ pressed }) => ({
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  backgroundColor: "#fff",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 3,
-                  elevation: 3,
-                  opacity: pressed ? 0.7 : 1,
-                })}
-              >
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "600",
-                    color: "#1a1a1a",
-                    lineHeight: 22,
-                  }}
-                >
-                  −
-                </Text>
-              </Pressable>
-
-              {isZoomed && (
-                <Pressable
-                  onPress={handleResetZoom}
-                  style={({ pressed }) => ({
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    backgroundColor: "#008CFF",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 3,
-                    elevation: 3,
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: "700",
-                      color: "#fff",
-                    }}
-                  >
-                    ↺
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
+          <WebView
+            key={webViewKey}
+            source={{ html: webViewSource }}
+            originWhitelist={["*"]}
+            javaScriptEnabled
+            domStorageEnabled
+            scrollEnabled={false}
+            onMessage={handleWebViewMessage}
+            style={{
+              width: mapWidth,
+              height: mapHeight,
+              backgroundColor: "#F7F4EF",
+            }}
+          />
         )}
       </View>
-
-      {selectedGEOID && (
-        <View
-          style={{
-            marginTop: 12,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            backgroundColor: "#E8F4FF",
-            borderRadius: 16,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-          }}
-        >
-          <Text style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}>
-            District selected
-          </Text>
-          <Pressable
-            onPress={() => {
-              setSelectedGEOID(null);
-              setHighlightGeoids(new Set());
-            }}
-          >
-            <Text style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}>
-              Clear
-            </Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
 }

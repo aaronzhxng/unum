@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import { officialsService } from "../services/officials";
+import { geocodeAddress } from "../services/osmGeocoding";
 
 type DistrictSelection = {
   geoid: string;
@@ -178,6 +179,8 @@ export default function DistrictExplorerScreen() {
   const [zip, setZip] = useState("");
   const [zipSearching, setZipSearching] = useState(false);
   const [zipError, setZipError] = useState<string | null>(null);
+  const [addressQuery, setAddressQuery] = useState("");
+  const [addressSearching, setAddressSearching] = useState(false);
   const [focusDistricts, setFocusDistricts] = useState<FocusDistrict[] | null>(
     null,
   );
@@ -239,8 +242,8 @@ export default function DistrictExplorerScreen() {
     }
   };
 
-  const handleZipSearch = useCallback(async () => {
-    const trimmed = zip.trim();
+  const lookupDistrictsByZip = useCallback(async (zipCode: string) => {
+    const trimmed = zipCode.trim();
     if (trimmed.length !== 5 || !/^\d{5}$/.test(trimmed)) {
       setZipError("Enter a valid 5-digit zip code.");
       return;
@@ -259,8 +262,7 @@ export default function DistrictExplorerScreen() {
       }
 
       const data = await res.json();
-      const districts: { state: string; district: number }[] =
-        data.districts;
+      const districts: { state: string; district: number }[] = data.districts;
 
       if (!districts?.length) {
         setZipError("No congressional district found for that zip code.");
@@ -366,7 +368,46 @@ export default function DistrictExplorerScreen() {
     } finally {
       setZipSearching(false);
     }
-  }, [zip]);
+  }, []);
+
+  const handleZipSearch = useCallback(async () => {
+    await lookupDistrictsByZip(zip);
+  }, [lookupDistrictsByZip, zip]);
+
+  const handleAddressSearch = useCallback(async () => {
+    const trimmed = addressQuery.trim();
+    if (!trimmed) {
+      setZipError("Enter an address or ZIP code first.");
+      return;
+    }
+
+    setAddressSearching(true);
+    setZipError(null);
+    setMatchedRep(null);
+    setSelectedDistrict(null);
+    setFocusDistricts(null);
+
+    try {
+      const location = await geocodeAddress(trimmed);
+
+      if (!location?.postcode) {
+        setZipError("Couldn't resolve a ZIP code for that address.");
+        return;
+      }
+
+      if (location.stateAbbr) {
+        setSelectedState(STATE_ABBR_TO_STATE[location.stateAbbr] ?? null);
+      }
+
+      setZip(location.postcode);
+      await lookupDistrictsByZip(location.postcode);
+    } catch (error) {
+      console.error("Address lookup failed:", error);
+      setZipError("Couldn't look up that address. Try another one.");
+    } finally {
+      setAddressSearching(false);
+    }
+  }, [addressQuery, lookupDistrictsByZip]);
 
   const clearZipSearch = useCallback(() => {
     setZip("");
@@ -409,6 +450,99 @@ export default function DistrictExplorerScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Zip Code Search */}
+        <View>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "600",
+              color: "#1a1a1a",
+              marginBottom: 8,
+            }}
+          >
+            Search by address
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#fff",
+              borderRadius: 24,
+              paddingHorizontal: 16,
+              shadowColor: "#000000",
+              shadowOpacity: 0.15,
+              shadowOffset: { width: 0, height: 2 },
+              shadowRadius: 4,
+              elevation: 2,
+            }}
+          >
+            <Search size={18} color="#7B7C81" />
+            <TextInput
+              style={{
+                flex: 1,
+                fontSize: 16,
+                paddingVertical: 14,
+                paddingHorizontal: 10,
+                color: "#1a1a1a",
+              }}
+              placeholder="e.g. 1600 Pennsylvania Ave NW"
+              placeholderTextColor="#bbb"
+              value={addressQuery}
+              onChangeText={(text) => {
+                setAddressQuery(text);
+                if (zipError) setZipError(null);
+              }}
+              onSubmitEditing={handleAddressSearch}
+              returnKeyType="search"
+            />
+            {addressQuery.length > 0 && (
+              <Pressable onPress={() => setAddressQuery("")} hitSlop={8}>
+                <X size={18} color="#999" />
+              </Pressable>
+            )}
+            {addressSearching ? (
+              <ActivityIndicator
+                size="small"
+                color="#008CFF"
+                style={{ marginLeft: 8 }}
+              />
+            ) : (
+              <Pressable
+                onPress={handleAddressSearch}
+                style={({ pressed }) => ({
+                  marginLeft: 8,
+                  backgroundColor: addressQuery.trim() ? "#008CFF" : "#E0E0E0",
+                  borderRadius: 16,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  opacity: pressed ? 0.8 : 1,
+                })}
+                disabled={!addressQuery.trim()}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: addressQuery.trim() ? "#fff" : "#999",
+                  }}
+                >
+                  Search
+                </Text>
+              </Pressable>
+            )}
+          </View>
+          <Text
+            style={{
+              fontSize: 12,
+              color: "#7B7C81",
+              marginTop: 6,
+              marginLeft: 4,
+            }}
+          >
+            OSM geocoding resolves the address to a ZIP code, then we fetch the
+            district.
+          </Text>
+        </View>
+
         <View>
           <Text
             style={{
@@ -650,9 +784,7 @@ export default function DistrictExplorerScreen() {
         {matchedRep && !loading && (
           <Pressable
             onPress={() => {
-              router.push(
-                `/official/${matchedRep.bioguideId}` as `${string}/${string}`,
-              );
+              router.push(`/official/${matchedRep.bioguideId}` as any);
             }}
             style={({ pressed }) => ({
               backgroundColor: "#fff",
