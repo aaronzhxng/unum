@@ -755,6 +755,8 @@ export const runCronJob = async () => {
 
 export const runCronJobForToken = async (token: string) => {
   console.log(`Running single-token cron test for ${token}`, new Date().toISOString());
+  await syncRecentBills();
+  await enrichMissingPolicyAreas();
   await checkNewBills(token);
   await checkFollowedBills(token);
   await checkFollowedOfficials(token);
