@@ -164,7 +164,7 @@ const checkNewBills = async (filterToken?: string) => {
         messages.push({
           to: reg.token,
           title: `${bill.policy_area}: Recent update`,
-          body: `${bill.type}.${bill.number} — ${bill.title}`,
+          body: bill.title,
           data: { billId },
         });
         policyAreaCounts[bill.policy_area] =
@@ -181,7 +181,7 @@ const checkNewBills = async (filterToken?: string) => {
           messages.push({
             to: reg.token,
             title: `New bill from ${matchedState}`,
-            body: `${bill.type}.${bill.number} — ${bill.title}`,
+            body: bill.title,
             data: { billId },
           });
           stateCounts[matchedState] = (stateCounts[matchedState] ?? 0) + 1;
@@ -461,7 +461,7 @@ const checkFollowedOfficials = async (filterToken?: string) => {
             messages.push({
               to: reg.token,
               title: `${officialName} introduced a new bill`,
-              body: `${bill.type}.${bill.number} — ${bill.title ?? "No title"}`,
+              body: bill.title ?? "No title",
               data: { billId, officialId: bioguideId, notifType: "introduced" },
             });
           }
@@ -483,7 +483,7 @@ const checkFollowedOfficials = async (filterToken?: string) => {
             messages.push({
               to: reg.token,
               title: `${officialName} cosponsored a bill`,
-              body: `${bill.type}.${bill.number} — ${bill.title ?? "No title"}`,
+              body: bill.title ?? "No title",
               data: { billId, officialId: bioguideId, notifType: "cosponsored" },
             });
           }
