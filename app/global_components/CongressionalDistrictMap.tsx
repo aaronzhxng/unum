@@ -110,14 +110,15 @@ const FIPS_TO_ABBR: Record<string, string> = Object.fromEntries(
 const BASE_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/54/query";
 
+const CONTIGUOUS_STATE_EXCLUSIONS =
+  "STATE NOT IN ('02','15','60','66','69','72','78')";
+
 function buildQueryUrl(stateAbbr?: string | null): string {
   const params = new URLSearchParams();
   const stateFips = stateAbbr ? STATE_ABBR_TO_FIPS[stateAbbr] : null;
   params.set(
     "where",
-    stateFips
-      ? `STATE='${stateFips}'`
-      : "STATE NOT IN ('02','15','60','66','69','72','78')",
+    stateFips ? `STATE='${stateFips}'` : CONTIGUOUS_STATE_EXCLUSIONS,
   );
   params.set("outFields", "GEOID,STATE,BASENAME,NAME");
   params.set("returnGeometry", "true");
@@ -134,8 +135,11 @@ function escapeJsonForHtml(value: unknown): string {
 
 function buildOpenStreetMapHtml(params: {
   features: DistrictFeature[];
+  alaskaFeatures: DistrictFeature[];
+  hawaiiFeatures: DistrictFeature[];
   highlightGeoids: string[];
   initialSelectedGEOID: string | null;
+  initialMapRegion: "us" | "ak" | "hi";
 }): string {
   const payload = escapeJsonForHtml(params);
 
@@ -230,10 +234,44 @@ function buildOpenStreetMapHtml(params: {
         box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
         pointer-events: none;
       }
+
+      .map-state-switch {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .state-button {
+        min-width: 90px;
+        border: none;
+        border-radius: 999px;
+        padding: 7px 12px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #1a1a1a;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        text-align: left;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+      }
+
+      .state-button.active {
+        background: #008cff;
+        color: #ffffff;
+      }
     </style>
   </head>
   <body>
     <div id="map"></div>
+    <div class="map-state-switch">
+      <button id="state-us" class="state-button" type="button">Lower 48</button>
+      <button id="state-ak" class="state-button" type="button">Alaska</button>
+      <button id="state-hi" class="state-button" type="button">Hawaii</button>
+    </div>
     <div class="map-toolbar">
       <button id="zoom-in" class="map-button" type="button">+</button>
       <button id="zoom-out" class="map-button" type="button">−</button>
@@ -246,10 +284,13 @@ function buildOpenStreetMapHtml(params: {
       (function () {
         const payload = ${payload};
         const features = Array.isArray(payload.features) ? payload.features : [];
+        const alaskaFeatures = Array.isArray(payload.alaskaFeatures) ? payload.alaskaFeatures : [];
+        const hawaiiFeatures = Array.isArray(payload.hawaiiFeatures) ? payload.hawaiiFeatures : [];
         const highlightGeoids = new Set(
           Array.isArray(payload.highlightGeoids) ? payload.highlightGeoids : [],
         );
         const initialSelectedGEOID = payload.initialSelectedGEOID || null;
+        const initialMapRegion = payload.initialMapRegion || "us";
 
         const map = L.map("map", {
           zoomControl: false,
@@ -321,44 +362,122 @@ function buildOpenStreetMapHtml(params: {
           );
         }
 
-        function refreshStyles(layer) {
-          if (layer && typeof layer.setStyle === "function") {
-            layer.setStyle(styleForFeature);
-          }
+        function createDistrictLayer(layerFeatures) {
+          return L.geoJSON(layerFeatures, {
+            style: styleForFeature,
+            onEachFeature: function (feature, layer) {
+              layer.on("click", function () {
+                const properties = feature && feature.properties ? feature.properties : {};
+                if (!properties.GEOID) return;
+
+                selectedGEOID = properties.GEOID;
+                refreshAllStyles();
+                emitSelection(feature);
+              });
+            },
+          });
         }
 
-        const geojsonLayer = L.geoJSON(features, {
-          style: styleForFeature,
-          onEachFeature: function (feature, layer) {
-            layer.on("click", function () {
-              const properties = feature && feature.properties ? feature.properties : {};
-              if (!properties.GEOID) {
-                return;
-              }
+        const layerMap = {
+          us: createDistrictLayer(features),
+          ak: createDistrictLayer(alaskaFeatures),
+          hi: createDistrictLayer(hawaiiFeatures),
+        };
 
-              selectedGEOID = properties.GEOID;
-              refreshStyles(geojsonLayer);
-              emitSelection(feature);
-            });
-          },
-        }).addTo(map);
+        let activeRegion = "us";
+        let activeLayer = null;
 
-        function getFocusBounds() {
+        function refreshAllStyles() {
+          Object.values(layerMap).forEach(function (layer) {
+            if (layer && typeof layer.setStyle === "function") {
+              layer.setStyle(styleForFeature);
+            }
+          });
+        }
+
+        function setActiveButton(region) {
+          ["us", "ak", "hi"].forEach(function (key) {
+            const button = document.getElementById("state-" + key);
+            if (!button) return;
+            button.classList.toggle("active", key === region);
+          });
+        }
+
+        function getLayerBounds(layer) {
+          if (!layer || typeof layer.getBounds !== "function") return null;
+          const bounds = layer.getBounds();
+          return bounds && bounds.isValid() ? bounds : null;
+        }
+
+        function getHighlightBoundsForLayer(layer) {
           const focusLayers = [];
 
-          geojsonLayer.eachLayer(function (layer) {
-            const feature = layer && layer.feature ? layer.feature : null;
+          layer.eachLayer(function (childLayer) {
+            const feature = childLayer && childLayer.feature ? childLayer.feature : null;
             const properties = feature && feature.properties ? feature.properties : {};
             if (properties.GEOID && highlightGeoids.has(properties.GEOID)) {
-              focusLayers.push(layer);
+              focusLayers.push(childLayer);
             }
           });
 
-          if (focusLayers.length) {
-            return L.featureGroup(focusLayers).getBounds();
+          if (!focusLayers.length) return null;
+          const bounds = L.featureGroup(focusLayers).getBounds();
+          return bounds && bounds.isValid() ? bounds : null;
+        }
+
+        function resolveRegion(region) {
+          const targetLayer = layerMap[region];
+          const targetBounds = getLayerBounds(targetLayer);
+          if (targetLayer && targetBounds) return region;
+          return "us";
+        }
+
+        function activateRegion(region, options) {
+          const nextRegion = resolveRegion(region);
+          const opts = options || {};
+
+          if (activeLayer && map.hasLayer(activeLayer)) {
+            map.removeLayer(activeLayer);
           }
 
-          return geojsonLayer.getBounds();
+          activeLayer = layerMap[nextRegion];
+          activeRegion = nextRegion;
+
+          if (activeLayer) {
+            activeLayer.addTo(map);
+          }
+
+          refreshAllStyles();
+          setActiveButton(nextRegion);
+
+          if (opts.skipFit) return;
+
+          const highlightBounds = activeLayer
+            ? getHighlightBoundsForLayer(activeLayer)
+            : null;
+          const targetBounds = highlightBounds || getLayerBounds(activeLayer);
+          if (targetBounds) {
+            map.fitBounds(targetBounds.pad(highlightBounds ? 0.16 : 0.1));
+          } else {
+            map.setView([39.5, -98.35], 4);
+          }
+        }
+
+        function detectRegionFromGeoid(geoid) {
+          if (!geoid || geoid.length < 2) return null;
+          const stateFips = geoid.slice(0, 2);
+          if (stateFips === "02") return "ak";
+          if (stateFips === "15") return "hi";
+          return "us";
+        }
+
+        function getFocusBounds() {
+          if (activeLayer) {
+            const highlightBounds = getHighlightBoundsForLayer(activeLayer);
+            if (highlightBounds) return highlightBounds;
+            return getLayerBounds(activeLayer);
+          }
+          return null;
         }
 
         function fitInitialView() {
@@ -369,6 +488,18 @@ function buildOpenStreetMapHtml(params: {
             map.setView([39.5, -98.35], 4);
           }
         }
+
+        document.getElementById("state-us").addEventListener("click", function () {
+          activateRegion("us");
+        });
+
+        document.getElementById("state-ak").addEventListener("click", function () {
+          activateRegion("ak");
+        });
+
+        document.getElementById("state-hi").addEventListener("click", function () {
+          activateRegion("hi");
+        });
 
         document.getElementById("zoom-in").addEventListener("click", function () {
           map.zoomIn();
@@ -382,10 +513,17 @@ function buildOpenStreetMapHtml(params: {
           fitInitialView();
         });
 
-        fitInitialView();
+        const highlightRegion = (() => {
+          const firstHighlighted = Array.from(highlightGeoids)[0] || null;
+          return detectRegionFromGeoid(firstHighlighted);
+        })();
+
+        const selectedRegion = detectRegionFromGeoid(initialSelectedGEOID);
+        const startRegion = highlightRegion || selectedRegion || initialMapRegion || "us";
+        activateRegion(startRegion);
 
         if (selectedGEOID) {
-          refreshStyles(geojsonLayer);
+          refreshAllStyles();
         }
       })();
     </script>
@@ -419,6 +557,8 @@ export default function CongressionalDistrictMap({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [features, setFeatures] = useState<DistrictFeature[]>([]);
+  const [alaskaFeatures, setAlaskaFeatures] = useState<DistrictFeature[]>([]);
+  const [hawaiiFeatures, setHawaiiFeatures] = useState<DistrictFeature[]>([]);
   const autoSelectRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -430,22 +570,41 @@ export default function CongressionalDistrictMap({
       setError(null);
 
       try {
-        const response = await fetch(buildQueryUrl(stateAbbr), {
-          signal: controller.signal,
-        });
+        const [contiguousResponse, alaskaResponse, hawaiiResponse] =
+          await Promise.all([
+            fetch(buildQueryUrl(stateAbbr), { signal: controller.signal }),
+            fetch(buildQueryUrl("AK"), { signal: controller.signal }),
+            fetch(buildQueryUrl("HI"), { signal: controller.signal }),
+          ]);
 
-        if (!response.ok) {
-          throw new Error(`Failed to load map data (${response.status})`);
+        if (
+          !contiguousResponse.ok ||
+          !alaskaResponse.ok ||
+          !hawaiiResponse.ok
+        ) {
+          throw new Error("Failed to load map data");
         }
 
-        const data = (await response.json()) as DistrictCollection;
+        const [data, alaskaData, hawaiiData] = (await Promise.all([
+          contiguousResponse.json(),
+          alaskaResponse.json(),
+          hawaiiResponse.json(),
+        ])) as [DistrictCollection, DistrictCollection, DistrictCollection];
         if (!active) return;
         setFeatures(Array.isArray(data.features) ? data.features : []);
+        setAlaskaFeatures(
+          Array.isArray(alaskaData.features) ? alaskaData.features : [],
+        );
+        setHawaiiFeatures(
+          Array.isArray(hawaiiData.features) ? hawaiiData.features : [],
+        );
       } catch (fetchError) {
         if (!active || controller.signal.aborted) return;
         console.error("District map load failed:", fetchError);
         setError("Couldn't load the district map right now.");
         setFeatures([]);
+        setAlaskaFeatures([]);
+        setHawaiiFeatures([]);
       } finally {
         if (active) setLoading(false);
       }
@@ -464,12 +623,17 @@ export default function CongressionalDistrictMap({
     return Math.min(440, Math.max(300, screenWidth * 0.78));
   }, [screenWidth, stateAbbr]);
 
+  const allFeatures = useMemo(
+    () => [...features, ...alaskaFeatures, ...hawaiiFeatures],
+    [features, alaskaFeatures, hawaiiFeatures],
+  );
+
   const matchedFocusDistricts = useMemo(() => {
-    if (!focusDistricts?.length || !features.length) return [];
-    return features.filter((feature) =>
+    if (!focusDistricts?.length || !allFeatures.length) return [];
+    return allFeatures.filter((feature) =>
       matchesFocusDistrict(feature, focusDistricts),
     );
-  }, [features, focusDistricts]);
+  }, [allFeatures, focusDistricts]);
 
   const highlightGeoids = useMemo(
     () => matchedFocusDistricts.map((feature) => feature.properties.GEOID),
@@ -507,16 +671,34 @@ export default function CongressionalDistrictMap({
     () =>
       buildOpenStreetMapHtml({
         features,
+        alaskaFeatures,
+        hawaiiFeatures,
         highlightGeoids,
         initialSelectedGEOID,
+        initialMapRegion:
+          stateAbbr === "AK" ? "ak" : stateAbbr === "HI" ? "hi" : "us",
       }),
-    [features, highlightGeoids, initialSelectedGEOID],
+    [
+      features,
+      alaskaFeatures,
+      hawaiiFeatures,
+      highlightGeoids,
+      initialSelectedGEOID,
+      stateAbbr,
+    ],
   );
 
   const webViewKey = useMemo(
     () =>
-      `${stateAbbr ?? "all"}-${features.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}`,
-    [stateAbbr, features.length, highlightGeoids, initialSelectedGEOID],
+      `${stateAbbr ?? "all"}-${features.length}-${alaskaFeatures.length}-${hawaiiFeatures.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}`,
+    [
+      stateAbbr,
+      features.length,
+      alaskaFeatures.length,
+      hawaiiFeatures.length,
+      highlightGeoids,
+      initialSelectedGEOID,
+    ],
   );
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
