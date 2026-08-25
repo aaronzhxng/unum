@@ -1,0 +1,141 @@
+/**
+ * Asset registry for education content.
+ *
+ * Maps string filenames (from generated JSON or .md files)
+ * to static require() calls so Metro can bundle the images.
+ *
+ * When adding a new image, add its filename here (without the
+ * assets/education_images/ prefix).
+ */
+
+const educationImages: Record<string, any> = {
+  "whatisusgov.png": require("../../assets/education_images/whatisusgov.png"),
+  "whatisbasisforamericanlaw.png": require("../../assets/education_images/whatisbasisforamericanlaw.png"),
+  "constitution1.png": require("../../assets/education_images/constitution1.png"),
+  "constitution2.png": require("../../assets/education_images/constitution2.png"),
+  "house1.png": require("../../assets/education_images/house1.png"),
+  "house2.jpg": require("../../assets/education_images/house2.jpg"),
+  "house3.png": require("../../assets/education_images/house3.png"),
+  "house4.png": require("../../assets/education_images/house4.png"),
+  "house5.png": require("../../assets/education_images/house5.png"),
+  "senate1.png": require("../../assets/education_images/senate1.png"),
+  "congress1.png": require("../../assets/education_images/congress1.png"),
+  "congress2.png": require("../../assets/education_images/congress2.png"),
+  "congress3.png": require("../../assets/education_images/congress3.png"),
+  "congress4.jpg": require("../../assets/education_images/congress4.jpg"),
+  "congress5.jpg": require("../../assets/education_images/congress5.jpg"),
+  "congress6.jpg": require("../../assets/education_images/congress6.jpg"),
+  "congress7.jpg": require("../../assets/education_images/congress7.jpg"),
+  "congress8.jpg": require("../../assets/education_images/congress8.jpg"),
+  "congress9.png": require("../../assets/education_images/congress9.png"),
+  "congress10.png": require("../../assets/education_images/congress10.png"),
+  "judiciary1.png": require("../../assets/education_images/judiciary1.png"),
+  "judiciary2.png": require("../../assets/education_images/judiciary2.png"),
+  "judiciary3.png": require("../../assets/education_images/judiciary3.png"),
+  "judiciary4.png": require("../../assets/education_images/judiciary4.png"),
+  "executive1.png": require("../../assets/education_images/executive1.png"),
+  "executive2.png": require("../../assets/education_images/executive2.png"),
+  "executive3.png": require("../../assets/education_images/executive3.png"),
+  "executive4.png": require("../../assets/education_images/executive4.png"),
+  "executive5.png": require("../../assets/education_images/executive5.png"),
+  "executive6.png": require("../../assets/education_images/executive6.png"),
+  "executive7.png": require("../../assets/education_images/executive7.png"),
+  "executive8.png": require("../../assets/education_images/executive8.png"),
+  "executive9.png": require("../../assets/education_images/executive9.png"),
+  "executive10.png": require("../../assets/education_images/executive10.png"),
+  "executive11.png": require("../../assets/education_images/executive11.png"),
+  "parties1.png": require("../../assets/education_images/parties1.png"),
+  "parties2.png": require("../../assets/education_images/parties2.png"),
+  "parties3.png": require("../../assets/education_images/parties3.png"),
+  "parties4.png": require("../../assets/education_images/parties4.png"),
+  "parties5.png": require("../../assets/education_images/parties5.png"),
+  "parties6.png": require("../../assets/education_images/parties6.png"),
+  "parties7.png": require("../../assets/education_images/parties7.png"),
+  "parties8.png": require("../../assets/education_images/parties8.png"),
+  "parties9.png": require("../../assets/education_images/parties9.png"),
+};
+
+const topicIcons: Record<string, any> = {
+  "how-government-works": require("../../assets/education_icons/how_gov_works.png"),
+  "the-constitution": require("../../assets/education_icons/constitution.png"),
+  "house-of-representatives": require("../../assets/education_icons/house.png"),
+  "us-senate": require("../../assets/education_icons/senate.png"),
+  "congress-legislation": require("../../assets/education_icons/congress.png"),
+  "elections-voting": require("../../assets/education_icons/elections_voting.png"),
+  "us-history-foundations": require("../../assets/education_icons/us_history.png"),
+  "us-judicial-system": require("../../assets/education_icons/judiciary.png"),
+  "executive-branch": require("../../assets/education_icons/executive.png"),
+  "political-parties-ideology": require("../../assets/education_icons/political_parties.png"),
+  "rights-civic-participation": require("../../assets/education_icons/your_rights.png"),
+};
+
+const subtopicIcons: Record<string, any> = {
+  "what-is-us-government": require("../../assets/education_icons/govworksicon1.png"),
+  "what-does-executive-do": require("../../assets/education_icons/govworksicon2.png"),
+  "basis-for-american-law": require("../../assets/education_icons/govworksicon3.png"),
+  "what-is-the-constitution": require("../../assets/education_icons/constitutionicon1.png"),
+  "how-constitution-changed": require("../../assets/education_icons/constitutionicon2.png"),
+  "how-to-read-constitution": require("../../assets/education_icons/constitutionicon4.png"),
+  "how-does-the-house-look": require("../../assets/education_icons/houseicon1.png"),
+  "how-are-districts-redrawn": require("../../assets/education_icons/houseicon2.png"),
+  "who-can-become-a-representative": require("../../assets/education_icons/houseicon3.png"),
+  "how-are-districts-numbered": require("../../assets/education_icons/houseicon4.png"),
+  "house-leadership": require("../../assets/education_icons/houseicon5.png"),
+  "what-can-the-house-do": require("../../assets/education_icons/houseicon6.png"),
+  "how-does-the-senate-look": require("../../assets/education_icons/senateicon1.png"),
+  "who-can-become-a-senator": require("../../assets/education_icons/senateicon2.png"),
+  "how-are-senators-classified": require("../../assets/education_icons/senateicon3.png"),
+  "senate-leadership": require("../../assets/education_icons/senateicon4.png"),
+  "what-can-the-senate-do": require("../../assets/education_icons/senateicon5.png"),
+  "the-filibuster": require("../../assets/education_icons/senateicon6.png"),
+  "what-does-congress-do": require("../../assets/education_icons/congressicon1.png"),
+  "who-introduces-a-law": require("../../assets/education_icons/congressicon2.png"),
+  "what-are-committees": require("../../assets/education_icons/congressicon3.png"),
+  "what-happens-after-committee": require("../../assets/education_icons/congressicon4.png"),
+  "example-bills-becoming-law": require("../../assets/education_icons/congressicon5.png"),
+  "using-unum-to-track-a-bill": require("../../assets/education_icons/congressicon6.png"),
+  "what-about-other-resolutions": require("../../assets/education_icons/congressicon7.png"),
+  "making-money": require("../../assets/education_icons/congressicon8.png"),
+  "spending-money": require("../../assets/education_icons/congressicon9.png"),
+  "how-budget-is-made": require("../../assets/education_icons/congressicon10.png"),
+  "what-if-theres-a-problem": require("../../assets/education_icons/congressicon11.png"),
+  "checking-work-of-executive": require("../../assets/education_icons/congressicon12.png"),
+  "what-is-impeachment": require("../../assets/education_icons/congressicon13.png"),
+  "basic-principles-of-us-law": require("../../assets/education_icons/judiciaryicon1.png"),
+  "what-do-courts-look-like": require("../../assets/education_icons/judiciaryicon2.png"),
+  "who-are-judges": require("../../assets/education_icons/judiciaryicon3.png"),
+  "what-is-the-supreme-court": require("../../assets/education_icons/judiciaryicon4.png"),
+  "who-are-the-justices": require("../../assets/education_icons/judiciaryicon5.png"),
+  "what-is-the-executive-branch": require("../../assets/education_icons/executiveicon1.png"),
+  "who-can-become-president": require("../../assets/education_icons/executiveicon2.png"),
+  "how-is-president-elected": require("../../assets/education_icons/executiveicon3.png"),
+  "how-are-electors-chosen": require("../../assets/education_icons/executiveicon4.png"),
+  "what-can-the-president-do": require("../../assets/education_icons/executiveicon5.png"),
+  "how-does-president-influence-lawmaking": require("../../assets/education_icons/executiveicon6.png"),
+  "what-is-the-bureaucracy": require("../../assets/education_icons/executiveicon7.png"),
+  "how-does-president-lead-bureaucracy": require("../../assets/education_icons/executiveicon8.png"),
+  "what-is-presidents-cabinet": require("../../assets/education_icons/executiveicon9.png"),
+  "how-does-president-represent-country": require("../../assets/education_icons/executiveicon10.png"),
+  "what-does-vice-president-do": require("../../assets/education_icons/executiveicon11.png"),
+  "how-can-i-learn-more-about-politics": require("../../assets/education_icons/partiesicon1.png"),
+  "why-do-politicians-join-parties": require("../../assets/education_icons/partiesicon2.png"),
+  "what-are-americas-big-two": require("../../assets/education_icons/partiesicon3.png"),
+  "what-are-the-other-parties": require("../../assets/education_icons/partiesicon4.png"),
+  "primaries-and-caucuses": require("../../assets/education_icons/partiesicon5.png"),
+  "majority-governments": require("../../assets/education_icons/partiesicon6.png"),
+  "why-do-we-care-about-majorities": require("../../assets/education_icons/partiesicon7.png"),
+  "voter-registration": require("../../assets/education_icons/yourrights1.png"),
+  "what-are-my-rights": require("../../assets/education_icons/yourrights2.png"),
+  "why-should-i-care": require("../../assets/education_icons/yourrights3.png"),
+  "why-care-about-political-parties": require("../../assets/education_icons/yourrights4.png"),
+  "how-to-contact-your-representative": require("../../assets/education_icons/yourrights5.png"),
+};
+
+export const resolveImage = (filename: string): any =>
+  educationImages[filename] ?? null;
+
+export const resolveTopicIcon = (topicId: string): any =>
+  topicIcons[topicId] ?? null;
+
+export const resolveSubtopicIcon = (subtopicId: string): any =>
+  subtopicIcons[subtopicId] ?? null;

@@ -146,7 +146,9 @@ export default function RootLayout() {
                 name="education_tab/[topic]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: false, // screen has its own edge-swipe strip
+                  title: "",
+                  headerTitle: "",
+                  gestureEnabled: false,
                   animation: "slide_from_right",
                 }}
               />
@@ -154,7 +156,9 @@ export default function RootLayout() {
                 name="education_tab/[topic]/[subtopic]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: false, // screen has its own edge-swipe strip
+                  title: "",
+                  headerTitle: "",
+                  gestureEnabled: false,
                   animation: "slide_from_right",
                 }}
               />

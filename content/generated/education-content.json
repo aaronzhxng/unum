@@ -1,0 +1,1463 @@
+{
+  "topics": [
+    {
+      "id": "congress-legislation",
+      "title": "Responsibilities of Congress",
+      "subtitle": "How a bill becomes law, committees, floor votes, and more.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "what-does-congress-do",
+          "title": "What does Congress do?",
+          "summary": "The legislative role of Congress: passing laws, controlling spending, and checking the Executive.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Congress is the legislative branch of the U.S. government. In this capacity, Congress passes laws, controls spending, and checks the work of the Executive.\n\nThe most important job of Congress is legislating, or passing new laws."
+            },
+            {
+              "type": "callout",
+              "content": "The Constitution allows Congress to pass laws on almost anything that affects multiple states or the entire country at once."
+            },
+            {
+              "type": "text",
+              "content": "These include immigration, major taxes, declaring war and making peace, the national debt, international treaties, and trade with foreign countries.\n\nNew laws need to be made from time to time to keep them up to date. It could be that an old law needs to be updated, replaced, or repealed without replacement. There could also be a situation that requires entirely new laws.\n\nThe following sections will discuss how a law is passed in all its stages. In practice, however, Congress has many ways of skipping past a step, or taking a different approach: for example, by calling a \"voice vote\" instead of a \"roll-call vote.\" It is impossible to describe all of them here; however, Unum defines many of these actions when they have taken place for specific bills."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "C-SPAN: watch congressional debates live",
+                  "url": "https://www.c-span.org/"
+                },
+                {
+                  "label": "Introduction to the federal legislative process (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/IG10005"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "who-introduces-a-law",
+          "title": "Who introduces a law?",
+          "summary": "How bills are drafted, introduced, and assigned to committees.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "A draft law is called a bill or a resolution: they are basically the same.\n\nAny member of Congress can introduce a bill: the first person to do so becomes its \"sponsor\", and those who follow are called \"co-sponsors\". Once it is introduced, the bill gets the letters H.R. or S (standing for House of Representatives or Senate), or H.J.Res. or S.J.Res. (if it is a joint resolution), followed by a number.\n\nThe bill is then referred to one or more committees with just a few special members of the House or the Senate, who will research and debate the details of the bill and make any necessary changes."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "C-SPAN: watch congressional debates live",
+                  "url": "https://www.c-span.org/"
+                },
+                {
+                  "label": "Introduction to the federal legislative process (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/IG10005"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-are-committees",
+          "title": "What are committees?",
+          "summary": "How congressional committees research, debate, and shape legislation.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "At any time, the House and Senate have, put together, about fifty committees and 150 subcommittees. Each body specializes in a specific area. The most important committees include the House Ways and Means Committee, which debates bills related to taxation, and the Senate Committee on Foreign Relations.\n\nIn order to know more about the subject of the bill, each committee or subcommittee will usually hold one or more hearings, or public meetings. The members will call up non-politician experts in the area and ask them questions about whether the bill will help or hurt them or if it is necessary. Usually, the people who are being asked to speak (testify) have different backgrounds from each other. For instance, while considering a bill to do with telecommunications, Congress might hold a hearing with television executives, college professors, and small video creators.\n\nCommittees can also sometimes hold hearings about topics that they expect a bill to be written about soon. And, the Senate Committee on Foreign Relations holds hearings when they need to decide whether the Senate should ratify an international agreement (or \"treaty\") that the President has signed. The Constitution says that two-thirds of the Senate must vote for a treaty before its terms become law in the United States.\n\nCommittees have members belonging to both parties. However, the chair position and the majority of members always belong to the party with the majority of seats in the House or Senate. The chair is very important, because he or she sets the schedule for what bills get considered and what bills are ignored, or \"tabled.\""
+            },
+            {
+              "type": "callout",
+              "content": "Most bills fail in committee and do not even get a hearing."
+            },
+            {
+              "type": "text",
+              "content": "The leader of the minority group in each committee is called the \"ranking member.\""
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "C-SPAN: watch congressional debates live",
+                  "url": "https://www.c-span.org/"
+                },
+                {
+                  "label": "Introduction to the federal legislative process (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/IG10005"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-happens-after-committee",
+          "title": "What happens after a committee approves a bill?",
+          "summary": "Floor debate, chamber votes, conference committee, and the presidential decision.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "If the committee approves a bill, it returns to the chamber where it is debated, changed (\"amended\"), and voted on. You can watch debates live on the C-SPAN television channels or on the Internet. At least half of the chamber's members must vote in favor of the bill: usually, that means no fewer than 218 of 435 representatives, or 51 of 100 senators. If they do, the bill moves to the second chamber, where it goes through the same process again.\n\nAt the end, a conference committee is formed with members of both chambers to work out any differences that came up during the amendment process. Once their work is done, the bill goes to the President to sign or reject (\"veto\")."
+            },
+            {
+              "type": "callout",
+              "content": "The President only has ten days, not counting Sunday, to make a decision, or it will automatically become law."
+            },
+            {
+              "type": "text",
+              "content": "If the President vetoes a bill, both chambers of Congress need to vote with a two-thirds majority to make the bill into law anyways."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "C-SPAN: watch congressional debates live",
+                  "url": "https://www.c-span.org/"
+                },
+                {
+                  "label": "Introduction to the federal legislative process (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/IG10005"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "example-bills-becoming-law",
+          "title": "Example bills becoming law",
+          "summary": "A real example showing every stage a bill passes through on Congress.gov.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Let us see an example. You can track the progress of a bill using Unum or Congress.gov."
+            },
+            {
+              "type": "image",
+              "source": "congress1.png"
+            },
+            {
+              "type": "image",
+              "source": "congress2.png"
+            },
+            {
+              "type": "text",
+              "content": "As you can see, on March 13, 2007, Democratic member of the House of Representatives James L. Oberstar (representing Minnesota's eighth congressional district) introduced the \"Water Resources Development Act of 2007,\" numbered H.R. 1495. It was co-sponsored by three of Mr. Oberstar's colleagues: one Democrat and two Republicans.\n\nThe bill went through the House of Representatives' Transportation and Infrastructure Committee who published a report. It then went through the Senate, and, finally, the conference committee, who also published a report. The bill was all set to be given to the President, George W. Bush."
+            },
+            {
+              "type": "image",
+              "source": "congress3.png"
+            },
+            {
+              "type": "text",
+              "content": "Mr. Bush received the bill on October 23, but he vetoed it ten days later, on November 2. He issued a statement explaining his decision, but the House and Senate voted with two-thirds majorities to pass the bill anyways. The next day, it became an effective law."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "C-SPAN: watch congressional debates live",
+                  "url": "https://www.c-span.org/"
+                },
+                {
+                  "label": "Introduction to the federal legislative process (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/IG10005"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "using-unum-to-track-a-bill",
+          "title": "Using Unum to track a bill",
+          "summary": "A step-by-step walkthrough of tracking a real bill through Unum.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Unum was created to help regular people keep track of bills as they move through the legislative process. Try turning on notifications for a bill or a member of Congress! Let us see one bill that also became a law: the Epstein Files Transparency Act, which directed the Department of Justice to publish certain files relating to two notorious criminals."
+            },
+            {
+              "type": "image",
+              "source": "congress4.jpg",
+              "caption": "First, you can see the bill was introduced on July 15, 2025, by Ro Khanna, a Democratic representative for California's 17th district."
+            },
+            {
+              "type": "image",
+              "source": "congress5.jpg",
+              "caption": "Afterward, the House Committee on the Judiciary considered the bill for a few months. On November 18, the committee's chairman, Mr. Jim Jordan (R-OH4) took the bill out."
+            },
+            {
+              "type": "image",
+              "source": "congress6.jpg",
+              "caption": "The House debated the bill for forty minutes, and then voted for it, 427-1."
+            },
+            {
+              "type": "image",
+              "source": "congress7.jpg",
+              "caption": "As you can see, Unum provides bar graphs for recorded votes based on members' parties. It also highlights how the selected local representative, Mr. Goldman, voted for the bill."
+            },
+            {
+              "type": "image",
+              "source": "congress8.jpg",
+              "caption": "Finally, the Senate received the bill. As earlier discussed, sometimes Congress takes special measures to speed up passing a bill. This time, the Senate did not debate or record a vote through a complex procedure called \"Unanimous Consent.\" You can search up what this and other procedures mean. Because of this quick action, President Trump received the bill on the same day, November 19, and signed it into law."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "C-SPAN: watch congressional debates live",
+                  "url": "https://www.c-span.org/"
+                },
+                {
+                  "label": "Introduction to the federal legislative process (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/IG10005"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-about-other-resolutions",
+          "title": "What about other resolutions?",
+          "summary": "Simple and concurrent resolutions that change how Congress operates but never become law.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Interestingly, there are two more types of resolution, but they never become law. Simple resolutions (numbered H.Res. or S.Res.) are passed by one house of Congress to change how they operate. Concurrent resolutions (H.Con.Res. or S.Con.Res.) are passed by both houses of Congress to change how both operate. Usually, all that happens is that they are introduced, and a vote happens."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "C-SPAN: watch congressional debates live",
+                  "url": "https://www.c-span.org/"
+                },
+                {
+                  "label": "Introduction to the federal legislative process (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/IG10005"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "making-money",
+          "title": "Making money",
+          "summary": "How the federal government raises revenue through taxes and tariffs.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "One of the most important responsibilities a government has is controlling how money is raised from the public (as \"income\") and where that money is spent (as \"expenditures\" or \"outlays\"). In a federal country like the United States, these powers are shared between the national government, the state government, and smaller local governments.\n\nThe federal government raises money in several ways. The largest part of government revenue comes from taxes on individual incomes. There are also taxes taken off an employee's payroll, taxes on company earnings, taxes on harmful goods like gasoline and tobacco, and taxes on items bought from other countries (these taxes are called tariffs). Tariffs are collected by the Customs and Border Protection agency, while taxes are managed by the Internal Revenue System (IRS). The Constitution says that all bills that relate to raising money must start in the House of Representatives."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of federal taxation (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/R48313"
+                },
+                {
+                  "label": "Where federal spending goes",
+                  "url": "https://www.usaspending.gov/"
+                },
+                {
+                  "label": "How the government budget process works",
+                  "url": "https://usafacts.org/articles/how-does-the-government-budget-process-work/"
+                },
+                {
+                  "label": "Timetable of budget actions",
+                  "url": "https://budget.house.gov/about/budget-framework/time-table-budget-process/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "spending-money",
+          "title": "Spending money",
+          "summary": "Mandatory versus discretionary spending and how the federal budget is divided.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The money that is raised is spent on a wide number of things. First are responsibilities any national government has, such as paying for the military and for national security. Additionally, the United States funds many programs to improve the lives of its citizens and businesses."
+            },
+            {
+              "type": "callout",
+              "content": "The U.S. government buys 20% of all the country's goods and services (called the G.D.P., or gross domestic product)."
+            },
+            {
+              "type": "text",
+              "content": "However, there is never enough money for everything. The process of deciding how to spend money on the many different activities of government is tough and political. It happens as part of the yearly budget process.  About 60% of federal spending is considered mandatory, meaning that it must be spent because of an existing law. Social Security and Medicare, the government-provided healthcare program for older people, are the best-known categories. The remaining 40% is discretionary, which means Congress has to actively decide to spend it each year through the appropriations process. This category includes everything else, especially national security."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of federal taxation (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/R48313"
+                },
+                {
+                  "label": "Where federal spending goes",
+                  "url": "https://www.usaspending.gov/"
+                },
+                {
+                  "label": "How the government budget process works",
+                  "url": "https://usafacts.org/articles/how-does-the-government-budget-process-work/"
+                },
+                {
+                  "label": "Timetable of budget actions",
+                  "url": "https://budget.house.gov/about/budget-framework/time-table-budget-process/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "how-budget-is-made",
+          "title": "How the budget is made",
+          "summary": "The annual budget process: President's proposal, budget resolution, and appropriations.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The annual budget process begins when the President sends a budget proposal to Congress. This proposal is not binding, but it sets the terms of the debate. Congress then passes a \"budget resolution\" that sets overall spending limits. Finally, Congress passes a series of appropriations bills that actually authorize the spending.\n\nIf Congress fails to pass a budget, the government can shut down, but temporary funding bills called \"continuing resolutions\" are often used to avoid this."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of federal taxation (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/R48313"
+                },
+                {
+                  "label": "Where federal spending goes",
+                  "url": "https://www.usaspending.gov/"
+                },
+                {
+                  "label": "How the government budget process works",
+                  "url": "https://usafacts.org/articles/how-does-the-government-budget-process-work/"
+                },
+                {
+                  "label": "Timetable of budget actions",
+                  "url": "https://budget.house.gov/about/budget-framework/time-table-budget-process/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-if-theres-a-problem",
+          "title": "What if there's a problem?",
+          "summary": "How Congress investigates and oversees the Executive Branch.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Congress has the power to investigate any part of the Executive, subpoena witnesses, and hold them in contempt if they refuse to cooperate. They can also call in and cross-examine the head of any department or agency. This function is called congressional oversight."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of federal taxation (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/R48313"
+                },
+                {
+                  "label": "Where federal spending goes",
+                  "url": "https://www.usaspending.gov/"
+                },
+                {
+                  "label": "How the government budget process works",
+                  "url": "https://usafacts.org/articles/how-does-the-government-budget-process-work/"
+                },
+                {
+                  "label": "Timetable of budget actions",
+                  "url": "https://budget.house.gov/about/budget-framework/time-table-budget-process/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "checking-work-of-executive",
+          "title": "Checking the work of the Executive",
+          "summary": "Congressional oversight, subpoenas, and holding the Executive accountable.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "In addition to passing laws, Congress plays a crucial role in checking the work of the Executive Branch. This is done through hearings, investigations, and the power of the purse. Committees can subpoena documents and witness testimony. The Government Accountability Office (GAO) is Congress's investigative arm."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of federal taxation (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/R48313"
+                },
+                {
+                  "label": "Where federal spending goes",
+                  "url": "https://www.usaspending.gov/"
+                },
+                {
+                  "label": "How the government budget process works",
+                  "url": "https://usafacts.org/articles/how-does-the-government-budget-process-work/"
+                },
+                {
+                  "label": "Timetable of budget actions",
+                  "url": "https://budget.house.gov/about/budget-framework/time-table-budget-process/"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-is-impeachment",
+          "title": "What is impeachment?",
+          "summary": "The process of impeaching and removing federal officials.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Impeachment is the process by which Congress can remove the President, Vice President, or other federal officials from office. The House votes to impeach (like an indictment), and the Senate holds a trial to decide whether to convict and remove. A two-thirds majority in the Senate is required for conviction."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of federal taxation (Congressional Research Service)",
+                  "url": "https://www.congress.gov/crs-product/R48313"
+                },
+                {
+                  "label": "Where federal spending goes",
+                  "url": "https://www.usaspending.gov/"
+                },
+                {
+                  "label": "How the government budget process works",
+                  "url": "https://usafacts.org/articles/how-does-the-government-budget-process-work/"
+                },
+                {
+                  "label": "Timetable of budget actions",
+                  "url": "https://budget.house.gov/about/budget-framework/time-table-budget-process/"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elections-voting",
+      "title": "Elections & Voting",
+      "subtitle": "Electoral College, primaries, and how elections work.",
+      "icon": "",
+      "subtopics": []
+    },
+    {
+      "id": "executive-branch",
+      "title": "The Executive Branch",
+      "subtitle": "The Presidency, bureaucracy, Cabinet, and executive power.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "what-is-the-executive-branch",
+          "title": "What is the Executive Branch?",
+          "summary": "The role and structure of the Executive Branch.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Executive Branch is responsible for enforcing and administering the laws passed by Congress. It is headed by the President, who is both the head of state and the head of government."
+            }
+          ]
+        },
+        {
+          "id": "who-can-become-president",
+          "title": "Who can become U.S. President?",
+          "summary": "The constitutional requirements to serve as President.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "To become President, one must be a natural-born citizen, at least 35 years old, and a resident of the United States for at least 14 years."
+            }
+          ]
+        },
+        {
+          "id": "how-is-president-elected",
+          "title": "How is the U.S. President elected?",
+          "summary": "The Electoral College and the presidential election process.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The President is elected through the Electoral College. Each state gets a number of electors equal to its total number of senators and representatives. A candidate needs 270 electoral votes to win."
+            }
+          ]
+        },
+        {
+          "id": "how-are-electors-chosen",
+          "title": "How are electors chosen?",
+          "summary": "How states select their Electoral College electors.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Electors are chosen by each state's political parties. They are typically party loyalists, elected officials, or activists. In most states, the candidate who wins the popular vote gets all of that state's electoral votes."
+            }
+          ]
+        },
+        {
+          "id": "what-can-the-president-do",
+          "title": "What can the President do?",
+          "summary": "The President's constitutional powers and responsibilities.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The President has many powers: commanding the military, granting pardons, making treaties (with Senate approval), appointing federal officials, and issuing executive orders. The President also delivers the State of the Union address and can veto legislation."
+            }
+          ]
+        },
+        {
+          "id": "how-does-president-influence-lawmaking",
+          "title": "How does the President influence lawmaking?",
+          "summary": "Executive orders, vetoes, and the President's legislative agenda.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The President can influence lawmaking by proposing legislation, threatening vetoes, issuing executive orders, and using the bully pulpit to shape public opinion."
+            }
+          ]
+        },
+        {
+          "id": "what-is-the-bureaucracy",
+          "title": "What is the bureaucracy?",
+          "summary": "The federal agencies and departments that implement policies.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The federal bureaucracy consists of the departments, agencies, and commissions that implement and administer federal laws. It includes the Cabinet departments, independent agencies, and government corporations."
+            }
+          ]
+        },
+        {
+          "id": "how-does-president-lead-bureaucracy",
+          "title": "How does the President lead the bureaucracy?",
+          "summary": "Presidential control over federal agencies through appointments and executive orders.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The President leads the bureaucracy by appointing agency heads, issuing executive orders, and proposing budgets. However, many agencies have some independence from direct presidential control."
+            }
+          ]
+        },
+        {
+          "id": "what-is-presidents-cabinet",
+          "title": "What is the President's cabinet?",
+          "summary": "The Secretaries who advise the President and lead federal departments.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Cabinet is composed of the Vice President and the heads of the 15 executive departments. These Secretaries are appointed by the President and confirmed by the Senate."
+            }
+          ]
+        },
+        {
+          "id": "how-does-president-represent-country",
+          "title": "How does the President represent the country?",
+          "summary": "The President's role as head of state and chief diplomat.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "As head of state, the President represents the United States in foreign affairs, meets with foreign leaders, and serves as the face of the nation during crises and celebrations."
+            }
+          ]
+        },
+        {
+          "id": "what-does-vice-president-do",
+          "title": "What does the Vice President do?",
+          "summary": "The Vice President's constitutional and modern roles.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Vice President's constitutional role is to preside over the Senate and cast tie-breaking votes. In modern times, the VP also advises the President and takes on specific policy portfolios."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "house-of-representatives",
+      "title": "What is the House of Representatives?",
+      "subtitle": "Districts, redistricting, leadership, and the House's special powers.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "how-does-the-house-look",
+          "title": "How does the House look?",
+          "summary": "How representation is distributed across states by population.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The House of Representatives, also called the House, is the \"lower\" of the two houses of Congress. This is because the House was designed to represent the population on a smaller scale than the Senate. Its members, Representatives, are elected every two years to districts, rather than states."
+            },
+            {
+              "type": "callout",
+              "content": "The number of representatives each state gets depends on its population. Currently, California has 52 representatives, while five states have just 1 district covering their whole area."
+            },
+            {
+              "type": "text",
+              "content": "In 1929, Congress locked the size of the House at 435 seats. Since then, states have gained and lost seats between each other, but the total remains the same. This process of gaining and losing representatives, called reapportionment, takes place every ten years after the national census."
+            },
+            {
+              "type": "image",
+              "source": "house1.png",
+              "caption": "This map shows the number of representatives each state has as of 2023. Source: commons.wikimedia.org/wiki/File:2020_census_reapportionment.svg"
+            },
+            {
+              "type": "text",
+              "content": "Because of the mathematics involved in making sure each state has at least one representative, some states are statistically overrepresented compared to others. For example, at the 2020 census, Delaware had just fewer than 1 million residents, while Montana had just over 1 million. However, Montana now has two representatives — so, about one per 500,000 people — while Delaware still has just one. The average U.S. House District includes between 750,000 and 800,000 residents (\"constituents.\")\n\nIn addition to the 435 voting members, there are 6 representatives who cannot vote. These men and women represent the U.S.'s territories — Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, and the Northern Mariana Islands — as well as Washington, D.C."
+            }
+          ]
+        },
+        {
+          "id": "how-are-districts-redrawn",
+          "title": "How are districts redrawn?",
+          "summary": "Redistricting, gerrymandering, and how states draw congressional boundaries.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The census tells states how many districts they must have, but it is the states that decide just how these districts look. Sometimes, after the census, a state gets more or fewer seats and so has to draw a new map. Other times, the state does not need to, but chooses to anyway. This process is called redistricting."
+            },
+            {
+              "type": "image",
+              "source": "house2.jpg",
+              "caption": "Iowa's congressional districts after the census of 2000. Source: commons.wikimedia.org/wiki/File:IA-districts-108.JPG"
+            },
+            {
+              "type": "image",
+              "source": "house3.png",
+              "caption": "Iowa's congressional districts after the census of 2010. Source: commons.wikimedia.org/wiki/File:Blank_Iowa_Congressional_Districts_with_Counties,_2012-2022.svg"
+            },
+            {
+              "type": "text",
+              "content": "Just who draws the map depends on the state. Some states use a panel of experts or a mix of both parties. Others let the state legislature do it, and maybe the governor."
+            },
+            {
+              "type": "callout",
+              "content": "A consequence of allowing partisan map drawing is that, sometimes, the party in charge will redistrict the state based on voting patterns to help itself win more seats in the future."
+            },
+            {
+              "type": "text",
+              "content": "This process is called \"gerrymandering.\" The term gerrymander comes from 1812 when the Governor of Massachusetts, Elbridge Gerry proposed such a map. Many of its districts took weird and unnatural shapes, some of which looked like a salamander, just to let his party win more seats. It can be obvious to tell when a district is gerrymandered, because it has a very strange shape that does not seem to make a lot of sense.\n\nIn fact, party politicians have two main strategies to make sure gerrymandering works. First, they can divide large populations that vote against them into several districts so that their vote can be outnumbered. This is called \"cracking.\" Alternatively, they can take voters they don't like and pack them into one district, so that other districts are less competitive. A combination of these strategies can be seen in the example below."
+            },
+            {
+              "type": "image",
+              "source": "house4.png"
+            },
+            {
+              "type": "text",
+              "content": "Recently, states have become more open about redistricting for political reasons. Gerrymandering is one of the most-often criticized parts about American democracy."
+            }
+          ]
+        },
+        {
+          "id": "who-can-become-a-representative",
+          "title": "Who can become a representative?",
+          "summary": "The constitutional requirements to serve in the House of Representatives.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Between Congress and the Presidency, it is easiest to become a representative. One simply has to be at least 25 years of age, a resident of the state for which he or she is running, and a citizen for at least seven years. Of course, in reality, most representatives have prior connections in politics or society. They almost always belong to a political party and may be prominent lawyers, businesspeople, or activists."
+            }
+          ]
+        },
+        {
+          "id": "how-are-districts-numbered",
+          "title": "How are districts numbered?",
+          "summary": "How representatives and their districts are labeled and identified.",
+          "icon": "",
+          "body": [
+            {
+              "type": "image",
+              "source": "house5.png",
+              "caption": "Congressional districts of Arizona (118th Congress). Author: Twotwofourtysix. Source: en.wikipedia.org/wiki/"
+            },
+            {
+              "type": "text",
+              "content": "Representatives and their districts are often noted as XX-##, with their state's two-letter postal abbreviation being followed by their assigned district number. Therefore, in the above map, the district covering much of Arizona's border with Mexico would be labeled AZ-7, and its representative would be referred to as, for example, John Smith (AZ-7). The district's number is usually determined based on location or on what it has historically been called."
+            }
+          ]
+        },
+        {
+          "id": "house-leadership",
+          "title": "House Leadership",
+          "summary": "The Speaker, Majority and Minority Leaders, and Whips.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Speaker of the House: The person who sets the agenda, presides over debates, and is second in line to the presidency. They are chosen by a majority vote either at the beginning of a new session of Congress or after the previous Speaker is no longer in office.\n\nMajority and Minority Leader: The majority and minority party's main representative in negotiations and help set priorities.\n\nWhips: The people who count their party's votes and push their members to vote the way leaders want."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Current House leadership",
+                  "url": "https://www.house.gov/leadership"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-can-the-house-do",
+          "title": "What can the House do?",
+          "summary": "The House's special powers: tax bills, impeachment, and electoral contingencies.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The House's biggest special power is starting tax bills. Any bill that raises money must begin in the House. The Founders wanted the chamber closest to the voters to be the one who decides to tax them.\n\nAdditionally, the House can charge the President and other federal officials — like cabinet members, judges, and ambassadors — with a serious offense. This is called impeachment. If the House impeaches this individual, the Senate has the chance to vote to remove them. Three presidents have been impeached in history: Andrew Johnson, Bill Clinton, and Donald Trump (who was impeached twice). Richard Nixon was not impeached because he resigned before the impeachment vote could occur.\n\nFinally, if no candidate for President wins a majority of the Electoral Votes, the House can select one from the top three best-performing candidates. If this happens, each state delegation would get one vote, rather than each member, and a candidate would need votes from 26 of the 50 states to win. This has happened twice in U.S. history, in 1800 and in 1824.\n\nOf course, the House is also one of the two houses of Congress, and shares in its responsibilities such as passing legislation, holding hearings, organizing committees, and more. You can learn more about these steps in the What can the Senate do section."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "how-government-works",
+      "title": "How Government Works",
+      "subtitle": "The 3 branches, checks & balances, federalism, and more.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "what-is-us-government",
+          "title": "What is the U.S. Government?",
+          "summary": "Federalism and the many layers of American government.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The United States has many governments, not just one. The decisions these governments make affect your life in countless ways. Most of us are ruled by at least four different governmental authorities: the government of the United States, the government of a state, the government of a county, and the government of a village, town, or city.\n\nWhen people talk about \"the U.S. government\" or the \"federal government,\" they mean the government run from Washington, D.C. That does not mean that the other governments are unimportant. In fact, in the United States, there are rules that say there are some things a state government can do that the federal government cannot stop. This idea is called federalism. State and local governments deal with everything from fixing roads to paying the police to rezoning a vacant lot. Few people have to deal directly with the U.S. government more than a couple times per year."
+            },
+            {
+              "type": "image",
+              "source": "whatisusgov.png",
+              "caption": "The U.S. passport is issued to citizens by the federal government. Its front page tells people in other countries that the U.S. Secretary of State, and the department which he/she runs, will protect the holder of the passport."
+            },
+            {
+              "type": "text",
+              "content": "Still, it is likely you rely on federal services every day."
+            },
+            {
+              "type": "callout",
+              "content": "Most services that cover multiple states are run on the federal level."
+            },
+            {
+              "type": "text",
+              "content": "For example, all letters are delivered by the U.S. Postal Service. All foreign trade is regulated by the Department of Commerce. And all passports, trademarks, and dollar bills are issued by the U.S. government. These activities are done by teams of non-political government employees, called civil servants. They work for Departments that are led by Secretaries, who are appointed by and advise the President. Together, they form the \"Executive.\""
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Learn more about the U.S. government and its 'branches'",
+                  "url": "https://www.usa.gov/branches-of-government"
+                },
+                {
+                  "label": "Checks and balances in the U.S. government",
+                  "url": "https://www.ebsco.com/research-starters/political-science/checks-and-balances-us-government"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-does-executive-do",
+          "title": "What does the Executive do?",
+          "summary": "Executive Orders, the Cabinet, and Congress making law.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Decisions made at the federal level affect the most Americans at once. Sometimes, the President will issue an Executive Order that changes something about how the Executive works."
+            },
+            {
+              "type": "text",
+              "heading": "Congress",
+              "content": "The federal government also passes many important laws every year. Laws are not made by the President or his chosen Cabinet of Secretaries, but rather the elected Legislature, called Congress. The laws they can pass include going to war and making peace, raising and lowering the main rate of income tax, and controlling how many immigrants can enter the country each year."
+            },
+            {
+              "type": "callout",
+              "content": "Unlike the President's Cabinet of Secretaries, everyone in Congress is elected, either to the House of Representatives or the Senate."
+            },
+            {
+              "type": "text",
+              "content": "Members of Congress come from all fifty states. This makes sure that new laws are consistent with what voting citizens want across the country. There are also five delegates who represent American Samoa, Guam, the U.S. Virgin Islands, the Northern Mariana Islands, and Washington, D.C., and one resident commissioner from Puerto Rico. These persons sit in the House of Representatives and are not allowed to vote."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Learn more about the U.S. government and its 'branches'",
+                  "url": "https://www.usa.gov/branches-of-government"
+                },
+                {
+                  "label": "Checks and balances in the U.S. government",
+                  "url": "https://www.ebsco.com/research-starters/political-science/checks-and-balances-us-government"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-is-basis-for-american-law",
+          "title": "What is the basis for American law?",
+          "summary": "The Constitution, democracy, and the three branches as a tree.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "heading": "The Constitution",
+              "content": "The basic law of the United States is called the Constitution. It sets out what the U.S. government should essentially look like, and protects certain rights and freedoms for all people in the United States, like the right to criticize the government and the freedom to practice any or no religion. No law or Executive Order, however important, can go against what the Constitution says."
+            },
+            {
+              "type": "text",
+              "content": "If the top court in the United States, the Supreme Court, finds that a law violates the Constitution, it goes immediately out of effect. If the Supreme Court finds that someone was unfairly punished under an unconstitutional law, the punishment is undone.\n\nIt is very important to know how the U.S. government works so that you know who to contact if you have a question about or an issue with the way the government is working. The United States is a democracy, meaning that citizens vote for the members of Congress and the President. Compared with non-democratic countries, each U.S. citizen has a lot of power in influencing how laws and Executive decisions are made."
+            },
+            {
+              "type": "image",
+              "source": "whatisbasisforamericanlaw.png",
+              "caption": "A diagram of the three branches of the U.S. federal government. The Constitution and its amendments act as the roots of the tree, providing the foundation for all three branches."
+            },
+            {
+              "type": "text",
+              "content": "A popular way to understand the federal government is to view it like a tree. This tree has three branches: the Executive, the Legislative, and the Judicial (legal)."
+            },
+            {
+              "type": "callout",
+              "content": "All of them are powerful, but none can run the government by itself. Instead, they do the work of \"checking and balancing\" the activities of each other."
+            },
+            {
+              "type": "text",
+              "content": "What supports the tree are its roots — the Constitution and its 27 amendments made since 1789. And what feeds the tree and keeps it healthy are the votes, petitions, and active participation by educated citizens."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Learn more about the U.S. government and its 'branches'",
+                  "url": "https://www.usa.gov/branches-of-government"
+                },
+                {
+                  "label": "Checks and balances in the U.S. government",
+                  "url": "https://www.ebsco.com/research-starters/political-science/checks-and-balances-us-government"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "political-parties-ideology",
+      "title": "Political Parties & Ideology",
+      "subtitle": "The two-party system, primaries, and why parties matter.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "how-can-i-learn-more-about-politics",
+          "title": "How can I learn more?",
+          "summary": "Resources and approaches for understanding political issues.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Staying informed is essential in a democracy. Follow trusted news sources, read the text of bills on Congress.gov, use Unum to track legislation, and discuss issues with people who have different perspectives."
+            }
+          ]
+        },
+        {
+          "id": "why-do-politicians-join-parties",
+          "title": "Why do politicians join parties?",
+          "summary": "The role of political parties in organizing government.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Politicians join parties to organize around shared ideologies, pool resources for campaigns, and coordinate legislative strategy. Parties help voters understand what a candidate generally stands for."
+            }
+          ]
+        },
+        {
+          "id": "what-are-americas-big-two",
+          "title": "What are America's 'big two'?",
+          "summary": "The Democratic and Republican parties and their core ideologies.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The two major parties in the United States are the Democratic Party and the Republican Party. Democrats generally lean left on social and economic issues, while Republicans generally lean right. However, both parties contain a wide range of viewpoints."
+            }
+          ]
+        },
+        {
+          "id": "what-are-the-other-parties",
+          "title": "What are the other parties?",
+          "summary": "Third parties in the U.S. political system.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Third parties like the Libertarian Party, Green Party, and Constitution Party exist but face significant barriers to winning elections due to the first-past-the-post voting system and ballot access laws."
+            }
+          ]
+        },
+        {
+          "id": "primaries-and-caucuses",
+          "title": "Primaries and caucuses",
+          "summary": "How parties select their candidates for the general election.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Primaries and caucuses are how political parties choose their candidates for the general election. Primaries are state-run elections where party members vote for their preferred candidate. Caucuses are local meetings where party members discuss and vote on candidates."
+            }
+          ]
+        },
+        {
+          "id": "majority-governments",
+          "title": "Majority governments",
+          "summary": "Why majority control matters in Congress.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "When one party holds a majority in a chamber of Congress, it controls the agenda, committee chairs, and which bills get a vote. The majority party's leaders have significant power over what legislation moves forward."
+            }
+          ]
+        },
+        {
+          "id": "why-do-we-care-about-majorities",
+          "title": "Why do we care about majorities?",
+          "summary": "How majority control affects legislation and governance.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Majority control determines whether a party can pass its agenda. A party that controls the White House and both chambers of Congress (a 'trifecta') can generally pass legislation without bipartisan support, though the filibuster in the Senate can still block most bills."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rights-civic-participation",
+      "title": "Your Rights & Civic Participation",
+      "subtitle": "Voting, contacting representatives, and why your voice matters.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "voter-registration",
+          "title": "Voter registration",
+          "summary": "How to register to vote and participate in elections.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Voter registration is the first step to participating in elections. Requirements vary by state, but you generally need to be a U.S. citizen, at least 18 years old by election day, and a resident of the state where you're registering."
+            }
+          ]
+        },
+        {
+          "id": "what-are-my-rights",
+          "title": "What are my rights?",
+          "summary": "Constitutional rights every American should know.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Constitution and Bill of Rights guarantee fundamental rights including freedom of speech, religion, and assembly; the right to bear arms; protection against unreasonable searches; the right to a fair trial; and protection against cruel and unusual punishment."
+            }
+          ]
+        },
+        {
+          "id": "why-should-i-care",
+          "title": "Why should I care?",
+          "summary": "Why civic participation matters in a democracy.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Civic participation is essential to a healthy democracy. When citizens vote, contact their representatives, and stay informed, the government is more responsive to their needs. Democracy works best when citizens are engaged."
+            }
+          ]
+        },
+        {
+          "id": "why-care-about-political-parties",
+          "title": "Why should I care about political parties?",
+          "summary": "How parties connect citizens to the political process.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Political parties provide a way for citizens to get involved in politics beyond just voting. Joining a party allows you to participate in primaries, attend local meetings, and help shape the party's direction."
+            }
+          ]
+        },
+        {
+          "id": "how-to-contact-your-representative",
+          "title": "How to contact your Representative",
+          "summary": "How to make your voice heard directly with your elected officials.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Contacting your representatives is one of the most direct ways to make your voice heard — and congressional offices do track constituent contacts on legislation."
+            },
+            {
+              "type": "text",
+              "heading": "Phone calls",
+              "content": "Phone calls are the most effective. Call the Capitol Switchboard (202-224-3121) and ask to be connected to your senator's or representative's office. Staff members who answer are specifically tasked with logging constituent opinions."
+            },
+            {
+              "type": "text",
+              "heading": "Letters and emails",
+              "content": "Written letters and emails carry more weight than form messages. A short, specific note explaining how a bill affects you personally is more effective than a templated petition."
+            },
+            {
+              "type": "text",
+              "heading": "Town halls",
+              "content": "Town halls are held periodically when members are in their home districts (especially during congressional recesses). These are opportunities to ask questions directly."
+            },
+            {
+              "type": "text",
+              "heading": "Using Unum",
+              "content": "In Unum, you can tap the website or contact button on any official's profile page to go directly to their official contact page. Some offices also list upcoming town hall events there."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Find your representative",
+                  "url": "https://www.house.gov/representatives/find-your-representative"
+                },
+                {
+                  "label": "Find your senators",
+                  "url": "https://www.senate.gov/senators/senators-contact.htm"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "Test Page",
+      "subtitle": "This is a Markdown File Test Page...",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "test",
+          "title": "TESTING",
+          "summary": "THIS IS A TEST MARKDOWN SCRIPT",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Hello World!"
+            },
+            {
+              "type": "callout",
+              "content": "Welcome to the Unum Test Page!!!"
+            },
+            {
+              "type": "text",
+              "content": "We love coding!"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "the-constitution",
+      "title": "The Constitution",
+      "subtitle": "The Bill of Rights, civil liberties, Supreme Court basics.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "what-is-the-constitution",
+          "title": "What is the Constitution?",
+          "summary": "The rules the government must follow and how the federal government is structured.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "A constitution contains the rules that a government must follow. Every U.S. state has a constitution, and so does the national government.\n\nFirstly, it outlines how the federal government looks. It sets up the three-\"branch\" structure of Congress, the Executive, and the Supreme Court, explains how members are elected or appointed to each, and divides up the responsibilities of government between them. The Constitution also reserves many powers for state governments. In this way, the United States is guaranteed to be a country that is federal, democratic, and republican."
+            },
+            {
+              "type": "callout",
+              "content": "A state also cannot pass a law that goes against what the Constitution says."
+            },
+            {
+              "type": "image",
+              "source": "constitution1.png",
+              "caption": "The U.S. Constitution is originally four pages long. You can see it in the National Archives building in Washington, D.C. Its opening paragraph is called the \"Preamble\", and it includes some of the most famous words in the United States. It says the U.S. government was designed to ensure justice, defense, liberty, and prosperity for all people."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "See the full text of the Constitution and all its amendments (PDF)",
+                  "url": "https://constitution.congress.gov/constitution/"
+                },
+                {
+                  "label": "See an annotated version (with notes) of the Constitution and all its amendments (PDF)",
+                  "url": "https://www.govinfo.gov/content/pkg/CDOC-110hdoc50/pdf/CDOC-110hdoc50.pdf"
+                },
+                {
+                  "label": "Learn more about the Constitution",
+                  "url": "https://constitutioncenter.org/the-constitution"
+                },
+                {
+                  "label": "Learn about how the Supreme Court has understood the Constitution throughout history",
+                  "url": "https://constitution.congress.gov/"
+                },
+                {
+                  "label": "Learn about important rights that all Americans have (PDF)",
+                  "url": "https://www.justice.gov/sites/default/files/usao-mn/legacy/2011/09/16/MN%20Civil%20Rights%20FINAL.pdf"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "how-constitution-changed",
+          "title": "How has the Constitution been changed?",
+          "summary": "The amendment process and the Bill of Rights.",
+          "icon": "",
+          "body": [
+            {
+              "type": "callout",
+              "content": "The Constitution is very difficult to change, or amend. It has been amended fewer than 30 times in 250 years."
+            },
+            {
+              "type": "text",
+              "content": "The only way amendments to the Constitution have been passed before was that:\n\n1. At least two-thirds of Congress voted for it, and then\n2. The governments or the citizens in at least three-thirds of the states also voted for it.\n\nIt is also possible that there could be a big meeting of all the states (called a Constitutional Convention) specifically for proposing amendments. This will happen if two-thirds of the states ask for one. However, they never have.\n\nThe Constitution became law in 1789, after the first and only Constitutional Convention took place soon after the U.S. became independent. Since then, the Constitution has only been amended in 27 places. Some of these have been additions, while others are deletions or substitutions."
+            },
+            {
+              "type": "callout",
+              "content": "Many amendments list the important civil rights and legal rights that all persons in the United States have."
+            },
+            {
+              "type": "text",
+              "content": "Because the first ten amendments deal with guaranteeing individual rights, they are called the \"Bill of Rights.\" No action by the Executive or by Congress can violate a constitutionally guaranteed right."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "See the full text of the Constitution and all its amendments (PDF)",
+                  "url": "https://constitution.congress.gov/constitution/"
+                },
+                {
+                  "label": "See an annotated version (with notes) of the Constitution and all its amendments (PDF)",
+                  "url": "https://www.govinfo.gov/content/pkg/CDOC-110hdoc50/pdf/CDOC-110hdoc50.pdf"
+                },
+                {
+                  "label": "Learn more about the Constitution",
+                  "url": "https://constitutioncenter.org/the-constitution"
+                },
+                {
+                  "label": "Learn about how the Supreme Court has understood the Constitution throughout history",
+                  "url": "https://constitution.congress.gov/"
+                },
+                {
+                  "label": "Learn about important rights that all Americans have (PDF)",
+                  "url": "https://www.justice.gov/sites/default/files/usao-mn/legacy/2011/09/16/MN%20Civil%20Rights%20FINAL.pdf"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "how-to-read-constitution",
+          "title": "How can we read the Constitution?",
+          "summary": "How the Supreme Court interprets the Constitution's language.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Constitution is one of the shortest and oldest in the world. Because of this, a lot of the language can seem vague or outdated. A large part of the Supreme Court's job is determining whether a law or an executive action is \"constitutional,\" and therefore can be carried out. If a majority of the Supreme Court rules that it is not constitutional, then the law itself is invalid.\n\nThe Supreme Court also has the job of determining how far civil and legal rights practically extend. For example, in 1963, the Supreme Court ruled that part of due process included the right to have a lawyer, so anyone who is too poor to pay for one can be assigned one by the government."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "See the full text of the Constitution and all its amendments (PDF)",
+                  "url": "https://constitution.congress.gov/constitution/"
+                },
+                {
+                  "label": "See an annotated version (with notes) of the Constitution and all its amendments (PDF)",
+                  "url": "https://www.govinfo.gov/content/pkg/CDOC-110hdoc50/pdf/CDOC-110hdoc50.pdf"
+                },
+                {
+                  "label": "Learn more about the Constitution",
+                  "url": "https://constitutioncenter.org/the-constitution"
+                },
+                {
+                  "label": "Learn about how the Supreme Court has understood the Constitution throughout history",
+                  "url": "https://constitution.congress.gov/"
+                },
+                {
+                  "label": "Learn about important rights that all Americans have (PDF)",
+                  "url": "https://www.justice.gov/sites/default/files/usao-mn/legacy/2011/09/16/MN%20Civil%20Rights%20FINAL.pdf"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "us-history-foundations",
+      "title": "U.S. History Foundations",
+      "subtitle": "Reconstruction, Civil Rights Era, and the foundations of modern America.",
+      "icon": "",
+      "subtopics": []
+    },
+    {
+      "id": "us-judicial-system",
+      "title": "The U.S. Judicial System",
+      "subtitle": "Courts, judges, the Supreme Court, and principles of U.S. law.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "basic-principles-of-us-law",
+          "title": "What are the basic principles of U.S. law?",
+          "summary": "Due process, equal protection, and the rule of law.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The U.S. legal system is based on several key principles. Due process means the government must follow fair procedures before depriving anyone of life, liberty, or property. Equal protection means laws must apply equally to all people. The rule of law means that no one, not even the President, is above the law."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of the U.S. legal system",
+                  "url": "https://www.uscourts.gov/about-federal-courts"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-do-courts-look-like",
+          "title": "What do U.S. courts look like?",
+          "summary": "The structure of the federal and state court systems.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The federal court system has three levels: district courts (trial), circuit courts of appeals, and the Supreme Court. State courts have their own separate systems, usually including trial courts, appellate courts, and a state supreme court."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of the U.S. legal system",
+                  "url": "https://www.uscourts.gov/about-federal-courts"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "who-are-judges",
+          "title": "Who are judges in the U.S.?",
+          "summary": "How federal judges are appointed and their role in the legal system.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Federal judges are nominated by the President and confirmed by the Senate. They serve lifetime appointments to ensure independence from political pressure. State judges may be elected or appointed depending on the state."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of the U.S. legal system",
+                  "url": "https://www.uscourts.gov/about-federal-courts"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "what-is-the-supreme-court",
+          "title": "What is the Supreme Court?",
+          "summary": "The highest court in the land and its power of judicial review.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Supreme Court is the highest court in the United States. It has the power of judicial review — the ability to declare laws unconstitutional. The Court hears cases that have been appealed from lower courts, as well as a few types of cases that start at the Supreme Court."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of the U.S. legal system",
+                  "url": "https://www.uscourts.gov/about-federal-courts"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "who-are-the-justices",
+          "title": "Who are the justices on the Supreme Court?",
+          "summary": "The nine justices and their role in interpreting the Constitution.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Supreme Court consists of nine justices: one Chief Justice and eight Associate Justices. They are nominated by the President and confirmed by the Senate. Once confirmed, they serve lifetime appointments."
+            },
+            {
+              "type": "links",
+              "items": [
+                {
+                  "label": "Overview of the U.S. legal system",
+                  "url": "https://www.uscourts.gov/about-federal-courts"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "us-senate",
+      "title": "What is the Senate?",
+      "subtitle": "Senators, classes, leadership, special powers, and the filibuster.",
+      "icon": "",
+      "subtopics": [
+        {
+          "id": "how-does-the-senate-look",
+          "title": "How does the Senate look?",
+          "summary": "Why the Senate exists and how its structure differs from the House.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Senate is the upper of the two houses of Congress. It is smaller, with just one hundred members."
+            },
+            {
+              "type": "callout",
+              "content": "Senators have a term of six years instead of two, and the Senate is considered more prestigious as a result. The Founders made it because they were worried that if there was only the House — which gives larger states more representation — nobody would speak up for the smaller states' interests."
+            },
+            {
+              "type": "text",
+              "content": "Therefore, in the Senate, each state gets two members, making for 100 senators in total. Because senators represent the whole state, they usually hear from a wide array of voters. And because they can serve for six years before thinking about re-election, senators are more likely to think long term and strike compromises. This leads to the Senate being slower and more methodical at adopting legislation."
+            }
+          ]
+        },
+        {
+          "id": "who-can-become-a-senator",
+          "title": "Who can become a senator?",
+          "summary": "The constitutional requirements to serve in the Senate.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "It is slightly harder to become a senator than a representative. A senator has to be at least 30 years of age, have been a citizen for nine years, and a resident of the state that he or she represents. Of course, in reality, most senators have prior experience in politics. They almost always belong to a political party and may be prominent lawyers, businesspeople, activists, or even former representatives."
+            }
+          ]
+        },
+        {
+          "id": "how-are-senators-classified",
+          "title": "How are senators classified?",
+          "summary": "Senate classes, staggered election cycles, and how senators are identified.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Senators are identified with the two-letter postal abbreviation of their state: so, it might be Mrs. Joan Smith (AK). When journalists need to differentiate between the two senators from the same state, the more recently elected person is called the junior senator, while the other is the senior senator.\n\nSenators are also divided into \"classes.\" This is because while senators' terms last for six years, they were not all elected in the same year. In 2018, 33 Class I Senate seats went up for election. This means that in that November's election, people who lived in 33 states had to re-elect one of their two senators, or elect somebody new. However, those in the remaining states still kept both their senators. Then, in 2020, it was time to re-elect 33 Class II Senate seats. And in 2022, the remaining 34 Class III Senate seats went up for election.\n\nFinally, senators were directly elected from only 1913 onwards."
+            },
+            {
+              "type": "image",
+              "source": "senate1.png",
+              "caption": "Map shows the classes in each U.S. state. Green = Classes 1 and 2; Magenta = Classes 1 and 3; Cyan = Classes 2 and 3. Source: commons.wikimedia.org/wiki/File:US_Senate_Classes.svg"
+            }
+          ]
+        },
+        {
+          "id": "senate-leadership",
+          "title": "Senate Leadership",
+          "summary": "The Vice President, President Pro-tempore, Majority and Minority Leaders, and Whips.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Vice President: Officially acts as the leader of the Senate and breaks tie votes.\n\nPresident Pro-tempore: Leads the Senate when the VP isn't there. Usually the longest-serving member of the largest party.\n\nMajority and Minority Leader: The majority and minority party's main representative in negotiations and help set priorities.\n\nWhips: The people who count their party's votes and push their members to vote the way leaders want."
+            }
+          ]
+        },
+        {
+          "id": "what-can-the-senate-do",
+          "title": "What can the Senate do?",
+          "summary": "Confirmations, treaties, removal of officials, and electoral contingency powers.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "Normally, the most important special power of the Senate is interviewing, debating, and confirming federal appointments that the President makes, with a majority vote. These include ambassadors, judges, justices to the Supreme Court, and the President's Cabinet. The Senate alone also approves the U.S. joining an international treaty with a two-thirds vote.\n\nThe Senate can also remove the President and other officials before their term ends if they are first impeached in the House. This has never happened to a president in U.S. history. However, this has happened with lesser officials, including judges.\n\nFinally, if no candidate for Vice President gets a majority of electoral votes after an election, the Senate can choose a winner from the top two candidates. This happened after the 1836 election. This is even more significant if the House is busy debating who the President should be: in that case, the Vice President the Senate chooses acts as president until the House makes up its mind.\n\nOf course, the Senate is one of the two houses of Congress, and shares in its responsibilities such as passing legislation, holding hearings, organizing committees, and more. You can learn more about these steps in the What can the House do section."
+            }
+          ]
+        },
+        {
+          "id": "the-filibuster",
+          "title": "The Filibuster",
+          "summary": "How unlimited debate in the Senate can delay or block legislation.",
+          "icon": "",
+          "body": [
+            {
+              "type": "text",
+              "content": "The Senate is a place where legislation can be considered more carefully than it can in the House. This is mainly because there are fewer senators, and thus less pressure on everyone's time. Unlike in the House, where the Speaker sets and enforces strict time limits on debate, the Senate allows its members to speak for as long as they want. Usually, the debate comes to a natural end, and a vote can begin. However, sometimes a senator will want to delay the bill from passing and purposely talks on and on without end. Or, a senator can just signal that he or she means to block the bill. Either method stops the bill from moving forward, and is called a \"filibuster.\"\n\nDuring these times, other members will try to stop the filibuster. However, unless three-fifths or more senators present vote for \"cloture,\" which forcefully ends the debate, the filibuster can continue. In the past, this has led to talking filibusters taking up multiple hours, and even days — until the speaker is exhausted. Silent filibusters, also called \"holds,\" can take even longer to remove."
+            },
+            {
+              "type": "callout",
+              "content": "Senators can filibuster most bills, but not all. The most important bills that cannot be filibustered are those that deal with routine parts of the budget: mandatory spending, revenue, and the debt limit."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
