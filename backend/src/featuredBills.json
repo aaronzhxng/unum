@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-08-17",
-  "weekEnd": "2026-08-23",
+  "weekOf": "2026-08-24",
+  "weekEnd": "2026-08-30",
   "bills": [
     {
-      "billId": "sjres181",
-      "note": "This bill would direct the removal of U.S. Armed Forces from Iran that have not been authorized by Congress."
+      "billId": "hr6509",
+      "note": "This bill provides for increased oversight of drug compounding and imposes statutory limits on compounded drugs that are essentially copies of commercially available drugs."
     }
   ]
 }
