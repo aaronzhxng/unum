@@ -109,6 +109,19 @@ const getLastChecked = (): string => {
 //   return "2026-04-14";
 // };
 
+const billActionTitle = (policyArea: string, actionText: string | null): string => {
+  const a = (actionText ?? "").toLowerCase();
+  if (a.includes("became public law") || a.includes("signed by president"))
+    return `Signed into law: ${policyArea}`;
+  if (a.includes("passed") || a.includes("agreed to") || a.includes("adopted"))
+    return `Vote passed: ${policyArea}`;
+  if (a.includes("failed") || a.includes("rejected") || a.includes("not agreed to"))
+    return `Vote failed: ${policyArea}`;
+  if (a.includes("introduced") || a.includes("referred to"))
+    return `New bill: ${policyArea}`;
+  return `${policyArea}: Recent update`;
+};
+
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 // Uses Railway SQLite bills table — no Congress.gov API needed
 
@@ -121,7 +134,7 @@ const checkNewBills = async (filterToken?: string) => {
 
   const recentBills = db
     .prepare(
-      `SELECT bill_id, type, number, title, policy_area, sponsor_state
+      `SELECT bill_id, type, number, title, policy_area, sponsor_state, latest_action_text
      FROM bills
      WHERE latest_action_date >= ?
        AND type IN ('HR', 'S')
@@ -134,6 +147,7 @@ const checkNewBills = async (filterToken?: string) => {
     title: string;
     policy_area: string;
     sponsor_state: string | null;
+    latest_action_text: string | null;
   }[];
 
   console.log(`Found ${recentBills.length} recent bills since ${since}`);
@@ -159,7 +173,7 @@ const checkNewBills = async (filterToken?: string) => {
       ) {
         messages.push({
           to: reg.token,
-          title: `${bill.policy_area}: Recent update`,
+          title: billActionTitle(bill.policy_area, bill.latest_action_text),
           body: bill.title,
           data: { billId },
         });
@@ -176,7 +190,7 @@ const checkNewBills = async (filterToken?: string) => {
         if (matchedState && (stateCounts[matchedState] ?? 0) < 4) {
           messages.push({
             to: reg.token,
-            title: `New bill from ${matchedState}`,
+            title: billActionTitle(matchedState, bill.latest_action_text),
             body: bill.title,
             data: { billId },
           });
