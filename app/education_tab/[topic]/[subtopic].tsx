@@ -256,12 +256,9 @@ export default function EducationSubtopicScreen() {
                   marginHorizontal: CONTENT_PADDING,
                   marginBottom: 28,
                   backgroundColor: "#EFF7FF",
-                  borderLeftWidth: 3,
-                  borderLeftColor: "#008CFF",
                   borderRadius: 10,
                   paddingVertical: 14,
-                  paddingRight: 16,
-                  paddingLeft: 14,
+                  paddingHorizontal: 16,
                 }}
               >
                 {section.heading ? (
