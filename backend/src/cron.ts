@@ -109,6 +109,19 @@ const getLastChecked = (): string => {
 //   return "2026-04-14";
 // };
 
+const officialBillTitle = (officialName: string, actionText: string | null): string => {
+  const a = (actionText ?? "").toLowerCase();
+  if (a.includes("became public law") || a.includes("signed by president"))
+    return `${officialName}: Bill signed into law`;
+  if (a.includes("passed") || a.includes("agreed to") || a.includes("adopted"))
+    return `${officialName}: Bill passed`;
+  if (a.includes("failed") || a.includes("rejected") || a.includes("not agreed to"))
+    return `${officialName}: Bill failed`;
+  if (a.includes("introduced") || a.includes("referred to"))
+    return `${officialName} introduced a bill`;
+  return `${officialName}: Bill update`;
+};
+
 const billActionTitle = (policyArea: string, actionText: string | null): string => {
   const a = (actionText ?? "").toLowerCase();
   if (a.includes("became public law") || a.includes("signed by president"))
@@ -455,25 +468,46 @@ const checkFollowedOfficials = async (filterToken?: string) => {
       if (!wantsSponsored && !wantsCosponsored) continue;
 
       try {
+        // Check any recent action on the official's sponsored bills via prewarm cache + bills table.
+        // This covers introductions, votes, passage, signing — any legislative action since yesterday.
         if (wantsSponsored) {
-          const res = await axios.get(
-            `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
-            {
-              headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-              params: { limit: 10 },
-            },
-          );
-          const recent = (res.data.sponsoredLegislation || []).filter(
-            (b: any) => b.introducedDate >= since && b.type && b.number,
-          );
-          for (const bill of recent) {
-            const billId = `${bill.type.toLowerCase()}${bill.number}`;
-            messages.push({
-              to: reg.token,
-              title: `${officialName} introduced a new bill`,
-              body: bill.title ?? "No title",
-              data: { billId, officialId: bioguideId, notifType: "introduced" },
-            });
+          const cacheRow = db
+            .prepare(`SELECT data FROM congress_cache WHERE cache_key = ?`)
+            .get(`sponsored-${bioguideId}`) as { data: string } | undefined;
+
+          if (cacheRow) {
+            const billIds: string[] = (
+              (JSON.parse(cacheRow.data).legislation ?? []) as any[]
+            )
+              .filter((b) => b.type && b.number)
+              .map((b) => `${b.type.toLowerCase()}${b.number}`);
+
+            if (billIds.length > 0) {
+              const placeholders = billIds.map(() => "?").join(",");
+              const recentBills = db
+                .prepare(
+                  `SELECT bill_id, title, latest_action_text FROM bills
+                   WHERE bill_id IN (${placeholders}) AND latest_action_date >= ?`,
+                )
+                .all(...billIds, since) as {
+                bill_id: string;
+                title: string;
+                latest_action_text: string | null;
+              }[];
+
+              for (const bill of recentBills) {
+                messages.push({
+                  to: reg.token,
+                  title: officialBillTitle(officialName, bill.latest_action_text),
+                  body: bill.title,
+                  data: {
+                    billId: bill.bill_id,
+                    officialId: bioguideId,
+                    notifType: "bill-action",
+                  },
+                });
+              }
+            }
           }
         }
 
