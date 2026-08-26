@@ -123,11 +123,11 @@ const checkNewBills = async (filterToken?: string) => {
     .prepare(
       `SELECT bill_id, type, number, title, policy_area, sponsor_state
      FROM bills
-     WHERE latest_action_date >= date('now', '-3 days')
+     WHERE latest_action_date >= ?
        AND type IN ('HR', 'S')
        AND policy_area IS NOT NULL`,
     )
-    .all() as {
+    .all(since) as {
     bill_id: string;
     type: string;
     number: string;
@@ -136,7 +136,7 @@ const checkNewBills = async (filterToken?: string) => {
     sponsor_state: string | null;
   }[];
 
-  console.log(`Found ${recentBills.length} recent bills (last 3 days)`);
+  console.log(`Found ${recentBills.length} recent bills since ${since}`);
 
   for (const reg of registrations) {
     const followedPolicyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
@@ -193,9 +193,9 @@ const checkNewBills = async (filterToken?: string) => {
     if (!billId) return true;
     const already = db
       .prepare(
-        `SELECT 1 FROM notified_bills WHERE token = ? AND bill_id = ? AND notified_date >= date('now', '-3 days')`,
+        `SELECT 1 FROM notified_bills WHERE token = ? AND bill_id = ? AND notified_date = ?`,
       )
-      .get(msg.to, billId);
+      .get(msg.to, billId, today);
     return !already;
   });
 
