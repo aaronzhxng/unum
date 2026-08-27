@@ -52,6 +52,10 @@ const OUTPUT_DIR = path.join(__dirname, 'output');
 // CONFIG — tweak these as your editorial taste develops
 // ---------------------------------------------------------------------------
 
+// Shared with the /law endpoint sweep (Step 2.5) so it can verify a bill's
+// action text actually describes enactment before trusting it.
+const LAW_PATTERNS = [/became public law/i, /signed by president/i];
+
 // Bills whose latest action matches these patterns get sorted into each bucket.
 // Order matters: the first bucket that matches wins, so "became law" is checked
 // before "passed the House".
@@ -59,7 +63,7 @@ const BUCKETS = [
   {
     key: 'law',
     heading: 'Signed into law',
-    patterns: [/became public law/i, /signed by president/i],
+    patterns: LAW_PATTERNS,
   },
   {
     key: 'toPresident',
@@ -69,7 +73,11 @@ const BUCKETS = [
   {
     key: 'passedBoth',
     heading: 'Passed both chambers',
-    patterns: [/passed senate.*without amendment/i, /agreed to in senate.*without amendment/i],
+    patterns: [
+      /passed senate.*without amendment/i,
+      /agreed to in senate.*without amendment/i,
+      /agreed to without amendment/i,
+    ],
   },
   {
     key: 'passedOne',
@@ -106,6 +114,8 @@ const IGNORE_PATTERNS = [
   /^referred to the subcommittee/i,
   /^sponsor introductory remarks/i,
   /^read twice and referred/i,
+  /^held at the desk\.?$/i,
+  /^message on (house|senate) action (sent|received)/i,
 ];
 
 // ---------------------------------------------------------------------------
@@ -152,6 +162,19 @@ function toApiTimestamp(d) {
 /** Sleep, to stay polite with the API (limit is 5,000 requests/hour). */
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * The API's fromDateTime/toDateTime filter matches a bill's record-update
+ * date, not when its latest action actually happened — a bill can get its
+ * Congress.gov record touched (e.g. a law citation attached) long after the
+ * action it describes. This checks the action itself actually falls in the
+ * target week, so stale bills don't leak into the digest.
+ */
+function actionIsWithinWindow(actionDate, start, end) {
+  if (!actionDate) return false;
+  const d = new Date(`${actionDate}T00:00:00Z`);
+  return d >= start && d < end;
 }
 
 async function fetchJson(url, attempt = 1) {
@@ -239,6 +262,9 @@ async function main() {
   const bills = [];
   let offset = 0;
   const LIMIT = 250;
+  // Well above any week's real update volume — this just guards against an
+  // infinite loop if the API misbehaves, not a data-truncation limit.
+  const FETCH_CAP = 20000;
 
   while (true) {
     const url =
@@ -246,35 +272,140 @@ async function main() {
       `&toDateTime=${toApiTimestamp(end)}` +
       `&sort=updateDate+desc&limit=${LIMIT}&offset=${offset}&format=json&api_key=${API_KEY}`;
 
-    const data = await fetchJson(url);
+    let data;
+    try {
+      data = await fetchJson(url);
+    } catch (err) {
+      // Congress.gov's API can be flaky on deep pagination. Results are
+      // sorted by updateDate desc, so what we already have is the most
+      // recently touched (and thus most likely to be relevant) slice —
+      // keep it rather than losing the whole run over a tail-end page.
+      console.log(`  Pagination stopped early at offset ${offset} (${err.message}). Continuing with ${bills.length} bills already fetched.`);
+      break;
+    }
     const page = data.bills || [];
     bills.push(...page);
 
     if (page.length < LIMIT) break;
     offset += LIMIT;
-    if (offset >= 2000) break; // safety cap
+    if (offset >= FETCH_CAP) {
+      console.log(`  Hit the ${FETCH_CAP}-bill fetch cap — some records may not have been retrieved.`);
+      break;
+    }
     await sleep(300);
   }
 
-  console.log(`  Found ${bills.length} bills with activity.\n`);
+  console.log(`  Found ${bills.length} bills with record activity.`);
 
-  // Step 2: sort into buckets by latest action.
+  // Step 2: sort into buckets by latest action, keeping only bills whose
+  // latest action actually happened this week (see actionIsWithinWindow).
   const buckets = {};
   BUCKETS.forEach((b) => (buckets[b.key] = []));
 
+  let skippedStale = 0;
+  let skippedIgnored = 0;
+  const uncategorized = [];
+
   for (const bill of bills) {
     const actionText = bill.latestAction?.text || '';
+    const actionDate = bill.latestAction?.actionDate || '';
+    if (!actionIsWithinWindow(actionDate, start, end)) {
+      skippedStale++;
+      continue;
+    }
+
+    const trimmed = actionText.trim();
+    if (IGNORE_PATTERNS.some((p) => p.test(trimmed))) {
+      skippedIgnored++;
+      continue;
+    }
+
     const key = bucketFor(actionText);
-    if (!key) continue;
+    if (!key) {
+      uncategorized.push({ type: bill.type, number: bill.number, actionText: trimmed });
+      continue;
+    }
 
     buckets[key].push({
       congress: bill.congress,
       type: bill.type,
       number: bill.number,
       title: bill.title || '(no title provided)',
-      actionText: actionText.trim(),
+      actionText: trimmed,
       actionDate: bill.latestAction?.actionDate || '',
     });
+  }
+
+  if (skippedStale) {
+    console.log(`  Skipped ${skippedStale} bills whose record updated this week but whose latest action didn't.`);
+  }
+  if (skippedIgnored) {
+    console.log(`  Skipped ${skippedIgnored} bills as routine procedural noise (introduced, referred to committee, etc.).`);
+  }
+  if (uncategorized.length) {
+    console.log(`  ${uncategorized.length} bills had this-week action text that matched no bucket and no ignore pattern:`);
+    for (const u of uncategorized.slice(0, 15)) {
+      console.log(`     ${prettyBillType(u.type)} ${u.number}: "${u.actionText}"`);
+    }
+    if (uncategorized.length > 15) {
+      console.log(`     ...and ${uncategorized.length - 15} more.`);
+    }
+  }
+  console.log('');
+
+  // Step 2.5: bills that became law are especially likely to get their
+  // Congress.gov record touched again weeks later (public law number
+  // assignment, Statutes-at-Large citation, etc.), which drags updateDate
+  // well past the target week and makes the general updateDate-windowed
+  // fetch above miss them entirely — even though the actual enactment
+  // happened this week. The /law endpoint lists every law for the whole
+  // Congress in a handful of requests, with no date filtering needed, so we
+  // sweep it directly and filter by actionDate instead of relying on
+  // updateDate at all.
+  try {
+    const congressRes = await fetchJson(`${API_BASE}/congress/current?format=json&api_key=${API_KEY}`);
+    const congress = congressRes.congress?.number;
+    if (congress) {
+      const alreadyFound = new Set(buckets.law.map((b) => `${b.type}${b.number}`));
+      let lawOffset = 0;
+      let lawsAdded = 0;
+      while (true) {
+        const url = `${API_BASE}/law/${congress}?limit=250&offset=${lawOffset}&format=json&api_key=${API_KEY}`;
+        const data = await fetchJson(url);
+        const page = data.bills || [];
+        for (const bill of page) {
+          const actionText = (bill.latestAction?.text || '').trim();
+          const actionDate = bill.latestAction?.actionDate || '';
+          // The /law endpoint lists every bill with a laws[] entry, but a
+          // bill's own latestAction doesn't always describe the enactment
+          // (e.g. a companion bill can carry the same public law number
+          // while its own record is still stuck on an earlier committee
+          // action) — only trust entries whose action text actually says so.
+          if (!LAW_PATTERNS.some((p) => p.test(actionText))) continue;
+          if (!actionIsWithinWindow(actionDate, start, end)) continue;
+          const key = `${bill.type}${bill.number}`;
+          if (alreadyFound.has(key)) continue;
+          alreadyFound.add(key);
+          lawsAdded++;
+          buckets.law.push({
+            congress: bill.congress,
+            type: bill.type,
+            number: bill.number,
+            title: bill.title || '(no title provided)',
+            actionText,
+            actionDate,
+          });
+        }
+        if (page.length < 250) break;
+        lawOffset += 250;
+        await sleep(300);
+      }
+      if (lawsAdded) {
+        console.log(`  Found ${lawsAdded} more law(s) via the /law endpoint (would've been missed by the updateDate-windowed fetch).\n`);
+      }
+    }
+  } catch (err) {
+    console.warn(`  Couldn't sweep the /law endpoint (${err.message}) — relying on the general fetch for law bucket only.\n`);
   }
 
   // Step 3: enrich the most significant bills with sponsor + summary.
