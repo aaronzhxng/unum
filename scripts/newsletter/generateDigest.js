@@ -13,11 +13,17 @@
  *
  * WHAT IT DOES:
  *   Pulls every bill whose status changed in the last 7 days from the
- *   Congress.gov API, sorts them into buckets by how far they got, and writes
- *   a Markdown draft to scripts/newsletter/output/.
+ *   Congress.gov API, sorts them into buckets by how far they got (signed
+ *   into law, passed a chamber, out of committee, other floor action,
+ *   introduced), and writes a condensed Markdown scan-and-pick list to
+ *   scripts/newsletter/output/.
  *
  * WHAT IT DOES NOT DO:
- *   Write your commentary. It gathers; you decide what matters and explain why.
+ *   Pick your stories or write your commentary. It's a menu, not a draft —
+ *   once you've picked a few bill IDs from the list (each entry includes one,
+ *   e.g. `hr6644`), run:
+ *     node scripts/newsletter/curatePicks.js hr6644 s269 ...
+ *   to get a detailed, sourced writeup for just those picks.
  *
  * REQUIREMENTS:
  *   - Node 18+ (uses built-in fetch — no packages to install)
@@ -105,11 +111,21 @@ const BUCKETS = [
       /veto/i,
     ],
   },
+  {
+    key: 'introduced',
+    heading: 'Introduced',
+    // No patterns here on purpose — a bill's "Introduced in House" text
+    // gets superseded by "Referred to committee" within a day, so by the
+    // time we look, hardly any bill's *current* action is still literally
+    // "introduced". This bucket is populated directly from each bill's
+    // introducedDate field instead (see Step 2a below), which catches every
+    // bill introduced this week regardless of what happened to it since.
+    patterns: [],
+  },
 ];
 
 // Anything matching these is procedural noise we skip entirely.
 const IGNORE_PATTERNS = [
-  /^introduced in (house|senate)$/i,
   /^referred to the (house |senate )?committee/i,
   /^referred to the subcommittee/i,
   /^sponsor introductory remarks/i,
@@ -152,6 +168,21 @@ function formatDate(d) {
     year: 'numeric',
     timeZone: 'UTC',
   });
+}
+
+/** "2026-07-11" -> "Jul 11", for compact one-line entries. */
+function formatShortDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+/** Truncates a title for a one-line entry, on a word boundary where possible. */
+function truncateTitle(title, maxLength = 80) {
+  if (title.length <= maxLength) return title;
+  const cut = title.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${cut.slice(0, lastSpace > 40 ? lastSpace : maxLength)}…`;
 }
 
 /** Congress.gov wants ISO timestamps like 2026-08-18T00:00:00Z */
@@ -307,6 +338,21 @@ async function main() {
   const uncategorized = [];
 
   for (const bill of bills) {
+    // Step 2a: introducedDate is a dedicated field, independent of
+    // latestAction — checking it directly catches every bill introduced
+    // this week, even ones already referred to committee (which would
+    // otherwise hide them from the latestAction-based check below).
+    if (actionIsWithinWindow(bill.introducedDate, start, end)) {
+      buckets.introduced.push({
+        congress: bill.congress,
+        type: bill.type,
+        number: bill.number,
+        title: bill.title || '(no title provided)',
+        actionText: 'Introduced',
+        actionDate: bill.introducedDate,
+      });
+    }
+
     const actionText = bill.latestAction?.text || '';
     const actionDate = bill.latestAction?.actionDate || '';
     if (!actionIsWithinWindow(actionDate, start, end)) {
@@ -340,7 +386,7 @@ async function main() {
     console.log(`  Skipped ${skippedStale} bills whose record updated this week but whose latest action didn't.`);
   }
   if (skippedIgnored) {
-    console.log(`  Skipped ${skippedIgnored} bills as routine procedural noise (introduced, referred to committee, etc.).`);
+    console.log(`  Skipped ${skippedIgnored} bills as routine procedural noise (referred to committee, held at the desk, etc.).`);
   }
   if (uncategorized.length) {
     console.log(`  ${uncategorized.length} bills had this-week action text that matched no bucket and no ignore pattern:`);
@@ -432,43 +478,60 @@ async function main() {
     console.log('');
   }
 
-  // Step 4: write the Markdown draft.
+  // Step 4: write the Markdown draft. This is a scan-and-pick menu, not a
+  // finished writeup — grab the bill IDs you want (e.g. "hr6644 s269") and
+  // hand them to curatePicks.js for the detailed, publishable version.
   const lines = [];
   const weekLabel = `${formatDate(start)} - ${formatDate(new Date(end.getTime() - 86400000))}`;
 
   lines.push(`# Unum Weekly - Week of ${weekLabel}`);
   lines.push('');
-  lines.push('<!-- DRAFT. Nothing below is publishable as-is.');
-  lines.push('     Pick 2-3 bills that actually matter, write why they matter,');
-  lines.push('     and delete the rest. Verify every action description against');
-  lines.push('     the Congress.gov link before publishing. -->');
+  lines.push('<!-- Scan-and-pick menu, not a draft to publish directly.');
+  lines.push('     Pick the bills that matter, then run:');
+  lines.push('       node scripts/newsletter/curatePicks.js <billId> <billId> ...');
+  lines.push('     e.g. node scripts/newsletter/curatePicks.js hr6644 s269');
+  lines.push('     to get a detailed, sourced writeup for just those picks.');
+  lines.push('');
+  lines.push('     Known gap: "Passed one chamber" and "Sent to the President" are');
+  lines.push('     structurally undercounted. Congress.gov only exposes a bill\'s');
+  lines.push('     single current action, and a fast-moving bill often gets referred');
+  lines.push('     to the other chamber (or further) within days — so the passage');
+  lines.push('     moment is overwritten before this script ever sees it. A bill');
+  lines.push('     that passed one chamber this week may not appear until it later');
+  lines.push('     becomes law (which has its own dedicated, reliable sweep). -->');
   lines.push('');
 
+  const nonEmptyBuckets = BUCKETS.filter((bucket) => buckets[bucket.key].length);
+  if (nonEmptyBuckets.length) {
+    const toc = nonEmptyBuckets.map((b) => `${b.heading} (${buckets[b.key].length})`).join(' | ');
+    lines.push(`**Contents:** ${toc}`);
+    lines.push('');
+  }
+
   let totalIncluded = 0;
+  let significantIncluded = 0;
 
   for (const bucket of BUCKETS) {
     const items = buckets[bucket.key];
     if (!items.length) continue;
     totalIncluded += items.length;
+    if (bucket.key !== 'introduced') significantIncluded += items.length;
 
     lines.push(`## ${bucket.heading} (${items.length})`);
     lines.push('');
 
     for (const b of items) {
       const label = `${prettyBillType(b.type)} ${b.number}`;
+      const billId = `${b.type.toLowerCase()}${b.number}`;
       const link = billUrl(b.congress, b.type, b.number);
-      lines.push(`### ${label} - ${b.title}`);
-      if (b.sponsor) lines.push(`- **Sponsor:** ${b.sponsor}`);
-      if (b.policyArea) lines.push(`- **Policy area:** ${b.policyArea}`);
-      lines.push(`- **Latest action (${b.actionDate}):** ${b.actionText}`);
-      lines.push(`- **Source:** ${link}`);
-      lines.push('');
-      lines.push('  _Your plain-language explanation goes here._');
-      lines.push('');
+      const parts = [`[${label}](${link})`, `\`${billId}\``, truncateTitle(b.title)];
+      if (b.actionDate) parts.push(formatShortDate(b.actionDate));
+      lines.push(`- ${parts.join(' — ')}`);
     }
+    lines.push('');
   }
 
-  if (totalIncluded === 0) {
+  if (significantIncluded === 0) {
     lines.push('## No significant legislative activity this week');
     lines.push('');
     lines.push('Congress was likely in recess. Consider running an explainer issue instead:');
@@ -493,8 +556,21 @@ async function main() {
   console.log(`  Draft written to: scripts/newsletter/output/${filename}\n`);
 }
 
-main().catch((err) => {
-  console.error('\n  Script failed:', err.message);
-  console.error('  If this is a network or API error, try again in a minute.\n');
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('\n  Script failed:', err.message);
+    console.error('  If this is a network or API error, try again in a minute.\n');
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  API_BASE,
+  API_KEY,
+  BUCKETS,
+  LAW_PATTERNS,
+  fetchJson,
+  sleep,
+  prettyBillType,
+  billUrl,
+};
