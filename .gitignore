@@ -70,3 +70,4 @@ google-services.json
 # Newsletter digest drafts
 scripts/newsletter/output/
 scripts/newsletter/features/
+scripts/newsletter/cards/

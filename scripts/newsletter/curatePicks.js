@@ -17,6 +17,13 @@
  *   president, signed into law). Writes a Markdown draft to
  *   scripts/newsletter/features/.
  *
+ *   Freshly-introduced bills often don't have a CRS summary yet. When one's
+ *   missing and ANTHROPIC_API_KEY is set, this falls back to fetching the
+ *   bill's actual text from Congress.gov and asking Claude to write a plain-
+ *   language summary from it — labeled "Summary" rather than "Official
+ *   summary" so you can tell it apart, but otherwise unflagged since you
+ *   review every summary by hand before publishing.
+ *
  * WHAT IT DOES NOT DO:
  *   Write your commentary. It gathers everything sourced; you decide what
  *   it means and explain why it matters.
@@ -25,6 +32,9 @@
  *   - Node 18+ (uses built-in fetch — no packages to install)
  *   - CONGRESS_API_KEY, either in backend/.env or passed inline:
  *       CONGRESS_API_KEY=yourkey node scripts/newsletter/curatePicks.js hr6644
+ *   - ANTHROPIC_API_KEY, optional, for the bill-text-summary fallback above.
+ *     Get one at console.anthropic.com. Without it, bills with no CRS
+ *     summary just show "(No summary available yet)".
  *
  * This is a standalone local utility, like generateDigest.js and the other
  * scripts in this folder. It is not wired into the Express app, any Railway
@@ -45,6 +55,12 @@ const {
 } = require('./generateDigest.js');
 
 const FEATURES_DIR = path.join(__dirname, 'features');
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const ANTHROPIC_MODEL = 'claude-sonnet-5';
+// Bill text can run very long (a major bill can be 100+ pages) — cap what we
+// send to keep the summary call fast and cheap; the model is told when it's
+// looking at a truncated excerpt so it doesn't overclaim about later sections.
+const MAX_BILL_TEXT_CHARS = 20000;
 
 /** "hr6644" -> { type: "hr", number: "6644" } */
 function parseBillId(raw) {
@@ -72,7 +88,14 @@ function stripTags(text) {
   return text.replace(/<[^>]+>/g, '').replace(/\s{2,}/g, ' ').trim();
 }
 
-/** Every bucket a bill's action history matched, in chronological order. */
+// Only the milestone buckets belong in a curated timeline — committee and
+// floor-action matches (cloture motions, mark-ups, procedural votes, "message
+// sent to the House", etc.) are exactly the noise a busy bill accumulates on
+// its way to one of these, and they're what generateDigest.js's own
+// ENRICH_KEYS treats as "significant enough to look up sponsor info for" too.
+const TIMELINE_KEYS = new Set(['law', 'toPresident', 'passedBoth', 'passedOne']);
+
+/** The milestone actions in a bill's history, in chronological order. */
 function buildTimeline(actions, introducedDate) {
   const timeline = [];
   if (introducedDate) {
@@ -82,7 +105,7 @@ function buildTimeline(actions, introducedDate) {
   const seen = new Set();
   for (const action of sorted) {
     const text = stripTags((action.text || '').trim());
-    const hit = BUCKETS.find((b) => b.patterns.some((p) => p.test(text)));
+    const hit = BUCKETS.find((b) => TIMELINE_KEYS.has(b.key) && b.patterns.some((p) => p.test(text)));
     if (!hit) continue;
     // The /actions endpoint returns exact duplicate rows for some actions
     // (e.g. "Presented to President" often appears twice) — same date and
@@ -93,6 +116,77 @@ function buildTimeline(actions, introducedDate) {
     timeline.push({ date: action.actionDate, text });
   }
   return timeline;
+}
+
+/** Decodes the small set of entities that show up in GPO's plain-text bill files. */
+function decodeEntities(text) {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+/**
+ * Fetches the bill's actual text from Congress.gov, for bills that don't
+ * have a CRS summary yet. Returns null if no text version is published yet
+ * (common for very recently introduced bills — GPO formatting can lag
+ * introduction by a few days).
+ */
+async function fetchBillText(congress, type, number) {
+  const data = await fetchJson(`${API_BASE}/bill/${congress}/${type}/${number}/text?format=json&api_key=${API_KEY}`);
+  const versions = data.textVersions || [];
+  if (!versions.length) return null;
+
+  // Formatted Text pages are plain text wrapped in a single <pre> — no
+  // markup to fight with once we're past that.
+  const latest = versions[versions.length - 1];
+  const formattedText = latest.formats?.find((f) => f.type === 'Formatted Text');
+  if (!formattedText) return null;
+
+  const res = await fetch(formattedText.url);
+  if (!res.ok) return null;
+  const html = await res.text();
+  const match = html.match(/<pre>([\s\S]*?)<\/pre>/i);
+  if (!match) return null;
+  return decodeEntities(match[1]).trim();
+}
+
+/** Asks Claude to write a plain-language summary from the bill's actual text. */
+async function generateAiSummary(title, billText) {
+  const truncated = billText.length > MAX_BILL_TEXT_CHARS;
+  const excerpt = billText.slice(0, MAX_BILL_TEXT_CHARS);
+
+  const prompt =
+    `Here is the full text of a bill titled "${title}".${truncated ? ' The text below is truncated to its first portion.' : ''}\n\n` +
+    `Write a plain-language summary of what this bill would do, in the style of an official CRS bill summary. Strict format: plain prose only — no markdown headers, no bold labels, no section-by-section breakdown, no bullet points. 2-4 short paragraphs, roughly 150-250 words total. Stay neutral and factual; do not editorialize or speculate about intent or impact beyond what the text states. Do not add a preamble like "Here is a summary" — start directly with the substance. This length limit matters more than covering every provision — cover the bill's main thrust and its most significant provisions, not every section.\n\n` +
+    `Bill text:\n${excerpt}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Anthropic API returned HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  const text = data.content?.[0]?.text?.trim();
+  if (!text) throw new Error('Anthropic API returned no summary text');
+  if (data.stop_reason === 'max_tokens') {
+    throw new Error('summary got cut off mid-response (hit the token limit) — try again or trim the bill text');
+  }
+  return text;
 }
 
 async function fetchBillFeature(billId, congress) {
@@ -118,8 +212,26 @@ async function fetchBillFeature(billId, congress) {
 
   const cosponsorCount = cosponsorsRes.pagination?.count ?? 0;
   const summaries = summariesRes.summaries || [];
-  const latestSummary = summaries.length ? stripHtml(summaries[summaries.length - 1].text || '') : '';
+  const crsSummary = summaries.length ? stripHtml(summaries[summaries.length - 1].text || '') : '';
   const timeline = buildTimeline(actionsRes.actions || [], bill.introducedDate);
+
+  // No CRS summary yet (common for freshly introduced bills) — fall back to
+  // generating one from the bill's actual text, if we have a key for it and
+  // Congress.gov has published the text yet.
+  let summary = crsSummary;
+  let summaryLabel = crsSummary ? 'Official summary' : '';
+  if (!crsSummary && ANTHROPIC_API_KEY) {
+    try {
+      const billText = await fetchBillText(congress, type, number);
+      if (billText) {
+        summary = await generateAiSummary(bill.title || billId, billText);
+        summaryLabel = 'Summary';
+      }
+    } catch (err) {
+      console.warn(`     (couldn't generate a summary for ${billId}: ${err.message})`);
+    }
+    await sleep(250);
+  }
 
   return {
     billId,
@@ -136,7 +248,8 @@ async function fetchBillFeature(billId, congress) {
     latestAction: bill.latestAction
       ? { actionDate: bill.latestAction.actionDate, text: stripTags(bill.latestAction.text || '') }
       : null,
-    summary: latestSummary,
+    summary,
+    summaryLabel,
     timeline,
     link: billUrl(congress, type, number),
   };
@@ -213,9 +326,13 @@ async function main() {
     }
 
     if (f.summary) {
-      lines.push('**Official summary:**');
+      lines.push(`**${f.summaryLabel}:**`);
       lines.push('');
       lines.push(f.summary);
+      lines.push('');
+    } else {
+      lines.push('_(No summary available yet — Congress.gov has no CRS summary or bill text' +
+        `${ANTHROPIC_API_KEY ? ' published' : ', and ANTHROPIC_API_KEY is not set to generate one'} for this bill.)_`);
       lines.push('');
     }
 
@@ -241,8 +358,16 @@ async function main() {
   console.log(`  Draft written to: scripts/newsletter/features/${filename}\n`);
 }
 
-main().catch((err) => {
-  console.error('\n  Script failed:', err.message);
-  console.error('  If this is a network or API error, try again in a minute.\n');
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('\n  Script failed:', err.message);
+    console.error('  If this is a network or API error, try again in a minute.\n');
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  parseBillId,
+  fetchBillFeature,
+  TIMELINE_KEYS,
+};

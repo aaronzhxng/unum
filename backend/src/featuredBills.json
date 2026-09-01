@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-08-24",
-  "weekEnd": "2026-08-30",
+  "weekOf": "2026-08-31",
+  "weekEnd": "2026-09-06",
   "bills": [
     {
-      "billId": "hr6509",
-      "note": "This bill provides for increased oversight of drug compounding and imposes statutory limits on compounded drugs that are essentially copies of commercially available drugs."
+      "billId": "hr4795",
+      "note": "This bill prohibits institutions of higher education that participate in federal student aid programs from engaging in boycotts against Israel."
     }
   ]
 }
