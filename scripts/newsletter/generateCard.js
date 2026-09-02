@@ -298,7 +298,12 @@ function pickFinalVotesPerChamber(votes) {
   const byChamber = {};
   for (const v of substantive) {
     const existing = byChamber[v.chamber];
-    if (!existing || new Date(v.date) > new Date(existing.date)) byChamber[v.chamber] = v;
+    // Take each chamber's earliest substantive vote — the vote where it
+    // first passed the bill — rather than the latest. A bill that ping-pongs
+    // between chambers can pick up later "agreed to"/"concurred" votes on
+    // amendments, which are real votes but read as a footnote next to the
+    // vote where the chamber actually passed the bill.
+    if (!existing || new Date(v.date) < new Date(existing.date)) byChamber[v.chamber] = v;
   }
   return Object.values(byChamber);
 }
@@ -358,9 +363,9 @@ function baseStyles() {
     .title { flex: 1; min-width: 0; font-size: 18px; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .line2 { display: flex; align-items: center; margin-bottom: 18px; }
     .icon { width: 36px; height: 36px; border-radius: 6px; margin-right: 8px; flex-shrink: 0; }
-    .sponsor-photo { width: 28px; height: 28px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; object-fit: cover; }
+    .sponsor-photo { width: 36px; height: 36px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; object-fit: cover; }
     .policy-area { font-size: 13px; font-weight: 600; }
-    .sep { color: #7B7C81; margin: 0 6px; font-size: 13px; }
+    .sep { color: #7B7C81; margin: 0 12px; font-size: 20px; font-weight: 700; line-height: 1; }
     .sponsor { font-size: 13px; color: #7B7C81; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .summary { font-size: 14px; color: #535353; line-height: 1.5; margin-bottom: 22px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .stages { margin-bottom: 4px; }
