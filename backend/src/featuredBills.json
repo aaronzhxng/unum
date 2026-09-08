@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-08-31",
-  "weekEnd": "2026-09-06",
+  "weekOf": "2026-09-07",
+  "weekEnd": "2026-09-13",
   "bills": [
     {
-      "billId": "hr4795",
-      "note": "This bill prohibits institutions of higher education that participate in federal student aid programs from engaging in boycotts against Israel."
+      "billId": "hr9694",
+      "note": "This is Thomas Massie's and Ro Khanna's attempt to strengthen the enforcement of the first iteration of this act."
     }
   ]
 }
