@@ -122,6 +122,20 @@ const officialBillTitle = (officialName: string, actionText: string | null): str
   return `${officialName}: Bill update`;
 };
 
+const truncateBillName = (name: string, maxLength = 50): string => {
+  if (name.length <= maxLength) return name;
+  const cut = name.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > 20 ? lastSpace : maxLength)}…`;
+};
+
+const getBillDisplayName = (billId: string): string => {
+  const row = db
+    .prepare(`SELECT title FROM bills WHERE bill_id = ?`)
+    .get(billId) as { title: string | null } | undefined;
+  return truncateBillName(row?.title || billId.toUpperCase());
+};
+
 const billActionTitle = (policyArea: string, actionText: string | null): string => {
   const a = (actionText ?? "").toLowerCase();
   if (a.includes("became public law") || a.includes("signed by president"))
@@ -257,6 +271,7 @@ const checkFollowedBills = async (filterToken?: string) => {
 
     for (const { billId: rawBillId, subTypes } of followedBills) {
       const billId = rawBillId.replace(/^bill_/, "");
+      const billDisplayName = getBillDisplayName(billId);
       const wantsActions =
         subTypes.includes("all-notications") || subTypes.includes("actions");
       const wantsVoting =
@@ -293,7 +308,7 @@ const checkFollowedBills = async (filterToken?: string) => {
           for (const action of recentActions) {
             messages.push({
               to: reg.token,
-              title: `${billId.toUpperCase()} had a new action`,
+              title: `${billDisplayName} had a new action`,
               body: action.text,
               data: { billId, notifType: "actions" },
             });
@@ -318,7 +333,7 @@ const checkFollowedBills = async (filterToken?: string) => {
           for (const action of recentVotes) {
             messages.push({
               to: reg.token,
-              title: `Vote recorded on ${billId.toUpperCase()}`,
+              title: `Vote recorded on ${billDisplayName}`,
               body: action.text,
               data: { billId, notifType: "voting" },
             });
@@ -339,7 +354,7 @@ const checkFollowedBills = async (filterToken?: string) => {
           if (recentCosponsors.length > 0) {
             messages.push({
               to: reg.token,
-              title: `${billId.toUpperCase()} received a new cosponsor`,
+              title: `${billDisplayName} received a new cosponsor`,
               body: recentCosponsors
                 .map(
                   (c: any) =>
@@ -364,7 +379,7 @@ const checkFollowedBills = async (filterToken?: string) => {
           if (recentAmendments.length > 0) {
             messages.push({
               to: reg.token,
-              title: `${billId.toUpperCase()} has a new amendment`,
+              title: `${billDisplayName} has a new amendment`,
               body:
                 recentAmendments.length === 1
                   ? `1 new amendment submitted`
