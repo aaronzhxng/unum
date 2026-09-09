@@ -234,8 +234,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "See the full text of the Constitution and all its amendments (PDF)",
-                url: "https://constitution.congress.gov/constitution/",
+                  "See the full text of the Constitution and all its amendments",
+                url: "https://www.archives.gov/founding-docs/constitution-transcript",
               },
               {
                 label:
@@ -249,7 +249,7 @@ export const educationTopics: EducationTopic[] = [
               {
                 label:
                   "Learn about how the Supreme Court has understood the Constitution throughout history",
-                url: "https://constitution.congress.gov/",
+                url: "https://www.oyez.org/cases",
               },
               {
                 label:
@@ -304,8 +304,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "See the full text of the Constitution and all its amendments (PDF)",
-                url: "https://constitution.congress.gov/constitution/",
+                  "See the full text of the Constitution and all its amendments",
+                url: "https://www.archives.gov/founding-docs/constitution-transcript",
               },
               {
                 label:
@@ -319,7 +319,7 @@ export const educationTopics: EducationTopic[] = [
               {
                 label:
                   "Learn about how the Supreme Court has understood the Constitution throughout history",
-                url: "https://constitution.congress.gov/",
+                url: "https://www.oyez.org/cases",
               },
               {
                 label:
@@ -350,8 +350,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "See the full text of the Constitution and all its amendments (PDF)",
-                url: "https://constitution.congress.gov/constitution/",
+                  "See the full text of the Constitution and all its amendments",
+                url: "https://www.archives.gov/founding-docs/constitution-transcript",
               },
               {
                 label:
@@ -365,7 +365,7 @@ export const educationTopics: EducationTopic[] = [
               {
                 label:
                   "Learn about how the Supreme Court has understood the Constitution throughout history",
-                url: "https://constitution.congress.gov/",
+                url: "https://www.oyez.org/cases",
               },
               {
                 label:
@@ -809,8 +809,8 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label:
-                  "Introduction to the federal legislative process (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/IG10005",
+                  "Introduction to the federal legislative process (U.S. House of Representatives)",
+                url: "https://www.house.gov/the-house-explained/the-legislative-process",
               },
             ],
           },
@@ -840,8 +840,8 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label:
-                  "Introduction to the federal legislative process (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/IG10005",
+                  "Introduction to the federal legislative process (U.S. House of Representatives)",
+                url: "https://www.house.gov/the-house-explained/the-legislative-process",
               },
             ],
           },
@@ -881,8 +881,8 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label:
-                  "Introduction to the federal legislative process (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/IG10005",
+                  "Introduction to the federal legislative process (U.S. House of Representatives)",
+                url: "https://www.house.gov/the-house-explained/the-legislative-process",
               },
             ],
           },
@@ -922,8 +922,8 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label:
-                  "Introduction to the federal legislative process (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/IG10005",
+                  "Introduction to the federal legislative process (U.S. House of Representatives)",
+                url: "https://www.house.gov/the-house-explained/the-legislative-process",
               },
             ],
           },
@@ -975,8 +975,8 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label:
-                  "Introduction to the federal legislative process (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/IG10005",
+                  "Introduction to the federal legislative process (U.S. House of Representatives)",
+                url: "https://www.house.gov/the-house-explained/the-legislative-process",
               },
             ],
           },
@@ -1036,8 +1036,8 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label:
-                  "Introduction to the federal legislative process (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/IG10005",
+                  "Introduction to the federal legislative process (U.S. House of Representatives)",
+                url: "https://www.house.gov/the-house-explained/the-legislative-process",
               },
             ],
           },
@@ -1067,8 +1067,8 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label:
-                  "Introduction to the federal legislative process (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/IG10005",
+                  "Introduction to the federal legislative process (U.S. House of Representatives)",
+                url: "https://www.house.gov/the-house-explained/the-legislative-process",
               },
             ],
           },
@@ -1094,8 +1094,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "Overview of federal taxation (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/R48313",
+                  "Overview of federal tax policy (U.S. Department of the Treasury)",
+                url: "https://home.treasury.gov/policy-issues/tax-policy",
               },
               {
                 label: "Where federal spending goes",
@@ -1143,8 +1143,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "Overview of federal taxation (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/R48313",
+                  "Overview of federal tax policy (U.S. Department of the Treasury)",
+                url: "https://home.treasury.gov/policy-issues/tax-policy",
               },
               {
                 label: "Where federal spending goes",
@@ -1199,8 +1199,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "Overview of federal taxation (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/R48313",
+                  "Overview of federal tax policy (U.S. Department of the Treasury)",
+                url: "https://home.treasury.gov/policy-issues/tax-policy",
               },
               {
                 label: "Where federal spending goes",
@@ -1248,8 +1248,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "Overview of federal taxation (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/R48313",
+                  "Overview of federal tax policy (U.S. Department of the Treasury)",
+                url: "https://home.treasury.gov/policy-issues/tax-policy",
               },
               {
                 label: "Where federal spending goes",
@@ -1297,8 +1297,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "Types of congressional hearings (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/98-317",
+                  "Types of congressional hearings (GovInfo Congressional Hearings collection)",
+                url: "https://www.govinfo.gov/help/chrg",
               },
               {
                 label: "How impeachment works",
@@ -1343,8 +1343,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "Types of congressional hearings (Congressional Research Service)",
-                url: "https://www.congress.gov/crs-product/98-317",
+                  "Types of congressional hearings (GovInfo Congressional Hearings collection)",
+                url: "https://www.govinfo.gov/help/chrg",
               },
               {
                 label: "How impeachment works",
@@ -1468,7 +1468,7 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label: "Search all laws passed by Congress",
-                url: "https://www.congress.gov/",
+                url: "https://www.govinfo.gov/app/collection/plaw",
               },
               {
                 label: "Search the U.S. Code",
@@ -2218,7 +2218,7 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label: "Some famous First Ladies' initiatives in history",
-                url: "https://www.gilderlehrman.org/history-resources/essays/first-ladies%E2%80%99-contributions-political-issues-and-national-welfare",
+                url: "https://www.firstladies.org/home/first-ladies",
               },
             ],
           },
@@ -2270,7 +2270,7 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label: "See a list of previous vice presidents",
-                url: "https://www.britannica.com/topic/vice-president-of-the-United-States-of-America",
+                url: "https://www.senate.gov/senators/VicePresidents.htm",
               },
               {
                 label: "See the full order of presidential succession",
@@ -2778,8 +2778,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "See the full text of the Constitution and all its amendments (PDF)",
-                url: "https://constitution.congress.gov/constitution/",
+                  "See the full text of the Constitution and all its amendments",
+                url: "https://www.archives.gov/founding-docs/constitution-transcript",
               },
               {
                 label:
@@ -2793,7 +2793,7 @@ export const educationTopics: EducationTopic[] = [
               {
                 label:
                   "Learn about how the Supreme Court has understood the Constitution throughout history",
-                url: "https://constitution.congress.gov/",
+                url: "https://www.oyez.org/cases",
               },
               {
                 label:
@@ -2829,8 +2829,8 @@ export const educationTopics: EducationTopic[] = [
             items: [
               {
                 label:
-                  "See the full text of the Constitution and all its amendments (PDF)",
-                url: "https://constitution.congress.gov/constitution/",
+                  "See the full text of the Constitution and all its amendments",
+                url: "https://www.archives.gov/founding-docs/constitution-transcript",
               },
               {
                 label:
@@ -2844,7 +2844,7 @@ export const educationTopics: EducationTopic[] = [
               {
                 label:
                   "Learn about how the Supreme Court has understood the Constitution throughout history",
-                url: "https://constitution.congress.gov/",
+                url: "https://www.oyez.org/cases",
               },
               {
                 label:
