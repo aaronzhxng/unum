@@ -514,10 +514,13 @@ async function main() {
   const browser = await puppeteer.launch({ headless: true });
   try {
     const page = await browser.newPage();
-    await page.setViewport({ width: viewportWidth, height: 800 });
+    // deviceScaleFactor: 2 renders at 2x pixel density (like a Retina
+    // screenshot) — without it Puppeteer's default 1x output looks soft,
+    // especially the photo/icon images and small text.
+    await page.setViewport({ width: viewportWidth, height: 800, deviceScaleFactor: 2 });
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const height = await page.evaluate(() => document.querySelector('.wrapper').getBoundingClientRect().height);
-    await page.setViewport({ width: viewportWidth, height: Math.ceil(height) });
+    await page.setViewport({ width: viewportWidth, height: Math.ceil(height), deviceScaleFactor: 2 });
 
     const outPath = path.join(CARDS_DIR, `${billId}.png`);
     await page.screenshot({ path: outPath, clip: { x: 0, y: 0, width: viewportWidth, height: Math.ceil(height) } });
