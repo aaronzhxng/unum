@@ -1,10 +1,14 @@
 {
-  "weekOf": "2026-09-07",
-  "weekEnd": "2026-09-13",
+  "weekOf": "2026-09-14",
+  "weekEnd": "2026-09-20",
   "bills": [
     {
-      "billId": "hr9694",
-      "note": "This is Thomas Massie's and Ro Khanna's attempt to strengthen the enforcement of the first iteration of this act."
+      "billId": "hr2069",
+      "note": "This bill expands requirements for federal agencies to report expenditures on the USAspending.gov website."
+    },
+    {
+      "billId": "hr2196",
+      "note": "This bill reauthorizes the National EMS Foundation to establish a monument to commemorate the work of emergency medical services."
     }
   ]
 }
