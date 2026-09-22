@@ -1472,7 +1472,7 @@ export const educationTopics: EducationTopic[] = [
               },
               {
                 label: "Search the U.S. Code",
-                url: "https://uscode.house.gov/",
+                url: "https://www.govinfo.gov/app/collection/uscode",
               },
               {
                 label: "Search the Code of Federal Regulations",
