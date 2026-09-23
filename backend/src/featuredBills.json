@@ -1,14 +1,10 @@
 {
-  "weekOf": "2026-09-14",
-  "weekEnd": "2026-09-20",
+  "weekOf": "2026-09-21",
+  "weekEnd": "2026-09-27",
   "bills": [
     {
-      "billId": "hr2069",
-      "note": "This bill expands requirements for federal agencies to report expenditures on the USAspending.gov website."
-    },
-    {
-      "billId": "hr2196",
-      "note": "This bill reauthorizes the National EMS Foundation to establish a monument to commemorate the work of emergency medical services."
+      "billId": "hr5334",
+      "note": "This imposes sanctions and tariffs on Russia, extends Iran sanctions, and expands tax deductions in teacher expenses."
     }
   ]
 }
