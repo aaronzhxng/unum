@@ -355,8 +355,8 @@ function renderVoteSection(vote) {
 function baseStyles() {
   return `
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #fff; }
-    .wrapper { display: inline-block; padding: ${SHADOW_MARGIN}px; background: #fff; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #fafafa; }
+    .wrapper { display: inline-block; padding: ${SHADOW_MARGIN}px; background: #fafafa; }
     .card { width: ${CARD_WIDTH}px; background: #fafafa; border-radius: 24px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
     .line1 { display: flex; align-items: center; margin-bottom: 16px; min-width: 0; }
     .badge { flex-shrink: 0; color: #fff; font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 8px; margin-right: 10px; white-space: nowrap; }
@@ -514,13 +514,13 @@ async function main() {
   const browser = await puppeteer.launch({ headless: true });
   try {
     const page = await browser.newPage();
-    // deviceScaleFactor: 2 renders at 2x pixel density (like a Retina
-    // screenshot) — without it Puppeteer's default 1x output looks soft,
-    // especially the photo/icon images and small text.
-    await page.setViewport({ width: viewportWidth, height: 800, deviceScaleFactor: 2 });
+    // deviceScaleFactor: 3 renders at 3x pixel density (higher than a
+    // standard Retina screenshot) — Puppeteer's default 1x output looks
+    // soft, especially the photo/icon images and small text.
+    await page.setViewport({ width: viewportWidth, height: 800, deviceScaleFactor: 3 });
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const height = await page.evaluate(() => document.querySelector('.wrapper').getBoundingClientRect().height);
-    await page.setViewport({ width: viewportWidth, height: Math.ceil(height), deviceScaleFactor: 2 });
+    await page.setViewport({ width: viewportWidth, height: Math.ceil(height), deviceScaleFactor: 3 });
 
     const outPath = path.join(CARDS_DIR, `${billId}.png`);
     await page.screenshot({ path: outPath, clip: { x: 0, y: 0, width: viewportWidth, height: Math.ceil(height) } });
