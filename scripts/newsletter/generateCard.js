@@ -153,25 +153,61 @@ function formatDate(dateStr) {
 // bill object with React state around it.
 // ---------------------------------------------------------------------------
 
+// "failed" (a chamber voted and rejected a resolution) renders the same as
+// a veto — a full red bar showing the stage was reached and rejected there.
 function isVetoStatus(s) {
-  return s === 'vetoed' || s === 'pocket_vetoed' || s === 'veto_sustained';
+  return s === 'vetoed' || s === 'pocket_vetoed' || s === 'veto_sustained' || s === 'failed';
 }
 
-function getBillStages(type, latestActionText, actionTexts) {
+// Text like "Rule H. Res. 1175 failed passage of House" (a *procedural
+// rule* vote failing, unrelated to the bill's own passage) or "Motion to
+// discharge ... rejected" proves free-text "failed"/"rejected" keyword
+// matching alone is unsafe — it can't tell a rejected recommit/
+// discharge/cloture/rule motion from the bill itself failing. Real pass/fail
+// determination uses the structured roll-call vote data instead (the same
+// data the vote bars are built from): pick each chamber's latest
+// non-procedural vote and read its result directly.
+function latestChamberVoteForStages(votes, chamber) {
+  const substantive = (votes || []).filter(
+    (v) => v.chamber === chamber && !PROCEDURAL_VOTE_PATTERN.test(v.result || '') && !PROCEDURAL_VOTE_PATTERN.test(v.question || ''),
+  );
+  if (!substantive.length) return null;
+  return substantive.reduce((latest, v) => (new Date(v.date) > new Date(latest.date) ? v : latest));
+}
+
+function voteFailed(result) {
+  return /fail|rejected|not agreed to/i.test(result || '');
+}
+
+function getBillStages(type, latestActionText, actionTexts, votes) {
   const allTexts = [latestActionText, ...actionTexts].filter(Boolean).map((t) => t.toLowerCase());
   const any = (keyword) => allTexts.some((a) => a.includes(keyword));
+  const houseVote = latestChamberVoteForStages(votes, 'House');
+  const senateVote = latestChamberVoteForStages(votes, 'Senate');
 
+  // Vote data (when available) takes priority over the free-text guess.
   if (type === 'HRES' || type === 'SRES') {
+    const vote = type === 'HRES' ? houseVote : senateVote;
+    if (vote) return ['full', voteFailed(vote.result) ? 'failed' : 'full'];
+    if (any('failed of passage') || any('not agreed to')) return ['full', 'failed'];
     if (any('passed') || any('agreed to')) return ['full', 'full'];
     return ['full', 'half'];
   }
   if (type === 'HCONRES') {
+    if (senateVote) return voteFailed(senateVote.result) ? ['full', 'full', 'failed'] : ['full', 'full', 'full'];
+    if (any('failed of passage in senate') || any('not agreed to in senate')) return ['full', 'full', 'failed'];
     if (any('passed senate') || any('agreed to in senate')) return ['full', 'full', 'full'];
+    if (houseVote) return voteFailed(houseVote.result) ? ['full', 'failed', 'empty'] : ['full', 'full', 'half'];
+    if (any('failed of passage in house') || any('not agreed to in house')) return ['full', 'failed', 'empty'];
     if (any('passed house') || any('agreed to in house')) return ['full', 'full', 'half'];
     return ['full', 'half', 'empty'];
   }
   if (type === 'SCONRES') {
+    if (houseVote) return voteFailed(houseVote.result) ? ['full', 'full', 'failed'] : ['full', 'full', 'full'];
+    if (any('failed of passage in house') || any('not agreed to in house')) return ['full', 'full', 'failed'];
     if (any('passed house') || any('agreed to in house')) return ['full', 'full', 'full'];
+    if (senateVote) return voteFailed(senateVote.result) ? ['full', 'failed', 'empty'] : ['full', 'full', 'half'];
+    if (any('failed of passage in senate') || any('not agreed to in senate')) return ['full', 'failed', 'empty'];
     if (any('passed senate') || any('agreed to in senate')) return ['full', 'full', 'half'];
     return ['full', 'half', 'empty'];
   }
@@ -195,14 +231,18 @@ function getBillStages(type, latestActionText, actionTexts) {
   if (any('presented to president') || any('to president')) return ['full', 'full', 'full', 'half'];
 
   if (type?.startsWith('H')) {
+    if (senateVote) return voteFailed(senateVote.result) ? ['full', 'full', 'failed', 'empty'] : ['full', 'full', 'full', 'half'];
     if (any('passed senate') || any('senate passed')) return ['full', 'full', 'full', 'half'];
+    if (houseVote && voteFailed(houseVote.result)) return ['full', 'failed', 'empty', 'empty'];
     if (any('passed house') || any('passed/agreed to in house') || any('on passage passed'))
       return ['full', 'full', 'half', 'empty'];
     if (any('senate')) return ['full', 'full', 'half', 'empty'];
     return ['full', 'half', 'empty', 'empty'];
   }
   if (type?.startsWith('S')) {
+    if (houseVote) return voteFailed(houseVote.result) ? ['full', 'full', 'failed', 'empty'] : ['full', 'full', 'full', 'half'];
     if (any('passed house') || any('house passed')) return ['full', 'full', 'full', 'half'];
+    if (senateVote && voteFailed(senateVote.result)) return ['full', 'failed', 'empty', 'empty'];
     if (any('passed senate') || any('passed/agreed to in senate') || any('on passage passed'))
       return ['full', 'full', 'half', 'empty'];
     if (any('house')) return ['full', 'full', 'half', 'empty'];
@@ -212,19 +252,21 @@ function getBillStages(type, latestActionText, actionTexts) {
 }
 
 function getStageLabels(type, stages, latestActionText, actionTexts) {
-  if (type === 'HRES') return ['Introduced', stages[1] === 'full' ? 'Passed House' : 'In House'];
-  if (type === 'SRES') return ['Introduced', stages[1] === 'full' ? 'Passed Senate' : 'In Senate'];
+  if (type === 'HRES')
+    return ['Introduced', stages[1] === 'full' ? 'Passed House' : stages[1] === 'failed' ? 'Failed in House' : 'In House'];
+  if (type === 'SRES')
+    return ['Introduced', stages[1] === 'full' ? 'Passed Senate' : stages[1] === 'failed' ? 'Failed in Senate' : 'In Senate'];
   if (type === 'HCONRES')
     return [
       'Introduced',
-      stages[1] === 'full' ? 'Passed House' : 'In House',
-      stages[2] === 'full' ? 'Passed Senate' : 'In Senate',
+      stages[1] === 'full' ? 'Passed House' : stages[1] === 'failed' ? 'Failed in House' : 'In House',
+      stages[2] === 'full' ? 'Passed Senate' : stages[2] === 'failed' ? 'Failed in Senate' : 'In Senate',
     ];
   if (type === 'SCONRES')
     return [
       'Introduced',
-      stages[1] === 'full' ? 'Passed Senate' : 'In Senate',
-      stages[2] === 'full' ? 'Passed House' : 'In House',
+      stages[1] === 'full' ? 'Passed Senate' : stages[1] === 'failed' ? 'Failed in Senate' : 'In Senate',
+      stages[2] === 'full' ? 'Passed House' : stages[2] === 'failed' ? 'Failed in House' : 'In House',
     ];
   if (type === 'PN')
     return ['Received', 'In Committee', stages[2] === 'full' ? 'Confirmed' : 'Pending'];
@@ -358,9 +400,9 @@ function baseStyles() {
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #fafafa; }
     .wrapper { display: inline-block; padding: ${SHADOW_MARGIN}px; background: #fafafa; }
     .card { width: ${CARD_WIDTH}px; background: #fafafa; border-radius: 24px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-    .line1 { display: flex; align-items: center; margin-bottom: 16px; min-width: 0; }
-    .badge { flex-shrink: 0; color: #fff; font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 8px; margin-right: 10px; white-space: nowrap; }
-    .title { flex: 1; min-width: 0; font-size: 18px; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .line1 { display: flex; align-items: flex-start; margin-bottom: 16px; min-width: 0; }
+    .badge { flex-shrink: 0; color: #fff; font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 8px; margin-right: 10px; margin-top: 2px; white-space: nowrap; }
+    .title { flex: 1; min-width: 0; font-size: 18px; font-weight: 700; color: #333; line-height: 1.3; }
     .line2 { display: flex; align-items: center; margin-bottom: 18px; }
     .icon { width: 36px; height: 36px; border-radius: 6px; margin-right: 8px; flex-shrink: 0; }
     .sponsor-photo { width: 36px; height: 36px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; object-fit: cover; }
@@ -374,7 +416,7 @@ function baseStyles() {
 
 function buildCardHtml(f) {
   const color = POLICY_AREA_COLORS[f.policyArea] || DEFAULT_COLOR;
-  const stages = getBillStages(f.type, f.latestAction?.text, f.actionTexts);
+  const stages = getBillStages(f.type, f.latestAction?.text, f.actionTexts, f.votes);
   const labels = getStageLabels(f.type, stages, f.latestAction?.text, f.actionTexts);
   const voteSections = pickFinalVotesPerChamber(f.votes).map(renderVoteSection).join('');
 
@@ -478,9 +520,14 @@ async function fetchCardData(billId, congress, summary) {
 
 function parseArgs(argv) {
   const summaryIdx = argv.indexOf('--summary');
-  if (summaryIdx === -1) return { billId: argv[0], summary: null };
-  const billId = argv.find((a, i) => i !== summaryIdx && i !== summaryIdx + 1 && !a.startsWith('--'));
-  return { billId, summary: argv[summaryIdx + 1] };
+  const folderIdx = argv.indexOf('--folder');
+  const summary = summaryIdx === -1 ? null : argv[summaryIdx + 1];
+  const folder = folderIdx === -1 ? null : argv[folderIdx + 1];
+  const consumed = new Set();
+  if (summaryIdx !== -1) { consumed.add(summaryIdx); consumed.add(summaryIdx + 1); }
+  if (folderIdx !== -1) { consumed.add(folderIdx); consumed.add(folderIdx + 1); }
+  const billId = argv.find((a, i) => !consumed.has(i) && !a.startsWith('--'));
+  return { billId, summary, folder };
 }
 
 async function main() {
@@ -491,10 +538,14 @@ async function main() {
     process.exit(1);
   }
 
-  const { billId, summary } = parseArgs(process.argv.slice(2));
+  const { billId, summary, folder } = parseArgs(process.argv.slice(2));
   if (!billId || !summary) {
-    console.error('\n  Usage: node scripts/newsletter/generateCard.js <billId> --summary "Your summary text"');
-    console.error('  Example: node scripts/newsletter/generateCard.js hr10138 --summary "This bill would..."\n');
+    console.error('\n  Usage: node scripts/newsletter/generateCard.js <billId> --summary "Your summary text" [--folder <name>]');
+    console.error('  Example: node scripts/newsletter/generateCard.js hr10138 --summary "This bill would..." --folder Sep29\n');
+    process.exit(1);
+  }
+  if (folder && (folder.includes('..') || folder.includes('/') || folder.includes('\\'))) {
+    console.error('\n  ERROR: --folder must be a plain folder name, not a path (no "..", "/", or "\\\\").\n');
     process.exit(1);
   }
 
@@ -505,7 +556,8 @@ async function main() {
   const congress = congressRes.congress?.number;
   if (!congress) throw new Error("Couldn't determine the current Congress number");
 
-  if (!fs.existsSync(CARDS_DIR)) fs.mkdirSync(CARDS_DIR, { recursive: true });
+  const outDir = folder ? path.join(CARDS_DIR, folder) : CARDS_DIR;
+  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
   const f = await fetchCardData(billId, congress, summary);
   const html = buildCardHtml(f);
@@ -522,11 +574,12 @@ async function main() {
     const height = await page.evaluate(() => document.querySelector('.wrapper').getBoundingClientRect().height);
     await page.setViewport({ width: viewportWidth, height: Math.ceil(height), deviceScaleFactor: 3 });
 
-    const outPath = path.join(CARDS_DIR, `${billId}.png`);
+    const outPath = path.join(outDir, `${billId}.png`);
     await page.screenshot({ path: outPath, clip: { x: 0, y: 0, width: viewportWidth, height: Math.ceil(height) } });
     await page.close();
 
-    console.log(`  Written: scripts/newsletter/cards/${billId}.png\n`);
+    const relPath = folder ? `scripts/newsletter/cards/${folder}/${billId}.png` : `scripts/newsletter/cards/${billId}.png`;
+    console.log(`  Written: ${relPath}\n`);
   } finally {
     await browser.close();
   }
