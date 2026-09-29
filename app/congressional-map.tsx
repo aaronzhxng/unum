@@ -3,31 +3,27 @@ import { Check, ChevronDown, ChevronLeft, ChevronUp, X } from "lucide-react-nati
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
-    Image,
+    BackHandler,
     KeyboardAvoidingView,
+    PanResponder,
     Platform,
     Pressable,
     ScrollView,
     Text,
     TextInput,
     View,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
 } from "react-native";
 import CongressionalDistrictMap, {
     type DistrictSelection,
     type FocusDistrict,
     type PinLocation,
 } from "./global_components/CongressionalDistrictMap";
+import OfficialCard from "./global_components/OfficialCard";
 import { geocodeAddressToDistrict } from "./services/censusGeocoding";
 import { officialsService } from "./services/officials";
-
-type MatchedRep = {
-  bioguideId: string;
-  name: string;
-  party: string;
-  district: number;
-  state: string;
-  photoUrl: string;
-};
+import { trySwipeBack } from "./utils/swipeBackGuard";
 
 type SearchMode = "zip" | "address" | "state";
 
@@ -106,51 +102,52 @@ const STATE_TO_ABBR: Record<string, string> = {
 
 const STATES = Object.values(STATE_ABBR_TO_STATE).sort();
 
-const PARTY_ABBR: Record<string, string> = {
-  Democratic: "D",
-  Republican: "R",
-  Independent: "I",
-  Democrat: "D",
-};
-
 const API_BASE = "https://unum-production.up.railway.app";
 
-const formatName = (name: string): string =>
-  name.includes(",") ? name.split(",").reverse().join(" ").trim() : name;
-
+// Returns the official as the officials list stores it, so it renders with
+// the same card as the Officials tab
 function findHouseRep(
   officials: any[],
   stateAbbr: string,
   district: number,
-): MatchedRep | null {
-  const match = officials.find((o) => {
-    const termInfo = o.terms?.item?.[o.terms.item.length - 1];
-    const isHouse =
-      termInfo?.chamber === "House of Representatives" ||
-      o.chamber === "House of Representatives";
-    const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
-    const officialDistrict = parseInt(
-      termInfo?.district ?? o.district ?? "0",
-      10,
-    );
-    return (
-      isHouse && officialStateAbbr === stateAbbr && officialDistrict === district
-    );
-  });
-  if (!match) return null;
-
-  return {
-    bioguideId: match.bioguideId,
-    name: formatName(match.name),
-    party:
-      match.partyName ??
-      match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
-      "Unknown",
-    district,
-    state: stateAbbr,
-    photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
-  };
+): any | null {
+  return (
+    officials.find((o) => {
+      const termInfo = o.terms?.item?.[o.terms.item.length - 1];
+      const isHouse =
+        termInfo?.chamber === "House of Representatives" ||
+        o.chamber === "House of Representatives";
+      const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
+      const officialDistrict = parseInt(
+        termInfo?.district ?? o.district ?? "0",
+        10,
+      );
+      return (
+        isHouse &&
+        officialStateAbbr === stateAbbr &&
+        officialDistrict === district
+      );
+    }) ?? null
+  );
 }
+
+// Show a jump button once this far from the top or bottom of the page
+const JUMP_THRESHOLD = 80;
+
+// Matches the map's zoom buttons
+const jumpButtonStyle = {
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  backgroundColor: "#ffffff",
+  justifyContent: "center" as const,
+  alignItems: "center" as const,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.18,
+  shadowRadius: 9,
+  elevation: 6,
+};
 
 const sectionLabelStyle = {
   fontSize: 14,
@@ -202,8 +199,56 @@ export default function CongressionalMapScreen() {
 
   const [selectedDistrict, setSelectedDistrict] =
     useState<DistrictSelection | null>(null);
-  const [matchedRep, setMatchedRep] = useState<MatchedRep | null>(null);
+  const [matchedRep, setMatchedRep] = useState<any | null>(null);
   const [repLoading, setRepLoading] = useState(false);
+  const [showJumpTop, setShowJumpTop] = useState(false);
+  const [showJumpBottom, setShowJumpBottom] = useState(false);
+
+  // Left-edge swipe goes back the same way as the back button. The native
+  // stack gesture is disabled for this screen because it lets the tab
+  // pager drift to Home.
+  const backSwipePanResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) =>
+        g.dx > 20 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderRelease: (_, g) => {
+        if (g.dx > 50 && Math.abs(g.vx) > 0.3 && trySwipeBack()) router.back();
+      },
+    }),
+  ).current;
+
+  // Claim the OS-level back gesture too, so it doesn't pop twice
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (trySwipeBack()) router.back();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
+  // The map takes most of the screen and pans with one finger, so the page
+  // offers jump-to-top / jump-to-bottom buttons instead
+  const scrollMetrics = useRef({ offset: 0, viewport: 0, content: 0 });
+  const updateJumpButtons = () => {
+    const { offset, viewport, content } = scrollMetrics.current;
+    setShowJumpTop(offset > JUMP_THRESHOLD);
+    setShowJumpBottom(
+      viewport > 0 && offset + viewport < content - JUMP_THRESHOLD,
+    );
+  };
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } =
+      event.nativeEvent;
+    scrollMetrics.current = {
+      offset: contentOffset.y,
+      viewport: layoutMeasurement.height,
+      content: contentSize.height,
+    };
+    updateJumpButtons();
+  };
 
   const resetResults = () => {
     setSelectedDistrict(null);
@@ -380,6 +425,16 @@ export default function CongressionalMapScreen() {
         ref={scrollRef}
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 48, gap: 16 }}
         keyboardShouldPersistTaps="handled"
+        onScroll={handleScroll}
+        onLayout={(event) => {
+          scrollMetrics.current.viewport = event.nativeEvent.layout.height;
+          updateJumpButtons();
+        }}
+        onContentSizeChange={(_, height) => {
+          scrollMetrics.current.content = height;
+          updateJumpButtons();
+        }}
+        scrollEventThrottle={100}
       >
         {/* Search */}
         <View style={{ paddingHorizontal: 16 }}>
@@ -678,70 +733,7 @@ export default function CongressionalMapScreen() {
             </View>
           )}
 
-          {matchedRep && !repLoading && (
-            <Pressable
-              onPress={() =>
-                router.push(`/official/${matchedRep.bioguideId}` as any)
-              }
-              style={({ pressed }) => ({
-                backgroundColor: "#fff",
-                borderRadius: 24,
-                padding: 16,
-                flexDirection: "row",
-                alignItems: "center",
-                borderWidth: 2,
-                borderColor: "#008CFF",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.08,
-                shadowRadius: 10,
-                elevation: 4,
-                transform: [{ scale: pressed ? 0.98 : 1 }],
-              })}
-            >
-              <View
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  overflow: "hidden",
-                  backgroundColor: "#eee",
-                  marginRight: 14,
-                }}
-              >
-                <Image
-                  source={{ uri: matchedRep.photoUrl }}
-                  style={{ width: "100%", height: "120%" }}
-                  resizeMode="cover"
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 6,
-                    marginBottom: 4,
-                  }}
-                >
-                  <Text style={{ fontSize: 13, color: "#7B7C81" }}>
-                    {PARTY_ABBR[matchedRep.party] ?? matchedRep.party}
-                  </Text>
-                  <Text style={{ fontSize: 11, color: "#999" }}>
-                    {matchedRep.district === 0
-                      ? "At-Large"
-                      : `District ${matchedRep.district}`}
-                  </Text>
-                </View>
-                <Text
-                  style={{ fontSize: 16, fontWeight: "700", color: "#1a1a1a" }}
-                >
-                  {matchedRep.name}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 28, color: "#008CFF" }}>→</Text>
-            </Pressable>
-          )}
+          {matchedRep && !repLoading && <OfficialCard item={matchedRep} />}
 
           {selectedDistrict && !matchedRep && !repLoading && (
             <View
@@ -761,6 +753,51 @@ export default function CongressionalMapScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Jump to top / bottom — the map pans with one finger, so these get
+          the user past it */}
+      <View
+        pointerEvents="box-none"
+        style={{ position: "absolute", right: 16, bottom: 32, gap: 10 }}
+      >
+        {showJumpTop && (
+          <Pressable
+            onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+            accessibilityLabel="Scroll to top"
+            style={({ pressed }) => [
+              jumpButtonStyle,
+              { transform: [{ scale: pressed ? 0.9 : 1 }] },
+            ]}
+          >
+            <ChevronUp size={22} color="#1a1a1a" />
+          </Pressable>
+        )}
+        {showJumpBottom && (
+          <Pressable
+            onPress={() => scrollRef.current?.scrollToEnd({ animated: true })}
+            accessibilityLabel="Scroll to bottom"
+            style={({ pressed }) => [
+              jumpButtonStyle,
+              { transform: [{ scale: pressed ? 0.9 : 1 }] },
+            ]}
+          >
+            <ChevronDown size={22} color="#1a1a1a" />
+          </Pressable>
+        )}
+      </View>
+
+      {/* Left-edge swipe strip — matches router.back() like the back button */}
+      <View
+        {...backSwipePanResponder.panHandlers}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 20,
+          zIndex: 10,
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }

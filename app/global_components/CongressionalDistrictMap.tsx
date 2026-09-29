@@ -214,8 +214,8 @@ function buildOpenStreetMapHtml(params: {
       .leaflet-control-attribution {
         font-size: 11px;
         background: rgba(255, 255, 255, 0.9) !important;
-        border-top-left-radius: 8px;
-        padding: 2px 8px !important;
+        border-top-right-radius: 8px;
+        padding: 2px 8px 2px 24px !important;
       }
 
       .leaflet-control-attribution a {
@@ -272,13 +272,17 @@ function buildOpenStreetMapHtml(params: {
 
         const map = L.map("map", {
           zoomControl: false,
-          attributionControl: true,
+          attributionControl: false,
           preferCanvas: true,
         });
 
-        map.attributionControl.setPrefix(
-          '<a href="https://leafletjs.com">Leaflet</a>',
-        );
+        // Bottom-left keeps it clear of the page's scroll buttons
+        L.control
+          .attribution({
+            position: "bottomleft",
+            prefix: '<a href="https://leafletjs.com">Leaflet</a>',
+          })
+          .addTo(map);
 
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
