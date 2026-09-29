@@ -6,6 +6,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Map as MapIcon,
   MoreVertical,
   Plus,
   Search,
@@ -25,6 +26,7 @@ import {
 } from "react-native";
 import { useTour } from "../context/TourContext";
 import AddModal from "../global_components/AddModal";
+import DistrictExplorer from "../global_components/DistrictExplorer";
 import ErrorScreen from "../global_components/ErrorScreen";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
@@ -139,6 +141,7 @@ export default function OfficialsScreen() {
   const [actionToastMessage, setActionToastMessage] = useState("");
 
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showDistrictMap, setShowDistrictMap] = useState(false);
   const handleReportError = () => setShowReportModal(true);
 
   const handleNewListCreate = async (listName?: string) => {
@@ -403,7 +406,7 @@ export default function OfficialsScreen() {
                 <Text
                   style={[
                     componentStyles.header,
-                    { alignItems: "center", maxWidth: 220 },
+                    { alignItems: "center", maxWidth: 190 },
                   ]}
                   numberOfLines={1}
                   ellipsizeMode="tail"
@@ -426,6 +429,24 @@ export default function OfficialsScreen() {
               </View>
             </Pressable>
           </View>
+          <Pressable
+            onPress={() => setShowDistrictMap(true)}
+            hitSlop={8}
+            accessibilityLabel="Open congressional district map"
+            style={({ pressed }) => ({
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: "#E8F4FF",
+              justifyContent: "center",
+              alignItems: "center",
+              marginLeft: 8,
+              marginBottom: 12,
+              transform: [{ scale: pressed ? 0.85 : 1 }],
+            })}
+          >
+            <MapIcon size={18} color="#008CFF" />
+          </Pressable>
         </View>
 
         <View style={componentStyles.headerRight}>
@@ -542,6 +563,12 @@ export default function OfficialsScreen() {
         visible={showReportModal}
         onClose={() => setShowReportModal(false)}
         screen="officials" // change to "legislation" or "home" per file
+      />
+
+      <DistrictExplorer
+        visible={showDistrictMap}
+        onClose={() => setShowDistrictMap(false)}
+        initialState={selectedList}
       />
 
       {/* Location Selection Dropdown */}
