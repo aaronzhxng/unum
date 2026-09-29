@@ -1,5 +1,5 @@
 import { Search, X } from "lucide-react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Image,
@@ -62,6 +62,12 @@ export default function DistrictPickerModal({
   const [addressError, setAddressError] = useState<string | null>(null);
   const [pinLocation, setPinLocation] = useState<PinLocation | null>(null);
   const [addressGeoid, setAddressGeoid] = useState<string | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+
+  // The map fills most of the screen, so bring the confirm card into view
+  useEffect(() => {
+    if (selected) scrollRef.current?.scrollToEnd({ animated: true });
+  }, [selected]);
 
   // Fresh start each time the picker opens
   useEffect(() => {
@@ -164,73 +170,85 @@ export default function DistrictPickerModal({
         </View>
 
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={{
-            paddingHorizontal: 16,
             paddingBottom: insets.bottom + 48,
             gap: 12,
           }}
           keyboardShouldPersistTaps="handled"
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "#fff",
-              borderRadius: 16,
-              paddingHorizontal: 14,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.06,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          >
-            <Search size={18} color="#7B7C81" />
-            <TextInput
-              value={addressQuery}
-              onChangeText={(text) => {
-                setAddressQuery(text);
-                if (addressError) setAddressError(null);
-              }}
-              onSubmitEditing={handleAddressSearch}
-              placeholder="Street address (optional)"
-              placeholderTextColor="#aaa"
-              returnKeyType="search"
+          <View style={{ paddingHorizontal: 16, gap: 12 }}>
+            <View
               style={{
-                flex: 1,
-                paddingVertical: 16,
-                paddingHorizontal: 10,
-                fontSize: 16,
-                color: "#1a1a1a",
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#fff",
+                borderRadius: 16,
+                paddingHorizontal: 14,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.06,
+                shadowRadius: 4,
+                elevation: 2,
               }}
-            />
-            {addressSearching ? (
-              <ActivityIndicator color="#008CFF" />
-            ) : (
-              <Pressable
-                onPress={handleAddressSearch}
-                disabled={!addressQuery.trim()}
-                style={({ pressed }) => ({
-                  backgroundColor: addressQuery.trim() ? "#008CFF" : "#d0d0d0",
-                  borderRadius: 12,
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  opacity: pressed ? 0.75 : 1,
-                })}
-              >
-                <Text style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}>
-                  Find
-                </Text>
-              </Pressable>
-            )}
-          </View>
-          {addressError && (
-            <Text
-              style={{ fontSize: 13, color: "#D45252", paddingHorizontal: 4 }}
             >
-              {addressError}
+              <Search size={18} color="#7B7C81" />
+              <TextInput
+                value={addressQuery}
+                onChangeText={(text) => {
+                  setAddressQuery(text);
+                  if (addressError) setAddressError(null);
+                }}
+                onSubmitEditing={handleAddressSearch}
+                placeholder="Street address (optional)"
+                placeholderTextColor="#aaa"
+                returnKeyType="search"
+                style={{
+                  flex: 1,
+                  paddingVertical: 16,
+                  paddingHorizontal: 10,
+                  fontSize: 16,
+                  color: "#1a1a1a",
+                }}
+              />
+              {addressSearching ? (
+                <ActivityIndicator color="#008CFF" />
+              ) : (
+                <Pressable
+                  onPress={handleAddressSearch}
+                  disabled={!addressQuery.trim()}
+                  style={({ pressed }) => ({
+                    backgroundColor: addressQuery.trim() ? "#008CFF" : "#d0d0d0",
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                    opacity: pressed ? 0.75 : 1,
+                  })}
+                >
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}>
+                    Find
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+            {addressError && (
+              <Text
+                style={{ fontSize: 13, color: "#D45252", paddingHorizontal: 4 }}
+              >
+                {addressError}
+              </Text>
+            )}
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginTop: 4,
+              }}
+            >
+              Tap a district
             </Text>
-          )}
+          </View>
 
           <CongressionalDistrictMap
             stateAbbr={stateAbbr}
@@ -241,85 +259,87 @@ export default function DistrictPickerModal({
             pinLocation={pinLocation}
           />
 
-          {selected && !selectedRep && (
-            <View
-              style={{
-                backgroundColor: "#FFF8E7",
-                borderRadius: 12,
-                padding: 12,
-                borderWidth: 1,
-                borderColor: "#F5A623",
-              }}
-            >
-              <Text style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}>
-                Couldn't find a representative for this district in our
-                database.
-              </Text>
-            </View>
-          )}
-
-          {selectedRep && (
-            <View
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 24,
-                padding: 14,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.06,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 26,
-                    overflow: "hidden",
-                    backgroundColor: "#eee",
-                    marginRight: 12,
-                  }}
-                >
-                  <Image
-                    source={{ uri: selectedRep.photoUrl }}
-                    style={{ width: "100%", height: "120%" }}
-                    resizeMode="cover"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{ fontSize: 15, fontWeight: "600", color: "#535353" }}
-                  >
-                    {selectedRep.name}
-                  </Text>
-                  <Text
-                    style={{ fontSize: 13, color: "#7B7C81", marginTop: 2 }}
-                    numberOfLines={1}
-                  >
-                    {PARTY_ABBR[selectedRep.party] ?? selectedRep.party} ·{" "}
-                    {selectedRep.role}
-                  </Text>
-                </View>
-              </View>
-              <Pressable
-                onPress={() => onConfirm(selectedRep)}
-                style={({ pressed }) => ({
-                  marginTop: 12,
-                  backgroundColor: "#008CFF",
-                  borderRadius: 16,
-                  paddingVertical: 14,
-                  alignItems: "center",
-                  opacity: pressed ? 0.8 : 1,
-                })}
+          <View style={{ paddingHorizontal: 16, gap: 12 }}>
+            {selected && !selectedRep && (
+              <View
+                style={{
+                  backgroundColor: "#FFF8E7",
+                  borderRadius: 12,
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: "#F5A623",
+                }}
               >
-                <Text style={{ fontSize: 15, fontWeight: "600", color: "#fff" }}>
-                  This is my representative
+                <Text style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}>
+                  Couldn't find a representative for this district in our
+                  database.
                 </Text>
-              </Pressable>
-            </View>
-          )}
+              </View>
+            )}
+  
+            {selectedRep && (
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: 24,
+                  padding: 14,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.06,
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: 26,
+                      overflow: "hidden",
+                      backgroundColor: "#eee",
+                      marginRight: 12,
+                    }}
+                  >
+                    <Image
+                      source={{ uri: selectedRep.photoUrl }}
+                      style={{ width: "100%", height: "120%" }}
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{ fontSize: 15, fontWeight: "600", color: "#535353" }}
+                    >
+                      {selectedRep.name}
+                    </Text>
+                    <Text
+                      style={{ fontSize: 13, color: "#7B7C81", marginTop: 2 }}
+                      numberOfLines={1}
+                    >
+                      {PARTY_ABBR[selectedRep.party] ?? selectedRep.party} ·{" "}
+                      {selectedRep.role}
+                    </Text>
+                  </View>
+                </View>
+                <Pressable
+                  onPress={() => onConfirm(selectedRep)}
+                  style={({ pressed }) => ({
+                    marginTop: 12,
+                    backgroundColor: "#008CFF",
+                    borderRadius: 16,
+                    paddingVertical: 14,
+                    alignItems: "center",
+                    opacity: pressed ? 0.8 : 1,
+                  })}
+                >
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: "#fff" }}>
+                    This is my representative
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
