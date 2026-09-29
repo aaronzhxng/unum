@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
+    Linking,
     Text,
     View,
     useWindowDimensions,
 } from "react-native";
-import { WebView, type WebViewMessageEvent } from "react-native-webview";
+import {
+    WebView,
+    type WebViewMessageEvent,
+    type WebViewNavigation,
+} from "react-native-webview";
 
 type DistrictFeature = {
   type: "Feature";
@@ -26,22 +31,34 @@ type DistrictCollection = {
   features: DistrictFeature[];
 };
 
-type DistrictSelection = {
+export type DistrictSelection = {
   geoid: string;
   stateAbbr: string;
   district: number;
   label: string;
 };
 
-type FocusDistrict = {
+export type FocusDistrict = {
   stateAbbr: string;
   district: number;
+};
+
+export type PinLocation = {
+  latitude: number;
+  longitude: number;
 };
 
 type Props = {
   stateAbbr?: string | null;
   onSelectDistrict: (district: DistrictSelection) => void;
   focusDistricts?: FocusDistrict[] | null;
+  // Auto-select the first focus district once boundaries load. Off when the
+  // user should choose between several highlighted districts themselves.
+  autoSelectFocus?: boolean;
+  // Externally chosen district (e.g. from an address lookup)
+  selectedGeoid?: string | null;
+  // Marker for a geocoded address
+  pinLocation?: PinLocation | null;
 };
 
 const STATE_ABBR_TO_FIPS: Record<string, string> = {
@@ -107,26 +124,35 @@ const FIPS_TO_ABBR: Record<string, string> = Object.fromEntries(
   Object.entries(STATE_ABBR_TO_FIPS).map(([abbr, fips]) => [fips, abbr]),
 );
 
-const BASE_URL =
-  "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/54/query";
+// Layer 54 of the ACS2025 service is the 119th Congress districts, which
+// current members represent. tigerWMS_Current already serves the 120th
+// Congress districts (seated January 2027) — switch to it when the 120th
+// Congress begins. Keep in sync with CENSUS_VINTAGE in censusGeocoding.ts.
+const DISTRICT_LAYER_URL =
+  "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2025/MapServer/54/query";
+
+// Map tile requests carry this as their Referer, which the OpenStreetMap
+// tile usage policy requires.
+const WEBVIEW_BASE_URL = "https://www.unuminitiative.com/";
 
 const CONTIGUOUS_STATE_EXCLUSIONS =
   "STATE NOT IN ('02','15','60','66','69','72','78')";
 
 function buildQueryUrl(stateAbbr?: string | null): string {
-  const params = new URLSearchParams();
   const stateFips = stateAbbr ? STATE_ABBR_TO_FIPS[stateAbbr] : null;
-  params.set(
-    "where",
-    stateFips ? `STATE='${stateFips}'` : CONTIGUOUS_STATE_EXCLUSIONS,
-  );
-  params.set("outFields", "GEOID,STATE,BASENAME,NAME");
-  params.set("returnGeometry", "true");
-  params.set("f", "geojson");
-  params.set("outSR", "4326");
-  params.set("geometryPrecision", "3");
-  params.set("maxAllowableOffset", stateFips ? "0.005" : "0.02");
-  return `${BASE_URL}?${params.toString()}`;
+  const params: Record<string, string> = {
+    where: stateFips ? `STATE='${stateFips}'` : CONTIGUOUS_STATE_EXCLUSIONS,
+    outFields: "GEOID,STATE,BASENAME,NAME",
+    returnGeometry: "true",
+    f: "geojson",
+    outSR: "4326",
+    geometryPrecision: "3",
+    maxAllowableOffset: stateFips ? "0.005" : "0.02",
+  };
+  const query = Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+  return `${DISTRICT_LAYER_URL}?${query}`;
 }
 
 function escapeJsonForHtml(value: unknown): string {
@@ -140,6 +166,7 @@ function buildOpenStreetMapHtml(params: {
   highlightGeoids: string[];
   initialSelectedGEOID: string | null;
   initialMapRegion: "us" | "ak" | "hi";
+  pinLocation: PinLocation | null;
 }): string {
   const payload = escapeJsonForHtml(params);
 
@@ -177,20 +204,15 @@ function buildOpenStreetMapHtml(params: {
         background: #f7f4ef;
       }
 
-      .leaflet-control-zoom {
-        border: none;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-        overflow: hidden;
+      .leaflet-control-attribution {
+        font-size: 11px;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-top-left-radius: 8px;
+        padding: 2px 8px !important;
       }
 
-      .leaflet-control-zoom a {
-        background: #ffffff;
-        color: #1a1a1a;
-        border-bottom: 1px solid #edf1f5;
-      }
-
-      .leaflet-control-zoom a:hover {
-        background: #f4f9ff;
+      .leaflet-control-attribution a {
+        color: #005ea8;
       }
 
       .map-toolbar {
@@ -219,20 +241,6 @@ function buildOpenStreetMapHtml(params: {
 
       .map-button:active {
         transform: scale(0.97);
-      }
-
-      .attribution-note {
-        position: absolute;
-        left: 10px;
-        bottom: 10px;
-        z-index: 1000;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.9);
-        color: #4e5560;
-        font-size: 11px;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-        pointer-events: none;
       }
 
       .map-state-switch {
@@ -277,7 +285,6 @@ function buildOpenStreetMapHtml(params: {
       <button id="zoom-out" class="map-button" type="button">−</button>
       <button id="reset-view" class="map-button" type="button">↺</button>
     </div>
-    <div class="attribution-note">Map tiles © OpenStreetMap contributors</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
@@ -291,6 +298,7 @@ function buildOpenStreetMapHtml(params: {
         );
         const initialSelectedGEOID = payload.initialSelectedGEOID || null;
         const initialMapRegion = payload.initialMapRegion || "us";
+        const pinLocation = payload.pinLocation || null;
 
         const map = L.map("map", {
           zoomControl: false,
@@ -298,9 +306,14 @@ function buildOpenStreetMapHtml(params: {
           preferCanvas: true,
         });
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        map.attributionControl.setPrefix(
+          '<a href="https://leafletjs.com">Leaflet</a>',
+        );
+
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
-          attribution: "&copy; OpenStreetMap contributors",
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Districts: <a href="https://www.census.gov/geographies/mapping-files.html">U.S. Census Bureau</a>',
         }).addTo(map);
 
         let selectedGEOID = initialSelectedGEOID;
@@ -519,8 +532,19 @@ function buildOpenStreetMapHtml(params: {
         })();
 
         const selectedRegion = detectRegionFromGeoid(initialSelectedGEOID);
-        const startRegion = highlightRegion || selectedRegion || initialMapRegion || "us";
+        const startRegion = selectedRegion || highlightRegion || initialMapRegion || "us";
         activateRegion(startRegion);
+
+        if (pinLocation) {
+          L.circleMarker([pinLocation.latitude, pinLocation.longitude], {
+            radius: 7,
+            color: "#ffffff",
+            weight: 3,
+            fillColor: "#d45252",
+            fillOpacity: 1,
+            interactive: false,
+          }).addTo(map);
+        }
 
         if (selectedGEOID) {
           refreshAllStyles();
@@ -529,6 +553,15 @@ function buildOpenStreetMapHtml(params: {
     </script>
   </body>
 </html>`;
+}
+
+// Drops "Congressional Districts not defined" areas (GEOID ending in ZZ),
+// which are large water bodies with no representative.
+function definedDistricts(collection: DistrictCollection): DistrictFeature[] {
+  if (!Array.isArray(collection.features)) return [];
+  return collection.features.filter(
+    (feature) => !feature.properties.GEOID?.endsWith("ZZ"),
+  );
 }
 
 function matchesFocusDistrict(
@@ -543,7 +576,9 @@ function matchesFocusDistrict(
 
   return focusDistricts.some(
     (district) =>
-      district.stateAbbr === abbr && district.district === districtNumber,
+      district.stateAbbr === abbr &&
+      district.district ===
+        (Number.isFinite(districtNumber) ? districtNumber : 0),
   );
 }
 
@@ -551,6 +586,9 @@ export default function CongressionalDistrictMap({
   stateAbbr,
   onSelectDistrict,
   focusDistricts,
+  autoSelectFocus = true,
+  selectedGeoid,
+  pinLocation,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const mapWidth = Math.max(240, screenWidth - 64);
@@ -591,13 +629,9 @@ export default function CongressionalDistrictMap({
           hawaiiResponse.json(),
         ])) as [DistrictCollection, DistrictCollection, DistrictCollection];
         if (!active) return;
-        setFeatures(Array.isArray(data.features) ? data.features : []);
-        setAlaskaFeatures(
-          Array.isArray(alaskaData.features) ? alaskaData.features : [],
-        );
-        setHawaiiFeatures(
-          Array.isArray(hawaiiData.features) ? hawaiiData.features : [],
-        );
+        setFeatures(definedDistricts(data));
+        setAlaskaFeatures(definedDistricts(alaskaData));
+        setHawaiiFeatures(definedDistricts(hawaiiData));
       } catch (fetchError) {
         if (!active || controller.signal.aborted) return;
         console.error("District map load failed:", fetchError);
@@ -641,10 +675,11 @@ export default function CongressionalDistrictMap({
   );
 
   const initialSelectedGEOID =
-    matchedFocusDistricts[0]?.properties.GEOID ?? null;
+    selectedGeoid ??
+    (autoSelectFocus ? (matchedFocusDistricts[0]?.properties.GEOID ?? null) : null);
 
   useEffect(() => {
-    if (!matchedFocusDistricts.length) {
+    if (!autoSelectFocus || selectedGeoid || !matchedFocusDistricts.length) {
       autoSelectRef.current = null;
       return;
     }
@@ -665,11 +700,11 @@ export default function CongressionalDistrictMap({
       district: Number.isFinite(firstDistrict) ? firstDistrict : 0,
       label: first.properties.NAME,
     });
-  }, [matchedFocusDistricts, onSelectDistrict]);
+  }, [matchedFocusDistricts, onSelectDistrict, autoSelectFocus, selectedGeoid]);
 
   const webViewSource = useMemo(
-    () =>
-      buildOpenStreetMapHtml({
+    () => ({
+      html: buildOpenStreetMapHtml({
         features,
         alaskaFeatures,
         hawaiiFeatures,
@@ -677,7 +712,10 @@ export default function CongressionalDistrictMap({
         initialSelectedGEOID,
         initialMapRegion:
           stateAbbr === "AK" ? "ak" : stateAbbr === "HI" ? "hi" : "us",
+        pinLocation: pinLocation ?? null,
       }),
+      baseUrl: WEBVIEW_BASE_URL,
+    }),
     [
       features,
       alaskaFeatures,
@@ -685,12 +723,13 @@ export default function CongressionalDistrictMap({
       highlightGeoids,
       initialSelectedGEOID,
       stateAbbr,
+      pinLocation,
     ],
   );
 
   const webViewKey = useMemo(
     () =>
-      `${stateAbbr ?? "all"}-${features.length}-${alaskaFeatures.length}-${hawaiiFeatures.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}`,
+      `${stateAbbr ?? "all"}-${features.length}-${alaskaFeatures.length}-${hawaiiFeatures.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}-${pinLocation ? `${pinLocation.latitude},${pinLocation.longitude}` : "nopin"}`,
     [
       stateAbbr,
       features.length,
@@ -698,6 +737,7 @@ export default function CongressionalDistrictMap({
       hawaiiFeatures.length,
       highlightGeoids,
       initialSelectedGEOID,
+      pinLocation,
     ],
   );
 
@@ -713,6 +753,17 @@ export default function CongressionalDistrictMap({
     } catch (error) {
       console.warn("Ignored district map message:", error);
     }
+  };
+
+  // Attribution links open in the system browser instead of inside the map
+  const handleShouldStartLoad = (request: WebViewNavigation) => {
+    const { url } = request;
+    if (url === WEBVIEW_BASE_URL || url === "about:blank") return true;
+    if (/^https?:\/\//.test(url)) {
+      Linking.openURL(url).catch(() => {});
+      return false;
+    }
+    return true;
   };
 
   return (
@@ -740,9 +791,11 @@ export default function CongressionalDistrictMap({
             marginTop: 4,
           }}
         >
-          {stateAbbr
-            ? "This view is focused on your selected state so the districts are easier to hit."
-            : "Zoomed out to the continental U.S. map. Use the state filter to make districts easier to tap."}
+          {highlightGeoids.length > 1
+            ? "The highlighted districts overlap your search. Tap the one you live in."
+            : stateAbbr
+              ? "This view is focused on your selected state so the districts are easier to hit."
+              : "Zoomed out to the continental U.S. map. Use the state filter to make districts easier to tap."}
         </Text>
       </View>
 
@@ -778,7 +831,7 @@ export default function CongressionalDistrictMap({
                 marginTop: 8,
               }}
             >
-              You can still use ZIP lookup below.
+              Please check your connection and try again.
             </Text>
           </View>
         ) : !features.length ? (
@@ -792,12 +845,15 @@ export default function CongressionalDistrictMap({
         ) : (
           <WebView
             key={webViewKey}
-            source={{ html: webViewSource }}
+            source={webViewSource}
             originWhitelist={["*"]}
             javaScriptEnabled
             domStorageEnabled
             scrollEnabled={false}
+            applicationNameForUserAgent="Unum"
             onMessage={handleWebViewMessage}
+            onShouldStartLoadWithRequest={handleShouldStartLoad}
+            setSupportMultipleWindows={false}
             style={{
               width: mapWidth,
               height: mapHeight,

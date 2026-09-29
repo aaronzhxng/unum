@@ -1,24 +1,26 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Check, ChevronDown, ChevronUp, Search, X } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    Image,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
     Pressable,
     ScrollView,
     Text,
     TextInput,
     View,
 } from "react-native";
-import CongressionalDistrictMap from "./CongressionalDistrictMap";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { geocodeAddressToDistrict } from "../services/censusGeocoding";
 import { officialsService } from "../services/officials";
-import { geocodeAddress } from "../services/osmGeocoding";
-
-type DistrictSelection = {
-  geoid: string;
-  stateAbbr: string;
-  district: number;
-  label: string;
-};
+import CongressionalDistrictMap, {
+    type DistrictSelection,
+    type FocusDistrict,
+    type PinLocation,
+} from "./CongressionalDistrictMap";
 
 type MatchedRep = {
   bioguideId: string;
@@ -29,9 +31,11 @@ type MatchedRep = {
   photoUrl: string;
 };
 
-type FocusDistrict = {
-  stateAbbr: string;
-  district: number;
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  // State name to start the map on (e.g. the Officials tab's selected state)
+  initialState?: string | null;
 };
 
 const STATE_ABBR_TO_STATE: Record<string, string> = {
@@ -88,75 +92,20 @@ const STATE_ABBR_TO_STATE: Record<string, string> = {
   WY: "Wyoming",
 };
 
-const STATE_TO_ABBR: Record<string, string> = Object.fromEntries(
-  Object.entries(STATE_ABBR_TO_STATE).map(([abbr, state]) => [state, abbr]),
-);
-
-const FIPS_TO_ABBR: Record<string, string> = {
-  "01": "AL",
-  "02": "AK",
-  "04": "AZ",
-  "05": "AR",
-  "06": "CA",
-  "08": "CO",
-  "09": "CT",
-  "10": "DE",
-  "11": "DC",
-  "12": "FL",
-  "13": "GA",
-  "15": "HI",
-  "16": "ID",
-  "17": "IL",
-  "18": "IN",
-  "19": "IA",
-  "20": "KS",
-  "21": "KY",
-  "22": "LA",
-  "23": "ME",
-  "24": "MD",
-  "25": "MA",
-  "26": "MI",
-  "27": "MN",
-  "28": "MS",
-  "29": "MO",
-  "30": "MT",
-  "31": "NE",
-  "32": "NV",
-  "33": "NH",
-  "34": "NJ",
-  "35": "NM",
-  "36": "NY",
-  "37": "NC",
-  "38": "ND",
-  "39": "OH",
-  "40": "OK",
-  "41": "OR",
-  "42": "PA",
-  "44": "RI",
-  "45": "SC",
-  "46": "SD",
-  "47": "TN",
-  "48": "TX",
-  "49": "UT",
-  "50": "VT",
-  "51": "VA",
-  "53": "WA",
-  "54": "WV",
-  "55": "WI",
-  "56": "WY",
+const STATE_TO_ABBR: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.entries(STATE_ABBR_TO_STATE).map(([abbr, state]) => [state, abbr]),
+  ),
+  // Territories appear in officials data but have no state filter entry
+  "American Samoa": "AS",
+  Guam: "GU",
+  "Northern Mariana Islands": "MP",
+  "Puerto Rico": "PR",
+  "U.S. Virgin Islands": "VI",
+  "Virgin Islands": "VI",
 };
-
-const STATE_ABBR_TO_FIPS: Record<string, string> = Object.fromEntries(
-  Object.entries(FIPS_TO_ABBR).map(([fips, abbr]) => [abbr, fips]),
-);
 
 const STATES = Object.values(STATE_ABBR_TO_STATE).sort();
-
-const PARTY_COLORS: Record<string, string> = {
-  Democrat: "#008CFF",
-  Republican: "#D45252",
-  Independent: "#F5A623",
-};
 
 const PARTY_ABBR: Record<string, string> = {
   Democratic: "D",
@@ -167,8 +116,50 @@ const PARTY_ABBR: Record<string, string> = {
 
 const API_BASE = "https://unum-production.up.railway.app";
 
-export default function DistrictExplorerScreen() {
+const formatName = (name: string): string =>
+  name.includes(",") ? name.split(",").reverse().join(" ").trim() : name;
+
+function findHouseRep(
+  officials: any[],
+  stateAbbr: string,
+  district: number,
+): MatchedRep | null {
+  const match = officials.find((o) => {
+    const termInfo = o.terms?.item?.[o.terms.item.length - 1];
+    const isHouse =
+      termInfo?.chamber === "House of Representatives" ||
+      o.chamber === "House of Representatives";
+    const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
+    const officialDistrict = parseInt(
+      termInfo?.district ?? o.district ?? "0",
+      10,
+    );
+    return (
+      isHouse && officialStateAbbr === stateAbbr && officialDistrict === district
+    );
+  });
+  if (!match) return null;
+
+  return {
+    bioguideId: match.bioguideId,
+    name: formatName(match.name),
+    party:
+      match.partyName ??
+      match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
+      "Unknown",
+    district,
+    state: stateAbbr,
+    photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
+  };
+}
+
+export default function DistrictExplorer({
+  visible,
+  onClose,
+  initialState,
+}: Props) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedDistrict, setSelectedDistrict] =
     useState<DistrictSelection | null>(null);
@@ -178,86 +169,72 @@ export default function DistrictExplorerScreen() {
 
   const [zip, setZip] = useState("");
   const [zipSearching, setZipSearching] = useState(false);
-  const [zipError, setZipError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [addressQuery, setAddressQuery] = useState("");
   const [addressSearching, setAddressSearching] = useState(false);
   const [focusDistricts, setFocusDistricts] = useState<FocusDistrict[] | null>(
     null,
   );
+  const [pinLocation, setPinLocation] = useState<PinLocation | null>(null);
+  // District found by address search. Map taps aren't fed back in, since
+  // changing this reloads the map.
+  const [addressGeoid, setAddressGeoid] = useState<string | null>(null);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setSelectedDistrict(null);
-      setMatchedRep(null);
-    }, []),
-  );
-
-  const handleSelectDistrict = async (district: DistrictSelection) => {
-    setSelectedDistrict(district);
-    setLoading(true);
-    setMatchedRep(null);
-
-    try {
-      const officialsData = await officialsService.getAll();
-      const officials = officialsData.officials as any[];
-
-      const stateAbbr = FIPS_TO_ABBR[district.stateAbbr] || district.stateAbbr;
-
-      const match = officials.find((o) => {
-        const termInfo = o.terms?.item?.[o.terms.item.length - 1];
-        const isHouse =
-          termInfo?.chamber === "House of Representatives" ||
-          o.chamber === "House of Representatives";
-        const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
-        const officialDistrict = parseInt(
-          termInfo?.district ?? o.district ?? "0",
-          10,
-        );
-        return (
-          isHouse &&
-          officialStateAbbr === stateAbbr &&
-          officialDistrict === district.district
-        );
-      });
-
-      if (match) {
-        setMatchedRep({
-          bioguideId: match.bioguideId,
-          name: match.name.includes(",")
-            ? match.name.split(",").reverse().join(" ").trim()
-            : match.name,
-          party:
-            match.partyName ??
-            match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
-            "Unknown",
-          district: district.district,
-          state: stateAbbr,
-          photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
-        });
-      }
-    } catch (error) {
-      console.error("Failed to match district to representative:", error);
-    } finally {
-      setLoading(false);
+  // Start on the state the Officials tab is showing, if it's a state
+  useEffect(() => {
+    if (!visible) return;
+    if (initialState && STATE_TO_ABBR[initialState] && !focusDistricts) {
+      setSelectedState(initialState);
     }
+  }, [visible]);
+
+  const resetResults = () => {
+    setSelectedDistrict(null);
+    setMatchedRep(null);
+    setFocusDistricts(null);
+    setPinLocation(null);
+    setAddressGeoid(null);
+    setSearchError(null);
   };
 
-  const lookupDistrictsByZip = useCallback(async (zipCode: string) => {
-    const trimmed = zipCode.trim();
-    if (trimmed.length !== 5 || !/^\d{5}$/.test(trimmed)) {
-      setZipError("Enter a valid 5-digit zip code.");
+  const handleSelectDistrict = useCallback(
+    async (district: DistrictSelection) => {
+      setSelectedDistrict(district);
+      setLoading(true);
+      setMatchedRep(null);
+
+      try {
+        const officialsData = await officialsService.getAll();
+        setMatchedRep(
+          findHouseRep(
+            officialsData.officials as any[],
+            district.stateAbbr,
+            district.district,
+          ),
+        );
+      } catch (error) {
+        console.error("Failed to match district to representative:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  const handleZipSearch = useCallback(async () => {
+    const trimmed = zip.trim();
+    if (!/^\d{5}$/.test(trimmed)) {
+      setSearchError("Enter a valid 5-digit zip code.");
       return;
     }
 
     setZipSearching(true);
-    setZipError(null);
-    setMatchedRep(null);
-    setSelectedDistrict(null);
+    resetResults();
 
     try {
       const res = await fetch(`${API_BASE}/api/zip-districts/${trimmed}`);
       if (!res.ok) {
-        setZipError("Couldn't find that zip code. Try another.");
+        setSearchError("Couldn't find that zip code. Try another.");
         return;
       }
 
@@ -265,614 +242,523 @@ export default function DistrictExplorerScreen() {
       const districts: { state: string; district: number }[] = data.districts;
 
       if (!districts?.length) {
-        setZipError("No congressional district found for that zip code.");
+        setSearchError("No congressional district found for that zip code.");
         return;
       }
 
-      const stateAbbr = districts[0].state;
-      setSelectedState(STATE_ABBR_TO_STATE[stateAbbr] ?? null);
-
-      const fds: FocusDistrict[] = districts.map((d) => ({
-        stateAbbr: d.state,
-        district: d.district,
-      }));
-      setFocusDistricts(fds);
-
-      const officialsData = await officialsService.getAll();
-      const officials = officialsData.officials as any[];
-
-      if (districts.length === 1) {
-        const { state, district: distNum } = districts[0];
-        const match = officials.find((o: any) => {
-          const termInfo = o.terms?.item?.[o.terms.item.length - 1];
-          const isHouse =
-            termInfo?.chamber === "House of Representatives" ||
-            o.chamber === "House of Representatives";
-          const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
-          const officialDistrict = parseInt(
-            termInfo?.district ?? o.district ?? "0",
-            10,
-          );
-          return (
-            isHouse &&
-            officialStateAbbr === state &&
-            officialDistrict === distNum
-          );
-        });
-
-        if (match) {
-          setSelectedDistrict({
-            geoid: `${STATE_ABBR_TO_FIPS[state]}${String(distNum).padStart(2, "0")}`,
-            stateAbbr: state,
-            district: distNum,
-            label: `District ${distNum}, ${STATE_ABBR_TO_STATE[state]}`,
-          });
-          setMatchedRep({
-            bioguideId: match.bioguideId,
-            name: match.name.includes(",")
-              ? match.name.split(",").reverse().join(" ").trim()
-              : match.name,
-            party:
-              match.partyName ??
-              match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
-              "Unknown",
-            district: distNum,
-            state,
-            photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
-          });
-        }
-      } else {
-        const firstDistrict = districts[0];
-        const match = officials.find((o: any) => {
-          const termInfo = o.terms?.item?.[o.terms.item.length - 1];
-          const isHouse =
-            termInfo?.chamber === "House of Representatives" ||
-            o.chamber === "House of Representatives";
-          const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
-          const officialDistrict = parseInt(
-            termInfo?.district ?? o.district ?? "0",
-            10,
-          );
-          return (
-            isHouse &&
-            officialStateAbbr === firstDistrict.state &&
-            officialDistrict === firstDistrict.district
-          );
-        });
-
-        if (match) {
-          setSelectedDistrict({
-            geoid: `${STATE_ABBR_TO_FIPS[firstDistrict.state]}${String(firstDistrict.district).padStart(2, "0")}`,
-            stateAbbr: firstDistrict.state,
-            district: firstDistrict.district,
-            label: `${districts.length} districts span this zip code`,
-          });
-          setMatchedRep({
-            bioguideId: match.bioguideId,
-            name: match.name.includes(",")
-              ? match.name.split(",").reverse().join(" ").trim()
-              : match.name,
-            party:
-              match.partyName ??
-              match.terms?.item?.[match.terms.item.length - 1]?.partyName ??
-              "Unknown",
-            district: firstDistrict.district,
-            state: firstDistrict.state,
-            photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
-          });
-        }
-      }
+      setSelectedState(STATE_ABBR_TO_STATE[districts[0].state] ?? null);
+      // One district is auto-selected by the map; several are highlighted
+      // for the user to pick from.
+      setFocusDistricts(
+        districts.map((d) => ({ stateAbbr: d.state, district: d.district })),
+      );
     } catch (err) {
       console.error("Zip lookup failed:", err);
-      setZipError("Something went wrong. Please try again.");
+      setSearchError("Something went wrong. Please try again.");
     } finally {
       setZipSearching(false);
     }
-  }, []);
-
-  const handleZipSearch = useCallback(async () => {
-    await lookupDistrictsByZip(zip);
-  }, [lookupDistrictsByZip, zip]);
+  }, [zip]);
 
   const handleAddressSearch = useCallback(async () => {
     const trimmed = addressQuery.trim();
     if (!trimmed) {
-      setZipError("Enter an address or ZIP code first.");
+      setSearchError("Enter a street address first.");
       return;
     }
 
     setAddressSearching(true);
-    setZipError(null);
-    setMatchedRep(null);
-    setSelectedDistrict(null);
-    setFocusDistricts(null);
+    resetResults();
 
     try {
-      const location = await geocodeAddress(trimmed);
-
-      if (!location?.postcode) {
-        setZipError("Couldn't resolve a ZIP code for that address.");
+      const result = await geocodeAddressToDistrict(trimmed);
+      if (!result) {
+        setSearchError(
+          "Couldn't find that address. Try including the city and state.",
+        );
         return;
       }
 
-      if (location.stateAbbr) {
-        setSelectedState(STATE_ABBR_TO_STATE[location.stateAbbr] ?? null);
-      }
-
-      setZip(location.postcode);
-      await lookupDistrictsByZip(location.postcode);
+      setSelectedState(STATE_ABBR_TO_STATE[result.stateAbbr] ?? null);
+      setPinLocation({
+        latitude: result.latitude,
+        longitude: result.longitude,
+      });
+      setAddressGeoid(result.geoid);
+      setFocusDistricts([
+        { stateAbbr: result.stateAbbr, district: result.district },
+      ]);
+      await handleSelectDistrict({
+        geoid: result.geoid,
+        stateAbbr: result.stateAbbr,
+        district: result.district,
+        label: `${STATE_ABBR_TO_STATE[result.stateAbbr] ?? result.stateAbbr}, ${
+          result.district === 0 ? "At-Large" : `District ${result.district}`
+        }`,
+      });
     } catch (error) {
       console.error("Address lookup failed:", error);
-      setZipError("Couldn't look up that address. Try another one.");
+      setSearchError("Couldn't look up that address. Please try again.");
     } finally {
       setAddressSearching(false);
     }
-  }, [addressQuery, lookupDistrictsByZip]);
+  }, [addressQuery, handleSelectDistrict]);
 
-  const clearZipSearch = useCallback(() => {
-    setZip("");
-    setZipError(null);
-    setFocusDistricts(null);
-    setSelectedDistrict(null);
-    setMatchedRep(null);
-  }, []);
+  const openOfficial = (bioguideId: string) => {
+    onClose();
+    router.push(`/official/${bioguideId}` as any);
+  };
+
+  const multipleDistricts = (focusDistricts?.length ?? 0) > 1;
+
+  const searchField = (props: {
+    value: string;
+    onChangeText: (text: string) => void;
+    onSubmit: () => void;
+    onClear: () => void;
+    placeholder: string;
+    searching: boolean;
+    canSubmit: boolean;
+    numeric?: boolean;
+  }) => (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        borderRadius: 24,
+        paddingHorizontal: 16,
+        shadowColor: "#000000",
+        shadowOpacity: 0.15,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 2,
+      }}
+    >
+      <Search size={18} color="#7B7C81" />
+      <TextInput
+        style={{
+          flex: 1,
+          fontSize: 16,
+          paddingVertical: 14,
+          paddingHorizontal: 10,
+          color: "#1a1a1a",
+        }}
+        placeholder={props.placeholder}
+        placeholderTextColor="#bbb"
+        keyboardType={props.numeric ? "number-pad" : "default"}
+        maxLength={props.numeric ? 5 : undefined}
+        value={props.value}
+        onChangeText={props.onChangeText}
+        onSubmitEditing={props.onSubmit}
+        returnKeyType="search"
+      />
+      {props.value.length > 0 && (
+        <Pressable onPress={props.onClear} hitSlop={8}>
+          <X size={18} color="#999" />
+        </Pressable>
+      )}
+      {props.searching ? (
+        <ActivityIndicator
+          size="small"
+          color="#008CFF"
+          style={{ marginLeft: 8 }}
+        />
+      ) : (
+        <Pressable
+          onPress={props.onSubmit}
+          style={({ pressed }) => ({
+            marginLeft: 8,
+            backgroundColor: props.canSubmit ? "#008CFF" : "#E0E0E0",
+            borderRadius: 16,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            opacity: pressed ? 0.8 : 1,
+          })}
+          disabled={!props.canSubmit}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "600",
+              color: props.canSubmit ? "#fff" : "#999",
+            }}
+          >
+            Search
+          </Text>
+        </Pressable>
+      )}
+    </View>
+  );
+
+  const sectionLabel = (text: string) => (
+    <Text
+      style={{
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#1a1a1a",
+        marginBottom: 8,
+      }}
+    >
+      {text}
+    </Text>
+  );
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
-      <View
-        style={{
-          paddingTop: 64,
-          paddingHorizontal: 24,
-          paddingBottom: 24,
-        }}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: "#fafafa" }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <Text
+        <View
           style={{
-            fontSize: 28,
-            fontWeight: "800",
-            color: "#1a1a1a",
-            marginBottom: 8,
+            paddingTop: insets.top + 16,
+            paddingHorizontal: 24,
+            paddingBottom: 16,
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
           }}
         >
-          Districts
-        </Text>
-        <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
-          Explore congressional districts and find who represents each one.
-        </Text>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 200,
-          gap: 16,
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Zip Code Search */}
-        <View>
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: "#1a1a1a",
-              marginBottom: 8,
-            }}
-          >
-            Search by address
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "#fff",
-              borderRadius: 24,
-              paddingHorizontal: 16,
-              shadowColor: "#000000",
-              shadowOpacity: 0.15,
-              shadowOffset: { width: 0, height: 2 },
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          >
-            <Search size={18} color="#7B7C81" />
-            <TextInput
+          <View style={{ flex: 1, paddingRight: 16 }}>
+            <Text
               style={{
-                flex: 1,
-                fontSize: 16,
-                paddingVertical: 14,
-                paddingHorizontal: 10,
+                fontSize: 28,
+                fontWeight: "800",
                 color: "#1a1a1a",
+                marginBottom: 8,
               }}
-              placeholder="e.g. 1600 Pennsylvania Ave NW"
-              placeholderTextColor="#bbb"
-              value={addressQuery}
-              onChangeText={(text) => {
-                setAddressQuery(text);
-                if (zipError) setZipError(null);
-              }}
-              onSubmitEditing={handleAddressSearch}
-              returnKeyType="search"
-            />
-            {addressQuery.length > 0 && (
-              <Pressable onPress={() => setAddressQuery("")} hitSlop={8}>
-                <X size={18} color="#999" />
-              </Pressable>
-            )}
-            {addressSearching ? (
-              <ActivityIndicator
-                size="small"
-                color="#008CFF"
-                style={{ marginLeft: 8 }}
-              />
-            ) : (
-              <Pressable
-                onPress={handleAddressSearch}
-                style={({ pressed }) => ({
-                  marginLeft: 8,
-                  backgroundColor: addressQuery.trim() ? "#008CFF" : "#E0E0E0",
-                  borderRadius: 16,
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  opacity: pressed ? 0.8 : 1,
-                })}
-                disabled={!addressQuery.trim()}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: addressQuery.trim() ? "#fff" : "#999",
-                  }}
-                >
-                  Search
-                </Text>
-              </Pressable>
-            )}
+            >
+              Districts
+            </Text>
+            <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
+              Explore congressional districts and find who represents each one.
+            </Text>
           </View>
-          <Text
-            style={{
-              fontSize: 12,
-              color: "#7B7C81",
+          <Pressable
+            onPress={onClose}
+            hitSlop={12}
+            style={({ pressed }) => ({
               marginTop: 6,
-              marginLeft: 4,
-            }}
+              transform: [{ scale: pressed ? 0.85 : 1 }],
+            })}
           >
-            OSM geocoding resolves the address to a ZIP code, then we fetch the
-            district.
-          </Text>
+            <X size={28} color="#535353" />
+          </Pressable>
         </View>
 
-        <View>
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: "#1a1a1a",
-              marginBottom: 8,
-            }}
-          >
-            Search by zip code
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "#fff",
-              borderRadius: 24,
-              paddingHorizontal: 16,
-              shadowColor: "#000000",
-              shadowOpacity: 0.15,
-              shadowOffset: { width: 0, height: 2 },
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          >
-            <Search size={18} color="#7B7C81" />
-            <TextInput
-              style={{
-                flex: 1,
-                fontSize: 16,
-                paddingVertical: 14,
-                paddingHorizontal: 10,
-                color: "#1a1a1a",
-              }}
-              placeholder="e.g. 10001"
-              placeholderTextColor="#bbb"
-              keyboardType="number-pad"
-              maxLength={5}
-              value={zip}
-              onChangeText={(text) => {
-                setZip(text.replace(/[^0-9]/g, ""));
-                if (zipError) setZipError(null);
-              }}
-              onSubmitEditing={handleZipSearch}
-              returnKeyType="search"
-            />
-            {zip.length > 0 && (
-              <Pressable onPress={clearZipSearch} hitSlop={8}>
-                <X size={18} color="#999" />
-              </Pressable>
-            )}
-            {zipSearching ? (
-              <ActivityIndicator
-                size="small"
-                color="#008CFF"
-                style={{ marginLeft: 8 }}
-              />
-            ) : (
-              <Pressable
-                onPress={handleZipSearch}
-                style={({ pressed }) => ({
-                  marginLeft: 8,
-                  backgroundColor: zip.length === 5 ? "#008CFF" : "#E0E0E0",
-                  borderRadius: 16,
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  opacity: pressed ? 0.8 : 1,
-                })}
-                disabled={zip.length !== 5}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: zip.length === 5 ? "#fff" : "#999",
-                  }}
-                >
-                  Search
-                </Text>
-              </Pressable>
-            )}
-          </View>
-          {zipError && (
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: insets.bottom + 48,
+            gap: 16,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Address Search */}
+          <View>
+            {sectionLabel("Search by address")}
+            {searchField({
+              value: addressQuery,
+              onChangeText: (text) => {
+                setAddressQuery(text);
+                if (searchError) setSearchError(null);
+              },
+              onSubmit: handleAddressSearch,
+              onClear: () => setAddressQuery(""),
+              placeholder: "e.g. 1600 Pennsylvania Ave NW, Washington, DC",
+              searching: addressSearching,
+              canSubmit: !!addressQuery.trim(),
+            })}
             <Text
               style={{
                 fontSize: 12,
-                color: "#D45252",
+                color: "#7B7C81",
                 marginTop: 6,
                 marginLeft: 4,
               }}
             >
-              {zipError}
-            </Text>
-          )}
-        </View>
-
-        {/* State Selector */}
-        <View>
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: "#1a1a1a",
-              marginBottom: 8,
-            }}
-          >
-            Select a state (optional)
-          </Text>
-          <Pressable
-            onPress={() => setShowStates(!showStates)}
-            style={({ pressed }) => ({
-              backgroundColor: "#fff",
-              borderRadius: 24,
-              padding: 16,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              transform: [{ scale: pressed ? 0.98 : 1 }],
-              shadowColor: "#000000",
-              shadowOpacity: 0.15,
-              shadowOffset: { width: 0, height: 2 },
-              shadowRadius: 4,
-              elevation: 2,
-            })}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                color: selectedState ? "#1a1a1a" : "#999",
-                fontWeight: selectedState ? "600" : "400",
-              }}
-            >
-              {selectedState ?? "View all U.S. districts..."}
-            </Text>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-            >
-              {selectedState ? (
-                <Check size={20} color="#008CFF" strokeWidth={3} />
-              ) : showStates ? (
-                <ChevronUp size={20} color="#7B7C81" />
-              ) : (
-                <ChevronDown size={20} color="#7B7C81" />
-              )}
-            </View>
-          </Pressable>
-
-          {showStates && (
-            <View
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 16,
-                marginTop: 8,
-                maxHeight: 320,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.08,
-                shadowRadius: 8,
-                elevation: 4,
-                overflow: "hidden",
-              }}
-            >
-              <ScrollView showsVerticalScrollIndicator nestedScrollEnabled>
-                {STATES.map((state) => (
-                  <Pressable
-                    key={state}
-                    onPress={() => {
-                      setSelectedState(state);
-                      setShowStates(false);
-                      setSelectedDistrict(null);
-                      setMatchedRep(null);
-                      clearZipSearch();
-                    }}
-                    style={({ pressed }) => ({
-                      paddingHorizontal: 16,
-                      paddingVertical: 14,
-                      borderBottomWidth: 1,
-                      borderBottomColor: "#f5f5f5",
-                      backgroundColor: pressed
-                        ? "#f0f8ff"
-                        : selectedState === state
-                          ? "#E8F4FF"
-                          : "#fff",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    })}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        color: "#1a1a1a",
-                        fontWeight: selectedState === state ? "600" : "400",
-                      }}
-                    >
-                      {state}
-                    </Text>
-                    {selectedState === state && (
-                      <Check size={18} color="#008CFF" strokeWidth={3} />
-                    )}
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-
-        {/* District Map */}
-        <CongressionalDistrictMap
-          stateAbbr={selectedState ? STATE_TO_ABBR[selectedState] : null}
-          onSelectDistrict={handleSelectDistrict}
-          focusDistricts={focusDistricts}
-        />
-
-        {/* Selected District Info */}
-        {selectedDistrict && (
-          <View
-            style={{
-              backgroundColor: "#EEF7FF",
-              borderRadius: 16,
-              padding: 14,
-              borderWidth: 1,
-              borderColor: "#B7D7F5",
-            }}
-          >
-            <Text style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}>
-              {selectedDistrict.label}
+              A street address pinpoints your exact district using the U.S.
+              Census Bureau geocoder.
             </Text>
           </View>
-        )}
 
-        {/* Matched Representative */}
-        {loading && (
-          <View style={{ alignItems: "center", paddingVertical: 24 }}>
-            <ActivityIndicator color="#008CFF" />
-          </View>
-        )}
-
-        {matchedRep && !loading && (
-          <Pressable
-            onPress={() => {
-              router.push(`/official/${matchedRep.bioguideId}` as any);
-            }}
-            style={({ pressed }) => ({
-              backgroundColor: "#fff",
-              borderRadius: 24,
-              padding: 16,
-              flexDirection: "row",
-              alignItems: "center",
-              borderWidth: 2,
-              borderColor: "#008CFF",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 10,
-              elevation: 4,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
+          {/* Zip Code Search */}
+          <View>
+            {sectionLabel("Search by zip code")}
+            {searchField({
+              value: zip,
+              onChangeText: (text) => {
+                setZip(text.replace(/[^0-9]/g, ""));
+                if (searchError) setSearchError(null);
+              },
+              onSubmit: handleZipSearch,
+              onClear: () => {
+                setZip("");
+                resetResults();
+              },
+              placeholder: "e.g. 10001",
+              searching: zipSearching,
+              canSubmit: zip.length === 5,
+              numeric: true,
             })}
-          >
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                overflow: "hidden",
-                backgroundColor: "#eee",
-                marginRight: 14,
-              }}
-            >
+            {searchError && (
               <Text
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: PARTY_COLORS[matchedRep.party] ?? "#999",
-                  textAlignVertical: "center",
-                  textAlign: "center",
-                  color: "#fff",
-                  fontSize: 24,
-                  fontWeight: "700",
+                  fontSize: 12,
+                  color: "#D45252",
+                  marginTop: 6,
+                  marginLeft: 4,
                 }}
               >
-                {matchedRep.name.charAt(0)}
+                {searchError}
               </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 6,
-                  marginBottom: 4,
-                }}
-              >
-                <Text style={{ fontSize: 13, color: "#7B7C81" }}>
-                  {PARTY_ABBR[matchedRep.party] ?? matchedRep.party}
-                </Text>
-                <Text style={{ fontSize: 11, color: "#999" }}>
-                  District {matchedRep.district}
-                </Text>
-              </View>
+            )}
+          </View>
+
+          {/* State Selector */}
+          <View>
+            {sectionLabel("Select a state (optional)")}
+            <Pressable
+              onPress={() => setShowStates(!showStates)}
+              style={({ pressed }) => ({
+                backgroundColor: "#fff",
+                borderRadius: 24,
+                padding: 16,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+                shadowColor: "#000000",
+                shadowOpacity: 0.15,
+                shadowOffset: { width: 0, height: 2 },
+                shadowRadius: 4,
+                elevation: 2,
+              })}
+            >
               <Text
                 style={{
                   fontSize: 16,
-                  fontWeight: "700",
-                  color: "#1a1a1a",
+                  color: selectedState ? "#1a1a1a" : "#999",
+                  fontWeight: selectedState ? "600" : "400",
                 }}
               >
-                {matchedRep.name}
+                {selectedState ?? "View all U.S. districts..."}
+              </Text>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              >
+                {selectedState ? (
+                  <Check size={20} color="#008CFF" strokeWidth={3} />
+                ) : showStates ? (
+                  <ChevronUp size={20} color="#7B7C81" />
+                ) : (
+                  <ChevronDown size={20} color="#7B7C81" />
+                )}
+              </View>
+            </Pressable>
+
+            {showStates && (
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: 16,
+                  marginTop: 8,
+                  maxHeight: 320,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 8,
+                  elevation: 4,
+                  overflow: "hidden",
+                }}
+              >
+                <ScrollView showsVerticalScrollIndicator nestedScrollEnabled>
+                  {[null, ...STATES].map((state) => (
+                    <Pressable
+                      key={state ?? "all"}
+                      onPress={() => {
+                        setSelectedState(state);
+                        setShowStates(false);
+                        setZip("");
+                        resetResults();
+                      }}
+                      style={({ pressed }) => ({
+                        paddingHorizontal: 16,
+                        paddingVertical: 14,
+                        borderBottomWidth: 1,
+                        borderBottomColor: "#f5f5f5",
+                        backgroundColor: pressed
+                          ? "#f0f8ff"
+                          : selectedState === state
+                            ? "#E8F4FF"
+                            : "#fff",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      })}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          color: "#1a1a1a",
+                          fontWeight: selectedState === state ? "600" : "400",
+                        }}
+                      >
+                        {state ?? "All U.S. districts"}
+                      </Text>
+                      {selectedState === state && (
+                        <Check size={18} color="#008CFF" strokeWidth={3} />
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+
+          {/* District Map */}
+          <CongressionalDistrictMap
+            stateAbbr={selectedState ? STATE_TO_ABBR[selectedState] : null}
+            onSelectDistrict={handleSelectDistrict}
+            focusDistricts={focusDistricts}
+            autoSelectFocus={!multipleDistricts}
+            selectedGeoid={addressGeoid}
+            pinLocation={pinLocation}
+          />
+
+          {multipleDistricts && !selectedDistrict && (
+            <View
+              style={{
+                backgroundColor: "#FFF8E1",
+                borderRadius: 16,
+                padding: 14,
+              }}
+            >
+              <Text style={{ fontSize: 13, color: "#7A5C00", lineHeight: 18 }}>
+                This zip code spans {focusDistricts?.length} districts. Tap the
+                one you live in, or search your street address above for an
+                exact match.
               </Text>
             </View>
-            <Text style={{ fontSize: 28, color: "#008CFF" }}>→</Text>
-          </Pressable>
-        )}
+          )}
 
-        {selectedDistrict && !matchedRep && !loading && (
-          <View
-            style={{
-              backgroundColor: "#FFF8E7",
-              borderRadius: 16,
-              padding: 14,
-              borderWidth: 1,
-              borderColor: "#F5A623",
-            }}
-          >
-            <Text style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}>
-              Couldn't find a representative for this district in our database.
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-    </View>
+          {/* Selected District Info */}
+          {selectedDistrict && (
+            <View
+              style={{
+                backgroundColor: "#EEF7FF",
+                borderRadius: 16,
+                padding: 14,
+                borderWidth: 1,
+                borderColor: "#B7D7F5",
+              }}
+            >
+              <Text
+                style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}
+              >
+                {selectedDistrict.label}
+              </Text>
+            </View>
+          )}
+
+          {/* Matched Representative */}
+          {loading && (
+            <View style={{ alignItems: "center", paddingVertical: 24 }}>
+              <ActivityIndicator color="#008CFF" />
+            </View>
+          )}
+
+          {matchedRep && !loading && (
+            <Pressable
+              onPress={() => openOfficial(matchedRep.bioguideId)}
+              style={({ pressed }) => ({
+                backgroundColor: "#fff",
+                borderRadius: 24,
+                padding: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                borderWidth: 2,
+                borderColor: "#008CFF",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.08,
+                shadowRadius: 10,
+                elevation: 4,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
+            >
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  overflow: "hidden",
+                  backgroundColor: "#eee",
+                  marginRight: 14,
+                }}
+              >
+                <Image
+                  source={{ uri: matchedRep.photoUrl }}
+                  style={{ width: "100%", height: "120%" }}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    marginBottom: 4,
+                  }}
+                >
+                  <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                    {PARTY_ABBR[matchedRep.party] ?? matchedRep.party}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: "#999" }}>
+                    {matchedRep.district === 0
+                      ? "At-Large"
+                      : `District ${matchedRep.district}`}
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "700",
+                    color: "#1a1a1a",
+                  }}
+                >
+                  {matchedRep.name}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 28, color: "#008CFF" }}>→</Text>
+            </Pressable>
+          )}
+
+          {selectedDistrict && !matchedRep && !loading && (
+            <View
+              style={{
+                backgroundColor: "#FFF8E7",
+                borderRadius: 16,
+                padding: 14,
+                borderWidth: 1,
+                borderColor: "#F5A623",
+              }}
+            >
+              <Text style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}>
+                Couldn't find a representative for this district in our
+                database.
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
