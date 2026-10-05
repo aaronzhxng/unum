@@ -1,10 +1,14 @@
 {
-  "weekOf": "2026-09-28",
-  "weekEnd": "2026-10-04",
+  "weekOf": "2026-10-05",
+  "weekEnd": "2026-10-11",
   "bills": [
     {
-      "billId": "hconres89",
-      "note": "This resolution to direct President Trump to remove U.S. armed forces from Iran failed in the Senate."
+      "billId": "hr6509",
+      "note": "This bill increases oversight of drug compounding and imposes statutory limits on compounded drugs that are copies of commercially available drugs."
+    },
+    {
+      "billId": "hr139",
+      "note": "This bill makes daylight saving time the new, permanent standard time."
     }
   ]
 }

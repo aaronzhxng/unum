@@ -1,0 +1,4 @@
+node scripts/newsletter/generateDigest.js
+node scripts/newsletter/generateDigest.js --weeks-ago 1
+node scripts/newsletter/curatePicks.js hr6644 s269 sjres80
+node scripts/newsletter/generateCard.js hr10138 --summary "Your tailored summary here"
