@@ -1439,7 +1439,7 @@ export default function BillDetail() {
                             flex: 1,
                             fontSize: screenWidth < 390 ? 8 : 10,
                             color: isVeto
-                              ? "#FF3B30"
+                              ? "#dc2626"
                               : status === "empty"
                                 ? "#7B7C81"
                                 : "#1a1a1a",
@@ -1478,7 +1478,7 @@ export default function BillDetail() {
                                   : status === "half"
                                     ? "50%"
                                     : "0%",
-                              backgroundColor: isVeto ? "#FF3B30" : "#008CFF",
+                              backgroundColor: isVeto ? "#dc2626" : "#008CFF",
                               borderRadius: 3,
                             }}
                           />
