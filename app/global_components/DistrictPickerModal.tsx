@@ -1,23 +1,31 @@
 import { Search, X } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  useAddressSuggestions,
+  type AddressSuggestion,
+} from "../services/addressSuggestions";
 import { geocodeAddressToDistrict } from "../services/censusGeocoding";
+import AddressSuggestionList, {
+  useDropdownAnchor,
+} from "./AddressSuggestionList";
 import CongressionalDistrictMap, {
-    type DistrictSelection,
-    type FocusDistrict,
-    type PinLocation,
+  type DistrictSelection,
+  type FocusDistrict,
+  type PinLocation,
 } from "./CongressionalDistrictMap";
 
 export type PickerRep = {
@@ -63,6 +71,15 @@ export default function DistrictPickerModal({
   const [pinLocation, setPinLocation] = useState<PinLocation | null>(null);
   const [addressGeoid, setAddressGeoid] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const { suggestions, clearSuggestions, skipNextLookup } =
+    useAddressSuggestions(addressQuery, visible);
+  const rootRef = useRef<View>(null);
+  const searchBarRef = useRef<View>(null);
+  const suggestionAnchor = useDropdownAnchor(
+    searchBarRef,
+    rootRef,
+    suggestions.length > 0,
+  );
 
   // The map fills most of the screen, so bring the confirm card into view
   useEffect(() => {
@@ -82,10 +99,13 @@ export default function DistrictPickerModal({
     setSelected(district);
   }, []);
 
-  const handleAddressSearch = async () => {
-    const trimmed = addressQuery.trim();
+  // addressOverride is passed when a suggestion is tapped, since the state
+  // update filling the field hasn't landed yet when this runs
+  const handleAddressSearch = async (addressOverride?: string) => {
+    const trimmed = (addressOverride ?? addressQuery).trim();
     if (!trimmed) return;
 
+    clearSuggestions();
     setAddressSearching(true);
     setAddressError(null);
 
@@ -116,6 +136,13 @@ export default function DistrictPickerModal({
     }
   };
 
+  const pickSuggestion = (suggestion: AddressSuggestion) => {
+    skipNextLookup();
+    setAddressQuery(suggestion.fullAddress);
+    Keyboard.dismiss();
+    handleAddressSearch(suggestion.fullAddress);
+  };
+
   const selectedRep = selected
     ? resolveRep(selected.stateAbbr, selected.district)
     : null;
@@ -131,158 +158,66 @@ export default function DistrictPickerModal({
         style={{ flex: 1, backgroundColor: "#fafafa" }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View
-          style={{
-            paddingTop: insets.top + 16,
-            paddingHorizontal: 24,
-            paddingBottom: 16,
-            flexDirection: "row",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-          }}
-        >
-          <View style={{ flex: 1, paddingRight: 16 }}>
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: "700",
-                color: "#1a1a1a",
-                marginBottom: 8,
-              }}
-            >
-              Find your district
-            </Text>
-            <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
-              Your zip code spans {focusDistricts.length} districts. Tap the
-              one you live in, or enter your street address for an exact match.
-            </Text>
-          </View>
-          <Pressable
-            onPress={onClose}
-            hitSlop={12}
-            style={({ pressed }) => ({
-              marginTop: 4,
-              transform: [{ scale: pressed ? 0.85 : 1 }],
-            })}
+        <View ref={rootRef} style={{ flex: 1 }}>
+          <View
+            style={{
+              paddingTop: insets.top + 16,
+              paddingHorizontal: 24,
+              paddingBottom: 16,
+              flexDirection: "row",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+            }}
           >
-            <X size={28} color="#535353" />
-          </Pressable>
-        </View>
-
-        <ScrollView
-          ref={scrollRef}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + 48,
-            gap: 12,
-          }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={{ paddingHorizontal: 16, gap: 12 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: "#fff",
-                borderRadius: 16,
-                paddingHorizontal: 14,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.06,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
-            >
-              <Search size={18} color="#7B7C81" />
-              <TextInput
-                value={addressQuery}
-                onChangeText={(text) => {
-                  setAddressQuery(text);
-                  if (addressError) setAddressError(null);
-                }}
-                onSubmitEditing={handleAddressSearch}
-                placeholder="Street address (optional)"
-                placeholderTextColor="#aaa"
-                returnKeyType="search"
-                style={{
-                  flex: 1,
-                  paddingVertical: 16,
-                  paddingHorizontal: 10,
-                  fontSize: 16,
-                  color: "#1a1a1a",
-                }}
-              />
-              {addressSearching ? (
-                <ActivityIndicator color="#008CFF" />
-              ) : (
-                <Pressable
-                  onPress={handleAddressSearch}
-                  disabled={!addressQuery.trim()}
-                  style={({ pressed }) => ({
-                    backgroundColor: addressQuery.trim() ? "#008CFF" : "#d0d0d0",
-                    borderRadius: 12,
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    opacity: pressed ? 0.75 : 1,
-                  })}
-                >
-                  <Text style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}>
-                    Find
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-            {addressError && (
+            <View style={{ flex: 1, paddingRight: 16 }}>
               <Text
-                style={{ fontSize: 13, color: "#D45252", paddingHorizontal: 4 }}
+                style={{
+                  fontSize: 24,
+                  fontWeight: "700",
+                  color: "#1a1a1a",
+                  marginBottom: 8,
+                }}
               >
-                {addressError}
+                Find your district
               </Text>
-            )}
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "600",
-                color: "#1a1a1a",
+              <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
+                Your zip code spans {focusDistricts.length} districts. Tap the
+                one you live in, or enter your street address for an exact
+                match.
+              </Text>
+            </View>
+            <Pressable
+              onPress={onClose}
+              hitSlop={12}
+              style={({ pressed }) => ({
                 marginTop: 4,
-              }}
+                transform: [{ scale: pressed ? 0.85 : 1 }],
+              })}
             >
-              Tap a district
-            </Text>
+              <X size={28} color="#535353" />
+            </Pressable>
           </View>
 
-          <CongressionalDistrictMap
-            stateAbbr={stateAbbr}
-            onSelectDistrict={handleSelectDistrict}
-            focusDistricts={focusDistricts}
-            autoSelectFocus={false}
-            selectedGeoid={addressGeoid}
-            pinLocation={pinLocation}
-          />
-
-          <View style={{ paddingHorizontal: 16, gap: 12 }}>
-            {selected && !selectedRep && (
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 48,
+              gap: 12,
+            }}
+            keyboardShouldPersistTaps="handled"
+            // The suggestion dropdown is positioned once, so close it rather
+            // than let it drift away from the search bar
+            onScrollBeginDrag={clearSuggestions}
+          >
+            <View style={{ paddingHorizontal: 16, gap: 12 }}>
               <View
+                ref={searchBarRef}
                 style={{
-                  backgroundColor: "#FFF8E7",
-                  borderRadius: 12,
-                  padding: 12,
-                  borderWidth: 1,
-                  borderColor: "#F5A623",
-                }}
-              >
-                <Text style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}>
-                  Couldn't find a representative for this district in our
-                  database.
-                </Text>
-              </View>
-            )}
-  
-            {selectedRep && (
-              <View
-                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
                   backgroundColor: "#fff",
-                  borderRadius: 24,
-                  padding: 14,
+                  borderRadius: 16,
+                  paddingHorizontal: 14,
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.06,
@@ -290,57 +225,179 @@ export default function DistrictPickerModal({
                   elevation: 2,
                 }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View
-                    style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: 26,
-                      overflow: "hidden",
-                      backgroundColor: "#eee",
-                      marginRight: 12,
-                    }}
+                <Search size={18} color="#7B7C81" />
+                <TextInput
+                  value={addressQuery}
+                  onChangeText={(text) => {
+                    setAddressQuery(text);
+                    if (addressError) setAddressError(null);
+                  }}
+                  onSubmitEditing={() => handleAddressSearch()}
+                  placeholder="Street address (optional)"
+                  placeholderTextColor="#aaa"
+                  returnKeyType="search"
+                  style={{
+                    flex: 1,
+                    paddingVertical: 16,
+                    paddingHorizontal: 10,
+                    fontSize: 16,
+                    color: "#1a1a1a",
+                  }}
+                />
+                {addressSearching ? (
+                  <ActivityIndicator color="#008CFF" />
+                ) : (
+                  <Pressable
+                    onPress={() => handleAddressSearch()}
+                    disabled={!addressQuery.trim()}
+                    style={({ pressed }) => ({
+                      backgroundColor: addressQuery.trim()
+                        ? "#008CFF"
+                        : "#d0d0d0",
+                      borderRadius: 12,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      opacity: pressed ? 0.75 : 1,
+                    })}
                   >
-                    <Image
-                      source={{ uri: selectedRep.photoUrl }}
-                      style={{ width: "100%", height: "120%" }}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
                     <Text
-                      style={{ fontSize: 15, fontWeight: "600", color: "#535353" }}
+                      style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}
                     >
-                      {selectedRep.name}
+                      Find
                     </Text>
-                    <Text
-                      style={{ fontSize: 13, color: "#7B7C81", marginTop: 2 }}
-                      numberOfLines={1}
-                    >
-                      {PARTY_ABBR[selectedRep.party] ?? selectedRep.party} ·{" "}
-                      {selectedRep.role}
-                    </Text>
-                  </View>
-                </View>
-                <Pressable
-                  onPress={() => onConfirm(selectedRep)}
-                  style={({ pressed }) => ({
-                    marginTop: 12,
-                    backgroundColor: "#008CFF",
-                    borderRadius: 16,
-                    paddingVertical: 14,
-                    alignItems: "center",
-                    opacity: pressed ? 0.8 : 1,
-                  })}
-                >
-                  <Text style={{ fontSize: 15, fontWeight: "600", color: "#fff" }}>
-                    This is my representative
-                  </Text>
-                </Pressable>
+                  </Pressable>
+                )}
               </View>
-            )}
-          </View>
-        </ScrollView>
+              {addressError && (
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: "#D45252",
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  {addressError}
+                </Text>
+              )}
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: "#1a1a1a",
+                  marginTop: 4,
+                }}
+              >
+                Tap a district
+              </Text>
+            </View>
+
+            <CongressionalDistrictMap
+              stateAbbr={stateAbbr}
+              onSelectDistrict={handleSelectDistrict}
+              focusDistricts={focusDistricts}
+              autoSelectFocus={false}
+              selectedGeoid={addressGeoid}
+              pinLocation={pinLocation}
+            />
+
+            <View style={{ paddingHorizontal: 16, gap: 12 }}>
+              {selected && !selectedRep && (
+                <View
+                  style={{
+                    backgroundColor: "#FFF8E7",
+                    borderRadius: 12,
+                    padding: 12,
+                    borderWidth: 1,
+                    borderColor: "#F5A623",
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}
+                  >
+                    This district doesn't currently have a representative. The
+                    seat may be vacant until a special election fills it, or
+                    the district may have recently been redrawn.
+                  </Text>
+                </View>
+              )}
+
+              {selectedRep && (
+                <View
+                  style={{
+                    backgroundColor: "#fff",
+                    borderRadius: 24,
+                    padding: 14,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.06,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <View
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: 26,
+                        overflow: "hidden",
+                        backgroundColor: "#eee",
+                        marginRight: 12,
+                      }}
+                    >
+                      <Image
+                        source={{ uri: selectedRep.photoUrl }}
+                        style={{ width: "100%", height: "120%" }}
+                        resizeMode="cover"
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: "600",
+                          color: "#535353",
+                        }}
+                      >
+                        {selectedRep.name}
+                      </Text>
+                      <Text
+                        style={{ fontSize: 13, color: "#7B7C81", marginTop: 2 }}
+                        numberOfLines={1}
+                      >
+                        {PARTY_ABBR[selectedRep.party] ?? selectedRep.party} ·{" "}
+                        {selectedRep.role}
+                      </Text>
+                    </View>
+                  </View>
+                  <Pressable
+                    onPress={() => onConfirm(selectedRep)}
+                    style={({ pressed }) => ({
+                      marginTop: 12,
+                      backgroundColor: "#008CFF",
+                      borderRadius: 16,
+                      paddingVertical: 14,
+                      alignItems: "center",
+                      opacity: pressed ? 0.8 : 1,
+                    })}
+                  >
+                    <Text
+                      style={{ fontSize: 15, fontWeight: "600", color: "#fff" }}
+                    >
+                      This is my representative
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+
+          <AddressSuggestionList
+            suggestions={suggestions}
+            anchor={suggestionAnchor}
+            onPick={pickSuggestion}
+          />
+        </View>
       </KeyboardAvoidingView>
     </Modal>
   );

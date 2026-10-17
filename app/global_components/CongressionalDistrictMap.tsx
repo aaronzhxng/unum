@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Linking,
@@ -60,6 +60,10 @@ type Props = {
   selectedGeoid?: string | null;
   // Marker for a geocoded address
   pinLocation?: PinLocation | null;
+  // With a state selected, also load every other state's districts in the
+  // background so the user can pan anywhere and tap them. The selected state
+  // still loads first, so it's interactive right away.
+  loadOtherStates?: boolean;
 };
 
 const STATE_ABBR_TO_FIPS: Record<string, string> = {
@@ -156,13 +160,73 @@ function buildQueryUrl(stateAbbr?: string | null): string {
   return `${DISTRICT_LAYER_URL}?${query}`;
 }
 
+const ALASKA_FIPS = "02";
+
+// The Aleutian Islands cross the 180th meridian, so part of Alaska comes back
+// with eastern-hemisphere (positive) longitudes. Fitting the map to that spans
+// the whole globe; shifting those points 360° west keeps Alaska in one piece.
+function shiftWestOfAntimeridian(coordinates: any): any {
+  if (typeof coordinates[0] === "number") {
+    return coordinates[0] > 0
+      ? [coordinates[0] - 360, ...coordinates.slice(1)]
+      : coordinates;
+  }
+  return coordinates.map(shiftWestOfAntimeridian);
+}
+
 // Drops "Congressional Districts not defined" areas (GEOID ending in ZZ),
 // which are large water bodies with no representative.
 function definedDistricts(collection: DistrictCollection): DistrictFeature[] {
   if (!Array.isArray(collection.features)) return [];
-  return collection.features.filter(
-    (feature) => !feature.properties.GEOID?.endsWith("ZZ"),
-  );
+  return collection.features
+    .filter((feature) => !feature.properties.GEOID?.endsWith("ZZ"))
+    .map((feature) =>
+      feature.properties.STATE === ALASKA_FIPS
+        ? {
+            ...feature,
+            geometry: {
+              ...feature.geometry,
+              coordinates: shiftWestOfAntimeridian(
+                feature.geometry.coordinates,
+              ),
+            },
+          }
+        : feature,
+    );
+}
+
+// Every state and territory at slightly coarser borders (~700 KB, a few
+// seconds from the Census server). Fetched once per app session and shared
+// across map instances, so reopening the map or switching states is instant.
+let allDistrictsRequest: Promise<DistrictFeature[]> | null = null;
+
+function loadAllDistricts(): Promise<DistrictFeature[]> {
+  if (!allDistrictsRequest) {
+    const params: Record<string, string> = {
+      where: "1=1",
+      outFields: "GEOID,STATE,BASENAME,NAME",
+      returnGeometry: "true",
+      f: "geojson",
+      outSR: "4326",
+      geometryPrecision: "3",
+      maxAllowableOffset: "0.01",
+    };
+    const query = Object.entries(params)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join("&");
+    allDistrictsRequest = fetch(`${DISTRICT_LAYER_URL}?${query}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to load national districts");
+        return response.json() as Promise<DistrictCollection>;
+      })
+      .then(definedDistricts)
+      .catch((error) => {
+        // Let the next map open retry instead of caching the failure
+        allDistrictsRequest = null;
+        throw error;
+      });
+  }
+  return allDistrictsRequest;
 }
 
 function escapeJsonForHtml(value: unknown): string {
@@ -345,19 +409,43 @@ function buildOpenStreetMapHtml(params: {
           );
         }
 
+        // Districts outside the selected state, added once they finish
+        // loading in the background
+        let otherStatesLayer = null;
+
+        function restyleDistricts() {
+          districtLayer.setStyle(styleForFeature);
+          if (otherStatesLayer) otherStatesLayer.setStyle(styleForFeature);
+        }
+
+        function bindDistrictClick(feature, layer) {
+          layer.on("click", function () {
+            const properties = feature && feature.properties ? feature.properties : {};
+            if (!properties.GEOID) return;
+
+            selectedGEOID = properties.GEOID;
+            restyleDistricts();
+            emitSelection(feature);
+          });
+        }
+
         const districtLayer = L.geoJSON(features, {
           style: styleForFeature,
-          onEachFeature: function (feature, layer) {
-            layer.on("click", function () {
-              const properties = feature && feature.properties ? feature.properties : {};
-              if (!properties.GEOID) return;
-
-              selectedGEOID = properties.GEOID;
-              districtLayer.setStyle(styleForFeature);
-              emitSelection(feature);
-            });
-          },
+          onEachFeature: bindDistrictClick,
         }).addTo(map);
+
+        // Called from React Native once the rest of the country has loaded.
+        // Added into the open map rather than reloading it, so the user's
+        // current pan and zoom are kept.
+        window.addOtherStateDistricts = function (otherFeatures) {
+          if (otherStatesLayer || !Array.isArray(otherFeatures)) return;
+          otherStatesLayer = L.geoJSON(otherFeatures, {
+            style: styleForFeature,
+            onEachFeature: bindDistrictClick,
+          }).addTo(map);
+          // The selected state keeps its sharper borders on top
+          districtLayer.bringToFront();
+        };
 
         function getHighlightBounds() {
           const focusLayers = [];
@@ -443,12 +531,57 @@ export default function CongressionalDistrictMap({
   autoSelectFocus = true,
   selectedGeoid,
   pinLocation,
+  loadOtherStates = false,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [features, setFeatures] = useState<DistrictFeature[]>([]);
+  const [allDistricts, setAllDistricts] = useState<DistrictFeature[] | null>(
+    null,
+  );
   const autoSelectRef = useRef<string | null>(null);
+  const webViewRef = useRef<WebView>(null);
+  const webViewLoaded = useRef(false);
+
+  useEffect(() => {
+    if (!loadOtherStates || !stateAbbr) return;
+    let active = true;
+    loadAllDistricts()
+      .then((districts) => {
+        if (active) setAllDistricts(districts);
+      })
+      .catch((loadError) => {
+        // The selected state still works; other states just stay untappable
+        console.warn("Background district load failed:", loadError);
+      });
+    return () => {
+      active = false;
+    };
+  }, [loadOtherStates, stateAbbr]);
+
+  const otherStateDistricts = useMemo(() => {
+    if (!loadOtherStates || !stateAbbr || !allDistricts) return null;
+    const stateFips = STATE_ABBR_TO_FIPS[stateAbbr];
+    return allDistricts.filter(
+      (feature) => feature.properties.STATE !== stateFips,
+    );
+  }, [loadOtherStates, stateAbbr, allDistricts]);
+
+  // Sends the other states into the open map. Runs both when the background
+  // load finishes and whenever the map (re)loads, whichever comes second.
+  const injectOtherStates = useCallback(() => {
+    if (!webViewLoaded.current || !otherStateDistricts?.length) return;
+    webViewRef.current?.injectJavaScript(
+      `window.addOtherStateDistricts && window.addOtherStateDistricts(${JSON.stringify(
+        otherStateDistricts,
+      )}); true;`,
+    );
+  }, [otherStateDistricts]);
+
+  useEffect(() => {
+    injectOtherStates();
+  }, [injectOtherStates]);
 
   useEffect(() => {
     let active = true;
@@ -617,8 +750,16 @@ export default function CongressionalDistrictMap({
         </Text>
       ) : (
         <WebView
+          ref={webViewRef}
           key={webViewKey}
           source={webViewSource}
+          onLoadStart={() => {
+            webViewLoaded.current = false;
+          }}
+          onLoadEnd={() => {
+            webViewLoaded.current = true;
+            injectOtherStates();
+          }}
           originWhitelist={["*"]}
           javaScriptEnabled
           domStorageEnabled

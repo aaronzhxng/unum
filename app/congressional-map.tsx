@@ -1,26 +1,40 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, ChevronDown, ChevronLeft, ChevronUp, X } from "lucide-react-native";
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  X,
+} from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    BackHandler,
-    KeyboardAvoidingView,
-    PanResponder,
-    Platform,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput,
-    View,
-    type NativeScrollEvent,
-    type NativeSyntheticEvent,
+  ActivityIndicator,
+  BackHandler,
+  Keyboard,
+  KeyboardAvoidingView,
+  PanResponder,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from "react-native";
 import CongressionalDistrictMap, {
-    type DistrictSelection,
-    type FocusDistrict,
-    type PinLocation,
+  type DistrictSelection,
+  type FocusDistrict,
+  type PinLocation,
 } from "./global_components/CongressionalDistrictMap";
+import AddressSuggestionList, {
+  useDropdownAnchor,
+} from "./global_components/AddressSuggestionList";
 import OfficialCard from "./global_components/OfficialCard";
+import {
+  useAddressSuggestions,
+  type AddressSuggestion,
+} from "./services/addressSuggestions";
 import { geocodeAddressToDistrict } from "./services/censusGeocoding";
 import { officialsService } from "./services/officials";
 import { trySwipeBack } from "./utils/swipeBackGuard";
@@ -186,6 +200,17 @@ export default function CongressionalMapScreen() {
   const [showStates, setShowStates] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const { suggestions, clearSuggestions, skipNextLookup } =
+    useAddressSuggestions(addressQuery, searchMode === "address");
+  const rootRef = useRef<View>(null);
+  const searchBarRef = useRef<View>(null);
+  const suggestionsOpen =
+    searchMode === "address" && !showModeMenu && suggestions.length > 0;
+  const suggestionAnchor = useDropdownAnchor(
+    searchBarRef,
+    rootRef,
+    suggestionsOpen,
+  );
 
   // What the map is currently showing
   const [selectedState, setSelectedState] = useState<string | null>(startState);
@@ -240,8 +265,7 @@ export default function CongressionalMapScreen() {
     );
   };
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset, contentSize, layoutMeasurement } =
-      event.nativeEvent;
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     scrollMetrics.current = {
       offset: contentOffset.y,
       viewport: layoutMeasurement.height,
@@ -318,8 +342,8 @@ export default function CongressionalMapScreen() {
     );
   };
 
-  const searchByAddress = async () => {
-    const trimmed = addressQuery.trim();
+  const searchByAddress = async (query: string) => {
+    const trimmed = query.trim();
     if (!trimmed) {
       setSearchError("Enter a street address first.");
       return;
@@ -349,9 +373,12 @@ export default function CongressionalMapScreen() {
     });
   };
 
-  const handleSearch = async () => {
+  // addressOverride is passed when a suggestion is tapped, since the state
+  // update filling the field hasn't landed yet when this runs
+  const handleSearch = async (addressOverride?: string) => {
     setShowModeMenu(false);
     setShowStates(false);
+    clearSuggestions();
     resetResults();
 
     if (searchMode === "state") {
@@ -362,7 +389,7 @@ export default function CongressionalMapScreen() {
     setSearching(true);
     try {
       if (searchMode === "zip") await searchByZip();
-      else await searchByAddress();
+      else await searchByAddress(addressOverride ?? addressQuery);
     } catch (error) {
       console.error("District search failed:", error);
       setSearchError("Something went wrong. Please try again.");
@@ -389,221 +416,197 @@ export default function CongressionalMapScreen() {
     if (searchError) setSearchError(null);
   };
 
+  const pickSuggestion = (suggestion: AddressSuggestion) => {
+    skipNextLookup();
+    setAddressQuery(suggestion.fullAddress);
+    Keyboard.dismiss();
+    handleSearch(suggestion.fullAddress);
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "#fafafa" }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingTop: 56,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: "#f0f0f0",
-        }}
-      >
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={8}
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.75 : 1 }],
-            marginRight: 20,
-          })}
+      <View ref={rootRef} style={{ flex: 1 }}>
+        {/* Header */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingTop: 56,
+            paddingHorizontal: 16,
+            paddingBottom: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: "#f0f0f0",
+          }}
         >
-          <ChevronLeft size={24} color="#535353" />
-        </Pressable>
-        <Text style={{ fontSize: 18, fontWeight: "700", color: "#1a1a1a" }}>
-          Congressional Map
-        </Text>
-      </View>
-
-      <ScrollView
-        ref={scrollRef}
-        contentContainerStyle={{ paddingTop: 16, paddingBottom: 48, gap: 16 }}
-        keyboardShouldPersistTaps="handled"
-        onScroll={handleScroll}
-        onLayout={(event) => {
-          scrollMetrics.current.viewport = event.nativeEvent.layout.height;
-          updateJumpButtons();
-        }}
-        onContentSizeChange={(_, height) => {
-          scrollMetrics.current.content = height;
-          updateJumpButtons();
-        }}
-        scrollEventThrottle={100}
-      >
-        {/* Search */}
-        <View style={{ paddingHorizontal: 16 }}>
-          <Text style={sectionLabelStyle}>Find a district</Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "stretch",
-              backgroundColor: "#fff",
-              borderRadius: 24,
-              shadowColor: "#000000",
-              shadowOpacity: 0.15,
-              shadowOffset: { width: 0, height: 2 },
-              shadowRadius: 4,
-              elevation: 2,
+          <Pressable
+            // Same cooldown as the swipe and hardware back, so a double tap
+            // can't fire a second back with nothing left to go back to
+            onPress={() => {
+              if (trySwipeBack()) router.back();
             }}
+            hitSlop={8}
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.75 : 1 }],
+              marginRight: 20,
+            })}
           >
-            {/* Left: search type */}
-            <Pressable
-              onPress={() => {
-                setShowModeMenu(!showModeMenu);
-                setShowStates(false);
-              }}
-              style={({ pressed }) => ({
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                paddingLeft: 16,
-                paddingRight: 12,
-                borderRightWidth: 1,
-                borderRightColor: "#EEEEEE",
-                opacity: pressed ? 0.6 : 1,
-              })}
-            >
-              <Text
-                style={{ fontSize: 15, fontWeight: "600", color: "#1a1a1a" }}
-              >
-                {modeLabel}
-              </Text>
-              {showModeMenu ? (
-                <ChevronUp size={18} color="#7B7C81" />
-              ) : (
-                <ChevronDown size={18} color="#7B7C81" />
-              )}
-            </Pressable>
+            <ChevronLeft size={24} color="#535353" />
+          </Pressable>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: "#1a1a1a" }}>
+            Congressional Map
+          </Text>
+        </View>
 
-            {/* Right: text input, or state picker */}
-            {searchMode === "state" ? (
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={{ paddingTop: 16, paddingBottom: 48, gap: 16 }}
+          keyboardShouldPersistTaps="handled"
+          // The suggestion dropdown is positioned once, so close it rather
+          // than let it drift away from the search bar
+          onScrollBeginDrag={clearSuggestions}
+          onScroll={handleScroll}
+          onLayout={(event) => {
+            scrollMetrics.current.viewport = event.nativeEvent.layout.height;
+            updateJumpButtons();
+          }}
+          onContentSizeChange={(_, height) => {
+            scrollMetrics.current.content = height;
+            updateJumpButtons();
+          }}
+          scrollEventThrottle={100}
+        >
+          {/* Search */}
+          <View style={{ paddingHorizontal: 16 }}>
+            <Text style={sectionLabelStyle}>Find a district</Text>
+
+            <View
+              ref={searchBarRef}
+              style={{
+                flexDirection: "row",
+                alignItems: "stretch",
+                backgroundColor: "#fff",
+                borderRadius: 24,
+                shadowColor: "#000000",
+                shadowOpacity: 0.15,
+                shadowOffset: { width: 0, height: 2 },
+                shadowRadius: 4,
+                elevation: 2,
+              }}
+            >
+              {/* Left: search type */}
               <Pressable
                 onPress={() => {
-                  setShowStates(!showStates);
-                  setShowModeMenu(false);
+                  setShowModeMenu(!showModeMenu);
+                  setShowStates(false);
                 }}
-                style={{
-                  flex: 1,
+                style={({ pressed }) => ({
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  paddingVertical: 16,
-                  paddingHorizontal: 14,
-                }}
+                  gap: 4,
+                  paddingLeft: 16,
+                  paddingRight: 12,
+                  borderRightWidth: 1,
+                  borderRightColor: "#EEEEEE",
+                  opacity: pressed ? 0.6 : 1,
+                })}
               >
                 <Text
-                  style={{
-                    fontSize: 16,
-                    color: pendingState ? "#1a1a1a" : "#999",
-                  }}
-                  numberOfLines={1}
+                  style={{ fontSize: 15, fontWeight: "600", color: "#1a1a1a" }}
                 >
-                  {pendingState ?? "All U.S. districts"}
+                  {modeLabel}
                 </Text>
-                {showStates ? (
-                  <ChevronUp size={20} color="#7B7C81" />
+                {showModeMenu ? (
+                  <ChevronUp size={18} color="#7B7C81" />
                 ) : (
-                  <ChevronDown size={20} color="#7B7C81" />
+                  <ChevronDown size={18} color="#7B7C81" />
                 )}
               </Pressable>
-            ) : (
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingRight: 14,
-                }}
-              >
-                <TextInput
+
+              {/* Right: text input, or state picker */}
+              {searchMode === "state" ? (
+                <Pressable
+                  onPress={() => {
+                    setShowStates(!showStates);
+                    setShowModeMenu(false);
+                  }}
                   style={{
                     flex: 1,
-                    fontSize: 16,
-                    paddingVertical: 14,
-                    paddingHorizontal: 12,
-                    color: "#1a1a1a",
-                  }}
-                  placeholder={
-                    searchMode === "zip"
-                      ? "e.g. 10001"
-                      : "e.g. 1600 Pennsylvania Ave NW, Washington, DC"
-                  }
-                  placeholderTextColor="#bbb"
-                  keyboardType={searchMode === "zip" ? "number-pad" : "default"}
-                  maxLength={searchMode === "zip" ? 5 : undefined}
-                  value={textValue}
-                  onChangeText={setTextValue}
-                  onFocus={() => setShowModeMenu(false)}
-                  onSubmitEditing={() => canSearch && handleSearch()}
-                  returnKeyType="search"
-                />
-                {textValue.length > 0 && (
-                  <Pressable onPress={() => setTextValue("")} hitSlop={8}>
-                    <X size={18} color="#999" />
-                  </Pressable>
-                )}
-              </View>
-            )}
-          </View>
-
-          {showModeMenu && (
-            <View style={dropdownListStyle}>
-              {SEARCH_MODES.map((mode) => (
-                <Pressable
-                  key={mode.key}
-                  onPress={() => {
-                    setSearchMode(mode.key);
-                    setShowModeMenu(false);
-                    setSearchError(null);
-                  }}
-                  style={({ pressed }) => ({
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
-                    borderBottomWidth: 1,
-                    borderBottomColor: "#f5f5f5",
-                    backgroundColor: pressed
-                      ? "#f0f8ff"
-                      : searchMode === mode.key
-                        ? "#E8F4FF"
-                        : "#fff",
                     flexDirection: "row",
-                    justifyContent: "space-between",
                     alignItems: "center",
-                  })}
+                    justifyContent: "space-between",
+                    paddingVertical: 16,
+                    paddingHorizontal: 14,
+                  }}
                 >
                   <Text
                     style={{
-                      fontSize: 15,
-                      color: "#1a1a1a",
-                      fontWeight: searchMode === mode.key ? "600" : "400",
+                      fontSize: 16,
+                      color: pendingState ? "#1a1a1a" : "#999",
                     }}
+                    numberOfLines={1}
                   >
-                    {mode.label}
+                    {pendingState ?? "All U.S. districts"}
                   </Text>
-                  {searchMode === mode.key && (
-                    <Check size={18} color="#008CFF" strokeWidth={3} />
+                  {showStates ? (
+                    <ChevronUp size={20} color="#7B7C81" />
+                  ) : (
+                    <ChevronDown size={20} color="#7B7C81" />
                   )}
                 </Pressable>
-              ))}
+              ) : (
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingRight: 14,
+                  }}
+                >
+                  <TextInput
+                    style={{
+                      flex: 1,
+                      fontSize: 16,
+                      paddingVertical: 14,
+                      paddingHorizontal: 12,
+                      color: "#1a1a1a",
+                    }}
+                    placeholder={
+                      searchMode === "zip"
+                        ? "e.g. 10001"
+                        : "e.g. 1600 Pennsylvania Ave NW, Washington, DC"
+                    }
+                    placeholderTextColor="#bbb"
+                    keyboardType={
+                      searchMode === "zip" ? "number-pad" : "default"
+                    }
+                    maxLength={searchMode === "zip" ? 5 : undefined}
+                    value={textValue}
+                    onChangeText={setTextValue}
+                    onFocus={() => setShowModeMenu(false)}
+                    onSubmitEditing={() => canSearch && handleSearch()}
+                    returnKeyType="search"
+                  />
+                  {textValue.length > 0 && (
+                    <Pressable onPress={() => setTextValue("")} hitSlop={8}>
+                      <X size={18} color="#999" />
+                    </Pressable>
+                  )}
+                </View>
+              )}
             </View>
-          )}
 
-          {searchMode === "state" && showStates && (
-            <View style={[dropdownListStyle, { maxHeight: 320 }]}>
-              <ScrollView showsVerticalScrollIndicator nestedScrollEnabled>
-                {[null, ...STATES].map((state) => (
+            {showModeMenu && (
+              <View style={dropdownListStyle}>
+                {SEARCH_MODES.map((mode) => (
                   <Pressable
-                    key={state ?? "all"}
+                    key={mode.key}
                     onPress={() => {
-                      setPendingState(state);
-                      setShowStates(false);
+                      setSearchMode(mode.key);
+                      setShowModeMenu(false);
+                      setSearchError(null);
                     }}
                     style={({ pressed }) => ({
                       paddingHorizontal: 16,
@@ -612,7 +615,7 @@ export default function CongressionalMapScreen() {
                       borderBottomColor: "#f5f5f5",
                       backgroundColor: pressed
                         ? "#f0f8ff"
-                        : pendingState === state
+                        : searchMode === mode.key
                           ? "#E8F4FF"
                           : "#fff",
                       flexDirection: "row",
@@ -624,180 +627,237 @@ export default function CongressionalMapScreen() {
                       style={{
                         fontSize: 15,
                         color: "#1a1a1a",
-                        fontWeight: pendingState === state ? "600" : "400",
+                        fontWeight: searchMode === mode.key ? "600" : "400",
                       }}
                     >
-                      {state ?? "All U.S. districts"}
+                      {mode.label}
                     </Text>
-                    {pendingState === state && (
+                    {searchMode === mode.key && (
                       <Check size={18} color="#008CFF" strokeWidth={3} />
                     )}
                   </Pressable>
                 ))}
-              </ScrollView>
-            </View>
-          )}
+              </View>
+            )}
 
-          {searchError && (
-            <Text
-              style={{
-                fontSize: 12,
-                color: "#D45252",
-                marginTop: 8,
-                marginLeft: 4,
-              }}
-            >
-              {searchError}
-            </Text>
-          )}
+            {searchMode === "state" && showStates && (
+              <View style={[dropdownListStyle, { maxHeight: 320 }]}>
+                <ScrollView showsVerticalScrollIndicator nestedScrollEnabled>
+                  {[null, ...STATES].map((state) => (
+                    <Pressable
+                      key={state ?? "all"}
+                      onPress={() => {
+                        setPendingState(state);
+                        setShowStates(false);
+                      }}
+                      style={({ pressed }) => ({
+                        paddingHorizontal: 16,
+                        paddingVertical: 14,
+                        borderBottomWidth: 1,
+                        borderBottomColor: "#f5f5f5",
+                        backgroundColor: pressed
+                          ? "#f0f8ff"
+                          : pendingState === state
+                            ? "#E8F4FF"
+                            : "#fff",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      })}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          color: "#1a1a1a",
+                          fontWeight: pendingState === state ? "600" : "400",
+                        }}
+                      >
+                        {state ?? "All U.S. districts"}
+                      </Text>
+                      {pendingState === state && (
+                        <Check size={18} color="#008CFF" strokeWidth={3} />
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
-          <Pressable
-            onPress={handleSearch}
-            disabled={!canSearch || searching}
-            style={({ pressed }) => ({
-              marginTop: 12,
-              backgroundColor: canSearch ? "#008CFF" : "#E0E0E0",
-              borderRadius: 16,
-              paddingVertical: 14,
-              alignItems: "center",
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            {searching ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
+            {searchError && (
               <Text
                 style={{
-                  fontSize: 16,
-                  fontWeight: "600",
-                  color: canSearch ? "#fff" : "#999",
+                  fontSize: 12,
+                  color: "#D45252",
+                  marginTop: 8,
+                  marginLeft: 4,
                 }}
               >
-                Search
+                {searchError}
               </Text>
             )}
-          </Pressable>
-        </View>
 
-        {/* Map */}
-        <View>
-          <View style={{ paddingHorizontal: 16 }}>
-            <Text style={sectionLabelStyle}>Tap a district</Text>
-            <Text
-              style={{
-                fontSize: 13,
-                color: "#7B7C81",
-                lineHeight: 18,
-                marginTop: -4,
-                marginBottom: 12,
-              }}
+            <Pressable
+              onPress={() => handleSearch()}
+              disabled={!canSearch || searching}
+              style={({ pressed }) => ({
+                marginTop: 12,
+                backgroundColor: canSearch ? "#008CFF" : "#E0E0E0",
+                borderRadius: 16,
+                paddingVertical: 14,
+                alignItems: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
             >
-              {multipleDistricts
-                ? `This zip code spans ${focusDistricts?.length} districts. Tap the one you live in, or search by address for an exact match.`
-                : "Tap any district to see who represents it."}
-            </Text>
+              {searching ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "600",
+                    color: canSearch ? "#fff" : "#999",
+                  }}
+                >
+                  Search
+                </Text>
+              )}
+            </Pressable>
           </View>
-          <CongressionalDistrictMap
-            stateAbbr={selectedState ? STATE_TO_ABBR[selectedState] : null}
-            onSelectDistrict={handleSelectDistrict}
-            focusDistricts={focusDistricts}
-            autoSelectFocus={!multipleDistricts}
-            selectedGeoid={addressGeoid}
-            pinLocation={pinLocation}
-          />
-        </View>
 
-        {/* Result */}
-        <View style={{ paddingHorizontal: 16, gap: 12 }}>
-          {selectedDistrict && (
-            <View
-              style={{
-                backgroundColor: "#EEF7FF",
-                borderRadius: 16,
-                padding: 14,
-                borderWidth: 1,
-                borderColor: "#B7D7F5",
-              }}
-            >
+          {/* Map */}
+          <View>
+            <View style={{ paddingHorizontal: 16 }}>
+              <Text style={sectionLabelStyle}>Tap a district</Text>
               <Text
-                style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}
+                style={{
+                  fontSize: 13,
+                  color: "#7B7C81",
+                  lineHeight: 18,
+                  marginTop: -4,
+                  marginBottom: 12,
+                }}
               >
-                {selectedDistrict.label}
+                {multipleDistricts
+                  ? `This zip code spans ${focusDistricts?.length} districts. Tap the one you live in, or search by address for an exact match.`
+                  : "Tap any district to see who represents it."}
               </Text>
             </View>
-          )}
+            <CongressionalDistrictMap
+              stateAbbr={selectedState ? STATE_TO_ABBR[selectedState] : null}
+              onSelectDistrict={handleSelectDistrict}
+              focusDistricts={focusDistricts}
+              autoSelectFocus={!multipleDistricts}
+              selectedGeoid={addressGeoid}
+              pinLocation={pinLocation}
+              loadOtherStates
+            />
+          </View>
 
-          {repLoading && (
-            <View style={{ alignItems: "center", paddingVertical: 24 }}>
-              <ActivityIndicator color="#008CFF" />
-            </View>
-          )}
+          {/* Result */}
+          <View style={{ paddingHorizontal: 16, gap: 12 }}>
+            {selectedDistrict && (
+              <View
+                style={{
+                  backgroundColor: "#EEF7FF",
+                  borderRadius: 16,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: "#B7D7F5",
+                }}
+              >
+                <Text
+                  style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}
+                >
+                  {selectedDistrict.label}
+                </Text>
+              </View>
+            )}
 
-          {matchedRep && !repLoading && <OfficialCard item={matchedRep} />}
+            {repLoading && (
+              <View style={{ alignItems: "center", paddingVertical: 24 }}>
+                <ActivityIndicator color="#008CFF" />
+              </View>
+            )}
 
-          {selectedDistrict && !matchedRep && !repLoading && (
-            <View
-              style={{
-                backgroundColor: "#FFF8E7",
-                borderRadius: 16,
-                padding: 14,
-                borderWidth: 1,
-                borderColor: "#F5A623",
-              }}
+            {matchedRep && !repLoading && <OfficialCard item={matchedRep} />}
+
+            {selectedDistrict && !matchedRep && !repLoading && (
+              <View
+                style={{
+                  backgroundColor: "#FFF8E7",
+                  borderRadius: 16,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: "#F5A623",
+                }}
+              >
+                <Text
+                  style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}
+                >
+                  This district doesn't currently have a representative. The
+                  seat may be vacant until a special election fills it, or
+                  the district may have recently been redrawn.
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Jump to top / bottom — the map pans with one finger, so these get
+          the user past it */}
+        <View
+          pointerEvents="box-none"
+          style={{ position: "absolute", right: 16, bottom: 32, gap: 10 }}
+        >
+          {showJumpTop && (
+            <Pressable
+              onPress={() =>
+                scrollRef.current?.scrollTo({ y: 0, animated: true })
+              }
+              accessibilityLabel="Scroll to top"
+              style={({ pressed }) => [
+                jumpButtonStyle,
+                { transform: [{ scale: pressed ? 0.9 : 1 }] },
+              ]}
             >
-              <Text style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}>
-                Couldn't find a representative for this district in our
-                database.
-              </Text>
-            </View>
+              <ChevronUp size={22} color="#1a1a1a" />
+            </Pressable>
+          )}
+          {showJumpBottom && (
+            <Pressable
+              onPress={() => scrollRef.current?.scrollToEnd({ animated: true })}
+              accessibilityLabel="Scroll to bottom"
+              style={({ pressed }) => [
+                jumpButtonStyle,
+                { transform: [{ scale: pressed ? 0.9 : 1 }] },
+              ]}
+            >
+              <ChevronDown size={22} color="#1a1a1a" />
+            </Pressable>
           )}
         </View>
-      </ScrollView>
 
-      {/* Jump to top / bottom — the map pans with one finger, so these get
-          the user past it */}
-      <View
-        pointerEvents="box-none"
-        style={{ position: "absolute", right: 16, bottom: 32, gap: 10 }}
-      >
-        {showJumpTop && (
-          <Pressable
-            onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
-            accessibilityLabel="Scroll to top"
-            style={({ pressed }) => [
-              jumpButtonStyle,
-              { transform: [{ scale: pressed ? 0.9 : 1 }] },
-            ]}
-          >
-            <ChevronUp size={22} color="#1a1a1a" />
-          </Pressable>
-        )}
-        {showJumpBottom && (
-          <Pressable
-            onPress={() => scrollRef.current?.scrollToEnd({ animated: true })}
-            accessibilityLabel="Scroll to bottom"
-            style={({ pressed }) => [
-              jumpButtonStyle,
-              { transform: [{ scale: pressed ? 0.9 : 1 }] },
-            ]}
-          >
-            <ChevronDown size={22} color="#1a1a1a" />
-          </Pressable>
+        {/* Left-edge swipe strip — matches router.back() like the back button */}
+        <View
+          {...backSwipePanResponder.panHandlers}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 20,
+            zIndex: 10,
+          }}
+        />
+
+        {suggestionsOpen && (
+          <AddressSuggestionList
+            suggestions={suggestions}
+            anchor={suggestionAnchor}
+            onPick={pickSuggestion}
+          />
         )}
       </View>
-
-      {/* Left-edge swipe strip — matches router.back() like the back button */}
-      <View
-        {...backSwipePanResponder.panHandlers}
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 20,
-          zIndex: 10,
-        }}
-      />
     </KeyboardAvoidingView>
   );
 }
