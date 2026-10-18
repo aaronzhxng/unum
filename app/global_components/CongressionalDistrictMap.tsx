@@ -51,7 +51,7 @@ export type PinLocation = {
 type Props = {
   // Limits the map to one state; the lower 48 are shown when omitted
   stateAbbr?: string | null;
-  onSelectDistrict: (district: DistrictSelection) => void;
+  onSelectDistrict?: (district: DistrictSelection) => void;
   focusDistricts?: FocusDistrict[] | null;
   // Auto-select the first focus district once boundaries load. Off when the
   // user should choose between several highlighted districts themselves.
@@ -64,6 +64,16 @@ type Props = {
   // background so the user can pan anywhere and tap them. The selected state
   // still loads first, so it's interactive right away.
   loadOtherStates?: boolean;
+  // false locks the map in place as a static preview: no panning, zooming,
+  // or tapping districts, and no zoom buttons
+  interactive?: boolean;
+  // Defaults to full screen width and a height sized for exploring
+  width?: number;
+  height?: number;
+  // For maps inside a tab pager: pass whether the map's tab is showing.
+  // Android can drop parts of a web view's drawing while it's offscreen, so
+  // the map repaints itself each time it comes back into view.
+  visible?: boolean;
 };
 
 const STATE_ABBR_TO_FIPS: Record<string, string> = {
@@ -238,6 +248,7 @@ function buildOpenStreetMapHtml(params: {
   highlightGeoids: string[];
   initialSelectedGEOID: string | null;
   pinLocation: PinLocation | null;
+  interactive: boolean;
 }): string {
   const payload = escapeJsonForHtml(params);
 
@@ -334,11 +345,23 @@ function buildOpenStreetMapHtml(params: {
         const pinLocation = payload.pinLocation || null;
         let selectedGEOID = payload.initialSelectedGEOID || null;
 
+        const interactive = payload.interactive !== false;
+
         const map = L.map("map", {
           zoomControl: false,
           attributionControl: false,
           preferCanvas: true,
+          dragging: interactive,
+          touchZoom: interactive,
+          doubleClickZoom: interactive,
+          scrollWheelZoom: interactive,
+          boxZoom: interactive,
+          keyboard: interactive,
         });
+
+        if (!interactive) {
+          document.querySelector(".map-toolbar").style.display = "none";
+        }
 
         // Bottom-left keeps it clear of the page's scroll buttons
         L.control
@@ -348,7 +371,7 @@ function buildOpenStreetMapHtml(params: {
           })
           .addTo(map);
 
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
           attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Districts: <a href="https://www.census.gov/geographies/mapping-files.html">U.S. Census Bureau</a>',
@@ -419,6 +442,7 @@ function buildOpenStreetMapHtml(params: {
         }
 
         function bindDistrictClick(feature, layer) {
+          if (!interactive) return;
           layer.on("click", function () {
             const properties = feature && feature.properties ? feature.properties : {};
             if (!properties.GEOID) return;
@@ -433,6 +457,13 @@ function buildOpenStreetMapHtml(params: {
           style: styleForFeature,
           onEachFeature: bindDistrictClick,
         }).addTo(map);
+
+        // Called from React Native when the map comes back into view
+        window.redrawMap = function () {
+          map.invalidateSize();
+          tiles.redraw();
+          restyleDistricts();
+        };
 
         // Called from React Native once the rest of the country has loaded.
         // Added into the open map rather than reloading it, so the user's
@@ -532,8 +563,13 @@ export default function CongressionalDistrictMap({
   selectedGeoid,
   pinLocation,
   loadOtherStates = false,
+  interactive = true,
+  width,
+  height,
+  visible = true,
 }: Props) {
   const { width: screenWidth } = useWindowDimensions();
+  const mapWidth = width ?? screenWidth;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [features, setFeatures] = useState<DistrictFeature[]>([]);
@@ -584,6 +620,13 @@ export default function CongressionalDistrictMap({
   }, [injectOtherStates]);
 
   useEffect(() => {
+    if (!visible || !webViewLoaded.current) return;
+    webViewRef.current?.injectJavaScript(
+      "window.redrawMap && window.redrawMap(); true;",
+    );
+  }, [visible]);
+
+  useEffect(() => {
     let active = true;
     const controller = new AbortController();
 
@@ -621,9 +664,10 @@ export default function CongressionalDistrictMap({
   }, [stateAbbr]);
 
   const mapHeight = useMemo(() => {
+    if (height) return height;
     if (stateAbbr) return Math.min(720, Math.max(520, screenWidth * 1.36));
     return Math.min(880, Math.max(600, screenWidth * 1.56));
-  }, [screenWidth, stateAbbr]);
+  }, [height, screenWidth, stateAbbr]);
 
   const matchedFocusDistricts = useMemo(() => {
     if (!focusDistricts?.length || !features.length) return [];
@@ -659,7 +703,7 @@ export default function CongressionalDistrictMap({
     const firstAbbr = FIPS_TO_ABBR[first.properties.STATE];
     const firstDistrict = Number.parseInt(first.properties.BASENAME, 10);
 
-    onSelectDistrict({
+    onSelectDistrict?.({
       geoid: first.properties.GEOID,
       stateAbbr: firstAbbr,
       district: Number.isFinite(firstDistrict) ? firstDistrict : 0,
@@ -674,10 +718,11 @@ export default function CongressionalDistrictMap({
         highlightGeoids,
         initialSelectedGEOID,
         pinLocation: pinLocation ?? null,
+        interactive,
       }),
       baseUrl: WEBVIEW_BASE_URL,
     }),
-    [features, highlightGeoids, initialSelectedGEOID, pinLocation],
+    [features, highlightGeoids, initialSelectedGEOID, pinLocation, interactive],
   );
 
   const webViewKey = useMemo(
@@ -694,7 +739,7 @@ export default function CongressionalDistrictMap({
       };
 
       if (message.type !== "select" || !message.district) return;
-      onSelectDistrict(message.district);
+      onSelectDistrict?.(message.district);
     } catch (error) {
       console.warn("Ignored district map message:", error);
     }
@@ -714,7 +759,7 @@ export default function CongressionalDistrictMap({
   return (
     <View
       style={{
-        width: screenWidth,
+        width: mapWidth,
         height: mapHeight,
         backgroundColor: "#F7F4EF",
         justifyContent: "center",
@@ -770,7 +815,7 @@ export default function CongressionalDistrictMap({
           onShouldStartLoadWithRequest={handleShouldStartLoad}
           setSupportMultipleWindows={false}
           style={{
-            width: screenWidth,
+            width: mapWidth,
             height: mapHeight,
             backgroundColor: "#F7F4EF",
           }}

@@ -116,6 +116,18 @@ const STATE_TO_ABBR: Record<string, string> = {
 
 const STATES = Object.values(STATE_ABBR_TO_STATE).sort();
 
+// e.g. "Texas, Congressional District 23" or
+// "Alaska, At-Large Congressional District"
+function districtLabel(stateAbbr: string, district: number): string {
+  const stateName =
+    STATE_ABBR_TO_STATE[stateAbbr] ??
+    Object.keys(STATE_TO_ABBR).find((name) => STATE_TO_ABBR[name] === stateAbbr) ??
+    stateAbbr;
+  return district === 0
+    ? `${stateName}, At-Large Congressional District`
+    : `${stateName}, Congressional District ${district}`;
+}
+
 const API_BASE = "https://unum-production.up.railway.app";
 
 // Returns the official as the officials list stores it, so it renders with
@@ -184,12 +196,15 @@ const dropdownListStyle = {
 
 export default function CongressionalMapScreen() {
   const router = useRouter();
-  // Opened from the Officials tab with its selected state, if any
-  const { state: initialState } = useLocalSearchParams<{ state?: string }>();
+  // Opened from the Officials tab with its selected state, or from a
+  // representative's profile with their state and district
+  const { state: initialState, district: initialDistrict } =
+    useLocalSearchParams<{ state?: string; district?: string }>();
   const startState =
     initialState && STATE_ABBR_TO_STATE[STATE_TO_ABBR[initialState]]
       ? initialState
       : null;
+  const startDistrict = startState ? Number.parseInt(initialDistrict ?? "", 10) : NaN;
   const scrollRef = useRef<ScrollView>(null);
 
   const [searchMode, setSearchMode] = useState<SearchMode>("zip");
@@ -214,8 +229,12 @@ export default function CongressionalMapScreen() {
 
   // What the map is currently showing
   const [selectedState, setSelectedState] = useState<string | null>(startState);
+  // A starting district is auto-selected by the map once it loads
   const [focusDistricts, setFocusDistricts] = useState<FocusDistrict[] | null>(
-    null,
+    () =>
+      startState && Number.isFinite(startDistrict)
+        ? [{ stateAbbr: STATE_TO_ABBR[startState], district: startDistrict }]
+        : null,
   );
   const [pinLocation, setPinLocation] = useState<PinLocation | null>(null);
   // District found by address search. Map taps aren't fed back in, since
@@ -367,9 +386,7 @@ export default function CongressionalMapScreen() {
       geoid: result.geoid,
       stateAbbr: result.stateAbbr,
       district: result.district,
-      label: `${STATE_ABBR_TO_STATE[result.stateAbbr] ?? result.stateAbbr}, ${
-        result.district === 0 ? "At-Large" : `District ${result.district}`
-      }`,
+      label: districtLabel(result.stateAbbr, result.district),
     });
   };
 
@@ -768,7 +785,10 @@ export default function CongressionalMapScreen() {
                 <Text
                   style={{ fontSize: 13, color: "#005EA8", fontWeight: "600" }}
                 >
-                  {selectedDistrict.label}
+                  {districtLabel(
+                    selectedDistrict.stateAbbr,
+                    selectedDistrict.district,
+                  )}
                 </Text>
               </View>
             )}

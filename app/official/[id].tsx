@@ -35,6 +35,7 @@ import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
 import officialsStatic from "../data/officials-static.json";
 import AddModal from "../global_components/AddModal";
+import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import ErrorScreen from "../global_components/ErrorScreen";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
@@ -773,6 +774,25 @@ export default function OfficialDetail() {
     });
   };
 
+  // The district a House member serves, for the map preview (senators get
+  // none). The latest term has the two-letter state code and the district,
+  // which is missing or 0 for at-large seats.
+  const servedArea = useMemo(() => {
+    const terms = official?.terms;
+    const lastTerm = terms?.[terms.length - 1];
+    if (!lastTerm?.stateCode || lastTerm.chamber === "Senate") return null;
+    return {
+      stateAbbr: lastTerm.stateCode as string,
+      district: Number(lastTerm.district ?? 0),
+    };
+  }, [official]);
+
+  // Memoized so the map isn't handed a new array (and reloaded) every render
+  const servedFocusDistricts = useMemo(
+    () => (servedArea ? [servedArea] : null),
+    [servedArea],
+  );
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -1102,6 +1122,68 @@ export default function OfficialDetail() {
                   Loading bills signed into law...
                 </Text>
               </View>
+            )}
+
+            {/* District map preview (House members only) */}
+            {servedArea && (
+              <>
+                <View
+                  style={{ paddingHorizontal: 32, marginTop: 8, marginBottom: 8 }}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: "700" }}>
+                    District
+                  </Text>
+                </View>
+                {/* Outer view carries the card shadow; the inner one clips the
+                    map to the rounded corners. On iOS, clipping and shadow
+                    can't share a view — overflow: hidden cuts the shadow off. */}
+                <View
+                  style={{
+                    marginHorizontal: 16,
+                    marginBottom: 24,
+                    borderRadius: 24,
+                    backgroundColor: "#fafafa",
+                    shadowColor: "#000000",
+                    shadowOpacity: 0.15,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <View style={{ borderRadius: 24, overflow: "hidden" }}>
+                    <CongressionalDistrictMap
+                      stateAbbr={servedArea.stateAbbr}
+                      focusDistricts={servedFocusDistricts}
+                      interactive={false}
+                      width={screenWidth - 32}
+                      height={220}
+                      visible={activeTab === 0}
+                    />
+                    {/* Covers the map so a tap opens the full map, while
+                        swipes still reach this page and the tab pager instead
+                        of being swallowed by the map's web view */}
+                    <Pressable
+                      onPress={() =>
+                        router.push({
+                          pathname: "/congressional-map",
+                          params: {
+                            state: official.state,
+                            district: String(servedArea.district),
+                          },
+                        } as any)
+                      }
+                      accessibilityLabel="Open the congressional map"
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                      }}
+                    />
+                  </View>
+                </View>
+              </>
             )}
 
             {/* Top Policy Areas */}
