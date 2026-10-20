@@ -137,6 +137,36 @@ main p {
   margin-bottom: var(--heading-gap);
 }
 
+/* Two-column sections: the heading sits in a left column and the content in
+   a right column, so text-heavy pages use the full width while keeping a
+   readable line length. Below 900px they stack like any other section. */
+@media (min-width: 900px) {
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
+    column-gap: 64px;
+    align-items: start;
+  }
+
+  .split > * {
+    grid-column: 2;
+  }
+
+  .split > h2 {
+    grid-column: 1;
+    margin-bottom: 0;
+  }
+
+  /* Line the first piece of content up with the top of the heading */
+  .split > h2 + * {
+    margin-top: 0;
+  }
+
+  .split > .full {
+    grid-column: 1 / -1;
+  }
+}
+
 .lede {
   font-size: 19px;
   color: var(--text-muted);

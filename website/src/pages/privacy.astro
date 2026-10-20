@@ -9,11 +9,11 @@ import { CONTACT_EMAIL } from "../site.mjs";
   title="Privacy Policy"
   description="How the Unum app handles your information."
 >
-  <article class="container section policy">
-    <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: October 20, 2026</p>
+  <article class="container section policy split">
+    <h1 class="full">Privacy Policy</h1>
+    <p class="updated full">Last updated: October 20, 2026</p>
 
-    <p>Unum is a civic literacy app. We are committed to protecting your privacy.</p>
+    <p class="full intro-line">Unum is a civic literacy app. We are committed to protecting your privacy.</p>
 
     <h2>Information we collect</h2>
     <p>
@@ -133,6 +133,21 @@ import { CONTACT_EMAIL } from "../site.mjs";
   .policy p + p,
   .policy ul + p {
     margin-top: 16px;
+  }
+
+  /* Two-column layout: each heading and its first paragraph share a row, so
+     they get the same top spacing */
+  @media (min-width: 900px) {
+    .policy > h2,
+    .policy > h2 + * {
+      margin-top: 44px;
+    }
+
+    .policy > h2 {
+      margin-bottom: 0;
+      font-size: 22px;
+      line-height: 1.3;
+    }
   }
 
   .policy p,
