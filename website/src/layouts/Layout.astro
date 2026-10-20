@@ -32,12 +32,41 @@ const pageTitle = title ? `${title} | Unum Initiative` : "Unum Initiative";
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const currentPath = Astro.url.pathname.replace(/\.html$/, "");
 const year = new Date().getFullYear();
+
+// The header text is split into single characters so it can type out on
+// first load (each character's --i sets when it appears) and, on inner
+// pages, delete and retype the page name on hover (--j counts characters
+// within the page name, --n is its length).
+type Char = { ch: string; i: number; j?: number };
+const wordChars: Char[] = [..."unum"].map((ch, i) => ({ ch, i }));
+let charIndex = wordChars.length;
+let extraIndex = 0;
+const toChars = (text: string): Char[] =>
+  [...text].map((ch) => ({ ch, i: charIndex++, j: extraIndex++ }));
+const possessiveChars = brandStack?.possessive ? toChars("'s") : [];
+const lineChars = brandStack ? brandStack.lines.map(toChars) : [];
+const extraCount = extraIndex;
+const charStyle = (c: Char) =>
+  c.j === undefined ? `--i: ${c.i}` : `--i: ${c.i}; --j: ${c.j}`;
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      // Type out the header logo once per browser session (not for reduced
+      // motion). Set before the first paint so the text doesn't flash in.
+      try {
+        if (
+          !sessionStorage.getItem("unum-logo-typed") &&
+          !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ) {
+          document.documentElement.classList.add("logo-intro");
+          sessionStorage.setItem("unum-logo-typed", "1");
+        }
+      } catch {}
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
@@ -55,9 +84,9 @@ const year = new Date().getFullYear();
     <header class="site-header container">
       <a href="/" class="brand" aria-label="Unum Initiative home">
         <Image src={logo} alt="" width={44} height={44} densities={[1, 2]} class="brand-icon" />
-        <span class="brand-name">
+        <span class="brand-name" style={`--n: ${extraCount}`}>
           {/* Kept on one line: line breaks here would render as spaces */}
-          <span class="brand-home">unum</span>{brandStack?.possessive && <span class="brand-extra">'s</span>}{brandStack && <span class="brand-extra brand-stack"><span>{brandStack.lines[0]}</span><span>{brandStack.lines[1]}</span></span>}
+          <span class="brand-home">{wordChars.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>{possessiveChars.length > 0 && <span class="brand-extra">{possessiveChars.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>}{brandStack && <span class="brand-extra brand-stack">{lineChars.map((line) => <span class="brand-line">{line.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>)}</span>}
         </span>
       </a>
       <nav aria-label="Main">
@@ -112,6 +141,21 @@ const year = new Date().getFullYear();
         </div>
       </div>
     </footer>
+    <script>
+      // End the first-load typing animation once it finishes, so the hover
+      // animation (which the intro's fill would otherwise override) works
+      // Keep in sync with --intro-delay / --intro-char in the styles
+      const INTRO_DELAY_MS = 250;
+      const INTRO_CHAR_MS = 70;
+      const root = document.documentElement;
+      if (root.classList.contains("logo-intro")) {
+        const chars = document.querySelectorAll(".brand .ch").length;
+        window.setTimeout(
+          () => root.classList.remove("logo-intro"),
+          INTRO_DELAY_MS + chars * INTRO_CHAR_MS + 100,
+        );
+      }
+    </script>
   </body>
 </html>
 
@@ -163,22 +207,58 @@ const year = new Date().getFullYear();
     white-space: nowrap;
   }
 
-  .brand-name > span {
-    transition:
-      opacity 0.15s ease,
-      color 0.15s ease;
+  .ch {
+    white-space: pre;
   }
 
-  /* The page name only fades (it keeps its space), so the hover area doesn't
-     shrink under the cursor */
+  .brand-home {
+    transition: color 0.15s ease;
+  }
+
   .brand:hover .brand-home,
   .brand:focus-visible .brand-home {
     color: var(--blue);
   }
 
-  .brand:hover .brand-extra,
-  .brand:focus-visible .brand-extra {
+  /* Hovering deletes the page name one character at a time from the end, as
+     if backspaced, and leaving types it back in order. Characters only hide
+     (they keep their space), so the hover area doesn't shrink under the
+     cursor. */
+  .brand-extra .ch {
+    transition: opacity 0s linear calc(var(--j) * 24ms);
+  }
+
+  .brand:hover .brand-extra .ch,
+  .brand:focus-visible .brand-extra .ch {
     opacity: 0;
+    transition-delay: calc((var(--n) - 1 - var(--j)) * 24ms);
+  }
+
+  /* First load: characters appear one after another, as if typed */
+  :global(html.logo-intro) .brand .ch {
+    animation: logo-type 1ms linear both;
+    animation-delay: calc(var(--intro-delay) + var(--i) * var(--intro-char));
+  }
+
+  .brand {
+    /* Keep in sync with INTRO_DELAY_MS / INTRO_CHAR_MS in the script above */
+    --intro-delay: 250ms;
+    --intro-char: 70ms;
+  }
+
+  @keyframes logo-type {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-extra .ch {
+      transition: none;
+    }
   }
 
   /* "unum" plus a two-line page name, sized so the two lines span the
@@ -197,7 +277,7 @@ const year = new Date().getFullYear();
     margin-left: 0.6em;
   }
 
-  .brand-stack > span {
+  .brand-line {
     display: block;
   }
 

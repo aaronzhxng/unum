@@ -47,7 +47,7 @@ const faqs = [
 >
   <section class="container section page-intro">
     <h1>How can we help?</h1>
-    <p class="lede">
+    <p class="lede one-line">
       Find answers to common questions below, or email us at
       <a class="text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
     </p>
@@ -87,6 +87,11 @@ const faqs = [
 </Layout>
 
 <style>
+  /* Wider than the usual paragraph measure so it stays on one line */
+  .one-line {
+    max-width: none;
+  }
+
   .faqs {
     border-top: 1px solid var(--border);
   }

@@ -14,7 +14,8 @@ import { CONTACT_EMAIL } from "../site.mjs";
     <h1 class="full">Privacy Policy</h1>
     <p class="updated full">Last updated: October 20, 2026</p>
 
-    <p class="full intro-line">Unum is a civic literacy app. We are committed to protecting your privacy.</p>
+    <h2>Our intent</h2>
+    <p>Unum is a civic literacy app. We are committed to protecting your privacy.</p>
 
     <h2>Information we collect</h2>
     <p>
@@ -126,6 +127,12 @@ import { CONTACT_EMAIL } from "../site.mjs";
   .policy h2 {
     font-size: 26px;
     margin: 44px 0 12px;
+  }
+
+  /* The first row follows the "Last updated" line directly */
+  .policy > h2:first-of-type,
+  .policy > h2:first-of-type + * {
+    margin-top: 0;
   }
 
   .policy p + p {

@@ -78,7 +78,6 @@ const features = [
   <section class="hero container page-intro">
     <p class="eyebrow">Be more informed</p>
     <h1>Keep track of your elected officials and their bills.</h1>
-    <StoreBadges />
   </section>
 
   <section class="container section values-section">
@@ -92,6 +91,9 @@ const features = [
         ))
       }
     </ul>
+    <div class="values-badges">
+      <StoreBadges />
+    </div>
   </section>
 
   <section class="container section" aria-labelledby="features-heading">
@@ -105,56 +107,91 @@ const features = [
       aria-label="App features"
       data-carousel
     >
-      <div class="carousel-track" data-track tabindex="0">
-        {
-          features.map((feature, index) => (
-            <article
-              class="slide"
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${index + 1} of ${features.length}: ${feature.title}`}
-            >
-              <div class="card feature-media">
+      <div
+        class="carousel-stage card"
+        data-stage
+        tabindex="0"
+        aria-label="App screenshots. Use the left and right arrow keys to browse."
+      >
+        <div class="stage-frame">
+          {
+            features.map((feature, index) => (
+              <div
+                class:list={[
+                  "stage-item",
+                  index === 0
+                    ? "pos-current"
+                    : index === 1
+                      ? "pos-next"
+                      : index === features.length - 1
+                        ? "pos-prev"
+                        : "pos-hidden",
+                ]}
+                data-item
+                data-title={feature.title}
+                data-text={feature.text}
+                aria-hidden={index === 0 ? "false" : "true"}
+              >
                 <Image
                   src={feature.image}
                   alt={`Unum app screen: ${feature.title}`}
                   width={560}
-                  widths={[280, 420, 560]}
-                  sizes="(max-width: 640px) 60vw, 240px"
+                  widths={[240, 360, 480, 560]}
+                  sizes="(max-width: 899px) 200px, 240px"
                   loading={index < 3 ? "eager" : "lazy"}
                 />
               </div>
-              <p class="feature-text">
-                <strong>{feature.title}:</strong> {feature.text}
-              </p>
-            </article>
-          ))
-        }
-      </div>
-
-      <div class="carousel-controls">
-        <button class="carousel-button" type="button" data-prev aria-label="Previous feature">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-        </button>
-        <div class="carousel-dots">
-          {
-            features.map((feature, index) => (
-              <button
-                class="carousel-dot"
-                type="button"
-                data-dot={index}
-                aria-label={`Go to ${feature.title}`}
-              />
             ))
           }
         </div>
-        <button class="carousel-button" type="button" data-next aria-label="Next feature">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-        </button>
-        <button class="carousel-button carousel-toggle" type="button" data-toggle aria-label="Pause automatic rotation">
-          <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
-          <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg>
-        </button>
+      </div>
+
+      <div class="carousel-copy">
+        <div class="copy-box" data-copy>
+          {/* Every description, stacked invisibly, reserves the height of the
+              longest one so the page doesn't jump while text types out */}
+          {
+            features.map((feature) => (
+              <p class="copy-sizer" aria-hidden="true">
+                <span class="copy-title">{feature.title}</span>
+                <span class="copy-text">{feature.text}</span>
+              </p>
+            ))
+          }
+          <p class="copy-typed" aria-hidden="true">
+            <span class="copy-title" data-typed-title>{features[0].title}</span>
+            <span class="copy-text" data-typed-text>{features[0].text}</span>
+          </p>
+        </div>
+        <p class="sr-only" data-live aria-live="off">
+          {features[0].title}: {features[0].text}
+        </p>
+
+        <div class="carousel-controls">
+          <button class="carousel-button" type="button" data-prev aria-label="Previous feature">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <div class="carousel-dots">
+            {
+              features.map((feature, index) => (
+                <button
+                  class="carousel-dot"
+                  type="button"
+                  data-dot={index}
+                  aria-label={`Go to ${feature.title}`}
+                  aria-current={index === 0 ? "true" : "false"}
+                />
+              ))
+            }
+          </div>
+          <button class="carousel-button" type="button" data-next aria-label="Next feature">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+          <button class="carousel-button carousel-toggle" type="button" data-toggle aria-label="Pause automatic rotation">
+            <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+            <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg>
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -175,11 +212,6 @@ const features = [
     padding-bottom: 24px;
   }
 
-  /* Store badges get a little extra room as the call to action */
-  .hero > :global(:last-child) {
-    margin-top: 8px;
-  }
-
   .values-section {
     padding-top: 48px;
   }
@@ -195,6 +227,10 @@ const features = [
     border-bottom: 1px solid var(--border);
   }
 
+  .values-badges {
+    margin-top: 32px;
+  }
+
   .values h3 {
     margin-bottom: 8px;
   }
@@ -204,66 +240,135 @@ const features = [
     line-height: 1.6;
   }
 
-  /* Feature carousel: a scroll-snapping row of cards, three in view on
-     desktop, two on tablets, and one (with the next peeking in) on phones */
+  /* Feature carousel: one screenshot at a time with its description beside
+     it. The next screenshot waits, translucent, behind and to the right of
+     the current one, and slides into place when the carousel advances. */
   .carousel {
-    --per-view: 3;
-    --slide-gap: 32px;
-  }
-
-  .carousel-track {
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: calc(
-      (100% - (var(--per-view) - 1) * var(--slide-gap)) / var(--per-view)
-    );
-    gap: var(--slide-gap);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    /* Room for the card shadows and the focus outline */
-    padding: 4px;
-    margin: -4px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 64px;
+    align-items: center;
   }
 
-  .carousel-track::-webkit-scrollbar {
-    display: none;
+  .carousel-stage {
+    padding: 40px 24px;
+    overflow: hidden;
+    touch-action: pan-y;
   }
 
-  .carousel-track:focus-visible {
+  .carousel-stage:focus-visible {
     outline: 3px solid var(--blue);
     outline-offset: 4px;
-    border-radius: 32px;
   }
 
-  .slide {
-    scroll-snap-align: start;
+  .stage-frame {
+    --phone-w: 240px;
+    position: relative;
+    /* Screenshots are 1120 x 2282 */
+    height: calc(var(--phone-w) * 2.0375);
   }
 
-  .feature-media {
-    display: flex;
-    justify-content: center;
-    padding: 36px 24px;
+  .stage-item {
+    position: absolute;
+    top: 0;
+    /* Center the current screenshot and the peeking next one as a group */
+    left: calc((100% - var(--phone-w) * 1.4) / 2);
+    width: var(--phone-w);
+    transition:
+      transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 0.6s ease;
   }
 
-  .feature-media img {
-    width: 240px;
-    max-width: 80%;
+  /* No native image dragging, which would swallow swipes */
+  .stage-item img {
+    width: 100%;
+    height: auto;
+    -webkit-user-drag: none;
+    user-select: none;
   }
 
-  .feature-text {
-    margin: 20px 12px 0;
-    font-size: 16px;
+  .pos-current {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    z-index: 3;
+  }
+
+  .pos-next {
+    transform: translateX(46%) scale(0.84);
+    opacity: 0.35;
+    z-index: 2;
+    cursor: pointer;
+  }
+
+  /* Parked out of sight: the previous slide to the left (so going back
+     slides it in from the left), everything else to the right */
+  .pos-prev {
+    transform: translateX(-30%) scale(0.84);
+    opacity: 0;
+    z-index: 1;
+  }
+
+  .pos-hidden {
+    transform: translateX(80%) scale(0.7);
+    opacity: 0;
+    z-index: 0;
+  }
+
+  .carousel-copy {
+    min-width: 0;
+  }
+
+  .copy-box {
+    display: grid;
+  }
+
+  .copy-box > p {
+    grid-area: 1 / 1;
+    max-width: none;
+  }
+
+  .copy-sizer {
+    visibility: hidden;
+  }
+
+  .copy-title {
+    display: block;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(24px, 2.6vw, 30px);
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .copy-text {
+    display: block;
+    margin-top: 16px;
+    font-size: 18px;
     line-height: 1.7;
+    color: var(--text-muted);
+  }
+
+  /* Blinking cursor shown while text types out */
+  .copy-box :global(.caret) {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: -0.1em;
+    background: var(--blue);
+    animation: caret-blink 0.8s steps(1) infinite;
+  }
+
+  @keyframes caret-blink {
+    50% {
+      opacity: 0;
+    }
   }
 
   .carousel-controls {
-    margin-top: 32px;
+    margin-top: 40px;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 16px;
   }
 
@@ -315,7 +420,7 @@ const features = [
 
   .carousel-dots {
     display: flex;
-    gap: 4px;
+    gap: 2px;
   }
 
   /* 24px tap target around an 8px dot */
@@ -330,10 +435,6 @@ const features = [
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-  }
-
-  .carousel-dot[hidden] {
-    display: none;
   }
 
   .carousel-dot::before {
@@ -354,14 +455,26 @@ const features = [
 
   @media (max-width: 899px) {
     .carousel {
-      --per-view: 2;
-      --slide-gap: 24px;
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 32px;
+    }
+
+    .stage-frame {
+      --phone-w: 200px;
+    }
+
+    .carousel-controls {
+      margin-top: 28px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .carousel-track {
-      scroll-behavior: auto;
+    .stage-item {
+      transition: none;
+    }
+
+    .copy-box :global(.caret) {
+      display: none;
     }
   }
 
@@ -386,62 +499,111 @@ const features = [
       gap: 24px;
     }
 
-    .carousel {
-      --slide-gap: 16px;
+    .carousel-stage {
+      padding: 32px 16px;
     }
 
-    /* One card in view, with the next one peeking in */
-    .carousel-track {
-      grid-auto-columns: 85%;
+    .carousel-controls {
+      gap: 8px;
     }
 
     .carousel-dots {
       gap: 0;
     }
 
-    .feature-text {
-      margin: 16px 8px 0;
+    .copy-text {
+      font-size: 17px;
     }
   }
 </style>
 
 <script>
-  // Feature carousel: previous/next buttons, dots, and auto-rotation that
-  // pauses on hover, focus, a hidden tab, or the pause button, and is off for
-  // visitors who prefer reduced motion. Wraps around at either end.
-  const AUTOPLAY_MS = 5000;
+  // Feature carousel. Previous/next buttons, dots, arrow keys, swipes, and a
+  // click on the peeking next screenshot all navigate, wrapping at either
+  // end. The description types out on each change. Auto-rotation runs while
+  // the carousel is on screen and pauses on hover, focus, a hidden tab, or the
+  // pause button; it's off, and text appears instantly, for visitors who
+  // prefer reduced motion.
+  const AUTOPLAY_MS = 7000;
+  const TITLE_CHAR_MS = 32;
+  const TEXT_CHAR_MS = 14;
+  const POSITIONS = ["pos-current", "pos-next", "pos-prev", "pos-hidden"];
+
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   for (const carousel of document.querySelectorAll<HTMLElement>("[data-carousel]")) {
-    const track = carousel.querySelector<HTMLElement>("[data-track]")!;
-    const slides = [...track.children] as HTMLElement[];
+    const stage = carousel.querySelector<HTMLElement>("[data-stage]")!;
+    const copy = carousel.querySelector<HTMLElement>("[data-copy]")!;
+    const items = [...carousel.querySelectorAll<HTMLElement>("[data-item]")];
     const dots = [...carousel.querySelectorAll<HTMLButtonElement>("[data-dot]")];
     const toggle = carousel.querySelector<HTMLButtonElement>("[data-toggle]")!;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const typedTitle = carousel.querySelector<HTMLElement>("[data-typed-title]")!;
+    const typedText = carousel.querySelector<HTMLElement>("[data-typed-text]")!;
+    const live = carousel.querySelector<HTMLElement>("[data-live]")!;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const count = items.length;
 
-    let pausedByUser = reducedMotion.matches;
+    let index = 0;
+    let pausedByUser = reducedMotion;
     let hovering = false;
     let focused = false;
+    let inView = false;
+    let seen = false;
     let timer: number | undefined;
+    let typingRun = 0;
 
-    const step = () => slides[1].offsetLeft - slides[0].offsetLeft;
-    const maxIndex = () =>
-      Math.round((track.scrollWidth - track.clientWidth) / step());
-    const currentIndex = () => Math.round(track.scrollLeft / step());
+    const caret = document.createElement("span");
+    caret.className = "caret";
 
-    const goTo = (index: number) => {
-      const last = maxIndex();
-      const target = index > last ? 0 : index < 0 ? last : index;
-      track.scrollTo({ left: target * step() });
+    // Types text into an element one character at a time, with a cursor at
+    // the end. Returns false if a newer run started meanwhile.
+    const typeInto = async (el: HTMLElement, text: string, charMs: number, run: number) => {
+      const node = document.createTextNode("");
+      el.replaceChildren(node, caret);
+      for (const char of text) {
+        if (run !== typingRun) return false;
+        node.data += char;
+        await sleep(charMs);
+      }
+      return true;
     };
 
-    // One dot per stop: with three cards in view, eight cards have six stops
-    const updateDots = () => {
-      const index = currentIndex();
-      const last = maxIndex();
-      dots.forEach((dot, i) => {
-        dot.hidden = i > last;
-        dot.setAttribute("aria-current", i === index ? "true" : "false");
+    const showCopy = async (i: number) => {
+      const { title = "", text = "" } = items[i].dataset;
+      live.textContent = `${title}: ${text}`;
+      const run = ++typingRun;
+      if (reducedMotion) {
+        typedTitle.textContent = title;
+        typedText.textContent = text;
+        return;
+      }
+      typedText.textContent = "";
+      if (!(await typeInto(typedTitle, title, TITLE_CHAR_MS, run))) return;
+      if (!(await typeInto(typedText, text, TEXT_CHAR_MS, run))) return;
+      caret.remove();
+    };
+
+    const render = () => {
+      items.forEach((item, k) => {
+        const offset = (k - index + count) % count;
+        const position =
+          offset === 0 ? "pos-current"
+          : offset === 1 ? "pos-next"
+          : offset === count - 1 ? "pos-prev"
+          : "pos-hidden";
+        item.classList.remove(...POSITIONS);
+        item.classList.add(position);
+        item.setAttribute("aria-hidden", offset === 0 ? "false" : "true");
       });
+      dots.forEach((dot, k) =>
+        dot.setAttribute("aria-current", k === index ? "true" : "false"),
+      );
+    };
+
+    const goTo = (i: number) => {
+      index = (i + count) % count;
+      render();
+      showCopy(index);
     };
 
     const stop = () => {
@@ -450,18 +612,20 @@ const features = [
     };
 
     const sync = () => {
-      const shouldRun =
-        !pausedByUser && !hovering && !focused && !document.hidden;
-      if (shouldRun && timer === undefined) {
-        timer = window.setInterval(() => goTo(currentIndex() + 1), AUTOPLAY_MS);
-      } else if (!shouldRun) {
+      const running =
+        !pausedByUser && !hovering && !focused && inView && !document.hidden;
+      if (running && timer === undefined) {
+        timer = window.setInterval(() => goTo(index + 1), AUTOPLAY_MS);
+      } else if (!running) {
         stop();
       }
+      // Announce changes to screen readers only while not auto-rotating
+      live.setAttribute("aria-live", running ? "off" : "polite");
     };
 
     // Manual navigation restarts the countdown
-    const navigate = (index: number) => {
-      goTo(index);
+    const navigate = (i: number) => {
+      goTo(i);
       stop();
       sync();
     };
@@ -474,43 +638,62 @@ const features = [
       );
     };
 
-    carousel
-      .querySelector("[data-prev]")!
-      .addEventListener("click", () => navigate(currentIndex() - 1));
-    carousel
-      .querySelector("[data-next]")!
-      .addEventListener("click", () => navigate(currentIndex() + 1));
-    dots.forEach((dot, i) =>
-      dot.addEventListener("click", () => navigate(i)),
-    );
+    carousel.querySelector("[data-prev]")!.addEventListener("click", () => navigate(index - 1));
+    carousel.querySelector("[data-next]")!.addEventListener("click", () => navigate(index + 1));
+    dots.forEach((dot, k) => dot.addEventListener("click", () => navigate(k)));
     toggle.addEventListener("click", () => {
       pausedByUser = !pausedByUser;
       renderToggle();
       sync();
     });
 
-    track.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") navigate(currentIndex() + 1);
-      if (event.key === "ArrowLeft") navigate(currentIndex() - 1);
+    // Clicking the peeking next screenshot advances to it
+    items.forEach((item) =>
+      item.addEventListener("click", () => {
+        if (item.classList.contains("pos-next")) navigate(index + 1);
+      }),
+    );
+
+    stage.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") navigate(index + 1);
+      if (event.key === "ArrowLeft") navigate(index - 1);
     });
 
-    let frame = 0;
-    track.addEventListener("scroll", () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(updateDots);
+    // Horizontal swipes on the screenshots
+    let swipeStartX: number | null = null;
+    stage.addEventListener("dragstart", (event) => event.preventDefault());
+    stage.addEventListener("pointerdown", (event) => { swipeStartX = event.clientX; });
+    stage.addEventListener("pointercancel", () => { swipeStartX = null; });
+    stage.addEventListener("pointerup", (event) => {
+      if (swipeStartX === null) return;
+      const dx = event.clientX - swipeStartX;
+      swipeStartX = null;
+      if (Math.abs(dx) > 40) navigate(dx < 0 ? index + 1 : index - 1);
     });
 
-    // The track itself pauses rotation; the controls don't, so pressing
-    // next/previous doesn't freeze it
-    track.addEventListener("pointerenter", () => { hovering = true; sync(); });
-    track.addEventListener("pointerleave", () => { hovering = false; sync(); });
-    track.addEventListener("focusin", () => { focused = true; sync(); });
-    track.addEventListener("focusout", () => { focused = false; sync(); });
+    // The screenshots and description pause rotation; the controls don't,
+    // so pressing next/previous doesn't freeze it
+    for (const area of [stage, copy]) {
+      area.addEventListener("pointerenter", () => { hovering = true; sync(); });
+      area.addEventListener("pointerleave", () => { hovering = false; sync(); });
+    }
+    stage.addEventListener("focusin", () => { focused = true; sync(); });
+    stage.addEventListener("focusout", () => { focused = false; sync(); });
     document.addEventListener("visibilitychange", sync);
-    window.addEventListener("resize", updateDots);
+
+    // Start rotating, and type the first description, once it's on screen
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView && !seen) {
+          seen = true;
+          showCopy(index);
+        }
+        sync();
+      },
+      { threshold: 0.4 },
+    ).observe(carousel);
 
     renderToggle();
-    updateDots();
-    sync();
   }
 </script>
