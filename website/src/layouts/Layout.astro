@@ -130,16 +130,16 @@ const year = new Date().getFullYear();
     border-radius: 11px;
   }
 
-  /* "unum" has only x-height letters, so its font size is the icon height
-     divided by Inter's x-height ratio (0.546) to make the letters match the
-     icon's height. */
+  /* "unum" has only x-height letters, so dividing by Inter's x-height ratio
+     (0.546) converts a letter height into a font size. The letters are set
+     to 78% of the icon's height. */
   .brand {
     --logo-size: 44px;
   }
 
   .brand-name {
     font-family: var(--font);
-    font-size: calc(var(--logo-size) / 0.546);
+    font-size: calc(var(--logo-size) * 0.78 / 0.546);
     font-weight: 600;
     letter-spacing: -0.035em;
     line-height: var(--logo-size);

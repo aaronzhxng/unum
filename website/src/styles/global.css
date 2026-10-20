@@ -94,7 +94,9 @@ strong {
   padding: 0 var(--gutter);
 }
 
-.narrow {
+/* Every page shares the header's width; running text keeps a readable
+   line length within it */
+main p {
   max-width: 760px;
 }
 

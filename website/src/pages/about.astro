@@ -38,7 +38,7 @@ const principles = [
   title="About"
   description="Unum Initiative is a nonprofit civic technology organization making U.S. legislation and elected officials accessible to everyone."
 >
-  <section class="container narrow section intro">
+  <section class="container section intro">
     <p class="eyebrow">About us</p>
     <h1>Making Congress understandable for everyone</h1>
     <p class="lede">
@@ -52,7 +52,7 @@ const principles = [
     </p>
   </section>
 
-  <section class="container narrow section" aria-labelledby="team-heading">
+  <section class="container section" aria-labelledby="team-heading">
     <h2 id="team-heading">Our team</h2>
     <ul class="team" role="list">
       {
@@ -74,7 +74,7 @@ const principles = [
     </ul>
   </section>
 
-  <section class="container narrow section stack purpose" aria-labelledby="purpose-heading">
+  <section class="container section stack purpose" aria-labelledby="purpose-heading">
     <h2 id="purpose-heading">Our purpose</h2>
     <p>
       Unum’s core purpose is to display elected officials and bills in the most
@@ -104,7 +104,7 @@ const principles = [
     </p>
   </section>
 
-  <section class="container narrow section" aria-labelledby="principles-heading">
+  <section class="container section" aria-labelledby="principles-heading">
     <h2 id="principles-heading">What we believe</h2>
     <div class="principles">
       {
@@ -124,7 +124,7 @@ const principles = [
   </section>
 
 
-  <section class="container narrow section contact">
+  <section class="container section contact">
     <h2>Get in touch</h2>
     <p class="lede">
       Questions, feedback, or partnership ideas? Email us at
@@ -156,13 +156,15 @@ const principles = [
   .principles {
     margin-top: 32px;
     display: grid;
-    gap: 36px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px 48px;
   }
 
   .principle {
     display: grid;
     gap: 8px;
     justify-items: start;
+    align-content: start;
   }
 
   .team {
@@ -204,6 +206,10 @@ const principles = [
   }
 
   @media (max-width: 760px) {
+    .principles {
+      grid-template-columns: 1fr;
+    }
+
     .team {
       grid-template-columns: 1fr;
       max-width: 360px;
