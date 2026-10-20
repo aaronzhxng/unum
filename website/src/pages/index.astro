@@ -76,10 +76,8 @@ const features = [
 
 <Layout>
   <section class="hero container page-intro">
-    <h1>
-      Be a more informed citizen.
-      <span class="hero-sub">Keep track of your elected officials and their bills.</span>
-    </h1>
+    <p class="eyebrow">Be more informed</p>
+    <h1>Keep track of your elected officials and their bills.</h1>
     <StoreBadges />
   </section>
 
@@ -100,26 +98,64 @@ const features = [
     <p class="eyebrow">The app</p>
     <h2 id="features-heading">Everything Congress is doing, in one place</h2>
 
-    <div class="features">
-      {
-        features.map((feature, index) => (
-          <article class="feature">
-            <div class="card feature-media">
-              <Image
-                src={feature.image}
-                alt={`Unum app screen: ${feature.title}`}
-                width={560}
-                widths={[280, 420, 560]}
-                sizes="(max-width: 640px) 70vw, 280px"
-                loading={index < 2 ? "eager" : "lazy"}
+    <div
+      class="carousel"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="App features"
+      data-carousel
+    >
+      <div class="carousel-track" data-track tabindex="0">
+        {
+          features.map((feature, index) => (
+            <article
+              class="slide"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${index + 1} of ${features.length}: ${feature.title}`}
+            >
+              <div class="card feature-media">
+                <Image
+                  src={feature.image}
+                  alt={`Unum app screen: ${feature.title}`}
+                  width={560}
+                  widths={[280, 420, 560]}
+                  sizes="(max-width: 640px) 60vw, 240px"
+                  loading={index < 3 ? "eager" : "lazy"}
+                />
+              </div>
+              <p class="feature-text">
+                <strong>{feature.title}:</strong> {feature.text}
+              </p>
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="carousel-controls">
+        <button class="carousel-button" type="button" data-prev aria-label="Previous feature">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
+        <div class="carousel-dots">
+          {
+            features.map((feature, index) => (
+              <button
+                class="carousel-dot"
+                type="button"
+                data-dot={index}
+                aria-label={`Go to ${feature.title}`}
               />
-            </div>
-            <p class="feature-text">
-              <strong>{feature.title}:</strong> {feature.text}
-            </p>
-          </article>
-        ))
-      }
+            ))
+          }
+        </div>
+        <button class="carousel-button" type="button" data-next aria-label="Next feature">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+        </button>
+        <button class="carousel-button carousel-toggle" type="button" data-toggle aria-label="Pause automatic rotation">
+          <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+          <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -142,14 +178,6 @@ const features = [
   /* Store badges get a little extra room as the call to action */
   .hero > :global(:last-child) {
     margin-top: 8px;
-  }
-
-  /* Second line at section-heading size */
-  .hero-sub {
-    display: block;
-    font-size: var(--h2-size);
-    line-height: 1.25;
-    margin-top: 12px;
   }
 
   .values-section {
@@ -176,27 +204,165 @@ const features = [
     line-height: 1.6;
   }
 
-  .features {
+  /* Feature carousel: a scroll-snapping row of cards, three in view on
+     desktop, two on tablets, and one (with the next peeking in) on phones */
+  .carousel {
+    --per-view: 3;
+    --slide-gap: 32px;
+  }
+
+  .carousel-track {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 56px 32px;
+    grid-auto-flow: column;
+    grid-auto-columns: calc(
+      (100% - (var(--per-view) - 1) * var(--slide-gap)) / var(--per-view)
+    );
+    gap: var(--slide-gap);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    /* Room for the card shadows and the focus outline */
+    padding: 4px;
+    margin: -4px;
+  }
+
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carousel-track:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 4px;
+    border-radius: 32px;
+  }
+
+  .slide {
+    scroll-snap-align: start;
   }
 
   .feature-media {
     display: flex;
     justify-content: center;
-    padding: 40px 24px;
+    padding: 36px 24px;
   }
 
   .feature-media img {
-    width: 280px;
-    max-width: 70%;
+    width: 240px;
+    max-width: 80%;
   }
 
   .feature-text {
-    margin: 24px 24px 0;
+    margin: 20px 12px 0;
     font-size: 16px;
-    line-height: 1.75;
+    line-height: 1.7;
+  }
+
+  .carousel-controls {
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .carousel-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .carousel-button:hover {
+    background: #fff;
+  }
+
+  .carousel-button:active {
+    transform: scale(0.94);
+  }
+
+  .carousel-button:focus-visible,
+  .carousel-dot:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  .carousel-toggle {
+    width: 36px;
+    height: 36px;
+    margin-left: 8px;
+    color: var(--text-muted);
+  }
+
+  .carousel-toggle .icon-play,
+  .carousel-toggle.is-paused .icon-pause {
+    display: none;
+  }
+
+  .carousel-toggle.is-paused .icon-play {
+    display: block;
+  }
+
+  .carousel-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  /* 24px tap target around an 8px dot */
+  .carousel-dot {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .carousel-dot[hidden] {
+    display: none;
+  }
+
+  .carousel-dot::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cfc9bd;
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .carousel-dot[aria-current="true"]::before {
+    background: var(--blue);
+    transform: scale(1.25);
+  }
+
+  @media (max-width: 899px) {
+    .carousel {
+      --per-view: 2;
+      --slide-gap: 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .carousel-track {
+      scroll-behavior: auto;
+    }
   }
 
   .cta-card {
@@ -220,13 +386,131 @@ const features = [
       gap: 24px;
     }
 
-    .features {
-      grid-template-columns: 1fr;
-      gap: 40px;
+    .carousel {
+      --slide-gap: 16px;
+    }
+
+    /* One card in view, with the next one peeking in */
+    .carousel-track {
+      grid-auto-columns: 85%;
+    }
+
+    .carousel-dots {
+      gap: 0;
     }
 
     .feature-text {
-      margin: 20px 8px 0;
+      margin: 16px 8px 0;
     }
   }
 </style>
+
+<script>
+  // Feature carousel: previous/next buttons, dots, and auto-rotation that
+  // pauses on hover, focus, a hidden tab, or the pause button, and is off for
+  // visitors who prefer reduced motion. Wraps around at either end.
+  const AUTOPLAY_MS = 5000;
+
+  for (const carousel of document.querySelectorAll<HTMLElement>("[data-carousel]")) {
+    const track = carousel.querySelector<HTMLElement>("[data-track]")!;
+    const slides = [...track.children] as HTMLElement[];
+    const dots = [...carousel.querySelectorAll<HTMLButtonElement>("[data-dot]")];
+    const toggle = carousel.querySelector<HTMLButtonElement>("[data-toggle]")!;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    let pausedByUser = reducedMotion.matches;
+    let hovering = false;
+    let focused = false;
+    let timer: number | undefined;
+
+    const step = () => slides[1].offsetLeft - slides[0].offsetLeft;
+    const maxIndex = () =>
+      Math.round((track.scrollWidth - track.clientWidth) / step());
+    const currentIndex = () => Math.round(track.scrollLeft / step());
+
+    const goTo = (index: number) => {
+      const last = maxIndex();
+      const target = index > last ? 0 : index < 0 ? last : index;
+      track.scrollTo({ left: target * step() });
+    };
+
+    // One dot per stop: with three cards in view, eight cards have six stops
+    const updateDots = () => {
+      const index = currentIndex();
+      const last = maxIndex();
+      dots.forEach((dot, i) => {
+        dot.hidden = i > last;
+        dot.setAttribute("aria-current", i === index ? "true" : "false");
+      });
+    };
+
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    const sync = () => {
+      const shouldRun =
+        !pausedByUser && !hovering && !focused && !document.hidden;
+      if (shouldRun && timer === undefined) {
+        timer = window.setInterval(() => goTo(currentIndex() + 1), AUTOPLAY_MS);
+      } else if (!shouldRun) {
+        stop();
+      }
+    };
+
+    // Manual navigation restarts the countdown
+    const navigate = (index: number) => {
+      goTo(index);
+      stop();
+      sync();
+    };
+
+    const renderToggle = () => {
+      toggle.classList.toggle("is-paused", pausedByUser);
+      toggle.setAttribute(
+        "aria-label",
+        pausedByUser ? "Start automatic rotation" : "Pause automatic rotation",
+      );
+    };
+
+    carousel
+      .querySelector("[data-prev]")!
+      .addEventListener("click", () => navigate(currentIndex() - 1));
+    carousel
+      .querySelector("[data-next]")!
+      .addEventListener("click", () => navigate(currentIndex() + 1));
+    dots.forEach((dot, i) =>
+      dot.addEventListener("click", () => navigate(i)),
+    );
+    toggle.addEventListener("click", () => {
+      pausedByUser = !pausedByUser;
+      renderToggle();
+      sync();
+    });
+
+    track.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") navigate(currentIndex() + 1);
+      if (event.key === "ArrowLeft") navigate(currentIndex() - 1);
+    });
+
+    let frame = 0;
+    track.addEventListener("scroll", () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateDots);
+    });
+
+    // The track itself pauses rotation; the controls don't, so pressing
+    // next/previous doesn't freeze it
+    track.addEventListener("pointerenter", () => { hovering = true; sync(); });
+    track.addEventListener("pointerleave", () => { hovering = false; sync(); });
+    track.addEventListener("focusin", () => { focused = true; sync(); });
+    track.addEventListener("focusout", () => { focused = false; sync(); });
+    document.addEventListener("visibilitychange", sync);
+    window.addEventListener("resize", updateDots);
+
+    renderToggle();
+    updateDots();
+    sync();
+  }
+</script>
