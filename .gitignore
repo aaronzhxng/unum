@@ -71,3 +71,6 @@ google-services.json
 scripts/newsletter/output/
 scripts/newsletter/features/
 scripts/newsletter/cards/
+# Astro build cache (website/), so it never shows as a change on branches
+# without the website's own .gitignore
+.astro/
