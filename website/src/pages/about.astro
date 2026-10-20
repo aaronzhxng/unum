@@ -1,0 +1,176 @@
+---
+import { Image } from "astro:assets";
+import Layout from "../layouts/Layout.astro";
+import aaron from "../assets/team/aaron_zhang.png";
+import gregory from "../assets/team/gregory_colonescu.jpeg";
+import justin from "../assets/team/justin_liu.jpeg";
+import { CONTACT_EMAIL } from "../site.mjs";
+
+const team = [
+  { name: "Aaron Zhang", role: "President and Founder", photo: aaron },
+  { name: "Gregory Colonescu", role: "Director of Strategy", photo: gregory },
+  { name: "Justin Liu", role: "Director of Finances", photo: justin },
+];
+
+const principles = [
+  {
+    title: "Nonpartisan",
+    text: "Unum presents the legislative record as it is — bills, votes, sponsors, and actions — without commentary or endorsement. We don't tell you what to think about a bill; we make it easy to see what it does and who supports it.",
+  },
+  {
+    title: "Independent",
+    text: "Unum Initiative is a registered 501(c)(3) nonprofit. We are not affiliated with any government entity, political party, or member of Congress.",
+  },
+  {
+    title: "Sourced",
+    text: "Everything in the app comes from official, public sources, and we document exactly where.",
+    link: { href: "/sources", label: "See our data sources" },
+  },
+  {
+    title: "Free and private",
+    text: "Unum is free, contains no ads, requires no account, and never sells your data. Civic information shouldn't sit behind a paywall.",
+    link: { href: "/privacy", label: "Read our privacy policy" },
+  },
+];
+---
+
+<Layout
+  title="About"
+  description="Unum Initiative is a nonprofit civic technology organization making U.S. legislation and elected officials accessible to everyone."
+>
+  <section class="container narrow section intro">
+    <p class="eyebrow">About us</p>
+    <h1>Making Congress understandable for everyone</h1>
+    <p class="lede">
+      Unum Initiative is a nonprofit civic technology organization. We build
+      dynamic and user-friendly tools to bridge the accessibility gap between
+      everyday Americans and the elected officials and legislation that
+      represent their interests.
+    </p>
+    <p class="lede">
+      Our goal is to demystify the U.S. lawmaking process, answer how your
+      elected officials are actually working for you, and encourage civic
+      engagement so that laws can more accurately work in the interest of the
+      people.
+    </p>
+  </section>
+
+  <section class="container narrow section" aria-labelledby="principles-heading">
+    <h2 id="principles-heading">What we believe</h2>
+    <div class="principles">
+      {
+        principles.map((item) => (
+          <div class="principle">
+            <h3>{item.title}</h3>
+            <p class="muted">{item.text}</p>
+            {item.link && (
+              <a class="text-link" href={item.link.href}>
+                {item.link.label} →
+              </a>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container section" aria-labelledby="team-heading">
+    <div class="narrow team-heading">
+      <h2 id="team-heading">Our team</h2>
+    </div>
+    <ul class="team" role="list">
+      {
+        team.map((person) => (
+          <li class="card member">
+            <Image
+              src={person.photo}
+              alt={person.name}
+              width={160}
+              height={160}
+              densities={[1, 2]}
+              class="member-photo"
+            />
+            <h3>{person.name}</h3>
+            <p class="muted">{person.role}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="container narrow section contact">
+    <h2>Get in touch</h2>
+    <p class="lede">
+      Questions, feedback, or partnership ideas? Email us at
+      <a class="text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .intro {
+    padding-top: 24px;
+    display: grid;
+    gap: 24px;
+  }
+
+  .principles {
+    margin-top: 32px;
+    display: grid;
+    gap: 36px;
+  }
+
+  .principle {
+    display: grid;
+    gap: 8px;
+    justify-items: start;
+  }
+
+  .team-heading {
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .team {
+    list-style: none;
+    margin: 32px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .member {
+    padding: 36px 24px;
+    text-align: center;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+  }
+
+  .member-photo {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+  }
+
+  .member p {
+    font-size: 15px;
+  }
+
+  .contact {
+    display: grid;
+    gap: 16px;
+  }
+
+  @media (max-width: 760px) {
+    .team {
+      grid-template-columns: 1fr;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+</style>

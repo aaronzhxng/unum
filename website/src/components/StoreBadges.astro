@@ -1,0 +1,51 @@
+---
+import { Image } from "astro:assets";
+import appStoreBadge from "../assets/app-store-badge.svg";
+import googlePlayBadge from "../assets/google-play-badge.png";
+import { APP_STORE_URL, GOOGLE_PLAY_URL } from "../site.mjs";
+
+interface Props {
+  align?: "start" | "center";
+}
+const { align = "start" } = Astro.props;
+---
+
+<div class:list={["badges", align]}>
+  <a href={APP_STORE_URL} aria-label="Download Unum on the App Store">
+    <Image src={appStoreBadge} alt="Download on the App Store" height={48} />
+  </a>
+  <a href={GOOGLE_PLAY_URL} aria-label="Get Unum on Google Play">
+    <Image
+      src={googlePlayBadge}
+      alt="Get it on Google Play"
+      height={48}
+      densities={[1, 2]}
+    />
+  </a>
+</div>
+
+<style>
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .badges.center {
+    justify-content: center;
+  }
+
+  .badges img {
+    height: 48px;
+    width: auto;
+  }
+
+  .badges a {
+    transition: transform 0.15s ease;
+  }
+
+  .badges a:hover {
+    transform: translateY(-1px);
+  }
+</style>

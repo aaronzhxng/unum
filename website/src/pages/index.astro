@@ -1,0 +1,233 @@
+---
+import { Image } from "astro:assets";
+import StoreBadges from "../components/StoreBadges.astro";
+import Layout from "../layouts/Layout.astro";
+import bill1 from "../assets/screens/bill1.webp";
+import bill2 from "../assets/screens/bill2.webp";
+import education1 from "../assets/screens/education1.webp";
+import education2 from "../assets/screens/education2.webp";
+import home from "../assets/screens/home.webp";
+import legislation from "../assets/screens/legislation.webp";
+import official from "../assets/screens/official.webp";
+import officials from "../assets/screens/officials.webp";
+
+const values = [
+  {
+    title: "Nonpartisan",
+    text: "We show the record — bills, votes, and actions — without editorializing.",
+  },
+  {
+    title: "Sourced",
+    text: "Every fact comes from official sources like Congress.gov and the House and Senate.",
+  },
+  {
+    title: "Free, with no ads",
+    text: "No subscriptions and no advertising, for everyone.",
+  },
+  {
+    title: "Private",
+    text: "No account required, and we never sell your data.",
+  },
+];
+
+const features = [
+  {
+    image: home,
+    title: "Your feed",
+    text: "Build lists of the officials and bills you care about, and see every update in one place.",
+  },
+  {
+    image: officials,
+    title: "Every member of Congress",
+    text: "Browse senators and representatives by state, and find the ones who represent you.",
+  },
+  {
+    image: official,
+    title: "Official profiles",
+    text: "See each official's sponsored bills, committees, top policy areas, and contact information.",
+  },
+  {
+    image: legislation,
+    title: "Legislation",
+    text: "Follow bills from the current Congress, updated twice a day and filterable by policy area.",
+  },
+  {
+    image: bill1,
+    title: "Bill details",
+    text: "Track where a bill stands, from introduction to becoming law, with its sponsor and official summary.",
+  },
+  {
+    image: bill2,
+    title: "Voting records",
+    text: "See how the House and Senate voted, broken down by party — and how the officials you follow voted.",
+  },
+  {
+    image: education1,
+    title: "Civics guide",
+    text: "Plain-language articles on how a bill becomes law, how to read legislation, and more.",
+  },
+  {
+    image: education2,
+    title: "Learn as you read",
+    text: "Key terms are explained in context, with links to official sources for more depth.",
+  },
+];
+---
+
+<Layout>
+  <section class="hero container">
+    <h1>Be a more informed citizen by keeping track of your elected officials and their legislation</h1>
+    <p class="lede">
+      Unum Initiative is a civic technology organization that builds dynamic
+      and user-friendly tools to bridge the accessibility gap between everyday
+      Americans and the elected officials and legislation that represent their
+      interests. Our goal is to demystify the U.S. lawmaking process, answer how
+      your elected officials are actually working for you, and encourage civic
+      engagement so that laws can more accurately work in the interest of the
+      people.
+    </p>
+    <StoreBadges />
+  </section>
+
+  <section class="container section values-section">
+    <ul class="values" role="list">
+      {
+        values.map((value) => (
+          <li>
+            <h3>{value.title}</h3>
+            <p class="muted">{value.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="container section" aria-labelledby="features-heading">
+    <p class="eyebrow">The app</p>
+    <h2 id="features-heading">Everything Congress is doing, in one place</h2>
+
+    <div class="features">
+      {
+        features.map((feature, index) => (
+          <article class="feature">
+            <div class="card feature-media">
+              <Image
+                src={feature.image}
+                alt={`Unum app screen: ${feature.title}`}
+                width={560}
+                widths={[280, 420, 560]}
+                sizes="(max-width: 640px) 70vw, 280px"
+                loading={index < 2 ? "eager" : "lazy"}
+              />
+            </div>
+            <p class="feature-text">
+              <strong>{feature.title}:</strong> {feature.text}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container section cta">
+    <div class="card cta-card">
+      <h2>Free on iPhone and Android</h2>
+      <p class="lede">Start following the bills and officials that matter to you.</p>
+      <StoreBadges align="center" />
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    padding-top: 40px;
+    padding-bottom: 24px;
+    display: grid;
+    gap: 28px;
+    max-width: 880px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .values-section {
+    padding-top: 48px;
+  }
+
+  .values {
+    list-style: none;
+    margin: 0;
+    padding: 32px 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .values h3 {
+    margin-bottom: 8px;
+  }
+
+  .values p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .features {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 56px 32px;
+  }
+
+  .feature-media {
+    display: flex;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .feature-media img {
+    width: 280px;
+    max-width: 70%;
+  }
+
+  .feature-text {
+    margin: 24px 24px 0;
+    font-size: 16px;
+    line-height: 1.75;
+  }
+
+  .cta-card {
+    text-align: center;
+    padding: 56px 24px;
+    display: grid;
+    gap: 20px;
+    justify-items: center;
+  }
+
+  @media (max-width: 860px) {
+    .values {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding-top: 16px;
+    }
+
+    .values {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .features {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .feature-text {
+      margin: 20px 8px 0;
+    }
+  }
+</style>

@@ -1,0 +1,239 @@
+---
+import { Image } from "astro:assets";
+import logo from "../assets/logo.png";
+import "../styles/global.css";
+import {
+  CONTACT_EMAIL,
+  DISCLAIMER,
+  NAV_LINKS,
+  NEWSLETTER_URL,
+  SOCIAL_LINKS,
+} from "../site.mjs";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = "Unum is a free, nonpartisan app for following U.S. legislation and the members of Congress who represent you.",
+} = Astro.props;
+
+const pageTitle = title ? `${title} | Unum Initiative` : "Unum Initiative";
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const currentPath = Astro.url.pathname.replace(/\.html$/, "");
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL("/apple-touch-icon.png", Astro.site)} />
+    <meta name="theme-color" content="#ffffff" />
+  </head>
+  <body>
+    <header class="site-header container">
+      <a href="/" class="brand" aria-label="Unum Initiative home">
+        <Image src={logo} alt="" width={44} height={44} densities={[1, 2]} class="brand-icon" />
+        <span class="brand-name">unum</span>
+      </a>
+      <nav aria-label="Main">
+        {
+          NAV_LINKS.map((link) => (
+            <a
+              href={link.href}
+              class:list={{ active: currentPath === link.href }}
+              {...(link.external ? { target: "_blank", rel: "noopener" } : {})}
+            >
+              {link.label}
+              {link.external && <span aria-hidden="true"> ↗</span>}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p class="quote">
+          “The future belongs to those who believe in the beauty of their
+          dreams.” — Eleanor Roosevelt
+        </p>
+
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-heading">Unum Initiative</p>
+            <a href="/about">About</a>
+            <a href="/sources">Data &amp; Sources</a>
+            <a href="/support">Support</a>
+            <a href={NEWSLETTER_URL} target="_blank" rel="noopener">Newsletter</a>
+            <a href="/privacy">Privacy Policy</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-heading">Follow</p>
+            {
+              SOCIAL_LINKS.map((link) => (
+                <a href={link.href} target="_blank" rel="noopener">
+                  {link.label}
+                </a>
+              ))
+            }
+          </div>
+          <div class="footer-col">
+            <p class="footer-heading">Contact</p>
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+          </div>
+        </div>
+
+        <div class="footer-legal">
+          <p>Unum Initiative is a 501(c)(3) nonprofit organization. {DISCLAIMER}</p>
+          <p>© {year} Unum Initiative</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+  }
+
+  .brand-name {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    padding-bottom: 4px;
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+  }
+
+  nav a {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  nav a:hover,
+  nav a.active {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 6px;
+  }
+
+  .site-footer {
+    margin-top: 48px;
+    padding: 56px 0 40px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .quote {
+    color: var(--text-faint);
+    font-style: italic;
+    margin-bottom: 40px;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+
+  .footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-col a {
+    color: var(--text-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: #c8c8c8;
+    overflow-wrap: anywhere;
+  }
+
+  .footer-col a:hover {
+    color: var(--text);
+  }
+
+  .footer-heading {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .footer-legal {
+    margin-top: 48px;
+    color: var(--text-faint);
+    font-size: 13px;
+    line-height: 1.6;
+    display: grid;
+    gap: 8px;
+  }
+
+  @media (max-width: 760px) {
+    .site-header {
+      flex-direction: column;
+      align-items: flex-start;
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+
+    .brand-name {
+      font-size: 34px;
+    }
+
+    nav {
+      gap: 8px 18px;
+    }
+
+    nav a {
+      font-size: 14px;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

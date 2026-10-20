@@ -1,0 +1,210 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { DISCLAIMER } from "../site.mjs";
+
+const sources = [
+  {
+    data: "Bills, actions, cosponsors, and members of Congress",
+    source: "Congress.gov API, maintained by the Library of Congress",
+    href: "https://api.congress.gov/",
+    domain: "api.congress.gov",
+  },
+  {
+    data: "Bill summaries",
+    source: "Official summaries written by the Congressional Research Service, via the Congress.gov API",
+    href: "https://api.congress.gov/",
+    domain: "api.congress.gov",
+  },
+  {
+    data: "Member photos and biographies",
+    source: "Biographical Directory of the United States Congress",
+    href: "https://bioguide.congress.gov/",
+    domain: "bioguide.congress.gov",
+  },
+  {
+    data: "House roll-call votes",
+    source: "Office of the Clerk, U.S. House of Representatives",
+    href: "https://clerk.house.gov/",
+    domain: "clerk.house.gov",
+  },
+  {
+    data: "Senate roll-call votes",
+    source: "United States Senate",
+    href: "https://www.senate.gov/",
+    domain: "senate.gov",
+  },
+  {
+    data: "Zip code to congressional district",
+    source: "U.S. Census Bureau ZIP Code Tabulation Area relationship files",
+    href: "https://www.census.gov/",
+    domain: "census.gov",
+  },
+];
+
+const civicsGovernment = [
+  ["USA.gov", "https://www.usa.gov/"],
+  ["National Archives", "https://www.archives.gov/"],
+  ["WhiteHouse.gov", "https://www.whitehouse.gov/"],
+  ["Supreme Court of the United States", "https://www.supremecourt.gov/"],
+  ["U.S. Courts", "https://www.uscourts.gov/"],
+  ["U.S. Code", "https://uscode.house.gov/"],
+  ["Code of Federal Regulations", "https://www.ecfr.gov/"],
+  ["GovInfo", "https://www.govinfo.gov/"],
+  ["USAspending.gov", "https://www.usaspending.gov/"],
+  ["U.S. House of Representatives", "https://www.house.gov/"],
+];
+
+const civicsNonpartisan = [
+  ["National Constitution Center", "https://constitutioncenter.org/"],
+  ["Miller Center, University of Virginia", "https://millercenter.org/"],
+  ["The American Presidency Project, UC Santa Barbara", "https://www.presidency.ucsb.edu/"],
+  ["C-SPAN", "https://www.c-span.org/"],
+  ["Oyez", "https://www.oyez.org/"],
+];
+---
+
+<Layout
+  title="Data & Sources"
+  description="Where the information in the Unum app comes from: Congress.gov, the U.S. House and Senate, the U.S. Census Bureau, and other official sources."
+>
+  <section class="container narrow section intro">
+    <p class="eyebrow">Data &amp; Sources</p>
+    <h1>Where our information comes from</h1>
+    <p class="lede">
+      Every bill, vote, and official in Unum comes from official, public
+      government sources. We don't write or alter the legislative record — we
+      organize it so it's easier to follow.
+    </p>
+  </section>
+
+  <section class="container narrow section" aria-labelledby="legislative-heading">
+    <h2 id="legislative-heading">Legislative data</h2>
+    <dl class="sources">
+      {
+        sources.map((item) => (
+          <div class="source-row">
+            <dt>{item.data}</dt>
+            <dd>
+              {item.source}
+              <a class="text-link source-link" href={item.href} target="_blank" rel="noopener">
+                {item.domain}
+              </a>
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="container narrow section stack" aria-labelledby="updates-heading">
+    <h2 id="updates-heading">How often it updates</h2>
+    <p class="muted">
+      Unum syncs with Congress.gov twice a day, at 8 a.m. and 4 p.m. Eastern
+      Time. Roll-call votes appear once the House Clerk or the Senate publishes
+      them. Because we rely on these official sources, very recent actions can
+      take a few hours to show up in the app.
+    </p>
+  </section>
+
+  <section class="container narrow section stack" aria-labelledby="civics-heading">
+    <h2 id="civics-heading">Civics guide</h2>
+    <p class="muted">
+      Our built-in civics guide explains foundational, nonpartisan civics
+      topics. Each article links directly to the sources it references, and all
+      images are individually credited in the app.
+    </p>
+    <div class="source-columns">
+      <div>
+        <h3>Official government sources</h3>
+        <ul>
+          {civicsGovernment.map(([name, href]) => (
+            <li><a class="text-link" href={href} target="_blank" rel="noopener">{name}</a></li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h3>Nonpartisan educational sources</h3>
+        <ul>
+          {civicsNonpartisan.map(([name, href]) => (
+            <li><a class="text-link" href={href} target="_blank" rel="noopener">{name}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="container narrow section stack" aria-labelledby="disclaimer-heading">
+    <h2 id="disclaimer-heading">Independence</h2>
+    <p class="muted">
+      {DISCLAIMER} Unum Initiative is a 501(c)(3) nonprofit organization.
+    </p>
+    <p class="muted">
+      Spotted something that looks wrong? Use <strong>Report an Error</strong> in
+      the app or <a class="text-link" href="/support">contact us</a>, and we'll
+      look into it.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .intro {
+    padding-top: 24px;
+    display: grid;
+    gap: 24px;
+  }
+
+  .sources {
+    margin: 28px 0 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .source-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 8px 32px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .source-link {
+    display: block;
+    font-size: 15px;
+  }
+
+  .source-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding-top: 8px;
+  }
+
+  .source-columns h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .source-columns ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    font-size: 15px;
+  }
+
+  @media (max-width: 640px) {
+    .source-row,
+    .source-columns {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
