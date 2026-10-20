@@ -44,7 +44,7 @@ const faqs = [
   title="Support"
   description="Answers to common questions about the Unum app, and how to contact Unum Initiative."
 >
-  <section class="container section intro">
+  <section class="container section page-intro">
     <p class="eyebrow">Support</p>
     <h1>How can we help?</h1>
     <p class="lede">
@@ -87,14 +87,7 @@ const faqs = [
 </Layout>
 
 <style>
-  .intro {
-    padding-top: 24px;
-    display: grid;
-    gap: 24px;
-  }
-
   .faqs {
-    margin-top: 24px;
     border-top: 1px solid var(--border);
   }
 
@@ -139,6 +132,6 @@ const faqs = [
   .contact-card {
     padding: 40px 32px;
     display: grid;
-    gap: 12px;
+    gap: var(--card-heading-gap);
   }
 </style>

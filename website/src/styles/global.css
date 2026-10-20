@@ -16,6 +16,13 @@
   --page: #f4f1eb;
   --max: 1080px;
   --gutter: 24px;
+
+  /* Vertical rhythm, shared by every page */
+  --intro-top: 56px; /* header to a page's opening section */
+  --intro-gap: 32px; /* between headline, paragraph, and actions there */
+  --label-gap: 16px; /* small blue label to the heading below it */
+  --heading-gap: 32px; /* section heading to its content */
+  --card-heading-gap: 16px; /* heading inside a card to its content */
 }
 
 *,
@@ -111,7 +118,23 @@ main p {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--blue);
-  margin-bottom: 12px;
+  margin-bottom: var(--label-gap);
+}
+
+/* A page's opening section: the homepage hero and each page's intro */
+.page-intro {
+  padding-top: var(--intro-top);
+  display: grid;
+  gap: var(--intro-gap);
+  justify-items: start;
+}
+
+.page-intro .eyebrow {
+  margin-bottom: calc(var(--label-gap) - var(--intro-gap));
+}
+
+.section > h2 {
+  margin-bottom: var(--heading-gap);
 }
 
 .lede {
@@ -146,6 +169,9 @@ main p {
 @media (max-width: 640px) {
   :root {
     --gutter: 16px;
+    --intro-top: 32px;
+    --intro-gap: 24px;
+    --heading-gap: 24px;
   }
 
   body {
@@ -154,6 +180,11 @@ main p {
 
   .section {
     padding-block: 48px;
+  }
+
+  /* Re-assert after .section above, which would otherwise override it */
+  .page-intro {
+    padding-top: var(--intro-top);
   }
 
   .lede {
