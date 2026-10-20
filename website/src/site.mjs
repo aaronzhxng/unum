@@ -15,10 +15,9 @@ export const SOCIAL_LINKS = [
   { label: "LinkedIn", href: "https://www.linkedin.com/company/unuminitiative" },
 ];
 
+// Data & Sources and Support are linked from the footer
 export const NAV_LINKS = [
   { label: "About", href: "/about" },
-  { label: "Data & Sources", href: "/sources" },
-  { label: "Support", href: "/support" },
   { label: "Newsletter", href: NEWSLETTER_URL, external: true },
 ];
 

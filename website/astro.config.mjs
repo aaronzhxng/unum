@@ -6,4 +6,6 @@ export default defineConfig({
   // Google Play listings' existing /privacy link keeps working unchanged.
   build: { format: "file" },
   trailingSlash: "never",
+  // The dev toolbar overlays the page in local previews
+  devToolbar: { enabled: false },
 });

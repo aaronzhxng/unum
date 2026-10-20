@@ -52,6 +52,28 @@ const principles = [
     </p>
   </section>
 
+  <section class="container narrow section" aria-labelledby="team-heading">
+    <h2 id="team-heading">Our team</h2>
+    <ul class="team" role="list">
+      {
+        team.map((person) => (
+          <li class="card member">
+            <Image
+              src={person.photo}
+              alt={person.name}
+              width={128}
+              height={128}
+              densities={[1, 2]}
+              class="member-photo"
+            />
+            <h3>{person.name}</h3>
+            <p class="muted">{person.role}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
   <section class="container narrow section stack purpose" aria-labelledby="purpose-heading">
     <h2 id="purpose-heading">Our purpose</h2>
     <p>
@@ -101,29 +123,6 @@ const principles = [
     </div>
   </section>
 
-  <section class="container section" aria-labelledby="team-heading">
-    <div class="narrow team-heading">
-      <h2 id="team-heading">Our team</h2>
-    </div>
-    <ul class="team" role="list">
-      {
-        team.map((person) => (
-          <li class="card member">
-            <Image
-              src={person.photo}
-              alt={person.name}
-              width={160}
-              height={160}
-              densities={[1, 2]}
-              class="member-photo"
-            />
-            <h3>{person.name}</h3>
-            <p class="muted">{person.role}</p>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
 
   <section class="container narrow section contact">
     <h2>Get in touch</h2>
@@ -166,11 +165,6 @@ const principles = [
     justify-items: start;
   }
 
-  .team-heading {
-    margin: 0 auto;
-    padding: 0;
-  }
-
   .team {
     list-style: none;
     margin: 32px 0 0;
@@ -181,7 +175,7 @@ const principles = [
   }
 
   .member {
-    padding: 36px 24px;
+    padding: 32px 16px;
     text-align: center;
     display: grid;
     justify-items: center;
@@ -189,11 +183,15 @@ const principles = [
   }
 
   .member-photo {
-    width: 160px;
-    height: 160px;
+    width: 128px;
+    height: 128px;
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 16px;
+  }
+
+  .member h3 {
+    font-size: 17px;
   }
 
   .member p {

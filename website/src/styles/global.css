@@ -11,9 +11,9 @@
   --text-faint: #7b7c81;
   --blue: #008cff;
   --blue-soft: #e8f4ff;
-  --surface: #fafafa;
-  --border: #ededed;
-  --page: #ffffff;
+  --surface: #fbfaf7;
+  --border: #e6e1d7;
+  --page: #f4f1eb;
   --max: 1080px;
   --gutter: 24px;
 }
@@ -99,7 +99,8 @@ strong {
 }
 
 .section {
-  padding: 72px 0;
+  /* Vertical only, so .container keeps its side gutters */
+  padding-block: 72px;
 }
 
 .eyebrow {
@@ -150,7 +151,7 @@ strong {
   }
 
   .section {
-    padding: 48px 0;
+    padding-block: 48px;
   }
 
   .lede {
