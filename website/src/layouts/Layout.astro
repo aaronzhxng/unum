@@ -16,14 +16,19 @@ import {
 interface Props {
   title?: string;
   description?: string;
-  // Replaces "unum" in the header on inner pages, e.g. "about unum".
-  // Hovering the logo switches back to "unum".
+  // Replaces "unum" in the header with a one-line page label, e.g.
+  // "about unum". Hovering the logo switches back to "unum".
   brandLabel?: string;
+  // Or: "unum" (or "unum's") followed by the page name stacked on two
+  // half-size lines, e.g. "unum's" + "data &" / "sources". Hovering fades the
+  // page name and leaves "unum".
+  brandStack?: { possessive?: boolean; lines: [string, string] };
 }
 
 const {
   title,
   brandLabel,
+  brandStack,
   description = "Unum is a free, nonpartisan app for following U.S. legislation and the members of Congress who represent you.",
 } = Astro.props;
 
@@ -54,10 +59,19 @@ const year = new Date().getFullYear();
     <header class="site-header container">
       <a href="/" class="brand" aria-label="Unum Initiative home">
         <Image src={logo} alt="" width={44} height={44} densities={[1, 2]} class="brand-icon" />
-        <span class="brand-name">
-          {brandLabel && <span class="brand-label">{brandLabel}</span>}
-          <span class="brand-home">unum</span>
-        </span>
+        {
+          brandStack ? (
+            <span class="brand-name has-stack">
+              {/* Kept on one line: line breaks here would render as spaces */}
+              <span class="brand-home">unum</span>{brandStack.possessive && <span class="brand-extra">'s</span>}<span class="brand-extra brand-stack"><span>{brandStack.lines[0]}</span><span>{brandStack.lines[1]}</span></span>
+            </span>
+          ) : (
+            <span class="brand-name">
+              {brandLabel && <span class="brand-label">{brandLabel}</span>}
+              <span class="brand-home">unum</span>
+            </span>
+          )
+        }
       </a>
       <nav aria-label="Main">
         {
@@ -188,10 +202,40 @@ const year = new Date().getFullYear();
     color: var(--blue);
   }
 
-  /* The longest label ("unum's data & sources") fits beside the nav
-     from 960px up. Narrower screens show "unum", and the page's own headline
-     names the page. */
-  @media (max-width: 959px) {
+  /* "unum" plus a two-line page name, sized and placed so the two lines span
+     the icon's height: from the first line's cap height (0.727em) to the
+     second line's baseline is 0.727 + 0.95 = 1.677em, and the icon is 0.7x
+     the wordmark size, so the stack is 0.7 / 1.677 = 0.417x. translateY then
+     moves its baseline from the wordmark's baseline down to the icon's
+     bottom edge (0.077x the wordmark size = 0.184em of the stack). */
+  .brand-name.has-stack {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .brand-stack {
+    display: inline-block;
+    vertical-align: baseline;
+    font-size: 0.417em;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-left: 0.55em;
+    transform: translateY(0.184em);
+  }
+
+  .brand-stack > span {
+    display: block;
+  }
+
+  .brand:hover .brand-extra,
+  .brand:focus-visible .brand-extra {
+    opacity: 0;
+  }
+
+  /* The page names fit beside the nav from 480px up. On narrower phones the
+     header shows just "unum", and the page's own headline names the page. */
+  @media (max-width: 479px) {
+    .brand-extra,
     .brand-label {
       display: none;
     }
