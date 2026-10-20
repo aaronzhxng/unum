@@ -137,15 +137,19 @@ const year = new Date().getFullYear();
     --logo-size: 44px;
   }
 
+  /* With line-height 1, Inter's x-height band sits 0.091em below the middle
+     of the line box, so shifting up by that much centers the letters on the
+     icon — the same center line the nav links sit on. */
   .brand-name {
     font-family: var(--font);
     font-size: calc(var(--logo-size) * 0.78 / 0.546);
     font-weight: 600;
     letter-spacing: -0.035em;
-    line-height: var(--logo-size);
-    height: var(--logo-size);
-    display: flex;
-    align-items: flex-end;
+    line-height: 1;
+    transform: translateY(-0.091em);
+    /* Keep the text box no taller than the icon so the header height
+       doesn't grow */
+    margin-block: calc((var(--logo-size) - 1em) / 2);
   }
 
   nav {
