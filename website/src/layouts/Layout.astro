@@ -202,12 +202,12 @@ const year = new Date().getFullYear();
     color: var(--blue);
   }
 
-  /* "unum" plus a two-line page name, sized and placed so the two lines span
-     the icon's height: from the first line's cap height (0.727em) to the
-     second line's baseline is 0.727 + 0.95 = 1.677em, and the icon is 0.7x
-     the wordmark size, so the stack is 0.7 / 1.677 = 0.417x. translateY then
-     moves its baseline from the wordmark's baseline down to the icon's
-     bottom edge (0.077x the wordmark size = 0.184em of the stack). */
+  /* "unum" plus a two-line page name, sized so the two lines span the
+     height of the "unum" letters: from the first line's cap height (0.727em)
+     to the second line's baseline is 0.727 + 0.95 = 1.677em, and "unum" is
+     Inter's x-height (0.546x the wordmark size), so the stack is
+     0.546 / 1.677 = 0.326x. Its last baseline sits on the wordmark's
+     baseline. */
   .brand-name.has-stack {
     display: block;
     white-space: nowrap;
@@ -216,11 +216,11 @@ const year = new Date().getFullYear();
   .brand-stack {
     display: inline-block;
     vertical-align: baseline;
-    font-size: 0.417em;
+    font-size: 0.326em;
+    font-weight: 500;
     line-height: 0.95;
-    letter-spacing: -0.02em;
-    margin-left: 0.55em;
-    transform: translateY(0.184em);
+    letter-spacing: -0.01em;
+    margin-left: 0.6em;
   }
 
   .brand-stack > span {
