@@ -18,7 +18,7 @@ const CREDITS_SECTIONS = [
   },
   {
     title: "Data Sources",
-    content: `Unum is not affiliated with, endorsed by, or representing any government entity.\n\nLegislative data is sourced from the Congress.gov API (api.congress.gov), provided by the Library of Congress.\n\nMember photos are provided by the Biographical Directory of the United States Congress (bioguide.congress.gov).\n\nZip code to congressional district matching uses U.S. Census Bureau ZIP Code Tabulation Area data.\n\nOfficials' education histories are sourced in part from Wikipedia contributors under CC BY-SA.`,
+    content: `Unum is not affiliated with, endorsed by, or representing any government entity.\n\nLegislative data is sourced from the Congress.gov API (api.congress.gov), provided by the Library of Congress.\n\nMember photos are provided by the Biographical Directory of the United States Congress (bioguide.congress.gov).\n\nZip code to congressional district matching uses U.S. Census Bureau ZIP Code Tabulation Area data.\n\nCongressional district boundaries (TIGERweb) and street address lookup (Geocoder) are provided by the U.S. Census Bureau.\n\nAddress suggestions © Mapbox (mapbox.com).\n\nMap data © OpenStreetMap contributors, available under the Open Database License (openstreetmap.org/copyright). Maps are displayed with Leaflet (leafletjs.com, BSD-2-Clause License).\n\nOfficials' education histories are sourced in part from Wikipedia contributors under CC BY-SA.`,
   },
   {
     title: "Privacy Policy",
