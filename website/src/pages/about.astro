@@ -7,9 +7,24 @@ import justin from "../assets/team/justin_liu.jpeg";
 import { CONTACT_EMAIL } from "../site.mjs";
 
 const team = [
-  { name: "Aaron Zhang", role: "President and Founder", photo: aaron },
-  { name: "Gregory Colonescu", role: "Director of Strategy", photo: gregory },
-  { name: "Justin Liu", role: "Director of Finances", photo: justin },
+  {
+    name: "Aaron Zhang",
+    role: "President and Founder",
+    photo: aaron,
+    linkedin: "https://www.linkedin.com/in/aaronzhxng/",
+  },
+  {
+    name: "Gregory Colonescu",
+    role: "Director of Strategy",
+    photo: gregory,
+    linkedin: "https://www.linkedin.com/in/gregory-colonescu/",
+  },
+  {
+    name: "Justin Liu",
+    role: "Director of Finances",
+    photo: justin,
+    linkedin: "https://www.linkedin.com/in/justin-j-liu/",
+  },
 ];
 
 const principles = [
@@ -57,17 +72,32 @@ const principles = [
     <ul class="team" role="list">
       {
         team.map((person) => (
-          <li class="card member">
-            <Image
-              src={person.photo}
-              alt={person.name}
-              width={128}
-              height={128}
-              densities={[1, 2]}
-              class="member-photo"
-            />
-            <h3>{person.name}</h3>
-            <p class="muted">{person.role}</p>
+          <li>
+            <a
+              class="card member"
+              href={person.linkedin}
+              target="_blank"
+              rel="noopener"
+              aria-label={`${person.name}, ${person.role}, on LinkedIn`}
+            >
+              <Image
+                src={person.photo}
+                alt=""
+                width={128}
+                height={128}
+                densities={[1, 2]}
+                class="member-photo"
+              />
+              <h3>{person.name}</h3>
+              <p class="muted">{person.role}</p>
+              {/* Shown on hover or keyboard focus. Touch devices go straight
+                  to LinkedIn on tap. */}
+              <span class="member-overlay" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+              </span>
+            </a>
           </li>
         ))
       }
@@ -170,11 +200,47 @@ const principles = [
   }
 
   .member {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
     padding: 32px 16px;
     text-align: center;
     display: grid;
     justify-items: center;
     gap: 4px;
+    text-decoration: none;
+  }
+
+  .member-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(26, 26, 26, 0.55);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .member-overlay svg {
+    transform: scale(0.9);
+    transition: transform 0.2s ease;
+  }
+
+  .member:hover .member-overlay,
+  .member:focus-visible .member-overlay {
+    opacity: 1;
+  }
+
+  .member:hover .member-overlay svg,
+  .member:focus-visible .member-overlay svg {
+    transform: scale(1);
+  }
+
+  .member:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
   }
 
   .member-photo {
