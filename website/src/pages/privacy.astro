@@ -80,14 +80,11 @@ import { CONTACT_EMAIL } from "../site.mjs";
         privacy policy at
         <a class="text-link" href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">osmfoundation.org/wiki/Privacy_Policy</a>.
         The map is displayed with the open-source Leaflet library, loaded from
-        the unpkg content delivery network.
+        the unpkg content delivery network. Map data ©
+        <a class="text-link" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>,
+        available under the Open Database License.
       </li>
     </ul>
-    <p class="credit">
-      Map data ©
-      <a class="text-link" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>,
-      available under the Open Database License.
-    </p>
 
     <h2>Children's privacy</h2>
     <p>
@@ -130,8 +127,7 @@ import { CONTACT_EMAIL } from "../site.mjs";
     margin: 44px 0 12px;
   }
 
-  .policy p + p,
-  .policy ul + p {
+  .policy p + p {
     margin-top: 16px;
   }
 
@@ -160,9 +156,5 @@ import { CONTACT_EMAIL } from "../site.mjs";
     padding-left: 20px;
     display: grid;
     gap: 12px;
-  }
-
-  .credit {
-    font-size: 15px;
   }
 </style>
