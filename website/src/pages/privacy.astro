@@ -1,7 +1,6 @@
 ---
-// Text copied verbatim from the original site's /privacy page. The App Store
-// and Google Play listings link here, so keep the URL; update the date when
-// the policy changes.
+// The App Store and Google Play listings link to /privacy, so keep this URL.
+// Update the date whenever the policy changes.
 import Layout from "../layouts/Layout.astro";
 import { CONTACT_EMAIL } from "../site.mjs";
 ---
@@ -11,9 +10,8 @@ import { CONTACT_EMAIL } from "../site.mjs";
   description="How the Unum app handles your information."
 >
   <article class="container narrow section policy">
-    <p class="eyebrow">Privacy Policy</p>
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: April 2, 2026</p>
+    <p class="updated">Last updated: October 20, 2026</p>
 
     <p>Unum is a civic literacy app. We are committed to protecting your privacy.</p>
 
@@ -27,6 +25,12 @@ import { CONTACT_EMAIL } from "../site.mjs";
       During onboarding, you may optionally provide a zip code to identify your
       congressional district. This zip code is stored on your device and on our
       secure server solely to deliver relevant notifications.
+    </p>
+    <p>
+      If you search for a street address on the congressional map, the address
+      is sent directly from your device to the U.S. Census Bureau Geocoder to
+      find its congressional district. We do not store the addresses you
+      search, on your device or on our server.
     </p>
 
     <h2>Information we do not collect</h2>
@@ -45,12 +49,39 @@ import { CONTACT_EMAIL } from "../site.mjs";
 
     <h2>Third-party services</h2>
     <p>
-      Firebase Cloud Messaging (FCM) is used to deliver push notifications,
-      governed by Google's Privacy Policy at
-      <a class="text-link" href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.
-      Legislative data is provided by the Congress.gov API from the Library of
-      Congress. Zip code to congressional district lookup is provided by the
-      U.S. Census Bureau and Zippopotam.us during onboarding.
+      Unum relies on the following services. When the app loads content from
+      them, they receive standard technical information such as your device's
+      IP address, as with any website or app that loads content online.
+    </p>
+    <ul>
+      <li>
+        <strong>Push notifications:</strong> Firebase Cloud Messaging (FCM)
+        delivers push notifications, governed by Google's Privacy Policy at
+        <a class="text-link" href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.
+      </li>
+      <li>
+        <strong>Legislative data:</strong> provided by the Congress.gov API from
+        the Library of Congress. Member photos are loaded from the Biographical
+        Directory of the United States Congress.
+      </li>
+      <li>
+        <strong>Zip code lookup:</strong> zip codes are matched to congressional
+        districts using U.S. Census Bureau data stored on our server.
+      </li>
+      <li>
+        <strong>Congressional map:</strong> district boundaries and street
+        address lookup are provided by the U.S. Census Bureau. Map images are
+        loaded from the OpenStreetMap Foundation's servers, governed by its
+        privacy policy at
+        <a class="text-link" href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">osmfoundation.org/wiki/Privacy_Policy</a>.
+        The map is displayed with the open-source Leaflet library, loaded from
+        the unpkg content delivery network.
+      </li>
+    </ul>
+    <p class="credit">
+      Map data ©
+      <a class="text-link" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>,
+      available under the Open Database License.
     </p>
 
     <h2>Children's privacy</h2>
@@ -90,15 +121,28 @@ import { CONTACT_EMAIL } from "../site.mjs";
   }
 
   .policy h2 {
-    font-size: 22px;
-    margin: 40px 0 12px;
+    font-size: 26px;
+    margin: 44px 0 12px;
   }
 
-  .policy p + p {
+  .policy p + p,
+  .policy ul + p {
     margin-top: 16px;
   }
 
-  .policy p {
+  .policy p,
+  .policy li {
     color: var(--text-muted);
+  }
+
+  .policy ul {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .credit {
+    font-size: 15px;
   }
 </style>

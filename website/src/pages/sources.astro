@@ -39,6 +39,24 @@ const sources = [
     href: "https://www.census.gov/",
     domain: "census.gov",
   },
+  {
+    data: "Congressional district boundaries",
+    source: "U.S. Census Bureau TIGERweb",
+    href: "https://tigerweb.geo.census.gov/",
+    domain: "tigerweb.geo.census.gov",
+  },
+  {
+    data: "Street address to congressional district",
+    source: "U.S. Census Bureau Geocoder",
+    href: "https://geocoding.geo.census.gov/",
+    domain: "geocoding.geo.census.gov",
+  },
+  {
+    data: "Map images",
+    source: "© OpenStreetMap contributors, available under the Open Database License",
+    href: "https://www.openstreetmap.org/copyright",
+    domain: "openstreetmap.org/copyright",
+  },
 ];
 
 const civicsGovernment = [
@@ -111,7 +129,12 @@ const civicsNonpartisan = [
     <p class="muted">
       Our built-in civics guide explains foundational, nonpartisan civics
       topics. Each article links directly to the sources it references, and all
-      images are individually credited in the app.
+      images are individually credited in the app. Some educational content is
+      adapted from
+      <a class="text-link" href="https://www.wikipedia.org/" target="_blank" rel="noopener">Wikipedia</a>
+      contributors under the
+      <a class="text-link" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA</a>
+      license.
     </p>
     <div class="source-columns">
       <div>

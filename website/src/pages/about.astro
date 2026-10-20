@@ -42,16 +42,43 @@ const principles = [
     <p class="eyebrow">About us</p>
     <h1>Making Congress understandable for everyone</h1>
     <p class="lede">
-      Unum Initiative is a nonprofit civic technology organization. We build
-      dynamic and user-friendly tools to bridge the accessibility gap between
-      everyday Americans and the elected officials and legislation that
-      represent their interests.
-    </p>
-    <p class="lede">
-      Our goal is to demystify the U.S. lawmaking process, answer how your
-      elected officials are actually working for you, and encourage civic
+      Unum Initiative is a civic technology organization that builds dynamic
+      and user-friendly tools to bridge the accessibility gap between everyday
+      Americans and the elected officials and legislation that represent their
+      interests. Our goal is to demystify the U.S. lawmaking process, answer how
+      your elected officials are actually working for you, and encourage civic
       engagement so that laws can more accurately work in the interest of the
       people.
+    </p>
+  </section>
+
+  <section class="container narrow section stack purpose" aria-labelledby="purpose-heading">
+    <h2 id="purpose-heading">Our purpose</h2>
+    <p>
+      Unum’s core purpose is to display elected officials and bills in the most
+      coherent way possible and translate political jargon into understandable
+      and meaningful takeaways. Every page is tailored to the user experience by
+      prioritizing their target policy areas and their elected officials.
+    </p>
+    <p>
+      Unum puts the information that matters to you front and center: the bills
+      being debated in your policy areas, how your representatives voted on
+      legislation that affects you, and direct ways to reach them when it
+      counts. Unum also provides suggested bills of the week in order to
+      encourage you to keep up with current events by reading legislation for
+      what it is, rather than through the lens of partisan media.
+    </p>
+    <p>
+      Laced throughout the tool are simple, intuitive information flows that
+      allow people unfamiliar with the political process to learn at their own
+      pace, as well as enable politically active users to maximize their
+      knowledge and achieve targeted goals.
+    </p>
+    <p class="purpose-closing">
+      It is our ambition to push back against modern political disillusionment
+      and embolden users of all backgrounds to meaningfully involve themselves
+      in the civic realm, armed with an effective tool to advocate for their
+      interests.
     </p>
   </section>
 
@@ -112,6 +139,19 @@ const principles = [
     padding-top: 24px;
     display: grid;
     gap: 24px;
+  }
+
+  .purpose p {
+    color: var(--text-muted);
+  }
+
+  .purpose .purpose-closing {
+    font-family: var(--display);
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--text);
+    padding-left: 20px;
+    border-left: 3px solid var(--blue);
   }
 
   .principles {
