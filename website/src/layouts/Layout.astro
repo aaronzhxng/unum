@@ -16,7 +16,7 @@ import {
 interface Props {
   title?: string;
   description?: string;
-  // Replaces "unum" in the header on inner pages, e.g. "About unum".
+  // Replaces "unum" in the header on inner pages, e.g. "about unum".
   // Hovering the logo switches back to "unum".
   brandLabel?: string;
 }
@@ -188,7 +188,7 @@ const year = new Date().getFullYear();
     color: var(--blue);
   }
 
-  /* The longest label ("unum's Data & Sources", ~712px) fits beside the nav
+  /* The longest label ("unum's data & sources") fits beside the nav
      from 960px up. Narrower screens show "unum", and the page's own headline
      names the page. */
   @media (max-width: 959px) {
