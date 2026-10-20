@@ -16,18 +16,14 @@ import {
 interface Props {
   title?: string;
   description?: string;
-  // Replaces "unum" in the header with a one-line page label, e.g.
-  // "about unum". Hovering the logo switches back to "unum".
-  brandLabel?: string;
-  // Or: "unum" (or "unum's") followed by the page name stacked on two
-  // half-size lines, e.g. "unum's" + "data &" / "sources". Hovering fades the
-  // page name and leaves "unum".
+  // On inner pages, "unum" (or "unum's") is followed by the page name
+  // stacked on two small lines, e.g. "unum's" + "data &" / "sources".
+  // Hovering the logo fades the page name and leaves "unum".
   brandStack?: { possessive?: boolean; lines: [string, string] };
 }
 
 const {
   title,
-  brandLabel,
   brandStack,
   description = "Unum is a free, nonpartisan app for following U.S. legislation and the members of Congress who represent you.",
 } = Astro.props;
@@ -59,19 +55,10 @@ const year = new Date().getFullYear();
     <header class="site-header container">
       <a href="/" class="brand" aria-label="Unum Initiative home">
         <Image src={logo} alt="" width={44} height={44} densities={[1, 2]} class="brand-icon" />
-        {
-          brandStack ? (
-            <span class="brand-name has-stack">
-              {/* Kept on one line: line breaks here would render as spaces */}
-              <span class="brand-home">unum</span>{brandStack.possessive && <span class="brand-extra">'s</span>}<span class="brand-extra brand-stack"><span>{brandStack.lines[0]}</span><span>{brandStack.lines[1]}</span></span>
-            </span>
-          ) : (
-            <span class="brand-name">
-              {brandLabel && <span class="brand-label">{brandLabel}</span>}
-              <span class="brand-home">unum</span>
-            </span>
-          )
-        }
+        <span class="brand-name">
+          {/* Kept on one line: line breaks here would render as spaces */}
+          <span class="brand-home">unum</span>{brandStack?.possessive && <span class="brand-extra">'s</span>}{brandStack && <span class="brand-extra brand-stack"><span>{brandStack.lines[0]}</span><span>{brandStack.lines[1]}</span></span>}
+        </span>
       </a>
       <nav aria-label="Main">
         {
@@ -173,33 +160,25 @@ const year = new Date().getFullYear();
        doesn't grow */
     margin-block: calc((var(--logo-size) - 1em) / 2);
     color: var(--text);
-    /* The page label and "unum" share one cell, so the link keeps the
-       label's width on hover and the hover area doesn't shrink under the
-       cursor */
-    display: grid;
+    white-space: nowrap;
   }
 
   .brand-name > span {
-    grid-area: 1 / 1;
-    white-space: nowrap;
     transition:
       opacity 0.15s ease,
       color 0.15s ease;
   }
 
-  .brand-label + .brand-home {
-    opacity: 0;
-  }
-
-  .brand:hover .brand-label,
-  .brand:focus-visible .brand-label {
-    opacity: 0;
-  }
-
+  /* The page name only fades (it keeps its space), so the hover area doesn't
+     shrink under the cursor */
   .brand:hover .brand-home,
   .brand:focus-visible .brand-home {
-    opacity: 1;
     color: var(--blue);
+  }
+
+  .brand:hover .brand-extra,
+  .brand:focus-visible .brand-extra {
+    opacity: 0;
   }
 
   /* "unum" plus a two-line page name, sized so the two lines span the
@@ -208,11 +187,6 @@ const year = new Date().getFullYear();
      Inter's x-height (0.546x the wordmark size), so the stack is
      0.546 / 1.877 = 0.291x. Its last baseline sits on the wordmark's
      baseline. */
-  .brand-name.has-stack {
-    display: block;
-    white-space: nowrap;
-  }
-
   .brand-stack {
     display: inline-block;
     vertical-align: baseline;
@@ -227,21 +201,11 @@ const year = new Date().getFullYear();
     display: block;
   }
 
-  .brand:hover .brand-extra,
-  .brand:focus-visible .brand-extra {
-    opacity: 0;
-  }
-
   /* The page names fit beside the nav from 480px up. On narrower phones the
      header shows just "unum", and the page's own headline names the page. */
   @media (max-width: 479px) {
-    .brand-extra,
-    .brand-label {
+    .brand-extra {
       display: none;
-    }
-
-    .brand-label + .brand-home {
-      opacity: 1;
     }
   }
 
