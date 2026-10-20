@@ -306,7 +306,7 @@ function renderStagesHtml(type, stages, labels) {
     .map((label, i) => {
       const status = stages[i];
       const isVeto = isVetoStatus(status);
-      const color = isVeto ? '#FF3B30' : status === 'empty' ? '#7B7C81' : '#1a1a1a';
+      const color = isVeto ? '#dc2626' : status === 'empty' ? '#7B7C81' : '#1a1a1a';
       const weight = status === 'empty' ? '400' : '600';
       return `<div style="flex:1;font-size:11px;color:${color};font-weight:${weight};padding-right:4px;">${escapeHtml(label)}</div>`;
     })
@@ -315,7 +315,7 @@ function renderStagesHtml(type, stages, labels) {
     .map((status) => {
       const isVeto = isVetoStatus(status);
       const width = status === 'full' || isVeto ? '100%' : status === 'half' ? '50%' : '0%';
-      const fill = isVeto ? '#FF3B30' : '#008CFF';
+      const fill = isVeto ? '#dc2626' : '#008CFF';
       return `<div style="flex:1;height:6px;border-radius:3px;background:#e0e0e0;overflow:hidden;"><div style="height:100%;width:${width};background:${fill};border-radius:3px;"></div></div>`;
     })
     .join('<div style="width:3px;"></div>');

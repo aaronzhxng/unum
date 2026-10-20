@@ -1500,8 +1500,8 @@ app.post("/api/debug/token", requireAdminToken, (req, res) => {
 
 const IOS_STORE_URL =
   "https://apps.apple.com/us/app/unum-congress-tracker/id6763620957";
-// Replace with Play Store URL once Android goes live:
-const ANDROID_STORE_URL = IOS_STORE_URL;
+const ANDROID_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.unuminitiative.unum";
 const JOIN_FORM_URL =
   "https://docs.google.com/forms/d/1URY5cukTP2hzervCDSJBsUsnUyflMjEnHY-3YlPV1KE/viewform";
 
