@@ -15,6 +15,7 @@
   --border: #e6e1d7;
   --page: #f4f1eb;
   --max: 1080px;
+  --h2-size: clamp(26px, 3.6vw, 36px);
   --gutter: 24px;
 
   /* Vertical rhythm, shared by every page */
@@ -79,7 +80,7 @@ h1 {
 }
 
 h2 {
-  font-size: clamp(26px, 3.6vw, 36px);
+  font-size: var(--h2-size);
 }
 
 h3 {

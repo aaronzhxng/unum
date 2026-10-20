@@ -77,8 +77,8 @@ const features = [
 <Layout>
   <section class="hero container page-intro">
     <h1>
-      Be a more informed citizen.<br />
-      Keep track of your elected officials and their bills.
+      Be a more informed citizen.
+      <span class="hero-sub">Keep track of your elected officials and their bills.</span>
     </h1>
     <StoreBadges />
   </section>
@@ -144,8 +144,12 @@ const features = [
     margin-top: 8px;
   }
 
-  .hero h1 {
-    max-width: 860px;
+  /* Second line at section-heading size */
+  .hero-sub {
+    display: block;
+    font-size: var(--h2-size);
+    line-height: 1.25;
+    margin-top: 12px;
   }
 
   .values-section {
