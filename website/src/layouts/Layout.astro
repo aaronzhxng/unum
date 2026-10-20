@@ -204,9 +204,9 @@ const year = new Date().getFullYear();
 
   /* "unum" plus a two-line page name, sized so the two lines span the
      height of the "unum" letters: from the first line's cap height (0.727em)
-     to the second line's baseline is 0.727 + 0.95 = 1.677em, and "unum" is
+     to the second line's baseline is 0.727 + 1.15 = 1.877em, and "unum" is
      Inter's x-height (0.546x the wordmark size), so the stack is
-     0.546 / 1.677 = 0.326x. Its last baseline sits on the wordmark's
+     0.546 / 1.877 = 0.291x. Its last baseline sits on the wordmark's
      baseline. */
   .brand-name.has-stack {
     display: block;
@@ -216,9 +216,9 @@ const year = new Date().getFullYear();
   .brand-stack {
     display: inline-block;
     vertical-align: baseline;
-    font-size: 0.326em;
+    font-size: 0.291em;
     font-weight: 500;
-    line-height: 0.95;
+    line-height: 1.15;
     letter-spacing: -0.01em;
     margin-left: 0.6em;
   }
