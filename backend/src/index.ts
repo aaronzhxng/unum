@@ -1482,13 +1482,33 @@ app.get("/api/debug/my-token", requireAdminToken, (req, res) => {
   res.json(rows);
 });
 
+// The zip crosswalk comes from Census ZIP Code Tabulation Areas, which don't
+// exist for these territories. Each has a single at-large seat, so any zip in
+// its USPS range maps straight to it. (969xx also covers Palau and Micronesia,
+// which aren't U.S. territories, hence the exact ranges.)
+const TERRITORY_ZIP_RANGES: { state: string; from: number; to: number }[] = [
+  { state: "VI", from: 801, to: 851 },
+  { state: "AS", from: 96799, to: 96799 },
+  { state: "GU", from: 96910, to: 96932 },
+  { state: "MP", from: 96950, to: 96952 },
+];
+
 app.get("/api/zip-districts/:zip", (req, res) => {
   const { zip } = req.params;
   const results = zipDistrictMap.get(zip);
-  if (!results || results.length === 0) {
-    return res.status(404).json({ error: "Zip code not found" });
+  if (results && results.length > 0) {
+    return res.json({ districts: results });
   }
-  res.json({ districts: results });
+  if (/^\d{5}$/.test(zip)) {
+    const zipNumber = Number(zip);
+    const territory = TERRITORY_ZIP_RANGES.find(
+      (range) => zipNumber >= range.from && zipNumber <= range.to,
+    );
+    if (territory) {
+      return res.json({ districts: [{ state: territory.state, district: 0 }] });
+    }
+  }
+  res.status(404).json({ error: "Zip code not found" });
 });
 
 app.post("/api/debug/token", requireAdminToken, (req, res) => {
