@@ -41,6 +41,7 @@ import { ListItem, storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import { syncListItemsFromBills } from "../utils/syncListItems";
 import { educationTopics } from "../education_tab/content";
+import { houseTitle } from "../utils/officialTitle";
 type Item = ListItem;
 
 export default function HomeScreen() {
@@ -652,7 +653,9 @@ export default function HomeScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          {!voterCardDismissed && <VoterCard onDismiss={dismissVoterCard} />}
+          {!voterCardDismissed && (
+            <VoterCard onDismiss={dismissVoterCard} headingColor="#1a1a1a" />
+          )}
           {!suggestedBillsDismissed &&
             featuredData?.bills &&
             featuredData.bills.length > 0 && (
@@ -929,7 +932,10 @@ export default function HomeScreen() {
             ListHeaderComponent={() => (
               <View>
                 {!voterCardDismissed && !isEditMode && (
-                  <VoterCard onDismiss={dismissVoterCard} />
+                  <VoterCard
+                    onDismiss={dismissVoterCard}
+                    headingColor="#000"
+                  />
                 )}
                 {!suggestedBillsDismissed &&
                   featuredData?.bills &&
@@ -1574,8 +1580,9 @@ function formatRole(
 ): string {
   const threshold = Platform.OS === "ios" ? 32 : 39;
   if (chamber === "House of Representatives") {
-    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    const title = houseTitle(state);
+    const full = `${title.full}, ${state}${district ? `, District ${district}` : ""}`;
+    const abbr = `${title.abbr}, ${state}${district ? `, District ${district}` : ""}`;
     if (screenWidth && screenWidth < 390) return abbr;
     return full.length > threshold ? abbr : full;
   }
@@ -1880,10 +1887,28 @@ const Card = React.memo(function Card({
   );
 });
 
-function VoterCard({ onDismiss }: { onDismiss: () => void }) {
-  const router = useRouter();
+type HomeArticle = {
+  topicId: string;
+  topicIcon: any;
+  subtopic: (typeof educationTopics)[number]["subtopics"][number];
+};
 
-  const allSubtopics = educationTopics
+const VOTER_REGISTRATION_ID = "voter-registration";
+
+const VOTER_REGISTRATION_ARTICLE: HomeArticle | undefined = educationTopics
+  .flatMap((t) =>
+    t.subtopics.map((s) => ({ topicId: t.id, topicIcon: t.icon, subtopic: s })),
+  )
+  .find((a) => a.subtopic.id === VOTER_REGISTRATION_ID);
+
+// The pinned voter registration article, then the rotating "Today's Article"
+function VoterCard({
+  headingColor,
+}: {
+  onDismiss: () => void;
+  headingColor: string;
+}) {
+  const allSubtopics: HomeArticle[] = educationTopics
     .filter(
       (t) => t.id !== "elections-voting" && t.id !== "us-history-foundations",
     )
@@ -1893,9 +1918,46 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
         topicIcon: t.icon,
         subtopic: s,
       })),
-    );
+    )
+    // Already pinned above, so it shouldn't come up in the rotation too
+    .filter((a) => a.subtopic.id !== VOTER_REGISTRATION_ID);
   const slotIndex = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
   const current = allSubtopics[slotIndex % allSubtopics.length];
+
+  return (
+    <>
+      {VOTER_REGISTRATION_ARTICLE && (
+        <ArticleCard
+          article={VOTER_REGISTRATION_ARTICLE}
+          title="Have you registered to vote?"
+        />
+      )}
+      {/* Same styling as the "Bills of the week" heading */}
+      <Text
+        style={{
+          fontSize: 14,
+          fontWeight: "500",
+          color: headingColor,
+          marginHorizontal: 16,
+          marginBottom: 8,
+          marginTop: 8,
+        }}
+      >
+        Today's Article
+      </Text>
+      <ArticleCard article={current} />
+    </>
+  );
+}
+
+function ArticleCard({
+  article: current,
+  title,
+}: {
+  article: HomeArticle;
+  title?: string;
+}) {
+  const router = useRouter();
 
   return (
     <Pressable
@@ -1946,7 +2008,7 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
             }}
             numberOfLines={2}
           >
-            {current.subtopic.title}
+            {title ?? current.subtopic.title}
           </Text>
           <Text
             style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}

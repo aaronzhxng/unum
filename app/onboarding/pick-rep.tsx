@@ -18,6 +18,7 @@ import { useOnboarding } from "../context/OnboardingContext";
 import type { FocusDistrict } from "../global_components/CongressionalDistrictMap";
 import DistrictPickerModal from "../global_components/DistrictPickerModal";
 import { officialsService } from "../services/officials";
+import { houseTitle } from "../utils/officialTitle";
 
 // State name → abbreviation lookup
 const STATE_TO_ABBR: Record<string, string> = {
@@ -182,8 +183,9 @@ export default function PickRepScreen() {
     role: (() => {
       const state = ABBR_TO_STATE[resolvedAbbr] ?? resolvedAbbr;
       const district = o.district ? `, District ${o.district}` : "";
-      const full = `Representative, ${state}${district}`;
-      const abbr = `Rep, ${state}${district}`;
+      const title = houseTitle(state);
+      const full = `${title.full}, ${state}${district}`;
+      const abbr = `${title.abbr}, ${state}${district}`;
       if (screenWidth < 390) return abbr;
       return full.length > 39 ? abbr : full;
     })(),
@@ -389,7 +391,7 @@ export default function PickRepScreen() {
 
       if (!match) {
         setError(
-          "Couldn't find a delegate for this state in our database. You can skip this step.",
+          `Couldn't find a ${houseTitle(priorityState).full.toLowerCase()} for ${priorityState} in our database. You can skip this step.`,
         );
         return;
       }
@@ -405,8 +407,9 @@ export default function PickRepScreen() {
           "Unknown",
         role: (() => {
           const district = match.district ? `, District ${match.district}` : "";
-          const full = `Representative, ${priorityState}${district}`;
-          const abbr = `Rep, ${priorityState}${district}`;
+          const title = houseTitle(priorityState);
+          const full = `${title.full}, ${priorityState}${district}`;
+          const abbr = `${title.abbr}, ${priorityState}${district}`;
           if (screenWidth < 390) return abbr;
           return full.length > 39 ? abbr : full;
         })(),
@@ -444,7 +447,7 @@ export default function PickRepScreen() {
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
           {TERRITORIES.has(priorityState ?? "")
-            ? `${priorityState} has a non-voting delegate to the House of Representatives instead of a senator or voting rep.`
+            ? `${priorityState} has a non-voting ${houseTitle(priorityState).full.toLowerCase()} in the House of Representatives instead of senators or a voting representative.`
             : SINGLE_REP_STATES.has(priorityState ?? "")
               ? `${priorityState} has only one House representative for the whole state, so no zip code is needed.`
               : familiarityLevel === "low"
@@ -611,7 +614,7 @@ export default function PickRepScreen() {
                   style={{ fontSize: 11, color: "#008CFF", fontWeight: "600" }}
                 >
                   {TERRITORIES.has(priorityState ?? "")
-                    ? "Your Delegate"
+                    ? `Your ${houseTitle(priorityState).full}`
                     : multipleReps.length > 1 && !repSelected
                       ? "Best Match"
                       : "Your Representative"}
@@ -685,9 +688,9 @@ export default function PickRepScreen() {
               }}
             >
               <Text style={{ fontSize: 13, color: "#7A5C00", lineHeight: 18 }}>
-                Zip codes sometimes cross district lines due to gerrymandering.
-                If the match above doesn't look right, select your actual
-                representative below.
+                Your zip code crosses more than one district. If the match
+                above doesn't look right, select your actual representative
+                below.
               </Text>
             </View>
             <Pressable

@@ -55,6 +55,7 @@ import { officialBillsCache } from "../utils/officialBillsCache";
 import { screenTour } from "../utils/screenTour";
 import { storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+import { houseTitle, isNonVotingSeat } from "../utils/officialTitle";
 import { trySwipeBack } from "../utils/swipeBackGuard";
 import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
@@ -905,18 +906,18 @@ export default function OfficialDetail() {
           {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
           {(() => {
             const lastTerm = official.terms?.[official.terms.length - 1];
-            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
             const isHouse =
               lastTerm?.chamber === "House of Representatives" ||
               lastTerm?.chamber === "House" ||
-              TERRITORY_STATES.has(official.state) ||
+              isNonVotingSeat(official.state) ||
               lastTerm?.district != null;
             if (isHouse) {
               const district = lastTerm?.district
                 ? ` - District ${lastTerm.district}`
                 : "";
-              const full = `Representative, ${official.state}${district}`;
-              const abbr = `Rep, ${official.state}${district}`;
+              const title = houseTitle(official.state);
+              const full = `${title.full}, ${official.state}${district}`;
+              const abbr = `${title.abbr}, ${official.state}${district}`;
               return screenWidth < 390 ? abbr : full;
             }
             return screenWidth < 390
@@ -924,6 +925,9 @@ export default function OfficialDetail() {
               : `Senator, ${official.state}`;
           })()}
         </Text>
+        {isNonVotingSeat(official.state) && (
+          <Text style={componentStyles.roleTop}>Non-voting member</Text>
+        )}
         {LEADERSHIP_ROLES[official.bioguideId] && (
           <Text style={componentStyles.roleTop}>
             {LEADERSHIP_ROLES[official.bioguideId]}
@@ -1285,7 +1289,10 @@ export default function OfficialDetail() {
                         style={[componentStyles.term, { flex: 1 }]}
                         numberOfLines={1}
                       >
-                        {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
+                        {term.chamber === "Senate"
+                          ? "Senator"
+                          : houseTitle(official.state).abbr}
+                        ,{" "}
                         {official.state}
                         {term.district ? `, District ${term.district}` : ""}
                       </Text>
@@ -1304,7 +1311,7 @@ export default function OfficialDetail() {
                 <View style={componentStyles.termRow}>
                   <Text style={componentStyles.term}>
                     {official.terms?.[0]?.chamber === "House of Representatives"
-                      ? `Representative, ${official.state}`
+                      ? `${houseTitle(official.state).full}, ${official.state}`
                       : `Senator, ${official.state}`}
                   </Text>
                 </View>
@@ -1779,14 +1786,13 @@ export default function OfficialDetail() {
           party: official.partyHistory?.[0]?.partyName?.charAt(0) || "",
           role: (() => {
             const t = official.terms?.[official.terms.length - 1];
-            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
             const isHouse =
               t?.chamber === "House of Representatives" ||
               t?.chamber === "House" ||
-              TERRITORY_STATES.has(official.state) ||
+              isNonVotingSeat(official.state) ||
               t?.district != null;
             return isHouse
-              ? `Representative, ${official.state}${t?.district ? ` - District ${t.district}` : ""}`
+              ? `${houseTitle(official.state).full}, ${official.state}${t?.district ? ` - District ${t.district}` : ""}`
               : `Senator, ${official.state}`;
           })(),
           photoUrl: official.depiction?.imageUrl,

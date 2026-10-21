@@ -37,6 +37,7 @@ import {
 } from "./services/addressSuggestions";
 import { geocodeAddressToDistrict } from "./services/censusGeocoding";
 import { officialsService } from "./services/officials";
+import { houseTitle, isNonVotingSeat } from "./utils/officialTitle";
 import { trySwipeBack } from "./utils/swipeBackGuard";
 
 type SearchMode = "zip" | "address" | "state";
@@ -99,30 +100,31 @@ const STATE_ABBR_TO_STATE: Record<string, string> = {
   WV: "West Virginia",
   WI: "Wisconsin",
   WY: "Wyoming",
+  // Territories, which each have one non-voting House member
+  AS: "American Samoa",
+  GU: "Guam",
+  MP: "Northern Mariana Islands",
+  PR: "Puerto Rico",
+  VI: "U.S. Virgin Islands",
 };
 
 const STATE_TO_ABBR: Record<string, string> = {
   ...Object.fromEntries(
     Object.entries(STATE_ABBR_TO_STATE).map(([abbr, state]) => [state, abbr]),
   ),
-  // Territories appear in officials data but have no state filter entry
-  "American Samoa": "AS",
-  Guam: "GU",
-  "Northern Mariana Islands": "MP",
-  "Puerto Rico": "PR",
-  "U.S. Virgin Islands": "VI",
+  // Alternate name used in some officials data
   "Virgin Islands": "VI",
 };
 
 const STATES = Object.values(STATE_ABBR_TO_STATE).sort();
 
-// e.g. "Texas, Congressional District 23" or
-// "Alaska, At-Large Congressional District"
+// e.g. "Texas, Congressional District 23", "Alaska, At-Large Congressional
+// District", or "Guam, At-Large Delegate District"
 function districtLabel(stateAbbr: string, district: number): string {
-  const stateName =
-    STATE_ABBR_TO_STATE[stateAbbr] ??
-    Object.keys(STATE_TO_ABBR).find((name) => STATE_TO_ABBR[name] === stateAbbr) ??
-    stateAbbr;
+  const stateName = STATE_ABBR_TO_STATE[stateAbbr] ?? stateAbbr;
+  if (isNonVotingSeat(stateAbbr)) {
+    return `${stateName}, At-Large ${houseTitle(stateAbbr).full} District`;
+  }
   return district === 0
     ? `${stateName}, At-Large Congressional District`
     : `${stateName}, Congressional District ${district}`;
@@ -155,6 +157,15 @@ function findHouseRep(
       );
     }) ?? null
   );
+}
+
+// A state's two senators (none for DC and the territories)
+function findSenators(officials: any[], stateAbbr: string): any[] {
+  return officials.filter((o) => {
+    const termInfo = o.terms?.item?.[o.terms.item.length - 1];
+    const isSenate = termInfo?.chamber === "Senate" || o.chamber === "Senate";
+    return isSenate && o.state && STATE_TO_ABBR[o.state] === stateAbbr;
+  });
 }
 
 // Show a jump button once this far from the top or bottom of the page
@@ -244,6 +255,7 @@ export default function CongressionalMapScreen() {
   const [selectedDistrict, setSelectedDistrict] =
     useState<DistrictSelection | null>(null);
   const [matchedRep, setMatchedRep] = useState<any | null>(null);
+  const [matchedSenators, setMatchedSenators] = useState<any[]>([]);
   const [repLoading, setRepLoading] = useState(false);
   const [showJumpTop, setShowJumpTop] = useState(false);
   const [showJumpBottom, setShowJumpBottom] = useState(false);
@@ -296,6 +308,7 @@ export default function CongressionalMapScreen() {
   const resetResults = () => {
     setSelectedDistrict(null);
     setMatchedRep(null);
+    setMatchedSenators([]);
     setFocusDistricts(null);
     setPinLocation(null);
     setAddressGeoid(null);
@@ -314,16 +327,15 @@ export default function CongressionalMapScreen() {
       setSelectedDistrict(district);
       setRepLoading(true);
       setMatchedRep(null);
+      setMatchedSenators([]);
 
       try {
         const officialsData = await officialsService.getAll();
+        const officials = officialsData.officials as any[];
         setMatchedRep(
-          findHouseRep(
-            officialsData.officials as any[],
-            district.stateAbbr,
-            district.district,
-          ),
+          findHouseRep(officials, district.stateAbbr, district.district),
         );
+        setMatchedSenators(findSenators(officials, district.stateAbbr));
       } catch (error) {
         console.error("Failed to match district to representative:", error);
       } finally {
@@ -819,6 +831,17 @@ export default function CongressionalMapScreen() {
                   the district may have recently been redrawn.
                 </Text>
               </View>
+            )}
+
+            {/* The state's senators, under the House member. Same thin rule as
+                the education articles. */}
+            {selectedDistrict && !repLoading && matchedSenators.length > 0 && (
+              <>
+                <View style={{ height: 1, backgroundColor: "#e8e8e8" }} />
+                {matchedSenators.map((senator) => (
+                  <OfficialCard key={senator.bioguideId} item={senator} />
+                ))}
+              </>
             )}
           </View>
         </ScrollView>

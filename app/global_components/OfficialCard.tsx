@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
+import { houseTitle } from "../utils/officialTitle";
 
 const STATE_ABBR: Record<string, string> = {
   Alabama: "AL",
@@ -92,9 +93,10 @@ function formatRole(
     (!chamber?.toLowerCase().includes("senate") && district != null);
 
   if (isHouse) {
-    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
-    const short = `Rep, ${stateAbbr}${district ? `, District ${district}` : ""}`;
+    const title = houseTitle(state);
+    const full = `${title.full}, ${state}${district ? `, District ${district}` : ""}`;
+    const abbr = `${title.abbr}, ${state}${district ? `, District ${district}` : ""}`;
+    const short = `${title.abbr}, ${stateAbbr}${district ? `, District ${district}` : ""}`;
     if (full.length <= threshold) return full;
     if (abbr.length <= threshold) return abbr;
     return short;

@@ -4,6 +4,7 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
+import { houseTitle } from "../utils/officialTitle";
 
 const STATES = [
   "Alabama",
@@ -113,11 +114,11 @@ export default function PickStateScreen() {
             marginTop: 32,
           }}
         >
-          Set a priority state
+          Set a priority state or territory
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
           {priorityState && TERRITORIES.has(priorityState)
-            ? "Territories and DC have non-voting delegates instead of senators. You can still follow their representative's work in Congress."
+            ? "Territories and DC have a non-voting member of the House instead of senators. You can still follow their work in Congress."
             : familiarityLevel === "low"
               ? "Every state has two senators in Congress. Pick yours to follow what they're working on. Their work is meant to amplify your state's needs on a national level."
               : familiarityLevel === "high"
@@ -151,7 +152,7 @@ export default function PickStateScreen() {
               fontWeight: priorityState ? "600" : "400",
             }}
           >
-            {priorityState ?? "Select a state..."}
+            {priorityState ?? "Select a state or territory..."}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             {priorityState ? (
@@ -230,9 +231,7 @@ export default function PickStateScreen() {
             }}
           >
             <Text style={{ fontSize: 14, color: "#7A5C00", lineHeight: 20 }}>
-              {priorityState === "District of Columbia"
-                ? "DC has no voting senators. You'll be shown your non-voting delegate to the House instead."
-                : `${priorityState} has no voting senators. You'll be shown your non-voting delegate to the House instead.`}
+              {`${priorityState === "District of Columbia" ? "DC" : priorityState} has no senators. You'll be shown your non-voting ${houseTitle(priorityState).full.toLowerCase()} in the House instead.`}
             </Text>
           </View>
         )}

@@ -35,6 +35,7 @@ import { styles as componentStyles } from "../global_styles/styles";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { houseTitle } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
 
 type Official = {
@@ -164,7 +165,7 @@ export default function OfficialsScreen() {
               pendingItemForNewList.chamber === "House" ||
               TERRITORY_STATES.has(pendingItemForNewList.state) ||
               pendingItemForNewList.district != null
-                ? `Representative, ${pendingItemForNewList.state}${pendingItemForNewList.district ? `, District ${pendingItemForNewList.district}` : ""}`
+                ? `${houseTitle(pendingItemForNewList.state).full}, ${pendingItemForNewList.state}${pendingItemForNewList.district ? `, District ${pendingItemForNewList.district}` : ""}`
                 : `Senator, ${pendingItemForNewList.state}`),
             date: pendingItemForNewList.date,
             latestAction:
@@ -536,7 +537,7 @@ export default function OfficialsScreen() {
               official.chamber === "House" ||
               TERRITORY_STATES.has(official.state) ||
               official.district != null
-                ? `Representative, ${official.state}${official.district ? `, District ${official.district}` : ""}`
+                ? `${houseTitle(official.state).full}, ${official.state}${official.district ? `, District ${official.district}` : ""}`
                 : `Senator, ${official.state}`,
             photoUrl: (official as any).depiction?.imageUrl || undefined,
           };
