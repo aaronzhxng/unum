@@ -1,16 +1,10 @@
 {
-  "weekOf": "2026-09-28",
-  "weekEnd": "2026-10-04",
-  "weekOf": "2026-10-05",
-  "weekEnd": "2026-10-11",
+  "weekOf": "2026-10-19",
+  "weekEnd": "2026-10-25",
   "bills": [
     {
-      "billId": "hr6509",
-      "note": "This bill increases oversight of drug compounding and imposes statutory limits on compounded drugs that are copies of commercially available drugs."
-    },
-    {
-      "billId": "hr139",
-      "note": "This bill makes daylight saving time the new, permanent standard time."
+      "billId": "hr10841",
+      "note": "This bill prohibits the use of AI to deprive or defraud individuals of the right to vote in elections for public office."
     }
   ]
 }
