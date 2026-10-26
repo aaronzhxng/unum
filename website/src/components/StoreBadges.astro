@@ -11,10 +11,10 @@ const { align = "start" } = Astro.props;
 ---
 
 <div class:list={["badges", align]}>
-  <a href={APP_STORE_URL} aria-label="Download Unum on the App Store">
+  <a href={APP_STORE_URL} target="_blank" rel="noopener" aria-label="Download Unum on the App Store">
     <Image src={appStoreBadge} alt="Download on the App Store" height={48} />
   </a>
-  <a href={GOOGLE_PLAY_URL} aria-label="Get Unum on Google Play">
+  <a href={GOOGLE_PLAY_URL} target="_blank" rel="noopener" aria-label="Get Unum on Google Play">
     <Image
       src={googlePlayBadge}
       alt="Get it on Google Play"

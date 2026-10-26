@@ -18,7 +18,6 @@ interface Props {
   description?: string;
   // On inner pages, "unum" (or "unum's") is followed by the page name
   // stacked on two small lines, e.g. "unum's" + "data &" / "sources".
-  // Hovering the logo fades the page name and leaves "unum".
   brandStack?: { possessive?: boolean; lines: [string, string] };
 }
 
@@ -34,20 +33,18 @@ const currentPath = Astro.url.pathname.replace(/\.html$/, "");
 const year = new Date().getFullYear();
 
 // The header text is split into single characters so it can type out on
-// first load (each character's --i sets when it appears) and, on inner
-// pages, delete and retype the page name on hover (--j counts characters
-// within the page name, --n is its length).
-type Char = { ch: string; i: number; j?: number };
-const wordChars: Char[] = [..."unum"].map((ch, i) => ({ ch, i }));
-let charIndex = wordChars.length;
-let extraIndex = 0;
+// page load and delete and retype on hover (--i is each character's
+// position, --n the character count). Inner pages delete just the page
+// name; the home page deletes "unum" and types it straight back.
+type Char = { ch: string; i: number };
+let charIndex = 0;
 const toChars = (text: string): Char[] =>
-  [...text].map((ch) => ({ ch, i: charIndex++, j: extraIndex++ }));
+  [...text].map((ch) => ({ ch, i: charIndex++ }));
+const wordChars = toChars("unum");
 const possessiveChars = brandStack?.possessive ? toChars("'s") : [];
 const lineChars = brandStack ? brandStack.lines.map(toChars) : [];
-const extraCount = extraIndex;
-const charStyle = (c: Char) =>
-  c.j === undefined ? `--i: ${c.i}` : `--i: ${c.i}; --j: ${c.j}`;
+const charCount = charIndex;
+const charStyle = (c: Char) => `--i: ${c.i}`;
 ---
 
 <!doctype html>
@@ -55,17 +52,11 @@ const charStyle = (c: Char) =>
   <head>
     <meta charset="utf-8" />
     <script is:inline>
-      // Type out the header logo once per browser session (not for reduced
+      // Type out the header logo on every page load (not for reduced
       // motion). Set before the first paint so the text doesn't flash in.
-      try {
-        if (
-          !sessionStorage.getItem("unum-logo-typed") &&
-          !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ) {
-          document.documentElement.classList.add("logo-intro");
-          sessionStorage.setItem("unum-logo-typed", "1");
-        }
-      } catch {}
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("logo-intro");
+      }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
@@ -82,9 +73,9 @@ const charStyle = (c: Char) =>
   </head>
   <body>
     <header class="site-header container">
-      <a href="/" class="brand" aria-label="Unum Initiative home">
+      <a href="/" class:list={["brand", { "brand-retype": !brandStack }]} aria-label="Unum Initiative home" style={`--n: ${charCount}`}>
         <Image src={logo} alt="" width={44} height={44} densities={[1, 2]} class="brand-icon" />
-        <span class="brand-name" style={`--n: ${extraCount}`}>
+        <span class="brand-name">
           {/* Kept on one line: line breaks here would render as spaces */}
           <span class="brand-home">{wordChars.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>{possessiveChars.length > 0 && <span class="brand-extra">{possessiveChars.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>}{brandStack && <span class="brand-extra brand-stack">{lineChars.map((line) => <span class="brand-line">{line.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>)}</span>}
         </span>
@@ -220,18 +211,40 @@ const charStyle = (c: Char) =>
     color: var(--blue);
   }
 
-  /* Hovering deletes the page name one character at a time from the end, as
-     if backspaced, and leaving types it back in order. Characters only hide
-     (they keep their space), so the hover area doesn't shrink under the
-     cursor. */
+  /* Inner pages: hovering deletes the page name one character at a time
+     from the end, as if backspaced, and leaving types it back in order.
+     Characters only hide (they keep their space), so the hover area doesn't
+     shrink under the cursor. The page name starts after the 4 letters of
+     "unum". */
   .brand-extra .ch {
-    transition: opacity 0s linear calc(var(--j) * 24ms);
+    transition: opacity 0s linear calc((var(--i) - 4) * 24ms);
   }
 
   .brand:hover .brand-extra .ch,
   .brand:focus-visible .brand-extra .ch {
     opacity: 0;
-    transition-delay: calc((var(--n) - 1 - var(--j)) * 24ms);
+    transition-delay: calc((var(--n) - 1 - var(--i)) * 24ms);
+  }
+
+  /* Home page: hovering backspaces "unum", pauses, and types it back. Each
+     character hides from its deletion until its retyping. */
+  .brand-retype {
+    --retype-char: 70ms;
+    --retype-pause: 200ms;
+  }
+
+  .brand-retype:hover .ch,
+  .brand-retype:focus-visible .ch {
+    animation: logo-gone step-end;
+    animation-delay: calc((var(--n) - 1 - var(--i)) * var(--retype-char));
+    animation-duration: calc((2 * var(--i) + 1) * var(--retype-char) + var(--retype-pause));
+  }
+
+  @keyframes logo-gone {
+    from,
+    to {
+      opacity: 0;
+    }
   }
 
   /* First load: characters appear one after another, as if typed */
@@ -258,6 +271,11 @@ const charStyle = (c: Char) =>
   @media (prefers-reduced-motion: reduce) {
     .brand-extra .ch {
       transition: none;
+    }
+
+    .brand-retype:hover .ch,
+    .brand-retype:focus-visible .ch {
+      animation: none;
     }
   }
 
