@@ -1,3 +1,4 @@
+import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
@@ -8,4 +9,6 @@ export default defineConfig({
   trailingSlash: "never",
   // The dev toolbar overlays the page in local previews
   devToolbar: { enabled: false },
+  // Lists every page for search engines at /sitemap-index.xml
+  integrations: [sitemap()],
 });

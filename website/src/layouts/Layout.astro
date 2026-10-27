@@ -4,8 +4,11 @@ import "@fontsource-variable/inter";
 import logo from "../assets/logo.png";
 import "../styles/global.css";
 import {
+  APP_STORE_URL,
   CONTACT_EMAIL,
   DISCLAIMER,
+  GOOGLE_PLAY_URL,
+  LEGAL_NAME,
   NAV_LINKS,
   NEWSLETTER_URL,
   SOCIAL_LINKS,
@@ -22,12 +25,48 @@ interface Props {
 const {
   title,
   brandStack,
-  description = "Unum is a free, nonpartisan app for following U.S. legislation and the members of Congress who represent you.",
+  description = "Unum is a free, nonpartisan Congress tracker. Follow U.S. legislation, votes, and the members of Congress who represent you.",
 } = Astro.props;
 
-const pageTitle = title ? `${title} | Unum Initiative` : "Unum Initiative";
-const canonical = new URL(Astro.url.pathname, Astro.site);
+// "Congress tracker" matches the app's store listing name, so the homepage
+// shows up for that search as well as for the organization's name
+const pageTitle = title
+  ? `${title} | Unum Initiative`
+  : "Unum: Congress Tracker | Unum Initiative";
 const currentPath = Astro.url.pathname.replace(/\.html$/, "");
+// Pages build to about.html etc. but are served without the extension, so the
+// canonical URL drops it too (the .html address redirects)
+const canonical = new URL(currentPath === "/index" ? "/" : currentPath, Astro.site);
+const ogImage = new URL("/og-image.png", Astro.site);
+
+// Tells search engines who runs the site and links its official profiles,
+// which helps separate Unum Initiative from other organizations named Unum
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "NGO",
+      "@id": `${Astro.site}#organization`,
+      name: "Unum Initiative",
+      legalName: LEGAL_NAME,
+      alternateName: ["Unum", "Unum: Congress Tracker"],
+      url: Astro.site?.toString(),
+      logo: new URL("/apple-touch-icon.png", Astro.site).toString(),
+      email: CONTACT_EMAIL,
+      nonprofitStatus: "Nonprofit501c3",
+      sameAs: [...SOCIAL_LINKS.map((link) => link.href), NEWSLETTER_URL],
+    },
+    {
+      "@type": "MobileApplication",
+      name: "Unum: Congress Tracker",
+      operatingSystem: "iOS, Android",
+      applicationCategory: "ReferenceApplication",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      publisher: { "@id": `${Astro.site}#organization` },
+      sameAs: [APP_STORE_URL, GOOGLE_PLAY_URL],
+    },
+  ],
+};
 const year = new Date().getFullYear();
 
 // The header text is split into single characters so it can type out on
@@ -62,12 +101,19 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:site_name" content="Unum Initiative" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL("/apple-touch-icon.png", Astro.site)} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Unum: Everything Congress is doing, in one place" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#f4f1eb" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <header class="site-header container">
@@ -125,8 +171,8 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
         </div>
 
         <div class="footer-legal">
-          <p>Unum Initiative is a 501(c)(3) nonprofit organization. {DISCLAIMER}</p>
-          <p>© {year} Unum Initiative</p>
+          <p>{LEGAL_NAME} is a 501(c)(3) nonprofit organization. {DISCLAIMER}</p>
+          <p>© {year} {LEGAL_NAME}</p>
         </div>
       </div>
     </footer>

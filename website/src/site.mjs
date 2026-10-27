@@ -7,6 +7,9 @@ export const GOOGLE_PLAY_URL =
 export const NEWSLETTER_URL = "https://unuminitiative.beehiiv.com/";
 export const CONTACT_EMAIL = "contact@unuminitiative.com";
 
+// The registered legal name, used in the footer and structured data
+export const LEGAL_NAME = "Unum Initiative Inc.";
+
 export const SOCIAL_LINKS = [
   { label: "Instagram", href: "https://www.instagram.com/unuminitiative/" },
   { label: "X", href: "https://x.com/unuminitiative" },
