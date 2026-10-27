@@ -33,3 +33,5 @@ node_modules/
 .env
 credentials.json
 *.zip
+# Social media post templates (built separately)
+social/
