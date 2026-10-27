@@ -4,6 +4,7 @@
 //
 //   node social/prototypes/build.mjs            # all templates
 //   node social/prototypes/build.mjs seats      # only slugs containing "seats"
+//   OUT=out-inter node social/prototypes/build.mjs   # render to another folder
 
 import fs from "node:fs";
 import path from "node:path";
@@ -15,7 +16,7 @@ import { esc } from "./lib.mjs";
 
 const run = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const OUT = path.join(HERE, "out");
+const OUT = path.join(HERE, process.env.OUT || "out");
 fs.mkdirSync(OUT, { recursive: true });
 
 const CHROME = [

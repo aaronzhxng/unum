@@ -13,11 +13,12 @@ to images, so no post is drawn by hand.
 node social/prototypes/fetch-data.mjs   # refresh the API snapshots in data/
 node social/prototypes/build.mjs        # render every template to out/
 node social/prototypes/build.mjs seats  # render only matching templates
+OUT=out-inter node social/prototypes/build.mjs  # render to another folder
 ```
 
 Then open `social/prototypes/out/index.html` to review them side by side.
 Needs Node 20+, Chrome or Edge, and `CONGRESS_API_KEY` in `backend/.env`.
-`data/` and `out/` are generated and not committed.
+`data/`, `out/`, and other `out-*/` folders are generated and not committed.
 
 | What | Where |
 |---|---|

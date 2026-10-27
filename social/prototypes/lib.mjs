@@ -123,7 +123,7 @@ export const longDate = (iso) => {
 // ---------------------------------------------------------------------------
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=block";
+  "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=block";
 
 const CSS = `
 :root {
@@ -151,9 +151,9 @@ body { background: var(--paper); }
 /* Editorial type */
 .kicker { font: 500 24px/39px "DM Mono", monospace; color: var(--blue); text-transform: uppercase; }
 .kicker b { font-weight: 500; color: var(--ink); }
-.hl { font-family: Fraunces, serif; font-weight: 700; font-size: calc(48px * var(--fit, 1));
-  line-height: 1.2; color: var(--gray); letter-spacing: -0.005em; text-wrap: pretty; }
-.hl .k, .hl .pk, .hl .fk { font-weight: 900; font-size: 1.083em; }
+/* Inter 600, as on the website; key phrases stand out by color, not weight */
+.hl { font-weight: 600; font-size: calc(48px * var(--fit, 1));
+  line-height: 1.2; color: var(--gray); letter-spacing: -0.015em; text-wrap: pretty; }
 .hl .k { color: var(--ink); }
 .hl .n { color: var(--name); }
 .hl .p, .hl .pk { color: var(--pass); }
@@ -235,7 +235,7 @@ body { background: var(--paper); }
 .palist i { width: 13px; height: 13px; border-radius: 50%; }
 
 /* Generic content for custom visuals */
-.big { font-family: Fraunces, serif; font-weight: 900; line-height: .95; letter-spacing: -0.02em; }
+.big { font-weight: 600; line-height: .95; letter-spacing: -0.02em; }
 .mono { font-family: "DM Mono", monospace; font-weight: 500; }
 .badge { display: inline-block; color: #fff; font: 700 15px Inter, sans-serif; padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
 .list-row { display: grid; grid-template-columns: 54px 1fr; gap: 14px; align-items: center; padding: 20px 0; border-bottom: 1px solid #e6e3dc; }
