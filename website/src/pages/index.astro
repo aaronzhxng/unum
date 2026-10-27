@@ -1,0 +1,786 @@
+---
+import { Image } from "astro:assets";
+import StoreBadges from "../components/StoreBadges.astro";
+import Layout from "../layouts/Layout.astro";
+import bill1 from "../assets/screens/bill1.png";
+import bill2 from "../assets/screens/bill2.png";
+import education1 from "../assets/screens/education1.png";
+import education2 from "../assets/screens/education2.png";
+import home from "../assets/screens/home.png";
+import legislation from "../assets/screens/legislation.png";
+import official from "../assets/screens/official.png";
+import officials from "../assets/screens/officials.png";
+
+const values = [
+  {
+    title: "Nonpartisan",
+    text: "We show the record — bills, votes, and actions — without editorializing.",
+  },
+  {
+    title: "Sourced",
+    text: "Every fact comes from official sources like Congress.gov and the House and Senate.",
+  },
+  {
+    title: "Free, with no ads",
+    text: "No subscriptions and no advertising, for everyone.",
+  },
+  {
+    title: "Private",
+    text: "No account required, and we never sell your data.",
+  },
+];
+
+type Feature = {
+  image: ImageMetadata;
+  title: string;
+  text: string;
+  label?: string;
+};
+
+const features: Feature[] = [
+  {
+    image: home,
+    // The first slide doubles as the page's headline
+    title: "Everything Congress is doing, in one place",
+    text: "Keep track of your elected officials and their bills in custom lists.",
+    // Shorter name for the screenshot's alt text and its dot
+    label: "Your lists",
+  },
+  {
+    image: officials,
+    title: "Every member of Congress",
+    text: "Browse senators and representatives by state, and find the ones who represent you.",
+  },
+  {
+    image: official,
+    title: "Member Profiles",
+    text: "See each official's sponsored bills, committees, top policy areas, and contact information.",
+  },
+  {
+    image: legislation,
+    title: "Every Legislation",
+    text: "Follow bills from the current Congress, updated twice a day and filterable by policy area.",
+  },
+  {
+    image: bill1,
+    title: "Bill details",
+    text: "Track where a bill stands, from introduction to becoming law, with its sponsor and official summary.",
+  },
+  {
+    image: bill2,
+    title: "Voting records",
+    text: "See how the House and Senate voted, broken down by party — and how the officials you follow voted.",
+  },
+  {
+    image: education1,
+    title: "Civics guide",
+    text: "Plain-language articles on how a bill becomes law, how to read legislation, and more.",
+  },
+  {
+    image: education2,
+    title: "Learn as you read",
+    text: "Key terms are explained in context, with links to official sources for more depth.",
+  },
+];
+---
+
+<Layout>
+  <section class="container hero">
+    <div class="hero-copy">
+      <h1 class="sr-only">{features[0].title}</h1>
+      <div class="hero-text">
+        <div class="copy-box hero-feature" data-copy>
+          {/* Every description, stacked invisibly, reserves the height of the
+              longest one so the page doesn't jump while text types out */}
+          {
+            features.map((feature) => (
+              <p class="copy-sizer" aria-hidden="true">
+                <span class="copy-title">{feature.title}</span>
+                <span class="copy-text">{feature.text}</span>
+              </p>
+            ))
+          }
+          <p class="copy-typed" aria-hidden="true">
+            <span class="copy-title" data-typed-title>{features[0].title}</span>
+            <span class="copy-text" data-typed-text>{features[0].text}</span>
+          </p>
+        </div>
+      </div>
+      <StoreBadges />
+    </div>
+
+    <div
+      class="carousel"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="App features"
+      data-carousel
+    >
+      <div class="carousel-card card">
+        <div
+          class="carousel-stage"
+          data-stage
+          tabindex="0"
+          aria-label="App screenshots. Use the left and right arrow keys to browse."
+        >
+          <div class="stage-frame">
+            {
+              features.map((feature, index) => (
+                <div
+                  class:list={[
+                    "stage-item",
+                    index === 0
+                      ? "pos-current"
+                      : index === 1
+                        ? "pos-next"
+                        : index === features.length - 1
+                          ? "pos-prev"
+                          : "pos-hidden",
+                  ]}
+                  data-item
+                  data-title={feature.title}
+                  data-text={feature.text}
+                  aria-hidden={index === 0 ? "false" : "true"}
+                >
+                  <Image
+                    src={feature.image}
+                    alt={`Unum app screen: ${feature.label ?? feature.title}`}
+                    width={1280}
+                    widths={[320, 480, 640, 960, 1280]}
+                    quality={90}
+                    sizes="(max-width: 640px) 220px, (max-width: 899px) 250px, 320px"
+                    loading={index < 3 ? "eager" : "lazy"}
+                  />
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="carousel-controls">
+          <button class="carousel-button carousel-prev" type="button" data-prev aria-label="Previous feature">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <div class="carousel-dots">
+            {
+              features.map((feature, index) => (
+                <button
+                  class="carousel-dot"
+                  type="button"
+                  data-dot={index}
+                  aria-label={`Go to ${feature.label ?? feature.title}`}
+                  aria-current={index === 0 ? "true" : "false"}
+                />
+              ))
+            }
+          </div>
+          <button class="carousel-button carousel-next" type="button" data-next aria-label="Next feature">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <p class="sr-only" data-live aria-live="off">
+        {features[0].title}: {features[0].text}
+      </p>
+    </div>
+  </section>
+
+  <section class="container section">
+    <ul class="values" role="list">
+      {
+        values.map((value) => (
+          <li>
+            <h3>{value.title}</h3>
+            <p class="muted">{value.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="container section cta">
+    <div class="card cta-card">
+      <h2>Free on iPhone and Android</h2>
+      <p class="lede">Start following the bills and officials that matter to you.</p>
+      <StoreBadges align="center" />
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Hero: the headline, a supporting line, and the store badges on the
+     left; the feature carousel on the right. The carousel's card and its
+     controls sit in two rows of the hero grid (a subgrid), so the text
+     centers on the card rather than on card plus controls.
+     Stacked below 900px, text first. */
+  .hero {
+    padding-top: var(--intro-top);
+    display: grid;
+    /* 44% text / 56% card: the narrowest text column that keeps every
+       slide title to three lines, leaving the card as wide as possible */
+    grid-template-columns: minmax(0, 11fr) minmax(0, 14fr);
+    grid-template-rows: auto auto;
+    column-gap: 64px;
+  }
+
+  .hero-copy {
+    grid-row: 1;
+    align-self: center;
+    display: grid;
+    gap: var(--intro-gap);
+    justify-items: start;
+  }
+
+  /* The hero text is the current slide's description, typed out on each
+     change. Its box keeps the height of the longest description, so the store
+     badges below don't move. */
+  .hero-feature {
+    align-content: start;
+  }
+
+  .hero-feature .copy-title {
+    font-size: clamp(34px, 4.4vw, 48px);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+  }
+
+  .hero-feature .copy-text {
+    margin-top: var(--intro-gap);
+    font-size: 19px;
+    line-height: 1.75;
+  }
+
+  /* No single word stranded on a last line */
+  .hero-feature .copy-title,
+  .hero-feature .copy-text {
+    text-wrap: pretty;
+  }
+
+  .values {
+    list-style: none;
+    margin: 0;
+    padding: 32px 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .values h3 {
+    margin-bottom: 8px;
+  }
+
+  .values p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Feature carousel: a card with one screenshot at a time. The next
+     screenshot waits, translucent, behind and to the right of the current
+     one, and slides into place when the carousel advances. */
+  .carousel {
+    /* Sized so the current screenshot and the peeking next one (1.4 phone
+       widths) fit inside the card. The card is 56% of the content width
+       (page up to 1080px, less 48px of gutters and the 64px column gap);
+       take off its 40px padding a side and 16px to spare, then divide by
+       1.4: (content x 0.56 - 96px) / 1.4 = content x 0.4 - 68.6px. Below
+       900px the layout stacks and fixed sizes take over. */
+    --phone-w: min(320px, calc((min(100vw, 1080px) - 112px) * 0.4 - 68.6px));
+    min-width: 0;
+    grid-row: 1 / span 2;
+    display: grid;
+    grid-template-rows: subgrid;
+  }
+
+  .carousel-card {
+    --card-pad: 40px;
+    position: relative;
+    padding: var(--card-pad);
+  }
+
+  .carousel-stage {
+    /* Reach the card's edges so screenshots slide in from them */
+    margin-inline: calc(-1 * var(--card-pad));
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  .carousel-stage:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 4px;
+  }
+
+  .stage-frame {
+    position: relative;
+    /* Screenshots are 1600 x 3260 */
+    height: calc(var(--phone-w) * 2.0375);
+  }
+
+  .stage-item {
+    position: absolute;
+    top: 0;
+    /* Center the current screenshot and the peeking next one as a group */
+    left: calc((100% - var(--phone-w) * 1.4) / 2);
+    width: var(--phone-w);
+    transition:
+      transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 0.6s ease;
+  }
+
+  /* No native image dragging, which would swallow swipes */
+  .stage-item img {
+    width: 100%;
+    height: auto;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  .pos-current {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    z-index: 3;
+  }
+
+  .pos-next {
+    transform: translateX(46%) scale(0.84);
+    opacity: 0.35;
+    z-index: 2;
+    cursor: pointer;
+  }
+
+  /* Parked out of sight: the previous slide to the left (so going back
+     slides it in from the left), everything else to the right */
+  .pos-prev {
+    transform: translateX(-30%) scale(0.84);
+    opacity: 0;
+    z-index: 1;
+  }
+
+  .pos-hidden {
+    transform: translateX(80%) scale(0.7);
+    opacity: 0;
+    z-index: 0;
+  }
+
+  .copy-box {
+    display: grid;
+  }
+
+  .copy-box > p {
+    grid-area: 1 / 1;
+    max-width: none;
+  }
+
+  .copy-sizer {
+    visibility: hidden;
+  }
+
+  .copy-title {
+    display: block;
+    font-family: var(--display);
+    font-weight: var(--display-weight);
+    font-size: 21px;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .copy-text {
+    display: block;
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* Blinking cursor shown while text types out */
+  .copy-box :global(.caret) {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: -0.1em;
+    background: var(--blue);
+    animation: caret-blink 0.8s steps(1) infinite;
+  }
+
+  @keyframes caret-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* Touch screens, which can't hover: the controls sit in the card under
+     the screenshot */
+  .carousel-controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* With a mouse: the controls appear over the card while it's hovered (or
+     holds keyboard focus), the arrows in its side margins and the dots
+     along its bottom edge, clear of the screenshot */
+  @media (hover: hover) {
+    .carousel-controls {
+      display: contents;
+    }
+
+    .carousel-prev,
+    .carousel-next,
+    .carousel-dots {
+      position: absolute;
+      /* Above the screenshots, which narrow cards bring under the arrows */
+      z-index: 4;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .carousel-card:hover :is(.carousel-prev, .carousel-next, .carousel-dots),
+    .carousel-card:has(:focus-visible) :is(.carousel-prev, .carousel-next, .carousel-dots) {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .carousel-prev,
+    .carousel-next {
+      top: calc(50% - 22px);
+    }
+
+    .carousel-prev {
+      left: 16px;
+    }
+
+    .carousel-next {
+      right: 16px;
+    }
+
+    .carousel-dots {
+      left: 0;
+      right: 0;
+      bottom: 8px;
+      justify-content: center;
+    }
+  }
+
+  .carousel-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .carousel-button:hover {
+    background: #fff;
+  }
+
+  .carousel-button:active {
+    transform: scale(0.94);
+  }
+
+  .carousel-button:focus-visible,
+  .carousel-dot:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  .carousel-dots {
+    display: flex;
+    gap: 2px;
+  }
+
+  /* 24px tap target around an 8px dot */
+  .carousel-dot {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .carousel-dot::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cfc9bd;
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .carousel-dot[aria-current="true"]::before {
+    background: var(--blue);
+    transform: scale(1.25);
+  }
+
+  @media (max-width: 899px) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: none;
+      row-gap: 48px;
+    }
+
+    .hero-copy,
+    .carousel {
+      grid-row: auto;
+    }
+
+    .carousel {
+      display: block;
+    }
+
+    .carousel {
+      --phone-w: 250px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage-item {
+      transition: none;
+    }
+
+    .copy-box :global(.caret) {
+      display: none;
+    }
+  }
+
+  .cta-card {
+    text-align: center;
+    padding: 56px 24px;
+    display: grid;
+    gap: var(--card-heading-gap);
+    justify-items: center;
+  }
+
+  @media (max-width: 860px) {
+    .values {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+
+    .values {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .carousel-card {
+      --card-pad: 20px;
+      padding-block: 28px;
+    }
+
+    /* Leaves room for the peeking next screenshot on a 375px-wide phone */
+    .carousel {
+      --phone-w: 220px;
+    }
+
+    .carousel-controls {
+      gap: 8px;
+    }
+
+    .carousel-dots {
+      gap: 0;
+    }
+
+    .copy-text {
+      font-size: 14px;
+    }
+
+    .hero-feature .copy-text {
+      font-size: 17px;
+    }
+  }
+</style>
+
+<script>
+  // Feature carousel. Previous/next buttons, dots, arrow keys, swipes, and a
+  // click on the peeking next screenshot all navigate, wrapping at either
+  // end. The current feature's description types out in the hero on each
+  // change. Auto-rotation runs while the carousel is on screen and pauses on
+  // hover, focus, or a hidden tab; it's off, and text appears instantly, for
+  // visitors who prefer reduced motion.
+  const AUTOPLAY_MS = 4500;
+  const TITLE_CHAR_MS = 32;
+  const TEXT_CHAR_MS = 10;
+  const POSITIONS = ["pos-current", "pos-next", "pos-prev", "pos-hidden"];
+
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  for (const carousel of document.querySelectorAll<HTMLElement>("[data-carousel]")) {
+    const stage = carousel.querySelector<HTMLElement>("[data-stage]")!;
+    const card = carousel.querySelector<HTMLElement>(".carousel-card")!;
+    const items = [...carousel.querySelectorAll<HTMLElement>("[data-item]")];
+    const dots = [...carousel.querySelectorAll<HTMLButtonElement>("[data-dot]")];
+    const live = carousel.querySelector<HTMLElement>("[data-live]")!;
+    const copy = document.querySelector<HTMLElement>("[data-copy]")!;
+    const typedTitle = copy.querySelector<HTMLElement>("[data-typed-title]")!;
+    const typedText = copy.querySelector<HTMLElement>("[data-typed-text]")!;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const count = items.length;
+
+    let index = 0;
+    let hovering = false;
+    let focused = false;
+    let inView = false;
+    let seen = false;
+    let timer: number | undefined;
+    let typingRun = 0;
+
+    const caret = document.createElement("span");
+    caret.className = "caret";
+
+    // Types text into an element one character at a time, with a cursor at
+    // the end. Returns false if a newer run started meanwhile.
+    const typeInto = async (el: HTMLElement, text: string, charMs: number, run: number) => {
+      const node = document.createTextNode("");
+      el.replaceChildren(node, caret);
+      for (const char of text) {
+        if (run !== typingRun) return false;
+        node.data += char;
+        await sleep(charMs);
+      }
+      return true;
+    };
+
+    // Types a title and then its text, unless a newer run interrupts
+    const typePair = async (
+      titleEl: HTMLElement,
+      title: string,
+      textEl: HTMLElement,
+      text: string,
+    ) => {
+      const run = ++typingRun;
+      if (reducedMotion) {
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        return;
+      }
+      textEl.textContent = "";
+      if (!(await typeInto(titleEl, title, TITLE_CHAR_MS, run))) return;
+      if (!(await typeInto(textEl, text, TEXT_CHAR_MS, run))) return;
+      caret.remove();
+    };
+
+    const showCopy = (i: number) => {
+      const { title = "", text = "" } = items[i].dataset;
+      typePair(typedTitle, title, typedText, text);
+    };
+
+    const render = () => {
+      items.forEach((item, k) => {
+        const offset = (k - index + count) % count;
+        const position =
+          offset === 0 ? "pos-current"
+          : offset === 1 ? "pos-next"
+          : offset === count - 1 ? "pos-prev"
+          : "pos-hidden";
+        item.classList.remove(...POSITIONS);
+        item.classList.add(position);
+        item.setAttribute("aria-hidden", offset === 0 ? "false" : "true");
+      });
+      dots.forEach((dot, k) =>
+        dot.setAttribute("aria-current", k === index ? "true" : "false"),
+      );
+    };
+
+    const goTo = (i: number) => {
+      index = (i + count) % count;
+      render();
+      const { title = "", text = "" } = items[index].dataset;
+      live.textContent = `${title}: ${text}`;
+      showCopy(index);
+    };
+
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    const sync = () => {
+      const running =
+        !reducedMotion && !hovering && !focused && inView && !document.hidden;
+      if (running && timer === undefined) {
+        timer = window.setInterval(() => goTo(index + 1), AUTOPLAY_MS);
+      } else if (!running) {
+        stop();
+      }
+      // Announce changes to screen readers only while not auto-rotating
+      live.setAttribute("aria-live", running ? "off" : "polite");
+    };
+
+    // Manual navigation restarts the countdown
+    const navigate = (i: number) => {
+      goTo(i);
+      stop();
+      sync();
+    };
+
+    carousel.querySelector("[data-prev]")!.addEventListener("click", () => navigate(index - 1));
+    carousel.querySelector("[data-next]")!.addEventListener("click", () => navigate(index + 1));
+    dots.forEach((dot, k) => dot.addEventListener("click", () => navigate(k)));
+
+    // Clicking the peeking next screenshot advances to it
+    items.forEach((item) =>
+      item.addEventListener("click", () => {
+        if (item.classList.contains("pos-next")) navigate(index + 1);
+      }),
+    );
+
+    stage.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") navigate(index + 1);
+      if (event.key === "ArrowLeft") navigate(index - 1);
+    });
+
+    // Horizontal swipes on the screenshots
+    let swipeStartX: number | null = null;
+    stage.addEventListener("dragstart", (event) => event.preventDefault());
+    stage.addEventListener("pointerdown", (event) => { swipeStartX = event.clientX; });
+    stage.addEventListener("pointercancel", () => { swipeStartX = null; });
+    stage.addEventListener("pointerup", (event) => {
+      if (swipeStartX === null) return;
+      const dx = event.clientX - swipeStartX;
+      swipeStartX = null;
+      if (Math.abs(dx) > 40) navigate(dx < 0 ? index + 1 : index - 1);
+    });
+
+    // Hovering the card or focusing the screenshots pauses rotation
+    card.addEventListener("pointerenter", () => { hovering = true; sync(); });
+    card.addEventListener("pointerleave", () => { hovering = false; sync(); });
+    stage.addEventListener("focusin", () => { focused = true; sync(); });
+    stage.addEventListener("focusout", () => { focused = false; sync(); });
+    document.addEventListener("visibilitychange", sync);
+
+    // Start rotating, and type the first description, once it's on screen
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView && !seen) {
+          seen = true;
+          showCopy(index);
+        }
+        sync();
+      },
+      { threshold: 0.4 },
+    ).observe(carousel);
+  }
+</script>

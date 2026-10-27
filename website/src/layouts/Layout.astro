@@ -1,0 +1,448 @@
+---
+import { Image } from "astro:assets";
+import "@fontsource-variable/inter";
+import logo from "../assets/logo.png";
+import "../styles/global.css";
+import {
+  APP_STORE_URL,
+  CONTACT_EMAIL,
+  DISCLAIMER,
+  GOOGLE_PLAY_URL,
+  LEGAL_NAME,
+  NAV_LINKS,
+  NEWSLETTER_URL,
+  SOCIAL_LINKS,
+} from "../site.mjs";
+
+interface Props {
+  title?: string;
+  description?: string;
+  // On inner pages, "unum" (or "unum's") is followed by the page name
+  // stacked on two small lines, e.g. "unum's" + "data &" / "sources".
+  brandStack?: { possessive?: boolean; lines: [string, string] };
+}
+
+const {
+  title,
+  brandStack,
+  description = "Unum is a free, nonpartisan Congress tracker. Follow U.S. legislation, votes, and the members of Congress who represent you.",
+} = Astro.props;
+
+// "Congress tracker" matches the app's store listing name, so the homepage
+// shows up for that search as well as for the organization's name
+const pageTitle = title
+  ? `${title} | Unum Initiative`
+  : "Unum: Congress Tracker | Unum Initiative";
+const currentPath = Astro.url.pathname.replace(/\.html$/, "");
+// Pages build to about.html etc. but are served without the extension, so the
+// canonical URL drops it too (the .html address redirects)
+const canonical = new URL(currentPath === "/index" ? "/" : currentPath, Astro.site);
+const ogImage = new URL("/og-image.png", Astro.site);
+
+// Tells search engines who runs the site and links its official profiles,
+// which helps separate Unum Initiative from other organizations named Unum
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "NGO",
+      "@id": `${Astro.site}#organization`,
+      name: "Unum Initiative",
+      legalName: LEGAL_NAME,
+      alternateName: ["Unum", "Unum: Congress Tracker"],
+      url: Astro.site?.toString(),
+      logo: new URL("/apple-touch-icon.png", Astro.site).toString(),
+      email: CONTACT_EMAIL,
+      nonprofitStatus: "Nonprofit501c3",
+      sameAs: [...SOCIAL_LINKS.map((link) => link.href), NEWSLETTER_URL],
+    },
+    {
+      "@type": "MobileApplication",
+      name: "Unum: Congress Tracker",
+      operatingSystem: "iOS, Android",
+      applicationCategory: "ReferenceApplication",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      publisher: { "@id": `${Astro.site}#organization` },
+      sameAs: [APP_STORE_URL, GOOGLE_PLAY_URL],
+    },
+  ],
+};
+const year = new Date().getFullYear();
+
+// The header text is split into single characters so it can type out on
+// page load and delete and retype on hover (--i is each character's
+// position, --n the character count). Inner pages delete just the page
+// name; the home page deletes "unum" and types it straight back.
+type Char = { ch: string; i: number };
+let charIndex = 0;
+const toChars = (text: string): Char[] =>
+  [...text].map((ch) => ({ ch, i: charIndex++ }));
+const wordChars = toChars("unum");
+const possessiveChars = brandStack?.possessive ? toChars("'s") : [];
+const lineChars = brandStack ? brandStack.lines.map(toChars) : [];
+const charCount = charIndex;
+const charStyle = (c: Char) => `--i: ${c.i}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline>
+      // Type out the header logo on every page load (not for reduced
+      // motion). Set before the first paint so the text doesn't flash in.
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("logo-intro");
+      }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:site_name" content="Unum Initiative" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Unum: Everything Congress is doing, in one place" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#f4f1eb" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </head>
+  <body>
+    <header class="site-header container">
+      <a href="/" class:list={["brand", { "brand-retype": !brandStack }]} aria-label="Unum Initiative home" style={`--n: ${charCount}`}>
+        <Image src={logo} alt="" width={44} height={44} densities={[1, 2]} class="brand-icon" />
+        <span class="brand-name">
+          {/* Kept on one line: line breaks here would render as spaces */}
+          <span class="brand-home">{wordChars.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>{possessiveChars.length > 0 && <span class="brand-extra">{possessiveChars.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>}{brandStack && <span class="brand-extra brand-stack">{lineChars.map((line) => <span class="brand-line">{line.map((c) => <span class="ch" style={charStyle(c)}>{c.ch}</span>)}</span>)}</span>}
+        </span>
+      </a>
+      <nav aria-label="Main">
+        {
+          NAV_LINKS.map((link) => (
+            <a
+              href={link.href}
+              class:list={{ active: currentPath === link.href }}
+              {...(link.external ? { target: "_blank", rel: "noopener" } : {})}
+            >
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-col">
+            <p class="footer-heading">Unum Initiative</p>
+            <a href="/about">About</a>
+            <a href="/sources">Data &amp; Sources</a>
+            <a href="/support">Support &amp; FAQ</a>
+            <a href={NEWSLETTER_URL} target="_blank" rel="noopener">Newsletter</a>
+            <a href="/privacy">Privacy Policy</a>
+          </div>
+          <div class="footer-col">
+            <p class="footer-heading">Follow</p>
+            {
+              SOCIAL_LINKS.map((link) => (
+                <a href={link.href} target="_blank" rel="noopener">
+                  {link.label}
+                </a>
+              ))
+            }
+          </div>
+          <div class="footer-col">
+            <p class="footer-heading">Contact</p>
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+          </div>
+        </div>
+
+        <div class="footer-legal">
+          <p>{LEGAL_NAME} is a 501(c)(3) nonprofit organization. {DISCLAIMER}</p>
+          <p>© {year} {LEGAL_NAME}</p>
+        </div>
+      </div>
+    </footer>
+    <script>
+      // End the first-load typing animation once it finishes, so the hover
+      // animation (which the intro's fill would otherwise override) works
+      // Keep in sync with --intro-delay / --intro-char in the styles
+      const INTRO_DELAY_MS = 250;
+      const INTRO_CHAR_MS = 70;
+      const root = document.documentElement;
+      if (root.classList.contains("logo-intro")) {
+        const chars = document.querySelectorAll(".brand .ch").length;
+        window.setTimeout(
+          () => root.classList.remove("logo-intro"),
+          INTRO_DELAY_MS + chars * INTRO_CHAR_MS + 100,
+        );
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: var(--logo-size);
+    height: var(--logo-size);
+    border-radius: 11px;
+  }
+
+  /* "unum" has only x-height letters, so dividing by Inter's x-height ratio
+     (0.546) converts a letter height into a font size. The letters are set
+     to 78% of the icon's height. */
+  .brand {
+    --logo-size: 44px;
+  }
+
+  /* With line-height 1, Inter's x-height band sits 0.091em below the middle
+     of the line box, so shifting up by that much centers the letters on the
+     icon — the same center line the nav links sit on. */
+  .brand-name {
+    font-family: var(--font);
+    font-size: calc(var(--logo-size) * 0.78 / 0.546);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    transform: translateY(-0.091em);
+    /* Keep the text box no taller than the icon so the header height
+       doesn't grow */
+    margin-block: calc((var(--logo-size) - 1em) / 2);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .ch {
+    white-space: pre;
+  }
+
+  .brand-home {
+    transition: color 0.15s ease;
+  }
+
+  .brand:hover .brand-home,
+  .brand:focus-visible .brand-home {
+    color: var(--blue);
+  }
+
+  /* Inner pages: hovering deletes the page name one character at a time
+     from the end, as if backspaced, and leaving types it back in order.
+     Characters only hide (they keep their space), so the hover area doesn't
+     shrink under the cursor. The page name starts after the 4 letters of
+     "unum". */
+  .brand-extra .ch {
+    transition: opacity 0s linear calc((var(--i) - 4) * 24ms);
+  }
+
+  .brand:hover .brand-extra .ch,
+  .brand:focus-visible .brand-extra .ch {
+    opacity: 0;
+    transition-delay: calc((var(--n) - 1 - var(--i)) * 24ms);
+  }
+
+  /* Home page: hovering backspaces "unum", pauses, and types it back. Each
+     character hides from its deletion until its retyping. */
+  .brand-retype {
+    --retype-char: 70ms;
+    --retype-pause: 200ms;
+  }
+
+  .brand-retype:hover .ch,
+  .brand-retype:focus-visible .ch {
+    animation: logo-gone step-end;
+    animation-delay: calc((var(--n) - 1 - var(--i)) * var(--retype-char));
+    animation-duration: calc((2 * var(--i) + 1) * var(--retype-char) + var(--retype-pause));
+  }
+
+  @keyframes logo-gone {
+    from,
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* First load: characters appear one after another, as if typed */
+  :global(html.logo-intro) .brand .ch {
+    animation: logo-type 1ms linear both;
+    animation-delay: calc(var(--intro-delay) + var(--i) * var(--intro-char));
+  }
+
+  .brand {
+    /* Keep in sync with INTRO_DELAY_MS / INTRO_CHAR_MS in the script above */
+    --intro-delay: 250ms;
+    --intro-char: 70ms;
+  }
+
+  @keyframes logo-type {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-extra .ch {
+      transition: none;
+    }
+
+    .brand-retype:hover .ch,
+    .brand-retype:focus-visible .ch {
+      animation: none;
+    }
+  }
+
+  /* "unum" plus a two-line page name, sized so the two lines span the
+     height of the "unum" letters: from the first line's cap height (0.727em)
+     to the second line's baseline is 0.727 + 1.15 = 1.877em, and "unum" is
+     Inter's x-height (0.546x the wordmark size), so the stack is
+     0.546 / 1.877 = 0.291x. Its last baseline sits on the wordmark's
+     baseline. */
+  .brand-stack {
+    display: inline-block;
+    vertical-align: baseline;
+    font-size: 0.291em;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-left: 0.6em;
+  }
+
+  .brand-line {
+    display: block;
+  }
+
+  /* The page names fit beside the nav from 480px up. On narrower phones the
+     header shows just "unum", and the page's own headline names the page. */
+  @media (max-width: 479px) {
+    .brand-extra {
+      display: none;
+    }
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+  }
+
+  nav a {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  nav a:hover,
+  nav a.active {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 6px;
+  }
+
+  .site-footer {
+    margin-top: 48px;
+    padding: 56px 0 40px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+
+  .footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-col a {
+    color: var(--text-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: #c8c8c8;
+    overflow-wrap: anywhere;
+  }
+
+  .footer-col a:hover {
+    color: var(--text);
+  }
+
+  .footer-heading {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .footer-legal {
+    margin-top: 48px;
+    color: var(--text-faint);
+    font-size: 13px;
+    line-height: 1.6;
+    display: grid;
+    gap: 8px;
+  }
+
+  @media (max-width: 760px) {
+    .site-header {
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+
+    .brand {
+      --logo-size: 30px;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      border-radius: 7px;
+    }
+
+    nav {
+      gap: 8px 18px;
+    }
+
+    nav a {
+      font-size: 14px;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
