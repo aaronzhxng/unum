@@ -58,7 +58,7 @@ const features: Feature[] = [
   },
   {
     image: legislation,
-    title: "Legislation",
+    title: "Every Legislation",
     text: "Follow bills from the current Congress, updated twice a day and filterable by policy area.",
   },
   {
@@ -217,8 +217,9 @@ const features: Feature[] = [
   .hero {
     padding-top: var(--intro-top);
     display: grid;
-    /* Equal columns, so the longest titles fit on two lines */
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /* 44% text / 56% card: the narrowest text column that keeps every
+       slide title to three lines, leaving the card as wide as possible */
+    grid-template-columns: minmax(0, 11fr) minmax(0, 14fr);
     grid-template-rows: auto auto;
     column-gap: 64px;
   }
@@ -281,11 +282,12 @@ const features: Feature[] = [
      one, and slides into place when the carousel advances. */
   .carousel {
     /* Sized so the current screenshot and the peeking next one (1.4 phone
-       widths) fit inside the card: half the content width (page up to
-       1080px, less 48px of gutters and the 64px column gap), less the
-       card's 40px padding a side, with 16px to spare. Below 900px the
-       layout stacks and fixed sizes take over. */
-    --phone-w: min(320px, calc((min(100vw, 1080px) - 48px - 64px - 160px - 16px) / 2.8));
+       widths) fit inside the card. The card is 56% of the content width
+       (page up to 1080px, less 48px of gutters and the 64px column gap);
+       take off its 40px padding a side and 16px to spare, then divide by
+       1.4: (content x 0.56 - 96px) / 1.4 = content x 0.4 - 68.6px. Below
+       900px the layout stacks and fixed sizes take over. */
+    --phone-w: min(320px, calc((min(100vw, 1080px) - 112px) * 0.4 - 68.6px));
     min-width: 0;
     grid-row: 1 / span 2;
     display: grid;
