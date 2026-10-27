@@ -11,9 +11,6 @@ import legislation from "../assets/screens/legislation.png";
 import official from "../assets/screens/official.png";
 import officials from "../assets/screens/officials.png";
 
-const HEADLINE = "Everything Congress is doing, in one place";
-const SUBHEAD = "Keep track of your elected officials and their bills.";
-
 const values = [
   {
     title: "Nonpartisan",
@@ -33,11 +30,21 @@ const values = [
   },
 ];
 
-const features = [
+type Feature = {
+  image: ImageMetadata;
+  title: string;
+  text: string;
+  label?: string;
+};
+
+const features: Feature[] = [
   {
     image: home,
-    title: "Your feed",
-    text: "Build lists of the officials and bills you care about, and see every update in one place.",
+    // The first slide doubles as the page's headline
+    title: "Everything Congress is doing, in one place",
+    text: "Keep track of your elected officials and their bills in custom lists.",
+    // Shorter name for the screenshot's alt text and its dot
+    label: "Your lists",
   },
   {
     image: officials,
@@ -80,18 +87,9 @@ const features = [
 <Layout>
   <section class="container hero">
     <div class="hero-copy">
-      <div class="hero-text" data-hero-text>
-        <div class="hero-intro">
-          <h1 data-intro-title>{HEADLINE}</h1>
-          <p class="lede" data-intro-text>{SUBHEAD}</p>
-        </div>
-        {/* An invisible copy holds the headline's full height while it types
-            back in */}
-        <div class="hero-intro hero-intro-sizer" aria-hidden="true">
-          <p class="hero-sizer-title">{HEADLINE}</p>
-          <p class="lede">{SUBHEAD}</p>
-        </div>
-        <div class="copy-box hero-feature" data-copy="hover">
+      <h1 class="sr-only">{features[0].title}</h1>
+      <div class="hero-text">
+        <div class="copy-box hero-feature" data-copy>
           {/* Every description, stacked invisibly, reserves the height of the
               longest one so the page doesn't jump while text types out */}
           {
@@ -146,7 +144,7 @@ const features = [
                 >
                   <Image
                     src={feature.image}
-                    alt={`Unum app screen: ${feature.title}`}
+                    alt={`Unum app screen: ${feature.label ?? feature.title}`}
                     width={1280}
                     widths={[320, 480, 640, 960, 1280]}
                     quality={90}
@@ -170,7 +168,7 @@ const features = [
                   class="carousel-dot"
                   type="button"
                   data-dot={index}
-                  aria-label={`Go to ${feature.title}`}
+                  aria-label={`Go to ${feature.label ?? feature.title}`}
                   aria-current={index === 0 ? "true" : "false"}
                 />
               ))
@@ -182,27 +180,9 @@ const features = [
         </div>
       </div>
 
-      <div class="carousel-footer">
-        <div class="copy-box carousel-caption" data-copy="touch">
-          {/* Every description, stacked invisibly, reserves the height of the
-              longest one so the page doesn't jump while text types out */}
-          {
-            features.map((feature) => (
-              <p class="copy-sizer" aria-hidden="true">
-                <span class="copy-title">{feature.title}</span>
-                <span class="copy-text">{feature.text}</span>
-              </p>
-            ))
-          }
-          <p class="copy-typed" aria-hidden="true">
-            <span class="copy-title" data-typed-title>{features[0].title}</span>
-            <span class="copy-text" data-typed-text>{features[0].text}</span>
-          </p>
-        </div>
-        <p class="sr-only" data-live aria-live="off">
-          {features[0].title}: {features[0].text}
-        </p>
-      </div>
+      <p class="sr-only" data-live aria-live="off">
+        {features[0].title}: {features[0].text}
+      </p>
     </div>
   </section>
 
@@ -250,50 +230,13 @@ const features = [
     justify-items: start;
   }
 
-  /* With a mouse, hovering the carousel card swaps the headline for the
-     current feature's description, typed out at the same sizes. Both are
-     stacked in one cell, so it's as tall as the longer of them and the
-     store badges below don't move. Touch screens show the description
-     under the card instead. */
-  .hero-text {
-    display: grid;
-  }
-
-  .hero-text > * {
-    grid-area: 1 / 1;
-  }
-
-  .hero-intro {
-    display: grid;
-    gap: var(--intro-gap);
-    justify-items: start;
-    align-content: start;
-  }
-
-  .hero-intro-sizer {
-    visibility: hidden;
-  }
-
-  .hero-sizer-title {
-    font-family: var(--display);
-    font-weight: var(--display-weight);
-  }
-
+  /* The hero text is the current slide's description, typed out on each
+     change. Its box keeps the height of the longest description, so the store
+     badges below don't move. */
   .hero-feature {
-    visibility: hidden;
     align-content: start;
   }
 
-  .hero-text.is-featuring .hero-intro {
-    visibility: hidden;
-  }
-
-  .hero-text.is-featuring .hero-feature {
-    visibility: visible;
-  }
-
-  .hero h1,
-  .hero-sizer-title,
   .hero-feature .copy-title {
     font-size: clamp(34px, 4.4vw, 48px);
     line-height: 1.12;
@@ -306,21 +249,7 @@ const features = [
     line-height: 1.75;
   }
 
-  /* Doubled classes outrank .copy-box's display further down */
-  @media (hover: none) {
-    .copy-box.hero-feature {
-      display: none;
-    }
-  }
-
-  @media (hover: hover) {
-    .copy-box.carousel-caption {
-      display: none;
-    }
-  }
-
   /* No single word stranded on a last line */
-  .hero-intro > *,
   .hero-feature .copy-title,
   .hero-feature .copy-text {
     text-wrap: pretty;
@@ -361,15 +290,6 @@ const features = [
     --card-pad: 40px;
     position: relative;
     padding: var(--card-pad);
-  }
-
-  /* The touch-screen caption is as wide as the screenshots above it, less
-     0.1 phone width a side (they span the current screenshot plus the
-     peeking next one: 1.4 phone widths, centered) */
-  .carousel-caption {
-    width: calc(var(--phone-w) * 1.2);
-    max-width: 100%;
-    margin: 28px auto 0;
   }
 
   .carousel-stage {
@@ -467,8 +387,7 @@ const features = [
   }
 
   /* Blinking cursor shown while text types out */
-  .copy-box :global(.caret),
-  .hero-intro :global(.caret) {
+  .copy-box :global(.caret) {
     display: inline-block;
     width: 2px;
     height: 1em;
@@ -631,8 +550,7 @@ const features = [
       transition: none;
     }
 
-    .copy-box :global(.caret),
-    .hero-intro :global(.caret) {
+    .copy-box :global(.caret) {
       display: none;
     }
   }
@@ -689,12 +607,10 @@ const features = [
 <script>
   // Feature carousel. Previous/next buttons, dots, arrow keys, swipes, and a
   // click on the peeking next screenshot all navigate, wrapping at either
-  // end. The feature's description types out where it's shown: with a mouse,
-  // in place of the hero headline while the card is hovered (or the
-  // screenshots have keyboard focus), and the headline types back in after;
-  // on touch screens, under the card on each change. Auto-rotation runs while the carousel is on screen and
-  // pauses on hover, focus, or a hidden tab; it's off, and text appears
-  // instantly, for visitors who prefer reduced motion.
+  // end. The current feature's description types out in the hero on each
+  // change. Auto-rotation runs while the carousel is on screen and pauses on
+  // hover, focus, or a hidden tab; it's off, and text appears instantly, for
+  // visitors who prefer reduced motion.
   const AUTOPLAY_MS = 4500;
   const TITLE_CHAR_MS = 32;
   const TEXT_CHAR_MS = 10;
@@ -708,25 +624,15 @@ const features = [
     const items = [...carousel.querySelectorAll<HTMLElement>("[data-item]")];
     const dots = [...carousel.querySelectorAll<HTMLButtonElement>("[data-dot]")];
     const live = carousel.querySelector<HTMLElement>("[data-live]")!;
-    const heroText = document.querySelector<HTMLElement>("[data-hero-text]")!;
-    const canHover = window.matchMedia("(hover: hover)").matches;
-    const copy = canHover
-      ? heroText.querySelector<HTMLElement>('[data-copy="hover"]')!
-      : carousel.querySelector<HTMLElement>('[data-copy="touch"]')!;
+    const copy = document.querySelector<HTMLElement>("[data-copy]")!;
     const typedTitle = copy.querySelector<HTMLElement>("[data-typed-title]")!;
     const typedText = copy.querySelector<HTMLElement>("[data-typed-text]")!;
-    const introTitle = heroText.querySelector<HTMLElement>("[data-intro-title]")!;
-    const introText = heroText.querySelector<HTMLElement>("[data-intro-text]")!;
-    const headline = introTitle.textContent ?? "";
-    const subhead = introText.textContent ?? "";
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const count = items.length;
 
     let index = 0;
     let hovering = false;
     let focused = false;
-    let keyboardFocused = false;
-    let featuring = false;
     let inView = false;
     let seen = false;
     let timer: number | undefined;
@@ -789,27 +695,12 @@ const features = [
       );
     };
 
-    // Whether the description is on screen: always on touch screens, and
-    // with a mouse while it stands in for the hero headline
-    const copyShown = () => !canHover || featuring;
-
     const goTo = (i: number) => {
       index = (i + count) % count;
       render();
       const { title = "", text = "" } = items[index].dataset;
       live.textContent = `${title}: ${text}`;
-      if (copyShown()) showCopy(index);
-    };
-
-    // With a mouse, swaps the hero headline for the description while the
-    // card is hovered or the screenshots have keyboard focus
-    const syncFeature = () => {
-      const on = canHover && (hovering || keyboardFocused);
-      if (on === featuring) return;
-      featuring = on;
-      heroText.classList.toggle("is-featuring", on);
-      if (on) showCopy(index);
-      else typePair(introTitle, headline, introText, subhead);
+      showCopy(index);
     };
 
     const stop = () => {
@@ -864,22 +755,11 @@ const features = [
       if (Math.abs(dx) > 40) navigate(dx < 0 ? index + 1 : index - 1);
     });
 
-    // Hovering the card pauses rotation and, with a mouse, shows the
-    // description in the hero
-    card.addEventListener("pointerenter", () => { hovering = true; syncFeature(); sync(); });
-    card.addEventListener("pointerleave", () => { hovering = false; syncFeature(); sync(); });
-    stage.addEventListener("focusin", () => {
-      focused = true;
-      keyboardFocused = stage.matches(":focus-visible");
-      syncFeature();
-      sync();
-    });
-    stage.addEventListener("focusout", () => {
-      focused = false;
-      keyboardFocused = false;
-      syncFeature();
-      sync();
-    });
+    // Hovering the card or focusing the screenshots pauses rotation
+    card.addEventListener("pointerenter", () => { hovering = true; sync(); });
+    card.addEventListener("pointerleave", () => { hovering = false; sync(); });
+    stage.addEventListener("focusin", () => { focused = true; sync(); });
+    stage.addEventListener("focusout", () => { focused = false; sync(); });
     document.addEventListener("visibilitychange", sync);
 
     // Start rotating, and type the first description, once it's on screen
@@ -888,7 +768,7 @@ const features = [
         inView = entry.isIntersecting;
         if (inView && !seen) {
           seen = true;
-          if (copyShown()) showCopy(index);
+          showCopy(index);
         }
         sync();
       },
