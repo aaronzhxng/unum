@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import "@fontsource-variable/inter";
+import CopyButton from "../components/CopyButton.astro";
 import logo from "../assets/logo.png";
 import "../styles/global.css";
 import {
@@ -169,7 +170,10 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
           </div>
           <div class="footer-col footer-contact">
             <p class="footer-heading">Contact</p>
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <span class="footer-email">
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+              <CopyButton text={CONTACT_EMAIL} label="Copy email address" />
+            </span>
           </div>
         </div>
 
@@ -403,6 +407,12 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
 
   .footer-col a:hover {
     color: var(--text);
+  }
+
+  .footer-email {
+    display: flex;
+    align-items: center;
+    gap: 2px;
   }
 
   .footer-heading {

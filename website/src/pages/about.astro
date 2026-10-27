@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import CopyButton from "../components/CopyButton.astro";
 import Layout from "../layouts/Layout.astro";
 import aaron from "../assets/team/aaron_zhang.png";
 import gregory from "../assets/team/gregory_colonescu.jpeg";
@@ -158,7 +159,10 @@ const principles = [
     <h2>Get in touch</h2>
     <p class="lede">
       Questions, feedback, or partnership ideas? Email us at
-      <a class="text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      <a class="text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.<CopyButton
+        text={CONTACT_EMAIL}
+        label="Copy email address"
+      />
     </p>
   </section>
 </Layout>
