@@ -53,7 +53,7 @@ const features: Feature[] = [
   },
   {
     image: official,
-    title: "Official profiles",
+    title: "Member Profiles",
     text: "See each official's sponsored bills, committees, top policy areas, and contact information.",
   },
   {
@@ -217,7 +217,8 @@ const features: Feature[] = [
   .hero {
     padding-top: var(--intro-top);
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    /* Equal columns, so the longest titles fit on two lines */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto auto;
     column-gap: 64px;
   }
@@ -279,7 +280,12 @@ const features: Feature[] = [
      screenshot waits, translucent, behind and to the right of the current
      one, and slides into place when the carousel advances. */
   .carousel {
-    --phone-w: 320px;
+    /* Sized so the current screenshot and the peeking next one (1.4 phone
+       widths) fit inside the card: half the content width (page up to
+       1080px, less 48px of gutters and the 64px column gap), less the
+       card's 40px padding a side, with 16px to spare. Below 900px the
+       layout stacks and fixed sizes take over. */
+    --phone-w: min(320px, calc((min(100vw, 1080px) - 48px - 64px - 160px - 16px) / 2.8));
     min-width: 0;
     grid-row: 1 / span 2;
     display: grid;
