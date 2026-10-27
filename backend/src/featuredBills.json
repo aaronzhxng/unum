@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-10-19",
-  "weekEnd": "2026-10-25",
+  "weekOf": "2026-10-26",
+  "weekEnd": "2026-11-1",
   "bills": [
     {
-      "billId": "hr10841",
-      "note": "This bill prohibits the use of AI to deprive or defraud individuals of the right to vote in elections for public office."
+      "billId": "hr6509",
+      "note": "This bill provides for increased oversight of drug compounding and imposes statutory limits on compounded drugs that are copies of commercially available drugs."
     }
   ]
 }
