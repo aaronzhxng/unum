@@ -544,9 +544,11 @@ const features: Feature[] = [
       grid-row: auto;
     }
 
-    /* Badges first, so each slide's title sits right above its screenshot */
+    /* Badges first, so each slide's title sits right above its screenshot,
+       with the text box centered between the badges and the carousel */
     .hero-copy :global(.badges) {
       order: -1;
+      margin-bottom: calc(48px - var(--intro-gap));
     }
 
     .carousel {
