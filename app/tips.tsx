@@ -54,7 +54,7 @@ const SOCIAL_LINKS = [
   },
   {
     label: "Website",
-    url: "https://www.unuminitiative.com/",
+    url: "https://unuminitiative.com/",
     icon: require("../assets/social_icons/website.png"),
   },
 ];
