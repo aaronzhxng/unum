@@ -37,6 +37,8 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* No square highlight over links on tap; they have their own states */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {

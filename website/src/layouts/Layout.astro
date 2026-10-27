@@ -167,7 +167,7 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
               ))
             }
           </div>
-          <div class="footer-col">
+          <div class="footer-col footer-contact">
             <p class="footer-heading">Contact</p>
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           </div>
@@ -446,6 +446,11 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
 
     .footer-grid {
       grid-template-columns: 1fr 1fr;
+    }
+
+    /* Full width, so the email address stays on one line */
+    .footer-contact {
+      grid-column: 1 / -1;
     }
   }
 </style>
