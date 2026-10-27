@@ -132,6 +132,13 @@ main p {
   justify-items: start;
 }
 
+/* Headlines match the paragraph's measure below them, with lines balanced
+   so neither runs noticeably wider than the text */
+.page-intro h1 {
+  max-width: 760px;
+  text-wrap: balance;
+}
+
 .page-intro .eyebrow {
   margin-bottom: calc(var(--label-gap) - var(--intro-gap));
 }
