@@ -10,13 +10,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 import { templates } from "./templates.mjs";
-import { esc } from "./lib.mjs";
+import { esc, OUTPUT_ROOT } from "./lib.mjs";
 
 const run = promisify(execFile);
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const OUT = path.join(HERE, process.env.OUT || "out");
+const OUT = path.join(OUTPUT_ROOT, process.env.OUT || "out");
 fs.mkdirSync(OUT, { recursive: true });
 
 const CHROME = [

@@ -363,7 +363,7 @@ add({
       return `<div style="text-align:center;flex:1">
         <svg width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="120" fill="none" stroke="var(--track)" stroke-width="34"/>
         <circle cx="150" cy="150" r="120" fill="none" stroke="var(--${cls === "d" ? "dem" : "rep"})" stroke-width="34" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 150 150)"/>
-        <text x="150" y="168" text-anchor="middle" font-family="Inter" font-weight="600" font-size="64">${Math.round(p * 100)}%</text></svg>
+        <text x="150" y="168" text-anchor="middle" font-family="Inter" font-weight="900" font-size="64">${Math.round(p * 100)}%</text></svg>
         <div style="font-size:22px;font-weight:700;margin-top:10px">${name}</div>
         <div style="font-size:16px;color:var(--gray);margin-top:6px">${yea} of ${yea + nay} voted yes</div></div>`;
     };
@@ -813,7 +813,7 @@ add({
       const cells = [...Array(7)].map((_, i) => {
         const d = new Date(start.getTime() + i * 864e5).getUTCDate();
         const on = d === 3;
-        return `<div style="height:84px;border-radius:14px;display:grid;place-items:center;font:${on ? 600 : 500} 32px Inter;${on ? "background:var(--blue);color:#fff" : "background:#fff;color:#333"}">${d}</div>`;
+        return `<div style="height:84px;border-radius:14px;display:grid;place-items:center;font:${on ? 900 : 500} 32px Inter;${on ? "background:var(--blue);color:#fff" : "background:#fff;color:#333"}">${d}</div>`;
       });
       return `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px">${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="mono" style="text-align:center;font-size:16px;color:var(--muted)">${d}</div>`).join("")}${cells.join("")}</div>`;
     };
@@ -1006,7 +1006,7 @@ add({
           inner: steps
             .map(([t, d], i) => `<div style="display:grid;grid-template-columns:70px 1fr;gap:20px;align-items:stretch">
               <div style="display:flex;flex-direction:column;align-items:center">
-                <div style="width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font:600 26px Inter">${i + 1}</div>
+                <div style="width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font:900 26px Inter">${i + 1}</div>
                 ${i < steps.length - 1 ? '<div style="flex:1;width:6px;background:var(--blue);opacity:.35;border-radius:3px;margin:4px 0"></div>' : ""}</div>
               <div style="padding:10px 0 40px"><div style="font-size:26px;font-weight:700">${t}</div><div style="font-size:18.5px;color:var(--gray);margin-top:6px">${d}</div></div></div>`)
             .join(""),
@@ -1043,7 +1043,7 @@ add({
       })
       .join("");
     const slide = (reveal) => page({
-      top: top(card({ label: reveal ? "Answer" : "Quiz", aside: reveal ? "" : "Swipe for the answer →", w: 952, inner: `<div style="font:600 50px/1.2 Inter;margin-top:10px">${esc(QUIZ.q)}</div><div style="margin-top:auto">${opts(reveal)}</div>` })),
+      top: top(card({ label: reveal ? "Answer" : "Quiz", aside: reveal ? "" : "Swipe for the answer →", w: 952, inner: `<div style="font:700 50px/1.2 Inter;margin-top:10px">${esc(QUIZ.q)}</div><div style="margin-top:auto">${opts(reveal)}</div>` })),
       bottom: bottom(reveal
         ? {
             kicker: kicker("Civics quiz", "Answer"),

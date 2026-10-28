@@ -14,8 +14,9 @@ Taken from the hand-made Bill of the Day posts in `templates/bill-of-the-day/`.
 - **Cards.** `#fafafa`, 24px radius, a 69px blue (`#008cff`) header bar with
   a DM Mono uppercase label, and the two-sided drop shadow.
 - **Kicker.** DM Mono 24px: blue label, black ID (`BILL OF THE DAY : S.4668`).
-- **Headline.** Inter 48px semibold (600), as on the website. Connecting words
-  gray `#535353`; the key phrase black; member names blue `#1741ff`; passed /
+- **Headline.** Inter 48px bold (700), as on the website. Connecting words
+  gray `#535353`; the key phrase black and heavy (900, 52px); member names blue
+  `#1741ff`; passed /
   agreed green `#21954a`; failed / rejected red `#d45252`, vote counts included.
 - **Body.** DM Mono 24px gray.
 - **Footer.** Black hairlines either side of the logo and "UNUM" (DM Mono 32px,

@@ -16,9 +16,12 @@ node social/prototypes/build.mjs seats  # render only matching templates
 OUT=out-inter node social/prototypes/build.mjs  # render to another folder
 ```
 
-Then open `social/prototypes/out/index.html` to review them side by side.
+Then open `out/index.html` to review them side by side.
 Needs Node 20+, Chrome or Edge, and `CONGRESS_API_KEY` in `backend/.env`.
-`data/`, `out/`, and other `out-*/` folders are generated and not committed.
+
+`data/` and `out/` are generated into `unum-social-output/`, a folder next to
+the repo (set `SOCIAL_OUTPUT` to use another), so they never appear in the
+project or as changes on any branch.
 
 | What | Where |
 |---|---|

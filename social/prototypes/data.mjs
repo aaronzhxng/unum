@@ -4,9 +4,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { fmtDate } from "./lib.mjs";
+import { fmtDate, OUTPUT_ROOT } from "./lib.mjs";
 
-const DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "data");
+const DIR = path.join(OUTPUT_ROOT, "data");
 const read = (f) => JSON.parse(fs.readFileSync(path.join(DIR, f), "utf8"));
 const has = (f) => fs.existsSync(path.join(DIR, f));
 
@@ -36,7 +36,7 @@ const ordinal = (n) => {
 // ---------------------------------------------------------------------------
 
 const staticInfo = JSON.parse(
-  fs.readFileSync(path.join(DIR, "..", "..", "..", "app", "data", "officials-static.json"), "utf8"),
+  fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "app", "data", "officials-static.json"), "utf8"),
 );
 
 export const members = new Map(

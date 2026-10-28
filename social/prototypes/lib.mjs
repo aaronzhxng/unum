@@ -11,6 +11,10 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.join(HERE, "..", "..");
 
+// Generated renders and data snapshots live outside the repo, so they never
+// show up as changes and only exist where this branch builds them
+export const OUTPUT_ROOT = process.env.SOCIAL_OUTPUT || path.join(REPO, "..", "unum-social-output");
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -123,7 +127,7 @@ export const longDate = (iso) => {
 // ---------------------------------------------------------------------------
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=block";
+  "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;900&display=block";
 
 const CSS = `
 :root {
@@ -151,9 +155,11 @@ body { background: var(--paper); }
 /* Editorial type */
 .kicker { font: 500 24px/39px "DM Mono", monospace; color: var(--blue); text-transform: uppercase; }
 .kicker b { font-weight: 500; color: var(--ink); }
-/* Inter 600, as on the website; key phrases stand out by color, not weight */
-.hl { font-weight: 600; font-size: calc(48px * var(--fit, 1));
+/* Inter, as on the website, at the weights the Fraunces version used:
+   700 for connecting words, 900 and slightly larger for key phrases */
+.hl { font-weight: 700; font-size: calc(48px * var(--fit, 1));
   line-height: 1.2; color: var(--gray); letter-spacing: -0.015em; text-wrap: pretty; }
+.hl .k, .hl .pk, .hl .fk { font-weight: 900; font-size: 1.083em; }
 .hl .k { color: var(--ink); }
 .hl .n { color: var(--name); }
 .hl .p, .hl .pk { color: var(--pass); }
@@ -235,7 +241,7 @@ body { background: var(--paper); }
 .palist i { width: 13px; height: 13px; border-radius: 50%; }
 
 /* Generic content for custom visuals */
-.big { font-weight: 600; line-height: .95; letter-spacing: -0.02em; }
+.big { font-weight: 900; line-height: .95; letter-spacing: -0.02em; }
 .mono { font-family: "DM Mono", monospace; font-weight: 500; }
 .badge { display: inline-block; color: #fff; font: 700 15px Inter, sans-serif; padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
 .list-row { display: grid; grid-template-columns: 54px 1fr; gap: 14px; align-items: center; padding: 20px 0; border-bottom: 1px solid #e6e3dc; }

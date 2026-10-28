@@ -9,9 +9,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { OUTPUT_ROOT } from "./lib.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const DIR = path.join(HERE, "data");
+const DIR = path.join(OUTPUT_ROOT, "data");
 const BACKEND = "https://unum-production.up.railway.app";
 const CONGRESS = "https://api.congress.gov/v3";
 fs.mkdirSync(DIR, { recursive: true });
