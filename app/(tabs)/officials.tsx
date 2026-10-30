@@ -35,7 +35,7 @@ import { styles as componentStyles } from "../global_styles/styles";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
-import { houseTitle } from "../utils/officialTitle";
+import { houseTitle, placeKind } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
 
 type Official = {
@@ -646,7 +646,9 @@ export default function OfficialsScreen() {
                         ]}
                       >
                         {option}
-                        {option === priorityState ? " (Priority State)" : ""}
+                        {option === priorityState
+                          ? ` (Priority ${placeKind(option)})`
+                          : ""}
                       </Text>
                       {stateNotifEnabled && (
                         <Bell

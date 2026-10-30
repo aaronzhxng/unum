@@ -120,10 +120,10 @@ export default function PickStateScreen() {
           {priorityState && TERRITORIES.has(priorityState)
             ? "Territories and DC have a non-voting member of the House instead of senators. You can still follow their work in Congress."
             : familiarityLevel === "low"
-              ? "Every state has two senators in Congress. Pick yours to follow what they're working on. Their work is meant to amplify your state's needs on a national level."
+              ? "Every state has two senators in Congress, and each territory has a non-voting member of the House. Pick yours to follow what they're working on. Their work is meant to amplify your community's needs on a national level."
               : familiarityLevel === "high"
-                ? "Set a priority state to track legislative activity from your delegation."
-                : "Get notified about new bills introduced by senators from your state."}
+                ? "Set a priority state or territory to track legislative activity from your delegation."
+                : "Get notified about new bills introduced by the members of Congress from your state or territory."}
         </Text>
       </View>
 

@@ -25,6 +25,15 @@ export function isNonVotingSeat(state?: string | null): boolean {
   return RESIDENT_COMMISSIONER_SEATS.has(state) || DELEGATE_SEATS.has(state);
 }
 
+// What to call a place in labels like "Priority State": DC is a district,
+// the other non-voting seats are territories
+export function placeKind(
+  state?: string | null,
+): "State" | "Territory" | "District" {
+  if (state === "DC" || state === "District of Columbia") return "District";
+  return isNonVotingSeat(state) ? "Territory" : "State";
+}
+
 // The House member's title for a state or territory, in full and shortened
 // form (for narrow screens and tight layouts).
 export function houseTitle(state?: string | null): {

@@ -1,8 +1,37 @@
 import React, { useEffect, useState, type RefObject } from "react";
-import { Pressable, Text, View } from "react-native";
+import {
+  Keyboard,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import type { AddressSuggestion } from "../services/addressSuggestions";
 
-type Anchor = { top: number; left: number; width: number };
+// windowTop is the same top edge in window coordinates, for measuring the
+// room left above the keyboard
+type Anchor = { top: number; left: number; width: number; windowTop: number };
+
+// Window y of the keyboard's top edge, or null while it's hidden
+function useKeyboardTop(): number | null {
+  const [keyboardTop, setKeyboardTop] = useState<number | null>(null);
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", (event) =>
+      setKeyboardTop(event.endCoordinates.screenY),
+    );
+    const hide = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardTop(null),
+    );
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  return keyboardTop;
+}
 
 // Where to float the dropdown: just under anchorRef, in rootRef's coordinates.
 // The dropdown renders as a child of the screen's root view rather than under
@@ -22,7 +51,12 @@ export function useDropdownAnchor(
     if (!anchorView || !root) return;
     root.measureInWindow((rootX, rootY) => {
       anchorView.measureInWindow((x, y, width, height) => {
-        setAnchor({ top: y - rootY + height + 8, left: x - rootX, width });
+        setAnchor({
+          top: y - rootY + height + 8,
+          left: x - rootX,
+          width,
+          windowTop: y + height + 8,
+        });
       });
     });
   }, [open, anchorRef, rootRef]);
@@ -43,7 +77,17 @@ export default function AddressSuggestionList({
   anchor,
   onPick,
 }: Props) {
+  const { height: windowHeight } = useWindowDimensions();
+  const keyboardTop = useKeyboardTop();
+
   if (!anchor || suggestions.length === 0) return null;
+
+  // On short screens the keyboard covers the lower suggestions, so stop the
+  // list above it and let it scroll
+  const maxHeight = Math.max(
+    120,
+    (keyboardTop ?? windowHeight) - anchor.windowTop - 8,
+  );
 
   return (
     <View
@@ -52,6 +96,7 @@ export default function AddressSuggestionList({
         top: anchor.top,
         left: anchor.left,
         width: anchor.width,
+        maxHeight,
         zIndex: 20,
         elevation: 8,
         backgroundColor: "#fff",
@@ -63,31 +108,33 @@ export default function AddressSuggestionList({
         overflow: "hidden",
       }}
     >
-      {suggestions.map((suggestion, index) => (
-        <Pressable
-          key={suggestion.id}
-          onPress={() => onPick(suggestion)}
-          style={({ pressed }) => ({
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            borderBottomWidth: index < suggestions.length - 1 ? 1 : 0,
-            borderBottomColor: "#f5f5f5",
-            backgroundColor: pressed ? "#f0f8ff" : "#fff",
-          })}
-        >
-          <Text style={{ fontSize: 15, color: "#1a1a1a" }} numberOfLines={1}>
-            {suggestion.street}
-          </Text>
-          {!!suggestion.place && (
-            <Text
-              style={{ fontSize: 13, color: "#7B7C81", marginTop: 2 }}
-              numberOfLines={1}
-            >
-              {suggestion.place}
+      <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
+        {suggestions.map((suggestion, index) => (
+          <Pressable
+            key={suggestion.id}
+            onPress={() => onPick(suggestion)}
+            style={({ pressed }) => ({
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderBottomWidth: index < suggestions.length - 1 ? 1 : 0,
+              borderBottomColor: "#f5f5f5",
+              backgroundColor: pressed ? "#f0f8ff" : "#fff",
+            })}
+          >
+            <Text style={{ fontSize: 15, color: "#1a1a1a" }} numberOfLines={1}>
+              {suggestion.street}
             </Text>
-          )}
-        </Pressable>
-      ))}
+            {!!suggestion.place && (
+              <Text
+                style={{ fontSize: 13, color: "#7B7C81", marginTop: 2 }}
+                numberOfLines={1}
+              >
+                {suggestion.place}
+              </Text>
+            )}
+          </Pressable>
+        ))}
+      </ScrollView>
     </View>
   );
 }

@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Linking,
-    Text,
-    View,
-    useWindowDimensions,
+  ActivityIndicator,
+  Linking,
+  Text,
+  View,
+  useWindowDimensions,
 } from "react-native";
 import {
-    WebView,
-    type WebViewMessageEvent,
-    type WebViewNavigation,
+  WebView,
+  type WebViewMessageEvent,
+  type WebViewNavigation,
 } from "react-native-webview";
 
 type DistrictFeature = {
@@ -568,7 +568,7 @@ export default function CongressionalDistrictMap({
   height,
   visible = true,
 }: Props) {
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const mapWidth = width ?? screenWidth;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -665,9 +665,13 @@ export default function CongressionalDistrictMap({
 
   const mapHeight = useMemo(() => {
     if (height) return height;
-    if (stateAbbr) return Math.min(720, Math.max(520, screenWidth * 1.36));
-    return Math.min(880, Math.max(600, screenWidth * 1.56));
-  }, [height, screenWidth, stateAbbr]);
+    const sized = stateAbbr
+      ? Math.min(720, Math.max(520, screenWidth * 1.36))
+      : Math.min(880, Math.max(600, screenWidth * 1.56));
+    // On short phones, leave some of the page showing above or below the map
+    // so there's room to scroll past it (the map pans with one finger)
+    return Math.min(sized, Math.round(screenHeight * 0.72));
+  }, [height, screenWidth, screenHeight, stateAbbr]);
 
   const matchedFocusDistricts = useMemo(() => {
     if (!focusDistricts?.length || !features.length) return [];
@@ -728,7 +732,13 @@ export default function CongressionalDistrictMap({
   const webViewKey = useMemo(
     () =>
       `${stateAbbr ?? "all"}-${features.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}-${pinLocation ? `${pinLocation.latitude},${pinLocation.longitude}` : "nopin"}`,
-    [stateAbbr, features.length, highlightGeoids, initialSelectedGEOID, pinLocation],
+    [
+      stateAbbr,
+      features.length,
+      highlightGeoids,
+      initialSelectedGEOID,
+      pinLocation,
+    ],
   );
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {

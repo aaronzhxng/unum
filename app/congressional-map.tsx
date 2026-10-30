@@ -215,7 +215,9 @@ export default function CongressionalMapScreen() {
     initialState && STATE_ABBR_TO_STATE[STATE_TO_ABBR[initialState]]
       ? initialState
       : null;
-  const startDistrict = startState ? Number.parseInt(initialDistrict ?? "", 10) : NaN;
+  const startDistrict = startState
+    ? Number.parseInt(initialDistrict ?? "", 10)
+    : NaN;
   const scrollRef = useRef<ScrollView>(null);
 
   const [searchMode, setSearchMode] = useState<SearchMode>("zip");
@@ -572,6 +574,8 @@ export default function CongressionalMapScreen() {
                 >
                   <Text
                     style={{
+                      flexShrink: 1,
+                      marginRight: 8,
                       fontSize: 16,
                       color: pendingState ? "#1a1a1a" : "#999",
                     }}
@@ -827,8 +831,8 @@ export default function CongressionalMapScreen() {
                   style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}
                 >
                   This district doesn't currently have a representative. The
-                  seat may be vacant until a special election fills it, or
-                  the district may have recently been redrawn.
+                  seat may be vacant until a special election fills it, or the
+                  district may have recently been redrawn.
                 </Text>
               </View>
             )}
