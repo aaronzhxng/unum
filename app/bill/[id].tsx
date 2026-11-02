@@ -66,6 +66,7 @@ import VotingCard, {
 } from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
+import { houseTitle } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
 import { trySwipeBack } from "../utils/swipeBackGuard";
 
@@ -1011,7 +1012,7 @@ export default function BillDetail() {
           c.district != null || TERRITORY_STATES.has(c.state)
             ? c.district > 0
               ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
-              : `Rep, ${STATE_NAMES[c.state] || c.state}`
+              : `${houseTitle(c.state).abbr}, ${STATE_NAMES[c.state] || c.state}`
             : `Sen, ${STATE_NAMES[c.state] || c.state}`,
         photoUrl: c.photoUrl,
         update: c.isOriginalCosponsor
@@ -2238,8 +2239,8 @@ export default function BillDetail() {
           const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
           return screenWidth < 390 ? abbr : full;
         }
-        const full = `Representative, ${stateName}`;
-        const abbr = `Rep, ${stateName}`;
+        const full = `${houseTitle(sponsor.state).full}, ${stateName}`;
+        const abbr = `${houseTitle(sponsor.state).abbr}, ${stateName}`;
         return screenWidth < 390 ? abbr : full;
       }
       const full = `Senator, ${stateName}`;

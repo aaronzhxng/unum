@@ -6,21 +6,18 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  MapPinned,
   MoreVertical,
-  Plus,
   Search,
 } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
   FlatList,
-  Image,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { useTour } from "../context/TourContext";
@@ -28,6 +25,9 @@ import AddModal from "../global_components/AddModal";
 import ErrorScreen from "../global_components/ErrorScreen";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
+import OfficialCard, {
+  TERRITORY_STATES,
+} from "../global_components/OfficialCard";
 import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import ReportErrorModal from "../global_components/ReportErrorModal";
 import SearchModal from "../global_components/SearchModal";
@@ -35,6 +35,7 @@ import { styles as componentStyles } from "../global_styles/styles";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { houseTitle, placeKind } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
 
 type Official = {
@@ -164,7 +165,7 @@ export default function OfficialsScreen() {
               pendingItemForNewList.chamber === "House" ||
               TERRITORY_STATES.has(pendingItemForNewList.state) ||
               pendingItemForNewList.district != null
-                ? `Representative, ${pendingItemForNewList.state}${pendingItemForNewList.district ? `, District ${pendingItemForNewList.district}` : ""}`
+                ? `${houseTitle(pendingItemForNewList.state).full}, ${pendingItemForNewList.state}${pendingItemForNewList.district ? `, District ${pendingItemForNewList.district}` : ""}`
                 : `Senator, ${pendingItemForNewList.state}`),
             date: pendingItemForNewList.date,
             latestAction:
@@ -389,21 +390,37 @@ export default function OfficialsScreen() {
   return (
     <View style={componentStyles.container}>
       <View style={componentStyles.headerBar}>
-        <View style={componentStyles.headerLeft}>
-          <View ref={stateDropdownRef} collapsable={false}>
+        {/* State name shrinks (with an ellipsis) before the map button does */}
+        <View
+          style={[
+            componentStyles.headerLeft,
+            { flex: 1, minWidth: 0, marginRight: 16 },
+          ]}
+        >
+          <View
+            ref={stateDropdownRef}
+            collapsable={false}
+            style={{ flexShrink: 1 }}
+          >
             <Pressable
               onPress={() => setShowListSelection(!showListSelection)}
               style={({ pressed }) => ({
+                flexShrink: 1,
                 transform: [{ scale: pressed ? 0.96 : 1 }],
               })}
             >
               <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  flexShrink: 1,
+                }}
               >
                 <Text
                   style={[
                     componentStyles.header,
-                    { alignItems: "center", maxWidth: 220 },
+                    { alignItems: "center", maxWidth: 220, flexShrink: 1 },
                   ]}
                   numberOfLines={1}
                   ellipsizeMode="tail"
@@ -426,6 +443,35 @@ export default function OfficialsScreen() {
               </View>
             </Pressable>
           </View>
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: "/congressional-map",
+                params: { state: selectedList },
+              } as any)
+            }
+            hitSlop={6}
+            accessibilityLabel="Open congressional district map"
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              flexShrink: 0,
+              marginLeft: 10,
+              marginBottom: 12,
+              paddingVertical: 6,
+              paddingLeft: 10,
+              paddingRight: 12,
+              borderRadius: 999,
+              backgroundColor: "#E8F4FF",
+              transform: [{ scale: pressed ? 0.94 : 1 }],
+            })}
+          >
+            <MapPinned size={18} color="#008CFF" />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: "#008CFF" }}>
+              District map
+            </Text>
+          </Pressable>
         </View>
 
         <View style={componentStyles.headerRight}>
@@ -491,7 +537,7 @@ export default function OfficialsScreen() {
               official.chamber === "House" ||
               TERRITORY_STATES.has(official.state) ||
               official.district != null
-                ? `Representative, ${official.state}${official.district ? `, District ${official.district}` : ""}`
+                ? `${houseTitle(official.state).full}, ${official.state}${official.district ? `, District ${official.district}` : ""}`
                 : `Senator, ${official.state}`,
             photoUrl: (official as any).depiction?.imageUrl || undefined,
           };
@@ -543,7 +589,6 @@ export default function OfficialsScreen() {
         onClose={() => setShowReportModal(false)}
         screen="officials" // change to "legislation" or "home" per file
       />
-
       {/* Location Selection Dropdown */}
       <Modal
         visible={showListSelection}
@@ -601,7 +646,9 @@ export default function OfficialsScreen() {
                         ]}
                       >
                         {option}
-                        {option === priorityState ? " (Priority State)" : ""}
+                        {option === priorityState
+                          ? ` (Priority ${placeKind(option)})`
+                          : ""}
                       </Text>
                       {stateNotifEnabled && (
                         <Bell
@@ -774,218 +821,3 @@ export default function OfficialsScreen() {
     </View>
   );
 }
-
-const STATE_ABBR: Record<string, string> = {
-  Alabama: "AL",
-  Alaska: "AK",
-  "American Samoa": "AS",
-  Arizona: "AZ",
-  Arkansas: "AR",
-  California: "CA",
-  Colorado: "CO",
-  Connecticut: "CT",
-  Delaware: "DE",
-  "District of Columbia": "DC",
-  Florida: "FL",
-  Georgia: "GA",
-  Guam: "GU",
-  Hawaii: "HI",
-  Idaho: "ID",
-  Illinois: "IL",
-  Indiana: "IN",
-  Iowa: "IA",
-  Kansas: "KS",
-  Kentucky: "KY",
-  Louisiana: "LA",
-  Maine: "ME",
-  Maryland: "MD",
-  Massachusetts: "MA",
-  Michigan: "MI",
-  Minnesota: "MN",
-  Mississippi: "MS",
-  Missouri: "MO",
-  Montana: "MT",
-  Nebraska: "NE",
-  Nevada: "NV",
-  "New Hampshire": "NH",
-  "New Jersey": "NJ",
-  "New Mexico": "NM",
-  "New York": "NY",
-  "North Carolina": "NC",
-  "North Dakota": "ND",
-  "Northern Mariana Islands": "MP",
-  Ohio: "OH",
-  Oklahoma: "OK",
-  Oregon: "OR",
-  Pennsylvania: "PA",
-  "Puerto Rico": "PR",
-  "Rhode Island": "RI",
-  "South Carolina": "SC",
-  "South Dakota": "SD",
-  Tennessee: "TN",
-  Texas: "TX",
-  Utah: "UT",
-  Vermont: "VT",
-  "U.S. Virgin Islands": "VI",
-  Virginia: "VA",
-  Washington: "WA",
-  "West Virginia": "WV",
-  Wisconsin: "WI",
-  Wyoming: "WY",
-};
-
-// US territories have delegates/resident commissioners (House members), never senators
-const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
-
-function formatRole(
-  chamber: string,
-  state: string,
-  district?: number | null,
-  screenWidth?: number,
-): string {
-  const baseThreshold = Platform.OS === "ios" ? 32 : 39;
-  const threshold =
-    screenWidth && screenWidth < 390 ? baseThreshold - 6 : baseThreshold;
-
-  const stateAbbr = STATE_ABBR[state] ?? state;
-
-  const isHouse =
-    chamber === "House of Representatives" ||
-    chamber === "House" ||
-    TERRITORY_STATES.has(state) ||
-    (!chamber?.toLowerCase().includes("senate") && district != null);
-
-  if (isHouse) {
-    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
-    const short = `Rep, ${stateAbbr}${district ? `, District ${district}` : ""}`;
-    if (full.length <= threshold) return full;
-    if (abbr.length <= threshold) return abbr;
-    return short;
-  }
-
-  const full = `Senator, ${state}`;
-  const abbr = `Sen, ${state}`;
-  const short = `Sen, ${stateAbbr}`;
-  if (full.length <= threshold + 1) return full;
-  if (abbr.length <= threshold + 1) return abbr;
-  return short;
-}
-
-const OfficialCard = React.memo(function OfficialCard({
-  item,
-  onAddPress,
-  plusRef,
-}: {
-  item: any;
-  onAddPress: (id: string) => void;
-  plusRef?: React.RefObject<any>;
-}) {
-  const router = useRouter();
-  const [imageError, setImageError] = useState(false);
-  const { width: screenWidth } = useWindowDimensions();
-
-  return (
-    <Pressable
-      onPress={() => router.navigate(`/official/${item.bioguideId}`)}
-      style={({ pressed }) => ({
-        transform: [{ scale: pressed ? 0.96 : 1 }],
-        borderRadius: 48,
-      })}
-    >
-      <View
-        style={[
-          componentStyles.officialCard,
-          { paddingVertical: 16, borderWidth: 2, borderColor: "transparent" },
-        ]}
-      >
-        {/* Avatar column — 64px wide, avatar 50px */}
-        <View
-          style={{
-            width: 64,
-            marginRight: 12,
-            flexShrink: 0,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <View
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              overflow: "hidden",
-              backgroundColor: "#eee",
-            }}
-          >
-            {item.depiction?.imageUrl && !imageError ? (
-              <Image
-                source={{ uri: item.depiction.imageUrl }}
-                style={{ width: "100%", height: "120%" }}
-                resizeMode="cover"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <View
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#BFBFBF",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{ color: "white", fontSize: 24, fontWeight: "bold" }}
-                >
-                  {item.name?.split(",")[0]?.charAt(0) || "?"}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-        {/* Official Info */}
-        <View style={{ flex: 1 }}>
-          <Text style={componentStyles.name} numberOfLines={1}>
-            {item.name?.includes(",")
-              ? item.name
-                  .split(",")
-                  .reverse()
-                  .map((s: string) => s.trim())
-                  .join(" ")
-              : item.name}
-          </Text>
-          <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
-            <Text style={[componentStyles.subtitle, { flexShrink: 0 }]}>
-              {item.partyName?.charAt(0) || ""}
-            </Text>
-            <Text style={[componentStyles.separator, { flexShrink: 0 }]}>
-              ·
-            </Text>
-            <Text
-              style={[componentStyles.subtitle, { flexShrink: 1 }]}
-              numberOfLines={1}
-            >
-              {formatRole(item.chamber, item.state, item.district, screenWidth)}
-            </Text>
-          </View>
-        </View>
-        {/* Plus Button */}
-        <View ref={plusRef} collapsable={false}>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              onAddPress(item.bioguideId);
-            }}
-            style={({ pressed }) => ({
-              padding: 8,
-              transform: [{ scale: pressed ? 0.9 : 1 }],
-            })}
-          >
-            <Plus size={24} color="#008CFF" />
-          </Pressable>
-        </View>
-      </View>
-    </Pressable>
-  );
-});

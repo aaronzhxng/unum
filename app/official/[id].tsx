@@ -35,6 +35,7 @@ import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
 import officialsStatic from "../data/officials-static.json";
 import AddModal from "../global_components/AddModal";
+import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import ErrorScreen from "../global_components/ErrorScreen";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
@@ -54,6 +55,7 @@ import { officialBillsCache } from "../utils/officialBillsCache";
 import { screenTour } from "../utils/screenTour";
 import { storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+import { houseTitle, isNonVotingSeat } from "../utils/officialTitle";
 import { trySwipeBack } from "../utils/swipeBackGuard";
 import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
@@ -773,6 +775,25 @@ export default function OfficialDetail() {
     });
   };
 
+  // The district a House member serves, for the map preview (senators get
+  // none). The latest term has the two-letter state code and the district,
+  // which is missing or 0 for at-large seats.
+  const servedArea = useMemo(() => {
+    const terms = official?.terms;
+    const lastTerm = terms?.[terms.length - 1];
+    if (!lastTerm?.stateCode || lastTerm.chamber === "Senate") return null;
+    return {
+      stateAbbr: lastTerm.stateCode as string,
+      district: Number(lastTerm.district ?? 0),
+    };
+  }, [official]);
+
+  // Memoized so the map isn't handed a new array (and reloaded) every render
+  const servedFocusDistricts = useMemo(
+    () => (servedArea ? [servedArea] : null),
+    [servedArea],
+  );
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -885,18 +906,18 @@ export default function OfficialDetail() {
           {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
           {(() => {
             const lastTerm = official.terms?.[official.terms.length - 1];
-            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
             const isHouse =
               lastTerm?.chamber === "House of Representatives" ||
               lastTerm?.chamber === "House" ||
-              TERRITORY_STATES.has(official.state) ||
+              isNonVotingSeat(official.state) ||
               lastTerm?.district != null;
             if (isHouse) {
               const district = lastTerm?.district
                 ? ` - District ${lastTerm.district}`
                 : "";
-              const full = `Representative, ${official.state}${district}`;
-              const abbr = `Rep, ${official.state}${district}`;
+              const title = houseTitle(official.state);
+              const full = `${title.full}, ${official.state}${district}`;
+              const abbr = `${title.abbr}, ${official.state}${district}`;
               return screenWidth < 390 ? abbr : full;
             }
             return screenWidth < 390
@@ -904,6 +925,9 @@ export default function OfficialDetail() {
               : `Senator, ${official.state}`;
           })()}
         </Text>
+        {isNonVotingSeat(official.state) && (
+          <Text style={componentStyles.roleTop}>Non-voting member</Text>
+        )}
         {LEADERSHIP_ROLES[official.bioguideId] && (
           <Text style={componentStyles.roleTop}>
             {LEADERSHIP_ROLES[official.bioguideId]}
@@ -1104,6 +1128,68 @@ export default function OfficialDetail() {
               </View>
             )}
 
+            {/* District map preview (House members only) */}
+            {servedArea && (
+              <>
+                <View
+                  style={{ paddingHorizontal: 32, marginTop: 8, marginBottom: 8 }}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: "700" }}>
+                    District
+                  </Text>
+                </View>
+                {/* Outer view carries the card shadow; the inner one clips the
+                    map to the rounded corners. On iOS, clipping and shadow
+                    can't share a view — overflow: hidden cuts the shadow off. */}
+                <View
+                  style={{
+                    marginHorizontal: 16,
+                    marginBottom: 24,
+                    borderRadius: 24,
+                    backgroundColor: "#fafafa",
+                    shadowColor: "#000000",
+                    shadowOpacity: 0.15,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <View style={{ borderRadius: 24, overflow: "hidden" }}>
+                    <CongressionalDistrictMap
+                      stateAbbr={servedArea.stateAbbr}
+                      focusDistricts={servedFocusDistricts}
+                      interactive={false}
+                      width={screenWidth - 32}
+                      height={220}
+                      visible={activeTab === 0}
+                    />
+                    {/* Covers the map so a tap opens the full map, while
+                        swipes still reach this page and the tab pager instead
+                        of being swallowed by the map's web view */}
+                    <Pressable
+                      onPress={() =>
+                        router.push({
+                          pathname: "/congressional-map",
+                          params: {
+                            state: official.state,
+                            district: String(servedArea.district),
+                          },
+                        } as any)
+                      }
+                      accessibilityLabel="Open the congressional map"
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                      }}
+                    />
+                  </View>
+                </View>
+              </>
+            )}
+
             {/* Top Policy Areas */}
             <View
               ref={policyAreasRef}
@@ -1203,7 +1289,10 @@ export default function OfficialDetail() {
                         style={[componentStyles.term, { flex: 1 }]}
                         numberOfLines={1}
                       >
-                        {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
+                        {term.chamber === "Senate"
+                          ? "Senator"
+                          : houseTitle(official.state).abbr}
+                        ,{" "}
                         {official.state}
                         {term.district ? `, District ${term.district}` : ""}
                       </Text>
@@ -1222,7 +1311,7 @@ export default function OfficialDetail() {
                 <View style={componentStyles.termRow}>
                   <Text style={componentStyles.term}>
                     {official.terms?.[0]?.chamber === "House of Representatives"
-                      ? `Representative, ${official.state}`
+                      ? `${houseTitle(official.state).full}, ${official.state}`
                       : `Senator, ${official.state}`}
                   </Text>
                 </View>
@@ -1697,14 +1786,13 @@ export default function OfficialDetail() {
           party: official.partyHistory?.[0]?.partyName?.charAt(0) || "",
           role: (() => {
             const t = official.terms?.[official.terms.length - 1];
-            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
             const isHouse =
               t?.chamber === "House of Representatives" ||
               t?.chamber === "House" ||
-              TERRITORY_STATES.has(official.state) ||
+              isNonVotingSeat(official.state) ||
               t?.district != null;
             return isHouse
-              ? `Representative, ${official.state}${t?.district ? ` - District ${t.district}` : ""}`
+              ? `${houseTitle(official.state).full}, ${official.state}${t?.district ? ` - District ${t.district}` : ""}`
               : `Senator, ${official.state}`;
           })(),
           photoUrl: official.depiction?.imageUrl,
