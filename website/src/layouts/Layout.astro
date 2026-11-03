@@ -23,8 +23,11 @@ interface Props {
   brandStack?: { possessive?: boolean; lines: [string, string] };
   // Keep the page out of search results (the "page not found" page)
   noIndex?: boolean;
-  // Newsletter pages add All issues and a Subscribe button to the nav
+  // Newsletter pages add All issues to the nav, and the subscribe popup
   newsletterNav?: boolean;
+  // Adds a Subscribe link to the nav that opens the popup (issue pages; the
+  // newsletter page has its own in the hero)
+  navSubscribe?: boolean;
 }
 
 const {
@@ -32,6 +35,7 @@ const {
   brandStack,
   noIndex = false,
   newsletterNav = false,
+  navSubscribe = false,
   description = "Unum is a free, nonpartisan Congress tracker. Follow U.S. legislation, votes, and the members of Congress who represent you.",
 } = Astro.props;
 
@@ -145,8 +149,8 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
         }
         {newsletterNav && <a href="/newsletter#all-issues">All issues</a>}
         {
-          newsletterNav && (
-            <button type="button" class="button nav-subscribe" data-subscribe-open>
+          navSubscribe && (
+            <button type="button" class="nav-subscribe" data-subscribe-open>
               Subscribe
             </button>
           )
@@ -377,12 +381,17 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
     gap: 8px 28px;
   }
 
+  /* A button, since it opens the popup, styled like the links beside it */
   .nav-subscribe {
-    padding: 8px 18px;
-    font-size: 15px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
   }
 
-  nav a {
+  nav a,
+  .nav-subscribe {
     font-size: 15px;
     font-weight: 400;
     color: var(--text-muted);
@@ -390,7 +399,8 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
   }
 
   nav a:hover,
-  nav a.active {
+  nav a.active,
+  .nav-subscribe:hover {
     color: var(--text);
     text-decoration: underline;
     text-underline-offset: 6px;
@@ -468,12 +478,8 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
       gap: 8px 18px;
     }
 
-    nav a {
-      font-size: 14px;
-    }
-
+    nav a,
     .nav-subscribe {
-      padding: 6px 14px;
       font-size: 14px;
     }
 
