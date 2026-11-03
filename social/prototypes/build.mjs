@@ -4,14 +4,19 @@
 //
 //   node social/prototypes/build.mjs            # all templates
 //   node social/prototypes/build.mjs seats      # only slugs containing "seats"
-//   OUT=out-inter node social/prototypes/build.mjs   # render to another folder
+//   OUT=out-test node social/prototypes/build.mjs   # render to another folder
+//   SET=social/prototypes/sets/2026-11-02.mjs OUT=2026-11-02 node social/prototypes/build.mjs
+//                                                   # render a set of real posts
 
 import fs from "node:fs";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
-import { templates } from "./templates.mjs";
+// A post set (sets/*.mjs) exports its own templates list in the same shape
+const { templates } = process.env.SET
+  ? await import(pathToFileURL(path.resolve(process.env.SET)).href)
+  : await import("./templates.mjs");
 import { esc, OUTPUT_ROOT } from "./lib.mjs";
 
 const run = promisify(execFile);
@@ -75,7 +80,7 @@ ${groups
     .filter((t) => t.group === g)
     .map((t) => `<figure><div class="slides">${t.files.map((f) => `<a href="${f}" target="_blank"><img src="${f}" loading="lazy"></a>`).join("")}</div>
       <figcaption><b>${esc(t.name)}${t.sample ? '<span class="tag">sample data</span>' : ""}</b>
-      <span><strong>Posts when:</strong> ${esc(t.trigger)}</span><span><strong>Data:</strong> ${esc(t.data)}</span></figcaption></figure>`)
+      <span><strong>Posts when:</strong> ${esc(t.trigger)}</span><span><strong>Data:</strong> ${esc(t.data)}</span>${t.caption ? `<span><strong>Caption:</strong> ${esc(t.caption)}</span>` : ""}</figcaption></figure>`)
     .join("")}</div></section>`)
   .join("")}
 <p style="height:40px"></p></body></html>`;

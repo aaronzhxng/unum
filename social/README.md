@@ -13,7 +13,7 @@ to images, so no post is drawn by hand.
 node social/prototypes/fetch-data.mjs   # refresh the API snapshots in data/
 node social/prototypes/build.mjs        # render every template to out/
 node social/prototypes/build.mjs seats  # render only matching templates
-OUT=out-inter node social/prototypes/build.mjs  # render to another folder
+OUT=out-test node social/prototypes/build.mjs  # render to another folder
 ```
 
 Then open `out/index.html` to review them side by side.

@@ -127,7 +127,7 @@ export const longDate = (iso) => {
 // ---------------------------------------------------------------------------
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;900&display=block";
+  "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=block";
 
 const CSS = `
 :root {
@@ -155,13 +155,14 @@ body { background: var(--paper); }
 /* Editorial type */
 .kicker { font: 500 24px/39px "DM Mono", monospace; color: var(--blue); text-transform: uppercase; }
 .kicker b { font-weight: 500; color: var(--ink); }
-/* Inter, as on the website, at the weights the Fraunces version used:
-   700 for connecting words, 900 and slightly larger for key phrases */
-.hl { font-weight: 700; font-size: calc(48px * var(--fit, 1));
-  line-height: 1.2; color: var(--gray); letter-spacing: -0.015em; text-wrap: pretty; }
+.hl { font-family: Fraunces, serif; font-weight: 700; font-size: calc(48px * var(--fit, 1));
+  line-height: 1.2; color: var(--gray); letter-spacing: -0.005em; text-wrap: pretty; }
 .hl .k, .hl .pk, .hl .fk { font-weight: 900; font-size: 1.083em; }
 .hl .k { color: var(--ink); }
 .hl .n { color: var(--name); }
+/* Party names, in party color and set heavy like key phrases */
+.hl .pd, .hl .pr { font-weight: 900; font-size: 1.083em; }
+.hl .pd { color: var(--dem); } .hl .pr { color: var(--rep); }
 .hl .p, .hl .pk { color: var(--pass); }
 .hl .f, .hl .fk { color: var(--fail); }
 .body { font: 500 calc(24px * var(--fit, 1))/1.32 "DM Mono", monospace; color: var(--gray); text-wrap: pretty; }
@@ -205,10 +206,16 @@ body { background: var(--paper); }
   font-size: 15.5px; font-weight: 500; line-height: 1.3; }
 .jargon { font-size: 13.5px; color: var(--gray); line-height: 1.35; margin: 14px 8px 0; }
 .jargon b { font-weight: 600; }
-.fields { margin-top: auto; display: grid; gap: 22px; }
+/* Listed straight under the status, as on the app's Details tab */
+.fields { margin-top: 26px; display: grid; gap: 18px; }
 .fields div { font-size: 16.5px; }
 .fields b { font-weight: 500; margin-right: 8px; }
 .fields span { color: var(--gray); }
+.sponsor-lbl { font-size: 16.5px; font-weight: 500; margin-top: 22px; }
+.sponsor { display: flex; align-items: center; gap: 14px; margin-top: 12px; background: #fff; border-radius: 20px;
+  padding: 14px 16px; box-shadow: 0 1px 8px rgba(0,0,0,.09); }
+.sponsor b { display: block; font-size: 18px; font-weight: 600; color: #535353; }
+.sponsor span { display: block; font-size: 14.5px; color: #7b7c81; margin-top: 3px; }
 
 .vote { background: var(--card); border-radius: 24px; padding: 22px 24px 20px; flex: 1;
   box-shadow: 0 1px 10px rgba(0,0,0,.09); display: flex; flex-direction: column; }
@@ -241,7 +248,7 @@ body { background: var(--paper); }
 .palist i { width: 13px; height: 13px; border-radius: 50%; }
 
 /* Generic content for custom visuals */
-.big { font-weight: 900; line-height: .95; letter-spacing: -0.02em; }
+.big { font-family: Fraunces, serif; font-weight: 900; line-height: .95; letter-spacing: -0.02em; }
 .mono { font-family: "DM Mono", monospace; font-weight: 500; }
 .badge { display: inline-block; color: #fff; font: 700 15px Inter, sans-serif; padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
 .list-row { display: grid; grid-template-columns: 54px 1fr; gap: 14px; align-items: center; padding: 20px 0; border-bottom: 1px solid #e6e3dc; }
@@ -350,6 +357,22 @@ export function voteCard(v, { jargonHtml = "", showNv = true } = {}) {
     <div class="legend"><span><i class="b-d"></i>Democrat</span><span><i class="b-r"></i>Republican</span><span><i class="b-i"></i>Independent</span></div>
   </div>`;
 }
+
+// The app's sponsor card on a bill's Details tab: photo, name, party and role
+export const sponsorCard = (m) => {
+  const role = m.senate
+    ? `Senator, ${m.stateName}`
+    : m.district > 0
+      ? `Representative, ${m.stateName}, District ${m.district}`
+      : `Representative, ${m.stateName}`;
+  return `<div class="sponsor-lbl">Sponsor:</div><div class="sponsor">${photo(m, 56, false)}<div><b>${esc(m.display)}</b><span>${m.party} · ${esc(role)}</span></div></div>`;
+};
+
+const BILL_TYPE_NAMES = {
+  HR: "House Bill", HRES: "House Simple Resolution", HJRES: "House Joint Resolution", HCONRES: "House Concurrent Resolution",
+  S: "Senate Bill", SRES: "Senate Simple Resolution", SJRES: "Senate Joint Resolution", SCONRES: "Senate Concurrent Resolution",
+};
+export const billTypeName = (type) => BILL_TYPE_NAMES[type] || type;
 
 export const partyClass = (p) => ({ D: "d", R: "r", I: "i" })[p] || "i";
 

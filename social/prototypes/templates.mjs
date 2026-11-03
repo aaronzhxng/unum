@@ -5,15 +5,15 @@
 import {
   esc, page, hl, kicker, bottom, card, billHead, tabs, stages, status, jargon, fields,
   voteCard, profileCard, photo, partyClass, hemicycle, dotGrid, policyIcon, policyColor,
-  prettyBill, appBillId, fmtDate, longDate,
+  prettyBill, appBillId, fmtDate, longDate, sponsorCard, billTypeName,
 } from "./lib.mjs";
 import { member, members, rollcall, rollcalls, bill, billVotes, laws } from "./data.mjs";
 
 const TODAY = "2026-10-25";
 const ELECTION = "2026-11-03";
 
-const top = (...cards) => `<div class="top">${cards.join("")}</div>`;
-const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
+export const top = (...cards) => `<div class="top">${cards.join("")}</div>`;
+export const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 const STD_STAGES = (type, fills, last = "To President") => {
   const senateFirst = type.startsWith("S");
   const one = senateFirst ? "Senate" : "House", two = senateFirst ? "House" : "Senate";
@@ -24,7 +24,7 @@ const STD_STAGES = (type, fills, last = "To President") => {
     { label: last, fill: fills[3] },
   ];
 };
-const appVote = (r, { jargonHtml = "" } = {}) =>
+export const appVote = (r, { jargonHtml = "" } = {}) =>
   voteCard(
     {
       chamber: "House",
@@ -35,7 +35,10 @@ const appVote = (r, { jargonHtml = "" } = {}) =>
     },
     { jargonHtml },
   );
-const detailsCard = (b, { fills, last, statusText, jargonHtml = "", rows }) =>
+// The app's Details tab: status, then latest action, introduced, policy area,
+// type, and the sponsor card. sponsor: false leaves the card off when another
+// card on the post already shows the sponsor.
+export const detailsCard = (b, { fills, last, statusText, jargonHtml = "", rows, sponsor = true }) =>
   card({
     label: "Details",
     inner: `${billHead({ area: b.area, date: fmtDate(b.latest.actionDate), id: appBillId(b.type, b.number), title: b.title })}
@@ -43,7 +46,8 @@ const detailsCard = (b, { fills, last, statusText, jargonHtml = "", rows }) =>
       ${stages(STD_STAGES(b.type, fills, last))}
       ${status(statusText ?? b.latest.text)}
       ${jargonHtml}
-      ${fields(rows ?? [["Latest Action", fmtDate(b.latest.actionDate)], ["Introduced", fmtDate(b.introduced)], ["Policy Area", b.area || "Not yet assigned"]])}`,
+      ${fields(rows ?? [["Latest Action", fmtDate(b.latest.actionDate)], ["Introduced", fmtDate(b.introduced)], ["Policy Area", b.area || "Not yet assigned"], ["Type", billTypeName(b.type)]])}
+      ${sponsor && members.has(b.sponsorId) ? sponsorCard(sponsor === true ? member(b.sponsorId) : sponsor) : ""}`,
   });
 
 export const templates = [];
@@ -363,7 +367,7 @@ add({
       return `<div style="text-align:center;flex:1">
         <svg width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="120" fill="none" stroke="var(--track)" stroke-width="34"/>
         <circle cx="150" cy="150" r="120" fill="none" stroke="var(--${cls === "d" ? "dem" : "rep"})" stroke-width="34" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 150 150)"/>
-        <text x="150" y="168" text-anchor="middle" font-family="Inter" font-weight="900" font-size="64">${Math.round(p * 100)}%</text></svg>
+        <text x="150" y="168" text-anchor="middle" font-family="Fraunces" font-weight="900" font-size="64">${Math.round(p * 100)}%</text></svg>
         <div style="font-size:22px;font-weight:700;margin-top:10px">${name}</div>
         <div style="font-size:16px;color:var(--gray);margin-top:6px">${yea} of ${yea + nay} voted yes</div></div>`;
     };
@@ -813,7 +817,7 @@ add({
       const cells = [...Array(7)].map((_, i) => {
         const d = new Date(start.getTime() + i * 864e5).getUTCDate();
         const on = d === 3;
-        return `<div style="height:84px;border-radius:14px;display:grid;place-items:center;font:${on ? 900 : 500} 32px Inter;${on ? "background:var(--blue);color:#fff" : "background:#fff;color:#333"}">${d}</div>`;
+        return `<div style="height:84px;border-radius:14px;display:grid;place-items:center;font:${on ? 900 : 500} 32px ${on ? "Fraunces" : "Inter"};${on ? "background:var(--blue);color:#fff" : "background:#fff;color:#333"}">${d}</div>`;
       });
       return `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px">${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="mono" style="text-align:center;font-size:16px;color:var(--muted)">${d}</div>`).join("")}${cells.join("")}</div>`;
     };
@@ -1006,7 +1010,7 @@ add({
           inner: steps
             .map(([t, d], i) => `<div style="display:grid;grid-template-columns:70px 1fr;gap:20px;align-items:stretch">
               <div style="display:flex;flex-direction:column;align-items:center">
-                <div style="width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font:900 26px Inter">${i + 1}</div>
+                <div style="width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font:900 26px Fraunces">${i + 1}</div>
                 ${i < steps.length - 1 ? '<div style="flex:1;width:6px;background:var(--blue);opacity:.35;border-radius:3px;margin:4px 0"></div>' : ""}</div>
               <div style="padding:10px 0 40px"><div style="font-size:26px;font-weight:700">${t}</div><div style="font-size:18.5px;color:var(--gray);margin-top:6px">${d}</div></div></div>`)
             .join(""),
@@ -1043,7 +1047,7 @@ add({
       })
       .join("");
     const slide = (reveal) => page({
-      top: top(card({ label: reveal ? "Answer" : "Quiz", aside: reveal ? "" : "Swipe for the answer →", w: 952, inner: `<div style="font:700 50px/1.2 Inter;margin-top:10px">${esc(QUIZ.q)}</div><div style="margin-top:auto">${opts(reveal)}</div>` })),
+      top: top(card({ label: reveal ? "Answer" : "Quiz", aside: reveal ? "" : "Swipe for the answer →", w: 952, inner: `<div style="font:700 50px/1.2 Fraunces;margin-top:10px">${esc(QUIZ.q)}</div><div style="margin-top:auto">${opts(reveal)}</div>` })),
       bottom: bottom(reveal
         ? {
             kicker: kicker("Civics quiz", "Answer"),
