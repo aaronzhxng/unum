@@ -1,0 +1,135 @@
+---
+// Email signup for Last Week in Congress. Posts to /api/subscribe, which
+// emails a confirmation link; nobody is added until they click it.
+interface Props {
+  align?: "start" | "center";
+}
+const { align = "start" } = Astro.props;
+---
+
+<form class:list={["subscribe", align]} action="/api/subscribe" method="post" data-subscribe>
+  <div class="row">
+    <label class="sr-only" for={`email-${align}`}>Email address</label>
+    <input
+      id={`email-${align}`}
+      type="email"
+      name="email"
+      required
+      autocomplete="email"
+      placeholder="you@example.com"
+    />
+    {/* Left empty by people; bots that fill every field are ignored */}
+    <input class="trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <button type="submit">Subscribe</button>
+  </div>
+  <p class="note" role="status" data-note>Free, every Monday. Unsubscribe anytime.</p>
+</form>
+
+<style>
+  .subscribe {
+    width: 100%;
+    max-width: 480px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .subscribe.center {
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .row {
+    display: flex;
+    gap: 8px;
+  }
+
+  input[type="email"] {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 18px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    font: inherit;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  input[type="email"]:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+
+  .trap {
+    position: absolute;
+    left: -9999px;
+  }
+
+  button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 999px;
+    background: var(--blue);
+    color: #fff;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    transform: none;
+    cursor: default;
+  }
+
+  button:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+  }
+
+  .note {
+    font-size: 14px;
+    color: var(--text-faint);
+  }
+
+  .note.ok {
+    color: #21954a;
+  }
+
+  .note.error {
+    color: #d45252;
+  }
+</style>
+
+<script>
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-subscribe]")) {
+    const note = form.querySelector<HTMLElement>("[data-note]")!;
+    const button = form.querySelector("button")!;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      note.className = "note";
+      note.textContent = "Subscribing…";
+      try {
+        const response = await fetch(form.action, { method: "POST", body: new FormData(form) });
+        if (!response.ok) throw new Error(String(response.status));
+        form.reset();
+        note.classList.add("ok");
+        note.textContent = "Almost done: check your inbox for a link to confirm.";
+      } catch {
+        note.classList.add("error");
+        note.textContent = "Something went wrong. Please try again in a moment.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+</script>

@@ -11,7 +11,6 @@ import {
   GOOGLE_PLAY_URL,
   LEGAL_NAME,
   NAV_LINKS,
-  NEWSLETTER_URL,
   SOCIAL_LINKS,
 } from "../site.mjs";
 
@@ -58,7 +57,7 @@ const structuredData = {
       logo: new URL("/apple-touch-icon.png", Astro.site).toString(),
       email: CONTACT_EMAIL,
       nonprofitStatus: "Nonprofit501c3",
-      sameAs: [...SOCIAL_LINKS.map((link) => link.href), NEWSLETTER_URL],
+      sameAs: SOCIAL_LINKS.map((link) => link.href),
     },
     {
       "@type": "MobileApplication",
@@ -133,7 +132,7 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
           NAV_LINKS.map((link) => (
             <a
               href={link.href}
-              class:list={{ active: currentPath === link.href }}
+              class:list={{ active: currentPath === link.href || currentPath.startsWith(`${link.href}/`) }}
               {...(link.external ? { target: "_blank", rel: "noopener" } : {})}
             >
               {link.label}
@@ -155,7 +154,7 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
             <a href="/about">About</a>
             <a href="/sources">Data &amp; Sources</a>
             <a href="/support">Support &amp; FAQ</a>
-            <a href={NEWSLETTER_URL} target="_blank" rel="noopener">Newsletter</a>
+            <a href="/newsletter">Newsletter</a>
             <a href="/privacy">Privacy Policy</a>
           </div>
           <div class="footer-col">

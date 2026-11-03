@@ -1,0 +1,310 @@
+---
+// One bill in a newsletter issue, in the app's visual language: the policy
+// area's icon and color, the bill number badge, and the same stage track as
+// the app's bill page. Real text rather than an image, so it reads well on
+// any screen and in search results.
+import { billInfo, policyArea } from "../policyAreas.mjs";
+
+interface Stage {
+  label: string;
+  status: "done" | "current" | "todo" | "failed";
+}
+
+interface Vote {
+  chamber: string;
+  date: Date;
+  result: string;
+  yea: number;
+  nay: number;
+}
+
+interface Props {
+  bill: {
+    id: string;
+    title: string;
+    policyArea?: string;
+    sponsor: string;
+    summary: string;
+    stages: Stage[];
+    votes?: Vote[];
+  };
+}
+
+const { bill } = Astro.props;
+const { label, url } = billInfo(bill.id);
+const policy = policyArea(bill.policyArea);
+
+// The chip shows where the bill stands: where it failed, the last stage if
+// it made it all the way, or the stage it's in now
+const failed = bill.stages.find((s) => s.status === "failed");
+const current = bill.stages.find((s) => s.status === "current");
+const last = bill.stages[bill.stages.length - 1];
+const status = failed
+  ? { label: failed.label, tone: "failed" }
+  : last.status === "done"
+    ? { label: last.label, tone: "done" }
+    : { label: (current ?? last).label, tone: "current" };
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+---
+
+<article class="bill" style={`--policy: ${policy.color}`}>
+  <img class="bill-icon" src={`/newsletter/icons/${policy.icon}`} alt="" width="44" height="44" />
+  <div class="bill-body">
+    <div class="bill-top">
+      <span class="badge">{label}</span>
+      <span class:list={["status", status.tone]}>{status.label}</span>
+    </div>
+    <h3>{bill.title}</h3>
+    <p class="meta">
+      {bill.policyArea && <span class="area">{bill.policyArea}</span>}
+      {bill.policyArea && <span aria-hidden="true"> · </span>}
+      <span class="sponsor">{bill.sponsor}</span>
+    </p>
+    <p class="summary">{bill.summary}</p>
+
+    <ol class="stages" aria-label="Progress">
+      {
+        bill.stages.map((stage) => (
+          <li class={stage.status}>
+            <span>{stage.label}</span>
+          </li>
+        ))
+      }
+    </ol>
+
+    {
+      bill.votes && (
+        <ul class="votes" role="list">
+          {bill.votes.map((vote) => (
+            <li>
+              <span class="vote-where">
+                {vote.chamber} · {formatDate(vote.date)}
+              </span>
+              <span class="vote-bar" aria-hidden="true">
+                <span style={`width: ${(100 * vote.yea) / (vote.yea + vote.nay)}%`} />
+              </span>
+              <span class="vote-result">
+                {vote.result} {vote.yea}–{vote.nay}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <a class="text-link source" href={url} target="_blank" rel="noopener">
+      {label} on Congress.gov →
+    </a>
+  </div>
+</article>
+
+<style>
+  .bill {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 20px;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .bill-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .bill-body {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+  }
+
+  .bill-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+
+  .badge {
+    padding: 2px 10px;
+    border-radius: 8px;
+    background: var(--policy);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .status.done {
+    color: #21954a;
+  }
+
+  .status.failed {
+    color: #d45252;
+  }
+
+  .status.current {
+    color: var(--blue);
+  }
+
+  h3 {
+    font-size: 19px;
+    line-height: 1.35;
+  }
+
+  .meta {
+    font-size: 15px;
+    color: var(--text-faint);
+  }
+
+  .sponsor {
+    white-space: nowrap;
+  }
+
+  .area {
+    color: var(--policy);
+    font-weight: 500;
+  }
+
+  .summary {
+    color: var(--text-muted);
+  }
+
+  /* The app's stage track: one bar per stage, labels above */
+  .stages {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .stages li {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  .stages li::after {
+    content: "";
+    height: 5px;
+    border-radius: 3px;
+    background: #e5e2db;
+  }
+
+  .stages .done::after {
+    background: var(--blue);
+  }
+
+  .stages .current::after {
+    background: linear-gradient(to right, var(--blue) 50%, #e5e2db 50%);
+  }
+
+  .stages .failed {
+    color: #d45252;
+  }
+
+  .stages .failed::after {
+    background: #d45252;
+  }
+
+  .stages .todo {
+    color: var(--text-faint);
+    font-weight: 400;
+  }
+
+  .votes {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .votes li {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .vote-where {
+    color: var(--text-muted);
+  }
+
+  /* Yea share of the vote, against nays */
+  .vote-bar {
+    height: 5px;
+    border-radius: 3px;
+    background: #d45252;
+    overflow: hidden;
+  }
+
+  .vote-bar span {
+    display: block;
+    height: 100%;
+    background: #21954a;
+  }
+
+  .vote-result {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .source {
+    margin-top: 6px;
+    font-size: 15px;
+  }
+
+  @media (max-width: 640px) {
+    .bill {
+      grid-template-columns: 32px minmax(0, 1fr);
+      gap: 12px;
+      padding: 28px 0;
+    }
+
+    .bill-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .stages li {
+      font-size: 11px;
+    }
+
+    .votes li {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 4px 14px;
+    }
+
+    .vote-bar {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+  }
+</style>

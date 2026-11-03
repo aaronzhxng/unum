@@ -1,0 +1,194 @@
+---
+// One issue of Last Week in Congress, built from its file in
+// src/content/newsletter.
+import { getCollection, render } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import BillEntry from "../../components/BillEntry.astro";
+import StoreBadges from "../../components/StoreBadges.astro";
+import SubscribeForm from "../../components/SubscribeForm.astro";
+
+export async function getStaticPaths() {
+  // Newest first, so each issue knows its neighbors
+  const issues = (await getCollection("newsletter")).sort(
+    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+  );
+  return issues.map((issue, i) => ({
+    params: { slug: issue.id },
+    props: { issue, newer: issues[i - 1], older: issues[i + 1] },
+  }));
+}
+
+const { issue, newer, older } = Astro.props;
+const { Content } = await render(issue);
+const { week, date, headline, description, stats, sections, signoff } = issue.data;
+const year = date.getUTCFullYear();
+const sent = date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+const numbers = [
+  { value: stats.signed, label: "signed into law" },
+  { value: stats.passedBoth, label: "passed both chambers" },
+  { value: stats.outOfCommittee, label: "out of committee" },
+  { value: stats.introduced, label: "introduced" },
+];
+---
+
+<Layout
+  brandStack={{ lines: ["last week", "in congress"] }}
+  title={`Last Week in Congress: ${week}, ${year}`}
+  description={description}
+>
+  <article>
+    <header class="container section page-intro">
+      <p class="eyebrow">Last Week in Congress · {week}, {year}</p>
+      <h1>{headline}</h1>
+      <div class="opening lede stack">
+        <Content />
+      </div>
+      <p class="sent">Sent {sent}</p>
+    </header>
+
+    <section class="container" aria-label="The week in numbers">
+      <ul class="numbers" role="list">
+        {
+          numbers.map((n) => (
+            <li>
+              <span class="number">{n.value}</span>
+              <span class="muted">{n.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      sections.map((section) => (
+        <section class="container section split issue-section">
+          <h2>{section.heading}</h2>
+          <div class="bills">
+            {section.bills.map((bill) => (
+              <BillEntry bill={bill} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="container section split">
+      <h2>From the team</h2>
+      <div class="stack">
+        <p class="muted">
+          Thanks for reading Last Week in Congress. To follow these bills and your own
+          representatives day to day, download our free app, Unum: Congress Tracker.
+        </p>
+        <StoreBadges />
+        <p class="muted">
+          Until next time,<br />
+          {signoff}
+        </p>
+      </div>
+    </section>
+  </article>
+
+  <section class="container section">
+    <div class="card subscribe-card">
+      <h2>Get it every Monday</h2>
+      <p class="muted">What Congress did last week, in plain language. Free and nonpartisan.</p>
+      <SubscribeForm align="center" />
+    </div>
+
+    <nav class="issue-nav" aria-label="More issues">
+      {older ? <a href={`/newsletter/${older.id}`}>← {older.data.week}</a> : <span />}
+      <a href="/newsletter">All issues</a>
+      {newer ? <a href={`/newsletter/${newer.id}`}>{newer.data.week} →</a> : <span />}
+    </nav>
+  </section>
+</Layout>
+
+<style>
+  .sent {
+    font-size: 14px;
+    color: var(--text-faint);
+    margin-top: calc(16px - var(--intro-gap));
+  }
+
+  .opening :global(p) {
+    color: var(--text-muted);
+  }
+
+  .numbers {
+    list-style: none;
+    margin: 0;
+    padding: 28px 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .numbers li {
+    display: grid;
+    gap: 2px;
+    line-height: 1.4;
+  }
+
+  .number {
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .issue-section {
+    padding-bottom: 0;
+  }
+
+  /* The first bill's divider would double up with the heading's top line */
+  .bills > :global(:first-child) {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .subscribe-card {
+    padding: 56px 24px;
+    display: grid;
+    gap: var(--card-heading-gap);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .subscribe-card .muted {
+    margin-bottom: 8px;
+  }
+
+  .issue-nav {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    font-size: 15px;
+  }
+
+  .issue-nav a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .issue-nav a:hover {
+    text-decoration: underline;
+  }
+
+  .issue-nav a:last-child {
+    justify-self: end;
+  }
+
+  @media (max-width: 760px) {
+    .numbers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .number {
+      font-size: 32px;
+    }
+  }
+</style>

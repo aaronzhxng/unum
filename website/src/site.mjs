@@ -4,7 +4,6 @@ export const APP_STORE_URL =
   "https://apps.apple.com/us/app/unum-initiative/id6763620957";
 export const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.unuminitiative.unum";
-export const NEWSLETTER_URL = "https://unuminitiative.beehiiv.com/";
 export const CONTACT_EMAIL = "contact@unuminitiative.com";
 
 // The registered legal name, used in the footer and structured data
@@ -21,7 +20,7 @@ export const SOCIAL_LINKS = [
 // Data & Sources and Support & FAQ are linked from the footer
 export const NAV_LINKS = [
   { label: "About", href: "/about" },
-  { label: "Newsletter", href: NEWSLETTER_URL, external: true },
+  { label: "Newsletter", href: "/newsletter" },
 ];
 
 export const DISCLAIMER =

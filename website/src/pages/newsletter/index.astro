@@ -1,0 +1,155 @@
+---
+// Last Week in Congress: signup, the latest issue, and every past issue.
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import SubscribeForm from "../../components/SubscribeForm.astro";
+
+const issues = (await getCollection("newsletter")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+const [latest] = issues;
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+---
+
+<Layout
+  brandStack={{ lines: ["last week", "in congress"] }}
+  title="Last Week in Congress, a free weekly newsletter"
+  description="A free, nonpartisan weekly email from Unum on what Congress did last week: bills signed into law, the votes that mattered, and what was introduced, in plain language."
+>
+  <section class="container section page-intro">
+    <p class="eyebrow">Free weekly newsletter</p>
+    <h1>Last Week in Congress</h1>
+    <p class="lede">
+      What Congress did last week, in plain language: the bills signed into law, the votes
+      that mattered, and what was introduced. Nonpartisan, in your inbox every Monday.
+    </p>
+    <SubscribeForm />
+  </section>
+
+  {
+    latest && (
+      <section class="container section split">
+        <h2>Latest issue</h2>
+        <a class="card latest" href={`/newsletter/${latest.id}`}>
+          <span class="when">
+            {latest.data.week}, {latest.data.date.getUTCFullYear()}
+          </span>
+          <span class="latest-headline">{latest.data.headline}</span>
+          <span class="muted">{latest.data.description}</span>
+          <span class="read">Read the issue →</span>
+        </a>
+      </section>
+    )
+  }
+
+  <section class="container section split">
+    <h2>All issues</h2>
+    <ul class="archive" role="list">
+      {
+        issues.map((issue) => (
+          <li>
+            <a href={`/newsletter/${issue.id}`}>
+              <time datetime={issue.data.date.toISOString().slice(0, 10)}>{formatDate(issue.data.date)}</time>
+              <span class="archive-week">{issue.data.week}</span>
+              <span class="archive-headline">{issue.data.headline}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  .latest {
+    display: grid;
+    gap: 12px;
+    padding: 36px;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .latest:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .when {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--blue);
+  }
+
+  .latest-headline {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .read {
+    color: var(--blue);
+    margin-top: 4px;
+  }
+
+  .archive {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .archive a {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    column-gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    text-decoration: none;
+  }
+
+  .archive li:first-child a {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .archive time {
+    grid-row: span 2;
+    font-size: 15px;
+    color: var(--text-faint);
+  }
+
+  .archive-week {
+    font-weight: 600;
+  }
+
+  .archive-headline {
+    color: var(--text-muted);
+  }
+
+  .archive a:hover .archive-week {
+    color: var(--blue);
+  }
+
+  @media (max-width: 640px) {
+    .latest {
+      padding: 28px 24px;
+    }
+
+    .latest-headline {
+      font-size: 22px;
+    }
+
+    .archive a {
+      grid-template-columns: 1fr;
+    }
+
+    .archive time {
+      grid-row: auto;
+    }
+  }
+</style>
