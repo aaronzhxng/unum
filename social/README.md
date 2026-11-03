@@ -53,6 +53,29 @@ The videos are silent, so a trending sound can be added in each app. Needs
 ffmpeg (`winget install Gyan.FFmpeg` or `brew install ffmpeg`, or set
 `FFMPEG_PATH`).
 
+## Posting
+
+`post.mjs` publishes an approved build. Bluesky works now; Threads,
+Instagram and X come next.
+
+```bash
+OUT=2026-11-02 node social/prototypes/post.mjs              # preview, sends nothing
+OUT=2026-11-02 node social/prototypes/post.mjs approve 4 5  # approve by slug prefix, or "all"
+OUT=2026-11-02 node social/prototypes/post.mjs send         # post the next approved post
+OUT=2026-11-02 node social/prototypes/post.mjs send all     # post every approved post
+```
+
+The preview prepares each post exactly as it would go out (text, JPEG under
+Bluesky's 1 MB limit, alt text) and flags anything Bluesky would reject, such
+as a caption over 300 characters. Text is the template's `captions.bluesky`,
+else its `caption`; alt text is its `alt`, else the post's own words.
+Approvals and posted links are saved in `posting.json` in the build folder,
+so a post is never sent twice.
+
+Needs `BLUESKY_HANDLE` and `BLUESKY_APP_PASSWORD` in `backend/.env`. Use an
+app password (Bluesky Settings > Privacy and security > App passwords), never
+the account password.
+
 ## Sizes
 
 Every post is 1000 × 1250 (4:5), exported at 2× (2000 × 2500), which all four

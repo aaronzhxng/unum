@@ -81,10 +81,10 @@ ${groups
   .join("")}
 <p style="height:40px"></p></body></html>`;
   fs.writeFileSync(path.join(OUT, "index.html"), gallery);
-  // What reel.mjs needs to stitch the day's recap without re-importing the set
+  // What reel.mjs and post.mjs need, so they never re-import the set
   fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({
     recap: recap || {},
-    posts: built.map(({ slug, name, hook, files }) => ({ slug, name, hook, files })),
+    posts: built.map(({ slug, name, hook, caption, captions, alt, files }) => ({ slug, name, hook, caption, captions, alt, files })),
   }, null, 2));
   console.log(`\n  ${built.length} templates -> ${path.join(OUT, "index.html")}`);
 }
