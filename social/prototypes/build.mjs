@@ -7,6 +7,8 @@
 //   OUT=out-test node social/prototypes/build.mjs   # render to another folder
 //   SET=social/prototypes/sets/2026-11-02.mjs OUT=2026-11-02 node social/prototypes/build.mjs
 //                                                   # render a set of real posts
+//
+// Reel videos are made from these renders afterwards by reel.mjs.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -14,22 +16,16 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
 // A post set (sets/*.mjs) exports its own templates list in the same shape
-const { templates } = process.env.SET
+// and may export recap: { hook, outro } for reel.mjs
+const { templates, recap } = process.env.SET
   ? await import(pathToFileURL(path.resolve(process.env.SET)).href)
   : await import("./templates.mjs");
-import { esc, OUTPUT_ROOT } from "./lib.mjs";
+import { esc, OUTPUT_ROOT, CHROME } from "./lib.mjs";
 
 const run = promisify(execFile);
 const OUT = path.join(OUTPUT_ROOT, process.env.OUT || "out");
 fs.mkdirSync(OUT, { recursive: true });
 
-const CHROME = [
-  process.env.CHROME_PATH,
-  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  "/usr/bin/google-chrome",
-].find((p) => p && fs.existsSync(p));
 if (!CHROME) throw new Error("No Chrome found; set CHROME_PATH");
 
 async function screenshot(htmlFile, pngFile) {
@@ -85,5 +81,10 @@ ${groups
   .join("")}
 <p style="height:40px"></p></body></html>`;
   fs.writeFileSync(path.join(OUT, "index.html"), gallery);
+  // What reel.mjs needs to stitch the day's recap without re-importing the set
+  fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({
+    recap: recap || {},
+    posts: built.map(({ slug, name, hook, files }) => ({ slug, name, hook, files })),
+  }, null, 2));
   console.log(`\n  ${built.length} templates -> ${path.join(OUT, "index.html")}`);
 }

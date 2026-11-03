@@ -3,6 +3,7 @@
 // last big votes before the recess and what's waiting when it returns.
 //
 //   SET=social/prototypes/sets/2026-11-02.mjs OUT=2026-11-02 node social/prototypes/build.mjs
+//   OUT=2026-11-02 node social/prototypes/reel.mjs     # then the recap video
 //
 // Needs bill-hr10326, bill-hr8800, bill-hr2481 (+ votes/sum), actions-hr2481,
 // and member/pa files for V000133, V000129, D000230 in data/.
@@ -46,6 +47,8 @@ const crossovers = (r) =>
   r.members.filter((x) => ["D", "R"].includes(x.party) && cast(x.vote) && (isYea(x.vote) ? "Yea" : "Nay") !== partyMajority(r, x.party));
 
 export const templates = [];
+// First and last screens of reel.mjs's recap video
+export const recap = { hook: "Six things to know before you vote", label: "Nov 2" };
 const add = (t) => templates.push(t);
 
 // ===========================================================================

@@ -15,6 +15,15 @@ const REPO = path.join(HERE, "..", "..");
 // show up as changes and only exist where this branch builds them
 export const OUTPUT_ROOT = process.env.SOCIAL_OUTPUT || path.join(REPO, "..", "unum-social-output");
 
+// Headless Chrome (or Edge) for rendering, shared by build.mjs and reel.mjs
+export const CHROME = [
+  process.env.CHROME_PATH,
+  "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "/usr/bin/google-chrome",
+].find((p) => p && fs.existsSync(p));
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -126,7 +135,7 @@ export const longDate = (iso) => {
 // Page shell
 // ---------------------------------------------------------------------------
 
-const FONTS =
+export const FONTS =
   "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=block";
 
 const CSS = `
