@@ -502,7 +502,7 @@ add({
       top: top(card({ label: "Bill tracker", aside: "Updated " + fmtDate(TODAY), w: 952, pad: "6px 34px", inner: rows.join("") })),
       bottom: bottom({
         kicker: kicker("Bill tracker", ""),
-        headline: hl("Where ", ["k", "five bills we've covered"], " stand now."),
+        headline: hl("Where ", ["k", "five bills we have covered"], " stand now."),
         text: "One became law, two passed the House and wait on the Senate, one failed, and one is still in committee.",
       }),
     });
@@ -775,7 +775,7 @@ add({
 
 add({
   slug: "on-your-ballot",
-  name: "What's on Your Ballot (election series)",
+  name: "What Is on Your Ballot (election series)",
   group: "Election",
   trigger: "Once or twice before Election Day",
   data: "Static election facts (verify each cycle)",
@@ -867,7 +867,7 @@ add({
       bottom: bottom({
         kicker: kicker("Election 2026", "Example State"),
         headline: hl(["k", "2 days left"], " to register to vote in ", ["k", "Example State"], "."),
-        text: "Check whether you're registered, and register if you aren't, through your state's election website. It takes a few minutes online.",
+        text: "Check whether you are registered, and register if you are not, through your state's election website. It takes a few minutes online.",
       }),
     });
   },
@@ -914,7 +914,7 @@ add({
       bottom: bottom({
         kicker: kicker("After the election", "120th Congress"),
         headline: hl("What ", ["k", "a new majority"], " actually controls when Congress returns ", ["k", "January 3"], "."),
-        text: "The party holding more seats in each chamber picks its leader, chairs every committee, and decides which bills reach the floor. Here is what changes and what doesn't.",
+        text: "The party holding more seats in each chamber picks its leader, chairs every committee, and decides which bills reach the floor. Here is what changes and what does not.",
       }),
     });
   },
@@ -947,7 +947,7 @@ add({
       bottom: bottom({
         kicker: kicker("Term of the week", "Cloture"),
         headline: hl(["k", "Cloture"], " is the vote that ", ["k", "ends debate"], " in the Senate, and it takes 60 senators."),
-        text: "That's why bills with majority support can still stall in the Senate. In August, senators voted 89–4 for cloture to begin work on H.R. 6500.",
+        text: "That is why bills with majority support can still stall in the Senate. In August, senators voted 89–4 for cloture to begin work on H.R. 6500.",
       }),
     });
   },

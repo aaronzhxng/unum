@@ -157,7 +157,7 @@ add({
   group: "Week of Oct 26",
   trigger: "Closest final vote on a bill before the recess",
   data: "Roll call 278 by party",
-  caption: "The closest final vote on a bill before the House left to campaign: the annual defense bill, 216–212. 15 members crossed party lines. The NDAA has been waiting in the Senate since September 14, so it's likely work for after the election.",
+  caption: "The closest final vote on a bill before the House left to campaign: the annual defense bill, 216–212. 15 members crossed party lines. The NDAA has been waiting in the Senate since September 14, so it is likely work for after the election.",
   render() {
     const r = rollcall(278);
     const b = bill("hr8800");
@@ -181,7 +181,7 @@ add({
       ),
       bottom: bottom({
         kicker: kicker("Closest vote", appBillId(b.type, b.number)),
-        headline: hl("The House passed ", ["k", "the annual defense bill"], " by ", ["p", `${r.yeaTotal - r.nayTotal} votes, ${r.yeaTotal}–${r.nayTotal}`], ". It's still ", ["k", "waiting in the Senate"], "."),
+        headline: hl("The House passed ", ["k", "the annual defense bill"], " by ", ["p", `${r.yeaTotal - r.nayTotal} votes, ${r.yeaTotal}–${r.nayTotal}`], ". It is still ", ["k", "waiting in the Senate"], "."),
         text: `${prettyBill(b.type, b.number)}, the National Defense Authorization Act, sets policy and spending levels for the Pentagon. ${crossed} members crossed party lines. The Senate received it on ${longDate(b.latest.actionDate)}.`,
       }),
     });
@@ -197,13 +197,20 @@ add({
   name: "Week in Congress: on the campaign trail",
   group: "Week of Oct 26",
   trigger: "Weekly recap, recess edition",
-  data: "Congress.gov actions Oct 26 - Nov 1, last House roll call, P.L. 119-103",
-  caption: "It's Election Day. Congress passed no bills last week, and the House hasn't voted since September 16. All 435 House seats and 35 Senate seats are on the ballot today. When Congress returns, government funding runs out December 11.",
+  data: "Congress.gov actions Oct 26 - Nov 1, last House roll call, P.L. 119-103, H.R. 8205 and H.R. 8800 status",
+  caption: "It is Election Day. Congress passed no bills last week, and the House has not voted since September 16. All 435 House seats and 35 Senate seats are on the ballot today. When Congress returns, government funding runs out December 11.",
   render() {
     const cr = bill("hr6500");
     check(cr.law === "119-103" && /December 11, 2026/.test(cr.summary), "stopgap funding runs through Dec 11");
-    const stat = (n, label, color = "#111") => `<div class="panel" style="padding:22px 24px"><div class="big" style="font-size:76px;color:${color};white-space:nowrap">${n}</div><div style="font-size:16.5px;color:var(--gray);margin-top:10px;line-height:1.3">${label}</div></div>`;
-    const row = (k, v) => `<div style="display:flex;justify-content:space-between;gap:14px;font-size:17px;padding:14px 0;border-bottom:1px solid #e6e3dc"><span style="color:var(--gray)">${k}</span><b>${v}</b></div>`;
+    // The week's one step forward, and the biggest bill still waiting
+    const als = bill("hr8205");
+    const alsActions = JSON.parse(fs.readFileSync(path.join(OUTPUT_ROOT, "data", "actions-hr8205.json"), "utf8"));
+    const alsSent = alsActions.find((a) => /^Presented to President/.test(a.text))?.actionDate;
+    check(alsSent === "2026-10-26" && als.latest.actionDate === alsSent, "H.R. 8205 went to the President Oct 26");
+    const ndaa = bill("hr8800");
+    check(/Received in the Senate/.test(ndaa.latest.text), "NDAA still waiting in the Senate");
+    const stat = (n, label, color = "#111") => `<div class="panel" style="padding:26px 28px 24px"><div class="big" style="font-size:132px;color:${color};white-space:nowrap">${n}</div><div style="font-size:19px;color:var(--gray);margin-top:12px;line-height:1.3">${label}</div></div>`;
+    const row = (k, v) => `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:20px;font-size:19.5px;padding:16px 0;border-bottom:1px solid #e6e3dc"><span style="color:var(--gray);white-space:nowrap">${k}</span><b style="text-align:right">${v}</b></div>`;
     return page({
       top: top(
         card({
@@ -213,16 +220,18 @@ add({
           inner: `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
               ${stat(0, "House votes")}${stat(0, "bills passed by either chamber")}${stat(0, "days until Election Day", "var(--blue)")}
             </div>
-            <div class="sub" style="margin-top:28px">Where things stand</div>
+            <div class="sub" style="margin-top:30px;font-size:19.5px">Where things stand</div>
             ${row("Last House vote", longDate(lastVote.iso))}
             ${row("On the ballot today", "All 435 House seats · 35 Senate seats")}
+            ${row("Sent to the President", `ALS research bill (${prettyBill(als.type, als.number)}) · ${longDate(alsSent)}`)}
+            ${row("Waiting in the Senate", "Annual defense bill (NDAA)")}
             ${row("Government funding runs out", "December 11 (P.L. 119-103)")}`,
         }),
       ),
       bottom: bottom({
         kicker: kicker("Week in Congress", "Oct 26 – Nov 1"),
         headline: hl("Congress passed ", ["k", "no bills"], " last week. Members were home ", ["k", "campaigning"], " for ", ["n", "today's election"], "."),
-        text: `The House hasn't voted since ${longDate(lastVote.iso)}. When Congress returns, its first deadline is December 11, when the stopgap funding bill runs out.`,
+        text: `The House has not voted since ${longDate(lastVote.iso)}. When Congress returns, its first deadline is December 11, when the stopgap funding bill runs out.`,
       }),
     });
   },
@@ -266,6 +275,8 @@ add({
       return t;
     };
     const tag = (p, text) => `<span style="font:600 14px Inter;padding:4px 12px;border-radius:999px;color:#fff;white-space:nowrap" class="b-${p.cls}">${text}</span>`;
+    // Outcome of each vote, so the list reads as a record, not six callouts
+    const result = (r) => `<span style="font:600 14px Inter;padding:4px 12px;border-radius:999px;white-space:nowrap;background:${/Pass/.test(r.result) ? "#e3f3e8;color:var(--pass)" : "#fbe7e7;color:var(--fail)"}">${esc(r.result)} ${r.yeaTotal}–${r.nayTotal}</span>`;
     const word = (p, text) => `<b class="c-${p.cls}" style="font-weight:600">${text}</b>`;
     return page({
       top: top(
@@ -278,23 +289,23 @@ add({
               <div><div style="font-size:14px;color:var(--muted)">Incumbent</div><div style="font-size:20px;font-weight:700">${esc(m.title)} ${esc(m.display)}</div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:6px">${tag(own, own.one)}<span style="font-size:14.5px;color:var(--gray)">since ${m.since}</span></div></div></div>
             <div class="panel" style="margin-top:20px;padding:18px 20px">
-              <div class="big c-${other.cls}" style="font-size:56px">6 of 6</div>
-              <div style="font-size:16px;color:var(--gray);margin-top:6px">closest votes sided with ${word(other, other.many)}, not ${word(own, own.many)}</div></div>
+              <div class="big" style="font-size:56px;color:var(--blue)">${ELECTION.replace("November", "Nov")}</div>
+              <div style="font-size:16px;color:var(--gray);margin-top:6px">Election Day. This seat is on the ballot.</div></div>
             <div class="sub" style="margin-top:22px">Committees</div>${m.committees.map((c) => `<div style="font-size:15.5px;color:var(--gray)">${esc(c.replace("House Committee on ", ""))}</div>`).join("")}`,
         }),
         card({
-          label: "Crossed party lines",
+          label: "Closest House votes",
           inner: rows
             .map(({ r, pos }) => `<div style="padding:11px 0;border-bottom:1px solid #e6e3dc">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b style="font-size:15.5px">${esc(short(r))}</b>${tag(other, "With " + other.many)}</div>
-                <div style="font-size:13.5px;color:var(--gray);margin-top:5px">${esc(m.last)}: <b style="color:#111">${pos}</b> · most ${word(own, own.many)}: ${partyMajority(r, m.party)} · ${esc(r.result)} ${r.yeaTotal}–${r.nayTotal}</div></div>`)
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b style="font-size:15.5px">${esc(short(r))}</b>${result(r)}</div>
+                <div style="font-size:13.5px;color:var(--gray);margin-top:5px">${esc(m.last)}: <b style="color:#111">${pos}</b> · most ${word(own, own.many)}: ${partyMajority(r, m.party)}</div></div>`)
             .join("") + `<div style="font-size:13px;color:var(--muted);margin-top:auto">The six closest final votes on bills and joint resolutions since July, by margin.</div>`,
         }),
       ),
       bottom: bottom({
         kicker: kicker("District spotlight", "NC-01"),
         headline: hl(["k", "North Carolina's 1st District"], ` votes ${ELECTION}. `, ["n", `${m.title} ${m.display}`], ", a ", ["p" + own.cls, own.one], ", voted with ", ["p" + other.cls, other.many], " on ", ["k", "all six"], " of the House's closest votes."),
-        text: `Each time, most ${own.many} voted the other way. The six include the defense bill and the PROOF Act.`,
+        text: `The six include the annual defense bill, stopgap government funding, and the PROOF Act.`,
       }),
     });
   },
