@@ -15,12 +15,16 @@ const formatDate = (date: Date) =>
 
 <Layout
   brandStack={{ lines: ["last week", "in congress"] }}
+  newsletterNav
   title="Last Week in Congress, a free weekly newsletter"
   description="A free, nonpartisan weekly email from Unum on what Congress did last week: bills signed into law, the votes that mattered, and what was introduced, in plain language."
 >
   <section class="container section page-intro">
     <p class="eyebrow">Free weekly newsletter</p>
-    <h1>Last Week in Congress</h1>
+    <div class="hero-head">
+      <h1>Last Week in Congress</h1>
+      <button type="button" class="button" data-subscribe-open>Subscribe</button>
+    </div>
     <p class="lede">
       What Congress did last week, in plain language: the bills signed into law, the votes
       that mattered, and what was introduced. Nonpartisan, in your inbox every Monday.
@@ -47,7 +51,7 @@ const formatDate = (date: Date) =>
     <SubscribeCard />
   </section>
 
-  <section class="container section split">
+  <section class="container section split" id="all-issues">
     <h2>All issues</h2>
     <ul class="archive" role="list">
       {
@@ -66,6 +70,16 @@ const formatDate = (date: Date) =>
 </Layout>
 
 <style>
+  /* The title with the Subscribe button across from it */
+  .hero-head {
+    justify-self: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+  }
+
   .latest {
     display: grid;
     gap: 12px;

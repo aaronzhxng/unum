@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import "@fontsource-variable/inter";
 import CopyButton from "../components/CopyButton.astro";
+import SubscribeModal from "../components/SubscribeModal.astro";
 import logo from "../assets/logo.png";
 import "../styles/global.css";
 import {
@@ -22,12 +23,15 @@ interface Props {
   brandStack?: { possessive?: boolean; lines: [string, string] };
   // Keep the page out of search results (the "page not found" page)
   noIndex?: boolean;
+  // Newsletter pages add All issues and a Subscribe button to the nav
+  newsletterNav?: boolean;
 }
 
 const {
   title,
   brandStack,
   noIndex = false,
+  newsletterNav = false,
   description = "Unum is a free, nonpartisan Congress tracker. Follow U.S. legislation, votes, and the members of Congress who represent you.",
 } = Astro.props;
 
@@ -139,6 +143,14 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
             </a>
           ))
         }
+        {newsletterNav && <a href="/newsletter#all-issues">All issues</a>}
+        {
+          newsletterNav && (
+            <button type="button" class="button nav-subscribe" data-subscribe-open>
+              Subscribe
+            </button>
+          )
+        }
       </nav>
     </header>
 
@@ -197,6 +209,7 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
         );
       }
     </script>
+    {newsletterNav && <SubscribeModal />}
   </body>
 </html>
 
@@ -360,7 +373,13 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
   nav {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px 28px;
+  }
+
+  .nav-subscribe {
+    padding: 8px 18px;
+    font-size: 15px;
   }
 
   nav a {
@@ -450,6 +469,11 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
     }
 
     nav a {
+      font-size: 14px;
+    }
+
+    .nav-subscribe {
+      padding: 6px 14px;
       font-size: 14px;
     }
 

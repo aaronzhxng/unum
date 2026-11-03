@@ -3,15 +3,17 @@
 // emails a confirmation link; nobody is added until they click it.
 interface Props {
   align?: "start" | "center";
+  // Keeps the input's id unique when a page has more than one form
+  id?: string;
 }
-const { align = "start" } = Astro.props;
+const { align = "start", id = align } = Astro.props;
 ---
 
 <form class:list={["subscribe", align]} action="/api/subscribe" method="post" data-subscribe>
   <div class="row">
-    <label class="sr-only" for={`email-${align}`}>Email address</label>
+    <label class="sr-only" for={`email-${id}`}>Email address</label>
     <input
-      id={`email-${align}`}
+      id={`email-${id}`}
       type="email"
       name="email"
       required
@@ -30,6 +32,8 @@ const { align = "start" } = Astro.props;
     width: 100%;
     max-width: 480px;
     display: grid;
+    /* Lets the email field shrink below its natural width on phones */
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
   }
 

@@ -34,12 +34,19 @@ const numbers = [
 
 <Layout
   brandStack={{ lines: ["last week", "in congress"] }}
+  newsletterNav
   title={`Last Week in Congress: ${week}, ${year}`}
   description={description}
 >
   <article>
     <header class="container section page-intro">
-      <p class="eyebrow">Last Week in Congress · {week}, {year}</p>
+      <div class="eyebrow-row">
+        <p class="eyebrow">Last Week in Congress · {week}, {year}</p>
+        <nav class="issue-nav" aria-label="Other issues">
+          {older && <a href={`/newsletter/${older.id}`} rel="prev">← {older.data.week}</a>}
+          {newer && <a href={`/newsletter/${newer.id}`} rel="next">{newer.data.week} →</a>}
+        </nav>
+      </div>
       <h1>{headline}</h1>
       <div class="opening lede stack">
         <Content />
@@ -77,12 +84,6 @@ const numbers = [
 
   <section class="container section">
     <SubscribeCard />
-
-    <nav class="issue-nav" aria-label="More issues">
-      {older ? <a href={`/newsletter/${older.id}`}>← {older.data.week}</a> : <span />}
-      <a href="/newsletter">All issues</a>
-      {newer ? <a href={`/newsletter/${newer.id}`}>{newer.data.week} →</a> : <span />}
-    </nav>
   </section>
 </Layout>
 
@@ -131,12 +132,25 @@ const numbers = [
     padding-top: 0;
   }
 
+  /* The eyebrow, with links to the neighboring issues on the same line */
+  .eyebrow-row {
+    justify-self: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-bottom: calc(var(--label-gap) - var(--intro-gap));
+  }
+
+  .eyebrow-row .eyebrow {
+    margin-bottom: 0;
+  }
+
   .issue-nav {
-    margin-top: 32px;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 16px;
-    font-size: 15px;
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
   }
 
   .issue-nav a {
@@ -146,10 +160,6 @@ const numbers = [
 
   .issue-nav a:hover {
     text-decoration: underline;
-  }
-
-  .issue-nav a:last-child {
-    justify-self: end;
   }
 
   @media (max-width: 760px) {

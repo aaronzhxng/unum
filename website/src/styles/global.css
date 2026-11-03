@@ -211,6 +211,33 @@ main p {
   border-radius: 32px;
 }
 
+/* Blue pill button, matching the newsletter form's Subscribe button */
+.button {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
 .text-link {
   color: var(--blue);
   font-weight: 400;
