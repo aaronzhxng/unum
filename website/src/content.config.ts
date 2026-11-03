@@ -1,6 +1,6 @@
 // Newsletter issues: one Markdown file per week in src/content/newsletter.
-// The file name is the issue's address, e.g. october-12-16-2026.md is
-// served at /newsletter/october-12-16-2026. The front matter holds the
+// The file name is the issue's address, e.g. september-21-25-2026.md is
+// served at /newsletter/september-21-25-2026. The front matter holds the
 // numbers and bills; the Markdown body is the opening note.
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
@@ -32,7 +32,7 @@ const bill = z.object({
 const newsletter = defineCollection({
   loader: glob({ pattern: "*.md", base: "./src/content/newsletter" }),
   schema: z.object({
-    // The week covered, e.g. "October 12–16"
+    // The week covered, e.g. "September 21–25"
     week: z.string(),
     // The Monday it went out
     date: z.coerce.date(),

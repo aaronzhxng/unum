@@ -1,0 +1,25 @@
+---
+// The newsletter signup as a centered card, shared by the newsletter page
+// and the end of every issue.
+import SubscribeForm from "./SubscribeForm.astro";
+---
+
+<div class="card subscribe-card">
+  <h2>Get it every Monday</h2>
+  <p class="muted">What Congress did last week, in plain language. Free and nonpartisan.</p>
+  <SubscribeForm align="center" />
+</div>
+
+<style>
+  .subscribe-card {
+    padding: 56px 24px;
+    display: grid;
+    gap: var(--card-heading-gap);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .subscribe-card .muted {
+    margin-bottom: 8px;
+  }
+</style>

@@ -1,8 +1,8 @@
 ---
-// Last Week in Congress: signup, the latest issue, and every past issue.
+// Last Week in Congress: the latest issue, signup, and every past issue.
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
-import SubscribeForm from "../../components/SubscribeForm.astro";
+import SubscribeCard from "../../components/SubscribeCard.astro";
 
 const issues = (await getCollection("newsletter")).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
@@ -25,7 +25,6 @@ const formatDate = (date: Date) =>
       What Congress did last week, in plain language: the bills signed into law, the votes
       that mattered, and what was introduced. Nonpartisan, in your inbox every Monday.
     </p>
-    <SubscribeForm />
   </section>
 
   {
@@ -43,6 +42,10 @@ const formatDate = (date: Date) =>
       </section>
     )
   }
+
+  <section class="container section">
+    <SubscribeCard />
+  </section>
 
   <section class="container section split">
     <h2>All issues</h2>

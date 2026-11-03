@@ -4,8 +4,7 @@
 import { getCollection, render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import BillEntry from "../../components/BillEntry.astro";
-import StoreBadges from "../../components/StoreBadges.astro";
-import SubscribeForm from "../../components/SubscribeForm.astro";
+import SubscribeCard from "../../components/SubscribeCard.astro";
 
 export async function getStaticPaths() {
   // Newest first, so each issue knows its neighbors
@@ -20,7 +19,8 @@ export async function getStaticPaths() {
 
 const { issue, newer, older } = Astro.props;
 const { Content } = await render(issue);
-const { week, date, headline, description, stats, sections, signoff } = issue.data;
+// The signoff is only for the emailed version
+const { week, date, headline, description, stats, sections } = issue.data;
 const year = date.getUTCFullYear();
 const sent = date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
@@ -73,28 +73,10 @@ const numbers = [
       ))
     }
 
-    <section class="container section split">
-      <h2>From the team</h2>
-      <div class="stack">
-        <p class="muted">
-          Thanks for reading Last Week in Congress. To follow these bills and your own
-          representatives day to day, download our free app, Unum: Congress Tracker.
-        </p>
-        <StoreBadges />
-        <p class="muted">
-          Until next time,<br />
-          {signoff}
-        </p>
-      </div>
-    </section>
   </article>
 
   <section class="container section">
-    <div class="card subscribe-card">
-      <h2>Get it every Monday</h2>
-      <p class="muted">What Congress did last week, in plain language. Free and nonpartisan.</p>
-      <SubscribeForm align="center" />
-    </div>
+    <SubscribeCard />
 
     <nav class="issue-nav" aria-label="More issues">
       {older ? <a href={`/newsletter/${older.id}`}>← {older.data.week}</a> : <span />}
@@ -147,18 +129,6 @@ const numbers = [
   .bills > :global(:first-child) {
     border-top: none;
     padding-top: 0;
-  }
-
-  .subscribe-card {
-    padding: 56px 24px;
-    display: grid;
-    gap: var(--card-heading-gap);
-    justify-items: center;
-    text-align: center;
-  }
-
-  .subscribe-card .muted {
-    margin-bottom: 8px;
   }
 
   .issue-nav {

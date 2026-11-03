@@ -1,6 +1,6 @@
 ---
-week: October 12–16
-date: 2026-10-19
+week: September 21–25
+date: 2026-09-28
 headline: 6 bills became law, and the Senate rejected an Iran war powers resolution 49–50
 description: Six bills were signed into law across energy, water, public lands, and transportation, and a war powers resolution on Iran failed in the Senate by one vote.
 stats:
