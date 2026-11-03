@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-10-26",
-  "weekEnd": "2026-11-1",
+  "weekOf": "2026-11-2",
+  "weekEnd": "2026-11-8",
   "bills": [
     {
-      "billId": "hr6509",
-      "note": "This bill provides for increased oversight of drug compounding and imposes statutory limits on compounded drugs that are copies of commercially available drugs."
+      "billId": "hr8205",
+      "note": "This bills reviews NIH and FDA programs that fund research and treatments for ALS and other neurodegenerative diseases through 2031."
     }
   ]
 }
