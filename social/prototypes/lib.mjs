@@ -411,7 +411,10 @@ export function profileCard(m, { areas, lawsText }) {
 // Half-circle seat chart. groups: [{n, cls}] in left-to-right order.
 export function hemicycle(groups, { width = 400, rows = 8, dot = 0, inner = 0.4 } = {}) {
   const N = groups.reduce((a, g) => a + g.n, 0);
-  const R = width / 2 - 8;
+  // Dot size comes first, so the arc can be inset by it and the outer dots
+  // are never clipped at the top or sides
+  const d = dot || Math.max(2.5, ((width / 2) * (1 - inner)) / rows / 2.4);
+  const R = width / 2 - d - 1;
   const radii = [...Array(rows)].map((_, i) => inner + ((1 - inner) * i) / (rows - 1));
   const sumR = radii.reduce((a, r) => a + r, 0);
   const counts = radii.map((r) => Math.floor((N * r) / sumR));
@@ -422,18 +425,18 @@ export function hemicycle(groups, { width = 400, rows = 8, dot = 0, inner = 0.4 
     const n = counts[i];
     for (let k = 0; k < n; k++) {
       const a = Math.PI * (1 - (n === 1 ? 0.5 : k / (n - 1)));
-      seats.push({ a, x: width / 2 + R * r * Math.cos(a), y: R + 4 - R * r * Math.sin(a) });
+      seats.push({ a, x: width / 2 + R * r * Math.cos(a), y: R + d + 1 - R * r * Math.sin(a) });
     }
   });
   seats.sort((p, q) => q.a - p.a);
-  const d = dot || Math.max(2.5, (R * (1 - inner)) / rows / 2.4);
   let gi = 0, used = 0;
   const circles = seats.map((s) => {
     while (used >= groups[gi].n) { gi++; used = 0; }
     used++;
     return `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${d.toFixed(1)}" fill="${groups[gi].fill}"/>`;
   });
-  return `<svg width="${width}" height="${R + 6 + d}" viewBox="0 0 ${width} ${R + 6 + d}">${circles.join("")}</svg>`;
+  const height = (R + 2 * d + 2).toFixed(1);
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${circles.join("")}</svg>`;
 }
 
 // Grid of dots, one per member, filled in order. groups: [{n, fill, ring?}]

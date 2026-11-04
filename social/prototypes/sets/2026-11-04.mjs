@@ -8,7 +8,7 @@
 // When more races are called, update the results file and rebuild.
 
 import { esc, page, hl, kicker, bottom, card, hemicycle } from "../lib.mjs";
-import { AS_OF, SOURCES, senate, house, governors } from "./2026-11-04-results.mjs";
+import { AS_OF, SOURCE_LINE, SOURCES, senate, house, governors } from "./2026-11-04-results.mjs";
 
 const check = (ok, what) => {
   if (!ok) throw new Error(`Fact check failed: ${what}`);
@@ -51,7 +51,8 @@ const result = (winner, wParty, loser, lParty) =>
   `<span style="font-size:17px"><b class="c-${wParty.toLowerCase()}">${esc(lastName(winner[0]))} ${pct(winner[1])}</b> <span style="color:var(--muted)">·</span> <span style="color:var(--gray)">${esc(lastName(loser[0]))} ${pct(loser[1])}</span></span>`;
 const NUMBER_WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const houseMembers = (list) => NUMBER_WORDS[list.filter((n) => n.now === "U.S. representative").length];
-const asOf = `<div style="font-size:14px;color:var(--muted);margin-top:auto;padding-top:14px">Projected winners, as of ${esc(AS_OF)}. Results can change as votes are counted.</div>`;
+// The source on every post, since results are projections that can change
+const asOf = `<div style="font-size:14px;color:var(--muted);margin-top:auto;padding-top:14px">Source: ${esc(SOURCE_LINE)}, as of ${esc(AS_OF)}. Results can change as votes are counted.</div>`;
 
 export const templates = [];
 const add = (t) => templates.push({ group: GROUP, data: DATA, ...t });
@@ -279,16 +280,57 @@ add({
 });
 
 // ===========================================================================
-// 7. What happens next
+// 7. House Democrats: none lost to a Republican
 // ===========================================================================
 
 add({
-  slug: "7-what-next",
+  slug: "7-house-democrats",
+  name: "House Democrats held their seats",
+  trigger: "Day after the election",
+  caption: `So far, no House Democrat has lost a seat to a Republican. Democrats in the closest races, including Don Davis in North Carolina and Marcy Kaptur in Ohio, held on. Maine's open 2nd District, held by a Democrat, is still too close to call.`,
+  render() {
+    check(house.democratsLostToR === 0, "no Democratic incumbent lost to a Republican");
+    const t = house.demSeatTossUp;
+    return page({
+      top: top(
+        card({
+          label: "Closest Democratic holds",
+          aside: "Battleground races",
+          w: 952,
+          inner: `${house.closestDemHolds
+            .map((x) =>
+              row(
+                `<div style="display:flex;align-items:center;gap:16px">${face(x.winner[0], "D", 48)}<div><b style="font-size:19px">${esc(x.winner[0])}</b><div class="mono" style="font-size:15px;color:var(--muted);margin-top:2px">${esc(x.district)}</div></div></div>`,
+                `<span style="font-size:17px"><b class="c-d">${pct(x.winner[1])}</b> <span style="color:var(--muted)">·</span> <span style="color:var(--gray)">${esc(x.loser[0])} ${pct(x.loser[1])}</span></span>`,
+              ),
+            )
+            .join("")}
+            <div class="panel" style="margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px">
+              <div style="font-size:17px;line-height:1.4"><b>Still too close:</b> ${esc(t.district)}, an open Democratic seat</div>
+              <span style="font-size:17px;white-space:nowrap"><span class="c-d">${esc(t.d[0])} ${t.d[1]}%</span> · <span class="c-r">${esc(t.r[0])} ${t.r[1]}%</span></span></div>
+            ${asOf}`,
+        }),
+      ),
+      bottom: bottom({
+        kicker: kicker("Midterm results", "House"),
+        headline: hl("So far, ", ["k", "no House Democrat"], " has lost a seat to a ", ["pr", "Republican"], "."),
+        text: `Democrats in the closest races held on. Maine's open 2nd District is still tied, and ${house.seats.uncalled} House races are still being counted.`,
+      }),
+    });
+  },
+});
+
+// ===========================================================================
+// 8. What happens next
+// ===========================================================================
+
+add({
+  slug: "8-what-next",
   name: "What happens next",
   trigger: "Day after the election",
   caption: `The current Congress returns for a lame-duck session before the new one takes over in January. Its first deadline is December 11, when government funding runs out. Meanwhile, ${house.seats.uncalled} House races and the Senate races in Mississippi and Alaska are still being counted.`,
   render() {
-    const step = (when, what, detail) => `<div style="display:grid;grid-template-columns:210px 1fr;gap:24px;padding:28px 0;border-bottom:1px solid #e6e3dc">
+    const step = (when, what, detail) => `<div style="display:grid;grid-template-columns:210px 1fr;gap:24px;padding:22px 0;border-bottom:1px solid #e6e3dc">
         <div class="mono" style="font-size:20px;color:var(--blue);text-transform:uppercase">${esc(when)}</div>
         <div><b style="font-size:24px">${esc(what)}</b><div style="font-size:18.5px;color:var(--gray);margin-top:8px;line-height:1.4">${esc(detail)}</div></div></div>`;
     return page({
@@ -299,7 +341,8 @@ add({
           inner: `${step("Now", "Counting continues", `${house.seats.uncalled} House races, the Senate races in Mississippi and Alaska, and the governor races in Kansas and Alaska are not yet called.`)}
             ${step("Coming weeks", "States certify results", "Each state confirms its official count on its own schedule. Close races can go to recounts.")}
             ${step("December 11", "Government funding runs out", "The current Congress, with Republican majorities, returns for a lame-duck session and has to pass more funding to avoid a shutdown.")}
-            ${step("January", "The new Congress is sworn in", "Democrats take control of the House and Senate. Most newly elected governors also take office in January.")}`,
+            ${step("January", "The new Congress is sworn in", "Democrats take control of the House and Senate. Most newly elected governors also take office in January.")}
+            ${asOf}`,
         }),
       ),
       bottom: bottom({

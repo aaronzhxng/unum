@@ -7,12 +7,16 @@
 
 export const AS_OF = "Nov 4, 12:30 p.m. ET";
 
+// Shown on every post
+export const SOURCE_LINE = "NBC News race projections";
+
 export const SOURCES = [
   "https://www.nbcnews.com/politics/2026-elections/senate-results",
   "https://www.nbcnews.com/politics/2026-elections/house-results",
   "https://www.nbcnews.com/politics/2026-elections/governor-results",
   "https://en.wikipedia.org/wiki/2026_United_States_Senate_elections",
   "https://www.cbsnews.com/live-updates/senate-election-results-2026/",
+  "https://en.wikipedia.org/wiki/2026_United_States_House_of_Representatives_elections",
 ];
 
 export const senate = {
@@ -83,6 +87,20 @@ export const house = {
   ],
   // The seat from our Nov 2 district spotlight
   nc1: { winner: ["Don Davis", 50.1], loser: ["Buckhout", 46.8] },
+  // No Democratic incumbent had lost to a Republican, and no Democratic seat
+  // had flipped, in NBC's calls or Wikipedia's list of defeated incumbents.
+  // These are the closest Democratic holds NBC has called
+  democratsLostToR: 0,
+  closestDemHolds: [
+    { district: "NC-1", winner: ["Don Davis", 50.1], loser: ["Buckhout", 46.8] },
+    { district: "FL-25", winner: ["Jared Moskowitz", 51.3], loser: ["Singer", 46.6] },
+    { district: "OH-9", winner: ["Marcy Kaptur", 52.7], loser: ["Merrin", 47.3] },
+    { district: "WA-3", winner: ["Marie Gluesenkamp Perez", 55.0], loser: ["Braun", 44.2] },
+    { district: "TX-34", winner: ["Vicente Gonzalez", 55.6], loser: ["Flores", 39.8] },
+    { district: "TX-28", winner: ["Henry Cuellar", 65.8], loser: ["Tijerina", 29.6] },
+  ],
+  // A Democratic-held open seat still tied when pulled
+  demSeatTossUp: { district: "ME-2", d: ["Dunlap", 50], r: ["LePage", 50] },
 };
 
 export const governors = {
