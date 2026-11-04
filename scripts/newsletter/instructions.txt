@@ -1,4 +1,3 @@
-node scripts/newsletter/generateDigest.js
-node scripts/newsletter/generateDigest.js --weeks-ago 1
-node scripts/newsletter/curatePicks.js hr6644 s269 sjres80
-node scripts/newsletter/generateCard.js hr10138 --summary "Your tailored summary here"
+node scripts/newsletter/draftIssue.mjs
+node scripts/newsletter/draftIssue.mjs --week 2026-10-26
+node scripts/newsletter/memberPhotos.mjs

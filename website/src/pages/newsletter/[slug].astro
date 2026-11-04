@@ -1,16 +1,15 @@
 ---
 // One issue of Last Week in Congress, built from its file in
 // src/content/newsletter.
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
+import { getIssues } from "../../newsletter.mjs";
 import Layout from "../../layouts/Layout.astro";
 import BillEntry from "../../components/BillEntry.astro";
 import SubscribeCard from "../../components/SubscribeCard.astro";
 
 export async function getStaticPaths() {
   // Newest first, so each issue knows its neighbors
-  const issues = (await getCollection("newsletter")).sort(
-    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
-  );
+  const issues = await getIssues();
   return issues.map((issue, i) => ({
     params: { slug: issue.id },
     props: { issue, newer: issues[i - 1], older: issues[i + 1] },

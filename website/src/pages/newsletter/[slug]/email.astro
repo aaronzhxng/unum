@@ -4,13 +4,14 @@
 // so it is all tables and inline styles. /api/send fills in the {{...}}
 // placeholders for each send: the site address for images and links, each
 // subscriber's unsubscribe link, and the mailing address.
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
+import { getIssues } from "../../../newsletter.mjs";
 import { billInfo, policyArea } from "../../../policyAreas.mjs";
 import { APP_STORE_URL, GOOGLE_PLAY_URL } from "../../../site.mjs";
 import { memberPhoto, sponsorParts } from "../../../members.mjs";
 
 export async function getStaticPaths() {
-  const issues = await getCollection("newsletter");
+  const issues = await getIssues();
   return issues.map((issue) => ({ params: { slug: issue.id }, props: { issue } }));
 }
 

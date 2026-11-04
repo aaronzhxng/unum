@@ -35,6 +35,8 @@ const bill = z.object({
 const newsletter = defineCollection({
   loader: glob({ pattern: "*.md", base: "./src/content/newsletter" }),
   schema: z.object({
+    // Shown in local builds and on preview links, never on the live site
+    draft: z.boolean().optional(),
     // The week covered, e.g. "September 21–25"
     week: z.string(),
     // The Monday it went out

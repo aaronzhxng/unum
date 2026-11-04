@@ -3,10 +3,10 @@
 // search results, and useless without the SEND_SECRET password, which
 // /api/send checks. Test sends work from any link; sending to subscribers
 // only works on unuminitiative.com.
-import { getCollection } from "astro:content";
+import { getIssues } from "../../newsletter.mjs";
 import Layout from "../../layouts/Layout.astro";
 
-const issues = (await getCollection("newsletter")).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const issues = await getIssues();
 ---
 
 <Layout title="Send an issue" brandStack={{ lines: ["last week", "in congress"] }} noIndex>

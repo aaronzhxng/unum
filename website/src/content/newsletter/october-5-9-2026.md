@@ -7,7 +7,7 @@ stats:
   signed: 3
   passedBoth: 0
   outOfCommittee: 12
-  introduced: 74
+  introduced: 94
 sections:
   - heading: Signed into law
     bills:
@@ -97,4 +97,4 @@ signoff: Justin and Aaron at Unum Initiative
 
 Good morning. Congress is on its pre-election recess, and neither chamber passed a bill last week. But 3 bills passed in September became law: the Billion Dollar Boondoggle Act, a Social Security identity theft bill, and the American Music Tourism Act. Another 3 were sent to the President.
 
-In the House, 74 bills were introduced, and committees formally reported 12 bills, including 8 small business bills.
+Members introduced 94 bills and resolutions, and House committees formally reported 12 bills, including 8 small business bills.
