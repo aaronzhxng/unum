@@ -50,9 +50,9 @@ const formatDate = (date: Date) =>
 ---
 
 <article class="bill" style={`--policy: ${policy.color}`}>
-  <img class="bill-icon" src={`/newsletter/icons/${policy.icon}`} alt="" width="44" height="44" />
   <div class="bill-body">
     <div class="bill-top">
+      <img class="bill-icon" src={`/newsletter/icons/${policy.icon}`} alt="" width="40" height="40" />
       <span class="badge">{label}</span>
       <span class:list={["status", status.tone]}>{status.label}</span>
     </div>
@@ -102,16 +102,15 @@ const formatDate = (date: Date) =>
 
 <style>
   .bill {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr);
-    gap: 20px;
     padding: 32px 0;
     border-top: 1px solid var(--border);
   }
 
+  /* The icon leads the top row, so every line below lines up with it */
   .bill-icon {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
+    flex: none;
   }
 
   .bill-body {
@@ -283,14 +282,12 @@ const formatDate = (date: Date) =>
 
   @media (max-width: 640px) {
     .bill {
-      grid-template-columns: 32px minmax(0, 1fr);
-      gap: 12px;
       padding: 28px 0;
     }
 
     .bill-icon {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
     }
 
     .stages li {

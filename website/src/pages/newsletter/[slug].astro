@@ -69,15 +69,23 @@ const numbers = [
     </section>
 
     {
-      sections.map((section) => (
-        <section class="container section split issue-section">
-          <h2>{section.heading}</h2>
-          <div class="bills">
-            {section.bills.map((bill) => (
-              <BillEntry bill={bill} />
-            ))}
-          </div>
-        </section>
+      sections.map((section, i) => (
+        <>
+          {/* A full-width line between sections */}
+          {i > 0 && (
+            <div class="container" aria-hidden="true">
+              <hr class="section-rule" />
+            </div>
+          )}
+          <section class="container section split issue-section">
+            <h2>{section.heading}</h2>
+            <div class="bills">
+              {section.bills.map((bill) => (
+                <BillEntry bill={bill} />
+              ))}
+            </div>
+          </section>
+        </>
       ))
     }
 
@@ -125,6 +133,12 @@ const numbers = [
 
   .issue-section {
     padding-bottom: 0;
+  }
+
+  .section-rule {
+    margin: 40px 0 0;
+    border: none;
+    border-top: 1px solid var(--border);
   }
 
   /* The first bill's divider would double up with the heading's top line */
