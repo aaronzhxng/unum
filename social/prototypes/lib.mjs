@@ -265,6 +265,9 @@ body { background: var(--paper); }
 .list-row .ic img { width: 54px; height: 54px; display: block; }
 .list-row .t { font-size: 16px; font-weight: 600; line-height: 1.25; color: #111; }
 .list-row .m { font-size: 13px; color: var(--muted); margin-top: 3px; }
+/* Where the post's facts come from, on the right of the kicker line */
+.source { position: absolute; right: 28px; top: calc(var(--top-h, 748px) + 24px);
+  font: 500 15px/39px "DM Mono", monospace; color: var(--muted); }
 .sample { position: absolute; right: 28px; top: calc(var(--top-h, 748px) + 24px); z-index: 9; background: #fff3c4; color: #7a5b00;
   font: 500 15px "DM Mono", monospace; padding: 6px 12px; border-radius: 8px; border: 1px solid #e0c96a; }
 `;
@@ -287,11 +290,27 @@ export function page({ top, bottom, topH, css = "", sample = false }) {
 <link rel="stylesheet" href="${FONTS}">
 <style>${CSS}${css}</style></head><body>
 <div class="post" style="${topH ? `--top-h:${topH}px` : ""}">
-${sample ? '<div class="sample">SAMPLE DATA</div>' : ""}
+${sample ? '<div class="sample">SAMPLE DATA</div>' : "<!--source-->"}
 ${top}
 ${bottom}
 </div><script>${FIT_SCRIPT}</script></body></html>`;
 }
+
+// The short source line on each post. A template can set source (a label,
+// or null for none); otherwise it follows what the post is built from:
+// civics and education content has none, roll-call votes come from the
+// House Clerk, and everything else from Congress.gov.
+export function sourceLabel(t) {
+  if (t.source !== undefined) return t.source;
+  const data = t.data || "";
+  if (/^(Static|Education|Today's|Needs|app\/|constants\/)/.test(data)) return null;
+  return /roll[- ]call|vote/i.test(data) ? "Congress.gov, House Clerk" : "Congress.gov";
+}
+
+// Fills the source line into a rendered post (sample posts show their
+// SAMPLE DATA badge in that spot instead)
+export const withSource = (html, label) =>
+  html.replace("<!--source-->", label ? `<div class="source">Source: ${esc(label)}</div>` : "");
 
 // ---------------------------------------------------------------------------
 // Editorial stack

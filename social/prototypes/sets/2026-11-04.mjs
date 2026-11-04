@@ -55,7 +55,8 @@ const houseMembers = (list) => NUMBER_WORDS[list.filter((n) => n.now === "U.S. r
 const asOf = `<div style="font-size:14px;color:var(--muted);margin-top:auto;padding-top:14px">Source: ${esc(SOURCE_LINE)}, as of ${esc(AS_OF)}. Results can change as votes are counted.</div>`;
 
 export const templates = [];
-const add = (t) => templates.push({ group: GROUP, data: DATA, ...t });
+// Each card already ends with its source and the time of the pull
+const add = (t) => templates.push({ group: GROUP, data: DATA, source: null, ...t });
 
 // ===========================================================================
 // 1. Senate control

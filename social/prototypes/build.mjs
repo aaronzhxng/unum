@@ -20,7 +20,7 @@ import { pathToFileURL } from "node:url";
 const { templates, recap } = process.env.SET
   ? await import(pathToFileURL(path.resolve(process.env.SET)).href)
   : await import("./templates.mjs");
-import { esc, OUTPUT_ROOT, CHROME } from "./lib.mjs";
+import { esc, OUTPUT_ROOT, CHROME, sourceLabel, withSource } from "./lib.mjs";
 
 const run = promisify(execFile);
 const OUT = path.join(OUTPUT_ROOT, process.env.OUT || "out");
@@ -46,7 +46,7 @@ for (const t of templates) {
   for (const [i, html] of slides.entries()) {
     const name = slides.length > 1 ? `${t.slug}-${i + 1}` : t.slug;
     const htmlFile = path.join(OUT, `${name}.html`);
-    fs.writeFileSync(htmlFile, html);
+    fs.writeFileSync(htmlFile, withSource(html, sourceLabel(t)));
     await screenshot(htmlFile, path.join(OUT, `${name}.png`));
     files.push(`${name}.png`);
     console.log("  rendered", name);

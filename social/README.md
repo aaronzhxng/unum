@@ -31,6 +31,14 @@ project or as changes on any branch.
 | Hand-made designs they follow | `templates/bill-of-the-day/` |
 | All ideas, built and not | `IDEAS.md` |
 
+## Sources
+
+Each post shows a short source line beside its kicker: "Congress.gov" for
+bills and members, "Congress.gov, House Clerk" for posts built on House
+roll-call votes, and none for civics and education posts. It follows each
+template's `data` description; set `source` on a template to change it
+(`null` for none). Full links can go in the caption.
+
 ## Reels
 
 After a build, `reel.mjs` turns it into vertical 1080 × 1920 videos for
