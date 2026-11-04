@@ -1,0 +1,13 @@
+---
+import NewsletterNotice from "../../components/NewsletterNotice.astro";
+import { CONTACT_EMAIL } from "../../site.mjs";
+---
+
+<NewsletterNotice title="Link not recognized" heading="That link did not work">
+  <p>
+    It may be incomplete or out of date. Try signing up again from the newsletter page, or
+    email us at <a class="text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and we
+    will sort it out.
+  </p>
+  <a slot="actions" class="button" href="/newsletter">Go to the newsletter</a>
+</NewsletterNotice>

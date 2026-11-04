@@ -24,6 +24,8 @@ const { align = "start", id = align } = Astro.props;
     <input class="trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
     <button type="submit">Subscribe</button>
   </div>
+  {/* Cloudflare Turnstile's bot check; only shows itself if it needs a click */}
+  <div class="turnstile" data-turnstile></div>
   <p class="note" role="status" data-note>Free, every Monday. Unsubscribe anytime.</p>
 </form>
 
@@ -98,6 +100,10 @@ const { align = "start", id = align } = Astro.props;
     outline-offset: 3px;
   }
 
+  .turnstile:empty {
+    display: none;
+  }
+
   .note {
     font-size: 14px;
     color: var(--text-faint);
@@ -113,7 +119,45 @@ const { align = "start", id = align } = Astro.props;
 </style>
 
 <script>
-  for (const form of document.querySelectorAll<HTMLFormElement>("[data-subscribe]")) {
+  // Turnstile's site key for the live site. Preview links (pages.dev) use
+  // Cloudflare's always-pass test key, paired with its test secret there.
+  const SITE_KEY =
+    location.hostname === "unuminitiative.com" ? "0x4AAAAAAFz8UYR7Nvu0EMli" : "1x00000000000000000000AA";
+
+  type Turnstile = {
+    render: (el: HTMLElement, options: object) => string;
+    getResponse: (id: string) => string | undefined;
+    reset: (id: string) => void;
+  };
+  const turnstile = () => (window as unknown as { turnstile?: Turnstile }).turnstile;
+
+  const widgets = new Map<HTMLFormElement, string>();
+  const forms = [...document.querySelectorAll<HTMLFormElement>("[data-subscribe]")];
+
+  // Loaded once for every form on the page
+  const script = document.createElement("script");
+  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+  script.async = true;
+  script.onload = () => {
+    for (const form of forms) {
+      const el = form.querySelector<HTMLElement>("[data-turnstile]")!;
+      widgets.set(form, turnstile()!.render(el, { sitekey: SITE_KEY, appearance: "interaction-only" }));
+    }
+  };
+  document.head.append(script);
+
+  // The check usually finishes on its own within a moment of the page loading
+  async function token(form: HTMLFormElement) {
+    for (let i = 0; i < 50; i++) {
+      const id = widgets.get(form);
+      const value = id && turnstile()?.getResponse(id);
+      if (value) return value;
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    return "";
+  }
+
+  for (const form of forms) {
     const note = form.querySelector<HTMLElement>("[data-note]")!;
     const button = form.querySelector("button")!;
 
@@ -123,7 +167,12 @@ const { align = "start", id = align } = Astro.props;
       note.className = "note";
       note.textContent = "Subscribing…";
       try {
-        const response = await fetch(form.action, { method: "POST", body: new FormData(form) });
+        if (!(await token(form))) throw new Error("check");
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
         if (!response.ok) throw new Error(String(response.status));
         form.reset();
         note.classList.add("ok");
@@ -133,6 +182,8 @@ const { align = "start", id = align } = Astro.props;
         note.textContent = "Something went wrong. Please try again in a moment.";
       } finally {
         button.disabled = false;
+        const id = widgets.get(form);
+        if (id) turnstile()?.reset(id);
       }
     });
   }
