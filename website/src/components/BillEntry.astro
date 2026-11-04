@@ -54,7 +54,7 @@ const formatDate = (date: Date) =>
       {
         bill.policyArea && (
           <span class="tag area">
-            <img src={`/newsletter/icons/${policy.icon}`} alt="" width="24" height="24" />
+            <img src={`/newsletter/icons/${policy.icon}`} alt="" width="28" height="28" />
             {bill.policyArea}
           </span>
         )
@@ -62,7 +62,7 @@ const formatDate = (date: Date) =>
       <span class="tag sponsor">
         {
           photo ? (
-            <img class="sponsor-photo" src={photo} alt="" width="24" height="24" loading="lazy" style={`--ring: ${color}`} />
+            <img class="sponsor-photo" src={photo} alt="" width="28" height="28" loading="lazy" style={`--ring: ${color}`} />
           ) : (
             <span class="sponsor-photo initials" aria-hidden="true" style={`--ring: ${color}`}>
               {initials}
@@ -127,28 +127,30 @@ const formatDate = (date: Date) =>
     line-height: 1.35;
   }
 
-  /* Separate white bubbles that touch, on two lines on phones */
+  /* Separate white bubbles, on two lines on phones */
   .tags {
     display: flex;
     flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
   }
 
   .tag {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    min-height: 32px;
-    padding: 3px 11px 3px 5px;
+    gap: 9px;
+    min-height: 42px;
+    padding: 6px 14px 6px 7px;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: #fff;
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.25;
   }
 
   .tag img {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     flex: none;
   }
 
@@ -162,11 +164,11 @@ const formatDate = (date: Date) =>
   }
 
   /* Ringed in the sponsor's party color, as in the app. The ring is inside
-     the 24px, so the photo lines up with the policy icon on phones. */
+     the 28px, so the photo lines up with the policy icon on phones. */
   .sponsor-photo {
     box-sizing: border-box;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     flex: none;
     border: 1.5px solid var(--ring, var(--border));
     border-radius: 50%;
@@ -178,7 +180,7 @@ const formatDate = (date: Date) =>
     place-items: center;
     background: var(--ring);
     color: #fff;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
   }
 

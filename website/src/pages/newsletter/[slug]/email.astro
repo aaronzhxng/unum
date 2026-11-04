@@ -33,8 +33,8 @@ const numbers = [
   [stats.outOfCommittee, "out of committee"],
   [stats.introduced, "introduced"],
 ];
-const tag = `display:inline-block;padding:3px 10px 3px 5px;border:1px solid ${C.border};border-radius:8px;background:#fff;font-size:13px;line-height:22px`;
-const tagImage = "display:inline-block;margin-right:7px;vertical-align:middle";
+const tag = `display:inline-block;margin:0 8px 8px 0;padding:6px 13px 6px 7px;border:1px solid ${C.border};border-radius:8px;background:#fff;font-size:14px;line-height:26px`;
+const tagImage = "display:inline-block;margin-right:8px;vertical-align:middle";
 const stageColor = { done: C.text, current: C.blue, todo: "#b0b0b0", failed: C.red };
 const formatDate = (d: Date) =>
   d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
@@ -99,8 +99,8 @@ const formatDate = (d: Date) =>
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`border-bottom:1px solid ${C.border}`}>
                           <tr><td style="padding:20px 0">
                             <p style="margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
-                            {/* Separate white bubbles that touch. No space between the spans, which would open a gap. */}
-                            <div style="margin:0 0 12px">{bill.policyArea && (<span class="tag" style={`${tag};color:${policy.color};font-weight:600`}><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="22" height="22" alt="" style={tagImage} />{bill.policyArea}</span>)}<span class="tag" style={`${tag};color:${C.muted}`}>{photo ? (<img src={`${ORIGIN}${photo}`} width="20" height="20" alt="" style={`${tagImage};border-radius:50%;border:1px solid ${sponsor.color}`} />) : (<span style={`display:inline-block;width:22px;height:22px;line-height:22px;margin-right:7px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:9px;font-weight:600;text-align:center;vertical-align:middle`}>{sponsor.initials}</span>)}{bill.sponsor}</span></div>
+                            {/* Separate white bubbles. No space between the spans, so the gap is exactly the margin. */}
+                            <div style="margin:0 0 4px">{bill.policyArea && (<span class="tag" style={`${tag};color:${policy.color};font-weight:600`}><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="26" height="26" alt="" style={tagImage} />{bill.policyArea}</span>)}<span class="tag" style={`${tag};color:${C.muted}`}>{photo ? (<img src={`${ORIGIN}${photo}`} width="24" height="24" alt="" style={`${tagImage};border-radius:50%;border:1px solid ${sponsor.color}`} />) : (<span style={`display:inline-block;width:26px;height:26px;line-height:26px;margin-right:8px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:10px;font-weight:600;text-align:center;vertical-align:middle`}>{sponsor.initials}</span>)}{bill.sponsor}</span></div>
                             <p style={`margin:0 0 12px;font-size:15px;line-height:1.55;color:${C.muted}`}>{bill.summary}</p>
                             <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
                               {bill.stages.map((s, i) => (
