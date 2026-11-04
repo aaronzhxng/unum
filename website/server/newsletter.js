@@ -11,7 +11,8 @@
 
 export const SITE = "https://unuminitiative.com";
 const DEFAULT_FROM = "Last Week in Congress <newsletter@send.unuminitiative.com>";
-const REPLY_TO = "contact@unuminitiative.com";
+export const REPLY_TO = "contact@unuminitiative.com";
+export const fromLine = (env) => env.NEWSLETTER_FROM || DEFAULT_FROM;
 
 // Created on first use, so a new database needs no setup step
 const SCHEMA = `CREATE TABLE IF NOT EXISTS subscribers (
@@ -61,7 +62,7 @@ export async function sendEmail(env, { to, subject, html, text, headers }) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: env.NEWSLETTER_FROM || DEFAULT_FROM, reply_to: REPLY_TO, to, subject, html, text, headers }),
+    body: JSON.stringify({ from: fromLine(env), reply_to: REPLY_TO, to, subject, html, text, headers }),
   });
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }

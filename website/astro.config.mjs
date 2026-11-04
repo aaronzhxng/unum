@@ -9,6 +9,14 @@ export default defineConfig({
   trailingSlash: "never",
   // The dev toolbar overlays the page in local previews
   devToolbar: { enabled: false },
-  // Lists every page for search engines at /sitemap-index.xml
-  integrations: [sitemap()],
+  // Lists every page for search engines at /sitemap-index.xml, except the
+  // newsletter's email versions and the signup and send pages, which are
+  // marked noindex
+  integrations: [
+    sitemap({
+      filter: (page) =>
+        !/\/newsletter\/[^/]+\/email/.test(page) &&
+        !/\/newsletter\/(send|check-email|confirmed|unsubscribe|unsubscribed|invalid-link)$/.test(page),
+    }),
+  ],
 });

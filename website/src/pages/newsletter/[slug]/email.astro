@@ -1,0 +1,151 @@
+---
+// The email version of an issue, at /newsletter/<slug>/email.html, built
+// from the same file as the web page. Email apps only handle simple HTML,
+// so it is all tables and inline styles. /api/send fills in the {{...}}
+// placeholders for each send: the site address for images and links, each
+// subscriber's unsubscribe link, and the mailing address.
+import { getCollection, render } from "astro:content";
+import { billInfo, policyArea } from "../../../policyAreas.mjs";
+import { APP_STORE_URL, GOOGLE_PLAY_URL } from "../../../site.mjs";
+
+export async function getStaticPaths() {
+  const issues = await getCollection("newsletter");
+  return issues.map((issue) => ({ params: { slug: issue.id }, props: { issue } }));
+}
+
+const { issue } = Astro.props;
+const { Content } = await render(issue);
+const { week, date, headline, description, stats, sections, signoff } = issue.data;
+const year = date.getUTCFullYear();
+const ORIGIN = "{{origin}}";
+const webUrl = `${ORIGIN}/newsletter/${issue.id}`;
+
+const C = {
+  paper: "#f4f1eb", card: "#ffffff", text: "#1a1a1a", muted: "#555555", faint: "#8a8a8a",
+  border: "#e6e3dc", blue: "#008cff", green: "#21954a", red: "#d45252",
+};
+const FONT = "-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif";
+const numbers = [
+  [stats.signed, "signed into law"],
+  [stats.passedBoth, "passed both chambers"],
+  [stats.outOfCommittee, "out of committee"],
+  [stats.introduced, "introduced"],
+];
+const stageColor = { done: C.text, current: C.blue, todo: "#b0b0b0", failed: C.red };
+const formatDate = (d: Date) =>
+  d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+// Mirrors BillEntry: where it failed, the last stage if it made it all the
+// way, or the stage it is in now
+const statusOf = (stages: { label: string; status: string }[]) => {
+  const failed = stages.find((s) => s.status === "failed");
+  const last = stages[stages.length - 1];
+  if (failed) return { label: failed.label, color: C.red };
+  if (last.status === "done") return { label: last.label, color: C.green };
+  return { label: (stages.find((s) => s.status === "current") ?? last).label, color: C.blue };
+};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{headline}</title>
+  </head>
+  <body style={`margin:0;padding:0;background:${C.paper};font-family:${FONT};color:${C.text}`}>
+    {/* The preview line inbox apps show after the subject */}
+    <div style="display:none;max-height:0;overflow:hidden">{description}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`background:${C.paper}`}>
+      <tr>
+        <td align="center" style="padding:24px 12px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px">
+            <tr>
+              <td style="padding:8px 8px 20px">
+                <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                  <td style="vertical-align:middle"><img src={`${ORIGIN}/newsletter/email/logo.png`} width="32" height="32" alt="Unum" style="display:block;border-radius:7px" /></td>
+                  <td style={`vertical-align:middle;padding-left:10px;font-size:15px;font-weight:600;color:${C.text}`}>Last Week in Congress</td>
+                </tr></table>
+              </td>
+            </tr>
+            <tr>
+              <td style={`background:${C.card};border:1px solid ${C.border};border-radius:20px;padding:32px 28px`}>
+                <p style={`margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${C.blue}`}>{week}, {year}</p>
+                <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.01em">{headline}</h1>
+                <div style={`font-size:16px;line-height:1.6;color:${C.muted}`}><Content /></div>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`margin:24px 0 8px;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border}`}>
+                  <tr>
+                    {numbers.map(([n, label]) => (
+                      <td width="25%" style="padding:16px 4px;vertical-align:top">
+                        <div style="font-size:26px;font-weight:600;line-height:1.1">{n}</div>
+                        <div style={`font-size:12px;color:${C.muted};margin-top:4px`}>{label}</div>
+                      </td>
+                    ))}
+                  </tr>
+                </table>
+
+                {sections.map((section) => (
+                  <>
+                    <h2 style={`margin:32px 0 4px;font-size:20px;line-height:1.3;color:${C.text}`}>{section.heading}</h2>
+                    {section.bills.map((bill) => {
+                      const { label, url } = billInfo(bill.id);
+                      const policy = policyArea(bill.policyArea);
+                      const status = statusOf(bill.stages);
+                      return (
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`border-bottom:1px solid ${C.border}`}>
+                          <tr><td style="padding:20px 0">
+                            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                              <td style="vertical-align:middle"><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="30" height="30" alt="" style="display:block" /></td>
+                              <td style="vertical-align:middle;padding-left:10px"><span style={`display:inline-block;background:${policy.color};color:#fff;font-size:13px;font-weight:600;padding:2px 9px;border-radius:7px`}>{label}</span></td>
+                              <td style={`vertical-align:middle;padding-left:10px;font-size:13px;font-weight:600;color:${status.color}`}>● {status.label}</td>
+                            </tr></table>
+                            <p style="margin:12px 0 4px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
+                            <p style={`margin:0 0 10px;font-size:14px;color:${C.faint}`}>
+                              {bill.policyArea && <span style={`color:${policy.color}`}>{bill.policyArea} · </span>}{bill.sponsor}
+                            </p>
+                            <p style={`margin:0 0 12px;font-size:15px;line-height:1.55;color:${C.muted}`}>{bill.summary}</p>
+                            <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
+                              {bill.stages.map((s, i) => (
+                                <>
+                                  {i > 0 && <span style="color:#c4c4c4"> → </span>}
+                                  <span style={`color:${stageColor[s.status]};font-weight:${s.status === "todo" ? 400 : 600}`}>{s.label}</span>
+                                </>
+                              ))}
+                            </p>
+                            {bill.votes?.map((v) => (
+                              <p style={`margin:0 0 4px;font-size:13px;color:${C.muted}`}>{v.chamber} · {formatDate(v.date)}: <b style={`color:${C.text}`}>{v.result} {v.yea}–{v.nay}</b></p>
+                            ))}
+                            <p style="margin:8px 0 0;font-size:14px"><a href={url} style={`color:${C.blue};text-decoration:none`}>{label} on Congress.gov →</a></p>
+                          </td></tr>
+                        </table>
+                      );
+                    })}
+                  </>
+                ))}
+
+                <h2 style="margin:32px 0 8px;font-size:20px;line-height:1.3">From the team</h2>
+                <p style={`margin:0 0 16px;font-size:15px;line-height:1.6;color:${C.muted}`}>
+                  Thanks for reading Last Week in Congress. To follow these bills and your own representatives day
+                  to day, download our free app, Unum: Congress Tracker.
+                </p>
+                <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                  <td style="padding-right:12px"><a href={APP_STORE_URL}><img src={`${ORIGIN}/newsletter/email/app-store-badge.png`} height="40" alt="Download on the App Store" style="display:block;height:40px;width:auto" /></a></td>
+                  <td><a href={GOOGLE_PLAY_URL}><img src={`${ORIGIN}/newsletter/email/google-play-badge.png`} height="40" alt="Get it on Google Play" style="display:block;height:40px;width:auto" /></a></td>
+                </tr></table>
+                <p style={`margin:20px 0 0;font-size:15px;line-height:1.6;color:${C.muted}`}>Until next time,<br />{signoff}</p>
+              </td>
+            </tr>
+            <tr>
+              <td style={`padding:24px 8px;font-size:12px;line-height:1.6;color:${C.faint};text-align:center`}>
+                <a href={webUrl} style={`color:${C.faint}`}>View this issue on the web</a> ·
+                <a href="{{unsubscribe_url}}" style={`color:${C.faint}`}>Unsubscribe</a><br />
+                You are getting this because you subscribed to Last Week in Congress at unuminitiative.com.<br />
+                Unum Initiative Inc. · {"{{mailing_address}}"}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
