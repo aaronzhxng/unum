@@ -1,7 +1,7 @@
 ---
 // One bill in a newsletter issue, in the app's visual language: the policy
-// area's icon and color, the bill number badge, the sponsor's photo, and the
-// same stage track as the app's bill page. Real text rather than an image,
+// area's icon and color, the sponsor's photo, and the same stage track as the
+// app's bill page. Real text rather than an image,
 // so it reads well on any screen and in search results.
 import { billInfo, policyArea } from "../policyAreas.mjs";
 import { memberPhoto, sponsorParts } from "../members.mjs";
@@ -47,26 +47,31 @@ const formatDate = (date: Date) =>
 
 <article class="bill" style={`--policy: ${policy.color}`}>
   <div class="bill-body">
-    {/* What the bill is, then who sponsored it. Where it stands is in the
-        stage track and the section heading. */}
-    <div class="bill-top">
-      <img class="bill-icon" src={`/newsletter/icons/${policy.icon}`} alt="" width="40" height="40" />
-      <span class="badge">{label}</span>
-      {bill.policyArea && <span class="area">{bill.policyArea}</span>}
-    </div>
     <h3>{bill.title}</h3>
-    <p class="sponsor">
+    {/* What the bill is about and who sponsored it. Where it stands is in the
+        stage track and the section heading. */}
+    <div class="tags">
       {
-        photo ? (
-          <img class="sponsor-photo" src={photo} alt="" width="32" height="32" loading="lazy" style={`--ring: ${color}`} />
-        ) : (
-          <span class="sponsor-photo initials" aria-hidden="true" style={`--ring: ${color}`}>
-            {initials}
+        bill.policyArea && (
+          <span class="tag area">
+            <img src={`/newsletter/icons/${policy.icon}`} alt="" width="24" height="24" />
+            {bill.policyArea}
           </span>
         )
       }
-      <span>{bill.sponsor}</span>
-    </p>
+      <span class="tag sponsor">
+        {
+          photo ? (
+            <img class="sponsor-photo" src={photo} alt="" width="24" height="24" loading="lazy" style={`--ring: ${color}`} />
+          ) : (
+            <span class="sponsor-photo initials" aria-hidden="true" style={`--ring: ${color}`}>
+              {initials}
+            </span>
+          )
+        }
+        {bill.sponsor}
+      </span>
+    </div>
     <p class="summary">{bill.summary}</p>
 
     <ol class="stages" aria-label="Progress">
@@ -111,34 +116,10 @@ const formatDate = (date: Date) =>
     border-top: 1px solid var(--border);
   }
 
-  /* The icon leads the top row, so every line below lines up with it */
-  .bill-icon {
-    width: 40px;
-    height: 40px;
-    flex: none;
-  }
-
   .bill-body {
     display: grid;
     gap: 10px;
     justify-items: start;
-  }
-
-  .bill-top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 12px;
-  }
-
-  .badge {
-    padding: 2px 10px;
-    border-radius: 8px;
-    background: var(--policy);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
   }
 
   h3 {
@@ -146,29 +127,50 @@ const formatDate = (date: Date) =>
     line-height: 1.35;
   }
 
+  /* Separate white bubbles that touch, on two lines on phones */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    padding: 3px 11px 3px 5px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .tag img {
+    width: 24px;
+    height: 24px;
+    flex: none;
+  }
+
   .area {
-    font-size: 15px;
     color: var(--policy);
     font-weight: 500;
   }
 
   .sponsor {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 15px;
     color: var(--text-muted);
   }
 
-  /* Ringed in the sponsor's party color, as in the app */
+  /* Ringed in the sponsor's party color, as in the app. The ring is inside
+     the 24px, so the photo lines up with the policy icon on phones. */
   .sponsor-photo {
-    width: 32px;
-    height: 32px;
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
     flex: none;
+    border: 1.5px solid var(--ring, var(--border));
     border-radius: 50%;
     object-fit: cover;
-    background: var(--border);
-    box-shadow: 0 0 0 2px var(--page), 0 0 0 3.5px var(--ring, var(--border));
   }
 
   .initials {
@@ -176,7 +178,7 @@ const formatDate = (date: Date) =>
     place-items: center;
     background: var(--ring);
     color: #fff;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
   }
 
@@ -282,9 +284,9 @@ const formatDate = (date: Date) =>
       padding: 28px 0;
     }
 
-    .bill-icon {
-      width: 34px;
-      height: 34px;
+    .tags {
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .stages li {
