@@ -15,6 +15,7 @@ sections:
         title: Stop Insider Trading Act
         policyArea: Congress
         sponsor: Rep. Bryan Steil (R-WI-1)
+        sponsorId: S001213
         summary: This bill generally prohibits Members of Congress and their spouses and dependent children from purchasing stocks and requires public notice before these individuals may sell stocks.
         stages:
           - { label: Introduced, status: done }
@@ -30,6 +31,7 @@ sections:
         title: Kay Hagan Tick Reauthorization Act
         policyArea: Health
         sponsor: Sen. Susan Collins (R-ME)
+        sponsorId: C001035
         summary: This bill reauthorizes through FY2030 the CDC's work on vector-borne diseases, including a national strategy, grants for regional centers of excellence, and cooperative agreements with state and local health departments.
         stages:
           - { label: Introduced, status: done }
@@ -42,6 +44,7 @@ sections:
         title: Enhancing Detection of Human Trafficking Act
         policyArea: Crime and Law Enforcement
         sponsor: Rep. Tim Walberg (R-MI-5)
+        sponsorId: W000798
         summary: This bill requires the Department of Labor to provide training and education to its employees on how to effectively assist law enforcement in detecting human trafficking.
         stages:
           - { label: Introduced, status: done }
@@ -52,6 +55,7 @@ sections:
         title: Bankruptcy Threshold Adjustment Act
         policyArea: Finance and Financial Sector
         sponsor: Rep. Ben Cline (R-VA-6)
+        sponsorId: C001118
         summary: This bill raises the debt limit for small business bankruptcy reorganization from about $3.4 million to $7.5 million, restoring a higher limit that expired in 2024.
         stages:
           - { label: Introduced, status: done }
@@ -62,6 +66,7 @@ sections:
         title: Criminal History Access Act of 2026
         policyArea: Law
         sponsor: Rep. Derek Schmidt (R-KS-2)
+        sponsorId: S001228
         summary: This bill authorizes a new type of entity, peace officer standards and training agencies, to access criminal history record information maintained by the FBI.
         stages:
           - { label: Introduced, status: done }
@@ -72,6 +77,7 @@ sections:
         title: End Tax Penalties on American Hostages Act
         policyArea: Taxation
         sponsor: Rep. Claudia Tenney (R-NY-24)
+        sponsorId: T000478
         summary: This bill extends some federal tax deadlines for U.S. nationals who are unlawfully or wrongfully detained or held hostage abroad, and for their spouses.
         stages:
           - { label: Introduced, status: done }
@@ -82,6 +88,7 @@ sections:
         title: American Music Tourism Act of 2025
         policyArea: Arts, Culture, Religion
         sponsor: Sen. Marsha Blackburn (R-TN)
+        sponsorId: B001243
         summary: This bill directs the National Travel and Tourism Office of the Department of Commerce to promote tourism to music-related and sports attractions.
         stages:
           - { label: Introduced, status: done }
@@ -94,6 +101,7 @@ sections:
         title: Health Care Cybersecurity and Resiliency Act of 2026
         policyArea: Health
         sponsor: Sen. Bill Cassidy (R-LA)
+        sponsorId: C001075
         summary: This bill expands federal requirements and resources for preventing and responding to cybersecurity incidents in the health care and public health sectors.
         stages:
           - { label: Introduced, status: done }
@@ -104,6 +112,7 @@ sections:
         title: A resolution requesting information on Israel's human rights practices pursuant to section 502B(c) of the Foreign Assistance Act of 1961.
         policyArea: International Affairs
         sponsor: Sen. Chris Van Hollen (D-MD)
+        sponsorId: V000128
         summary: This resolution requests that the State Department submit an unclassified report on Israel's human rights practices, including information on the killings of nine named U.S. citizens, the condition of U.S. citizens held in Israeli prisons, and Palestinian children in Israeli military detention in the West Bank. The Senate voted against discharging it from committee.
         stages:
           - { label: Introduced, status: done }

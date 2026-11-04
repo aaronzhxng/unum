@@ -31,7 +31,7 @@ const issues = (await getCollection("newsletter")).sort((a, b) => b.data.date.ge
       <div class="actions">
         <button type="submit" class="button" value="test">Send test</button>
         <button type="submit" class="button danger" value="all">Send to all subscribers</button>
-        <a class="text-link" href="#" data-preview target="_blank">Preview the email</a>
+        <a class="text-link" href="#" data-preview>Preview the email</a>
       </div>
       <p class="result" role="status" data-result></p>
     </form>
@@ -95,9 +95,17 @@ const issues = (await getCollection("newsletter")).sort((a, b) => b.data.date.ge
   const preview = form.querySelector<HTMLAnchorElement>("[data-preview]")!;
   const issue = form.querySelector<HTMLSelectElement>("select")!;
 
-  const showPreview = () => (preview.href = `/newsletter/${issue.value}/email.html`);
-  issue.addEventListener("change", showPreview);
-  showPreview();
+  // The email file has placeholders that /api/send fills in, so the preview
+  // fills them the same way before showing it
+  preview.addEventListener("click", async (event) => {
+    event.preventDefault();
+    const tab = window.open("", "_blank");
+    const html = (await (await fetch(`/newsletter/${issue.value}/email.html`)).text())
+      .replaceAll("{{origin}}", location.origin)
+      .replaceAll("{{unsubscribe_url}}", `${location.origin}/newsletter/unsubscribe`)
+      .replaceAll("{{mailing_address}}", "[mailing address]");
+    if (tab) tab.location.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  });
 
   const call = async (mode: string) => {
     const body = new FormData(form);

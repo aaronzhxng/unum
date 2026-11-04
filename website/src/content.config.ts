@@ -24,6 +24,9 @@ const bill = z.object({
   title: z.string(),
   policyArea: z.string().optional(),
   sponsor: z.string(),
+  // Bioguide ID, for the sponsor's photo in public/newsletter/members
+  // (scripts/newsletter/memberPhotos.mjs saves them)
+  sponsorId: z.string().regex(/^[A-Z]\d{6}$/).optional(),
   summary: z.string(),
   stages: z.array(stage),
   votes: z.array(vote).optional(),

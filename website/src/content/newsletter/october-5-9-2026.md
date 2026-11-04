@@ -15,6 +15,7 @@ sections:
         title: Billion Dollar Boondoggle Act of 2025
         policyArea: Government Operations and Politics
         sponsor: Sen. Joni Ernst (R-IA)
+        sponsorId: E000295
         summary: This bill requires federal agencies to report each year on projects that are more than five years behind schedule or at least $1 billion over their original cost estimate, and the Office of Management and Budget to report those projects to Congress.
         stages:
           - { label: Introduced, status: done }
@@ -25,6 +26,7 @@ sections:
         title: Improving Social Security’s Service to Victims of Identity Theft Act
         policyArea: Social Welfare
         sponsor: Rep. David Kustoff (R-TN-8)
+        sponsorId: K000392
         summary: This bill requires the Social Security Administration to give anyone whose Social Security number was misused, or whose card was lost in the mail, a single point of contact who tracks the case until it is resolved.
         stages:
           - { label: Introduced, status: done }
@@ -35,6 +37,7 @@ sections:
         title: American Music Tourism Act of 2025
         policyArea: Arts, Culture, Religion
         sponsor: Sen. Marsha Blackburn (R-TN)
+        sponsorId: B001243
         summary: This bill directs the National Travel and Tourism Office of the Department of Commerce to promote travel to U.S. music festivals, concert venues, and other music and sports attractions.
         stages:
           - { label: Introduced, status: done }
@@ -47,6 +50,7 @@ sections:
         title: Reshoring American Manufacturing Act of 2026
         policyArea: Commerce
         sponsor: Rep. Tony Wied (R-WI-8)
+        sponsorId: W000829
         summary: This bill requires the Small Business Administration to keep a webpage of resources for small businesses moving some or all of their manufacturing back to the United States. The Small Business Committee approved it 23–0.
         stages:
           - { label: Introduced, status: done }
@@ -59,6 +63,7 @@ sections:
         title: No Betting on Your Own Race Act
         policyArea: Government Operations and Politics
         sponsor: Rep. Don Davis (D-NC-1)
+        sponsorId: D000230
         summary: This bill bars candidates for federal office from trading prediction market contracts on the outcome of their own elections, with fines of $10,000 per violation or three times any profit, whichever is greater.
         stages:
           - { label: Introduced, status: done }
@@ -69,6 +74,7 @@ sections:
         title: Establishing Gold Standard Science Act
         policyArea: Science, Technology, Communications
         sponsor: Rep. Scott Franklin (R-FL-18)
+        sponsorId: F000472
         summary: This bill writes the administration's "Gold Standard Science" standards into law for the EPA's Science Advisory Board, bars registered lobbyists from serving on it, and keeps members from reviewing their own work.
         stages:
           - { label: Introduced, status: done }
@@ -79,6 +85,7 @@ sections:
         title: Safeguarding Technology from CCP Influence Act
         policyArea: International Affairs
         sponsor: Rep. Brad Finstad (R-MN-1)
+        sponsorId: F000475
         summary: This bill bars federal agencies from buying computers or printers from companies owned, controlled, or connected to the Chinese government, unless the President waives the ban for national security reasons.
         stages:
           - { label: Introduced, status: done }

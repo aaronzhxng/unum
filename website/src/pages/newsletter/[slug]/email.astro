@@ -7,6 +7,7 @@
 import { getCollection, render } from "astro:content";
 import { billInfo, policyArea } from "../../../policyAreas.mjs";
 import { APP_STORE_URL, GOOGLE_PLAY_URL } from "../../../site.mjs";
+import { memberPhoto, sponsorParts } from "../../../members.mjs";
 
 export async function getStaticPaths() {
   const issues = await getCollection("newsletter");
@@ -34,15 +35,6 @@ const numbers = [
 const stageColor = { done: C.text, current: C.blue, todo: "#b0b0b0", failed: C.red };
 const formatDate = (d: Date) =>
   d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-// Mirrors BillEntry: where it failed, the last stage if it made it all the
-// way, or the stage it is in now
-const statusOf = (stages: { label: string; status: string }[]) => {
-  const failed = stages.find((s) => s.status === "failed");
-  const last = stages[stages.length - 1];
-  if (failed) return { label: failed.label, color: C.red };
-  if (last.status === "done") return { label: last.label, color: C.green };
-  return { label: (stages.find((s) => s.status === "current") ?? last).label, color: C.blue };
-};
 ---
 
 <html lang="en">
@@ -90,19 +82,27 @@ const statusOf = (stages: { label: string; status: string }[]) => {
                     {section.bills.map((bill) => {
                       const { label, url } = billInfo(bill.id);
                       const policy = policyArea(bill.policyArea);
-                      const status = statusOf(bill.stages);
+                      const photo = memberPhoto(bill.sponsorId);
+                      const sponsor = sponsorParts(bill.sponsor);
                       return (
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`border-bottom:1px solid ${C.border}`}>
                           <tr><td style="padding:20px 0">
                             <table role="presentation" cellpadding="0" cellspacing="0"><tr>
                               <td style="vertical-align:middle"><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="30" height="30" alt="" style="display:block" /></td>
                               <td style="vertical-align:middle;padding-left:10px"><span style={`display:inline-block;background:${policy.color};color:#fff;font-size:13px;font-weight:600;padding:2px 9px;border-radius:7px`}>{label}</span></td>
-                              <td style={`vertical-align:middle;padding-left:10px;font-size:13px;font-weight:600;color:${status.color}`}>● {status.label}</td>
+                              {bill.policyArea && <td style={`vertical-align:middle;padding-left:10px;font-size:13px;font-weight:600;color:${policy.color}`}>{bill.policyArea}</td>}
                             </tr></table>
-                            <p style="margin:12px 0 4px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
-                            <p style={`margin:0 0 10px;font-size:14px;color:${C.faint}`}>
-                              {bill.policyArea && <span style={`color:${policy.color}`}>{bill.policyArea} · </span>}{bill.sponsor}
-                            </p>
+                            <p style="margin:12px 0 8px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 10px"><tr>
+                              <td style="vertical-align:middle;padding-right:9px">
+                                {photo ? (
+                                  <img src={`${ORIGIN}${photo}`} width="26" height="26" alt="" style={`display:block;border-radius:50%;border:2px solid ${sponsor.color}`} />
+                                ) : (
+                                  <div style={`width:30px;height:30px;line-height:30px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:11px;font-weight:600;text-align:center`}>{sponsor.initials}</div>
+                                )}
+                              </td>
+                              <td style={`vertical-align:middle;font-size:14px;color:${C.muted}`}>{bill.sponsor}</td>
+                            </tr></table>
                             <p style={`margin:0 0 12px;font-size:15px;line-height:1.55;color:${C.muted}`}>{bill.summary}</p>
                             <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
                               {bill.stages.map((s, i) => (

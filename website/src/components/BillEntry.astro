@@ -1,9 +1,10 @@
 ---
 // One bill in a newsletter issue, in the app's visual language: the policy
-// area's icon and color, the bill number badge, and the same stage track as
-// the app's bill page. Real text rather than an image, so it reads well on
-// any screen and in search results.
+// area's icon and color, the bill number badge, the sponsor's photo, and the
+// same stage track as the app's bill page. Real text rather than an image,
+// so it reads well on any screen and in search results.
 import { billInfo, policyArea } from "../policyAreas.mjs";
+import { memberPhoto, sponsorParts } from "../members.mjs";
 
 interface Stage {
   label: string;
@@ -24,6 +25,7 @@ interface Props {
     title: string;
     policyArea?: string;
     sponsor: string;
+    sponsorId?: string;
     summary: string;
     stages: Stage[];
     votes?: Vote[];
@@ -34,16 +36,10 @@ const { bill } = Astro.props;
 const { label, url } = billInfo(bill.id);
 const policy = policyArea(bill.policyArea);
 
-// The chip shows where the bill stands: where it failed, the last stage if
-// it made it all the way, or the stage it's in now
-const failed = bill.stages.find((s) => s.status === "failed");
-const current = bill.stages.find((s) => s.status === "current");
-const last = bill.stages[bill.stages.length - 1];
-const status = failed
-  ? { label: failed.label, tone: "failed" }
-  : last.status === "done"
-    ? { label: last.label, tone: "done" }
-    : { label: (current ?? last).label, tone: "current" };
+// The sponsor's party color rings their photo, or fills their initials when
+// there is no photo
+const photo = memberPhoto(bill.sponsorId);
+const { initials, color } = sponsorParts(bill.sponsor);
 
 const formatDate = (date: Date) =>
   date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
@@ -51,16 +47,25 @@ const formatDate = (date: Date) =>
 
 <article class="bill" style={`--policy: ${policy.color}`}>
   <div class="bill-body">
+    {/* What the bill is, then who sponsored it. Where it stands is in the
+        stage track and the section heading. */}
     <div class="bill-top">
       <img class="bill-icon" src={`/newsletter/icons/${policy.icon}`} alt="" width="40" height="40" />
       <span class="badge">{label}</span>
-      <span class:list={["status", status.tone]}>{status.label}</span>
+      {bill.policyArea && <span class="area">{bill.policyArea}</span>}
     </div>
     <h3>{bill.title}</h3>
-    <p class="meta">
-      {bill.policyArea && <span class="area">{bill.policyArea}</span>}
-      {bill.policyArea && <span aria-hidden="true"> · </span>}
-      <span class="sponsor">{bill.sponsor}</span>
+    <p class="sponsor">
+      {
+        photo ? (
+          <img class="sponsor-photo" src={photo} alt="" width="32" height="32" loading="lazy" style={`--ring: ${color}`} />
+        ) : (
+          <span class="sponsor-photo initials" aria-hidden="true" style={`--ring: ${color}`}>
+            {initials}
+          </span>
+        )
+      }
+      <span>{bill.sponsor}</span>
     </p>
     <p class="summary">{bill.summary}</p>
 
@@ -136,51 +141,43 @@ const formatDate = (date: Date) =>
     white-space: nowrap;
   }
 
-  .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  .status::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
-  .status.done {
-    color: #21954a;
-  }
-
-  .status.failed {
-    color: #d45252;
-  }
-
-  .status.current {
-    color: var(--blue);
-  }
-
   h3 {
     font-size: 19px;
     line-height: 1.35;
   }
 
-  .meta {
+  .area {
     font-size: 15px;
-    color: var(--text-faint);
+    color: var(--policy);
+    font-weight: 500;
   }
 
   .sponsor {
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: var(--text-muted);
   }
 
-  .area {
-    color: var(--policy);
-    font-weight: 500;
+  /* Ringed in the sponsor's party color, as in the app */
+  .sponsor-photo {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--border);
+    box-shadow: 0 0 0 2px var(--page), 0 0 0 3.5px var(--ring, var(--border));
+  }
+
+  .initials {
+    display: grid;
+    place-items: center;
+    background: var(--ring);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .summary {
