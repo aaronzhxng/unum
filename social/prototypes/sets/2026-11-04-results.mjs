@@ -19,6 +19,19 @@ export const SOURCES = [
   "https://en.wikipedia.org/wiki/2026_United_States_House_of_Representatives_elections",
 ];
 
+// Photos in 2026-11-04-photos/, cropped to each face. Members of Congress are
+// their official portraits (Bioguide, via the public-domain @unitedstates
+// collection). Newcomers are from Wikimedia Commons, as shown on their
+// Wikipedia pages: Hamilton, Flanagan, Stratton and Alme are public domain,
+// Jackson is CC0, and Turek is free use from the Iowa General Assembly. These
+// three licenses require crediting the photographer on the post:
+export const PHOTO_CREDITS = {
+  talarico: "James Talarico by Antonioaesparza (CC BY-SA 4.0)",
+  cooper: "Roy Cooper by NetwonsBucket (CC BY-SA 4.0)",
+  andrews: "Annie Andrews by York County Democratic Party (CC BY 4.0)",
+  elsayed: "Abdul El-Sayed by Conlan Houston (CC BY-SA 4.0)",
+};
+
 export const senate = {
   // Seats in the next Senate, counting the seats not up this year;
   // Democrats include the independents who caucus with them
@@ -31,35 +44,35 @@ export const senate = {
   ],
   // Every flip went from Republican to Democrat
   flips: [
-    { state: "Texas", winner: ["James Talarico", 55.1], loser: ["Ken Paxton", 43.0] },
-    { state: "North Carolina", winner: ["Roy Cooper", 58.7], loser: ["Michael Whatley", 39.1] },
-    { state: "Maine", winner: ["Troy Jackson", 53.7], loser: ["Susan Collins", 46.2], beatIncumbent: true },
-    { state: "South Carolina", winner: ["Annie Andrews", 51.1], loser: ["Darline Graham", 46.7], beatIncumbent: true, special: true },
-    { state: "Kansas", winner: ["Adam Hamilton", 50.9], loser: ["Roger Marshall", 46.1], beatIncumbent: true },
-    { state: "Ohio", winner: ["Sherrod Brown", 50.0], loser: ["Jon Husted", 45.2], beatIncumbent: true, special: true },
-    { state: "Iowa", winner: ["Josh Turek", 50.5], loser: ["Ashley Hinson", 46.4] },
+    { state: "Texas", winner: ["James Talarico", 55.1], photo: "talarico", loser: ["Ken Paxton", 43.0] },
+    { state: "North Carolina", winner: ["Roy Cooper", 58.7], photo: "cooper", loser: ["Michael Whatley", 39.1] },
+    { state: "Maine", winner: ["Troy Jackson", 53.7], photo: "jackson", loser: ["Susan Collins", 46.2], beatIncumbent: true },
+    { state: "South Carolina", winner: ["Annie Andrews", 51.1], photo: "andrews", loser: ["Darline Graham", 46.7], beatIncumbent: true, special: true },
+    { state: "Kansas", winner: ["Adam Hamilton", 50.9], photo: "hamilton", loser: ["Roger Marshall", 46.1], beatIncumbent: true },
+    { state: "Ohio", winner: ["Sherrod Brown", 50.0], photo: "brown", loser: ["Jon Husted", 45.2], beatIncumbent: true, special: true },
+    { state: "Iowa", winner: ["Josh Turek", 50.5], photo: "turek", loser: ["Ashley Hinson", 46.4] },
   ],
   // Winners who have never served in the Senate. now: their current office
   newcomers: [
-    { name: "James Talarico", party: "D", state: "TX", now: "Texas state representative" },
-    { name: "Roy Cooper", party: "D", state: "NC", now: "Former governor" },
-    { name: "Troy Jackson", party: "D", state: "ME", now: "Former state Senate president" },
-    { name: "Annie Andrews", party: "D", state: "SC", now: "Pediatrician" },
-    { name: "Adam Hamilton", party: "D", state: "KS", now: "" },
-    { name: "Josh Turek", party: "D", state: "IA", now: "Iowa state representative" },
-    { name: "Abdul El-Sayed", party: "D", state: "MI", now: "Former Detroit health director" },
-    { name: "Peggy Flanagan", party: "D", state: "MN", now: "Lieutenant governor" },
-    { name: "Juliana Stratton", party: "D", state: "IL", now: "Lieutenant governor" },
-    { name: "Chris Pappas", party: "D", state: "NH", now: "U.S. representative" },
-    { name: "Barry Moore", party: "R", state: "AL", now: "U.S. representative" },
-    { name: "Andy Barr", party: "R", state: "KY", now: "U.S. representative" },
-    { name: "Julia Letlow", party: "R", state: "LA", now: "U.S. representative" },
-    { name: "Kurt Alme", party: "R", state: "MT", now: "Former U.S. attorney" },
-    { name: "Kevin Hern", party: "R", state: "OK", now: "U.S. representative" },
-    { name: "Harriet Hageman", party: "R", state: "WY", now: "U.S. representative" },
+    { name: "James Talarico", party: "D", photo: "talarico", state: "TX", now: "Texas state representative" },
+    { name: "Roy Cooper", party: "D", photo: "cooper", state: "NC", now: "Former governor" },
+    { name: "Troy Jackson", party: "D", photo: "jackson", state: "ME", now: "Former state Senate president" },
+    { name: "Annie Andrews", party: "D", photo: "andrews", state: "SC", now: "Pediatrician" },
+    { name: "Adam Hamilton", party: "D", photo: "hamilton", state: "KS", now: "" },
+    { name: "Josh Turek", party: "D", photo: "turek", state: "IA", now: "Iowa state representative" },
+    { name: "Abdul El-Sayed", party: "D", photo: "elsayed", state: "MI", now: "Former Detroit health director" },
+    { name: "Peggy Flanagan", party: "D", photo: "flanagan", state: "MN", now: "Lieutenant governor" },
+    { name: "Juliana Stratton", party: "D", photo: "stratton", state: "IL", now: "Lieutenant governor" },
+    { name: "Chris Pappas", party: "D", photo: "pappas", state: "NH", now: "U.S. representative" },
+    { name: "Barry Moore", party: "R", photo: "moore", state: "AL", now: "U.S. representative" },
+    { name: "Andy Barr", party: "R", photo: "barr", state: "KY", now: "U.S. representative" },
+    { name: "Julia Letlow", party: "R", photo: "letlow", state: "LA", now: "U.S. representative" },
+    { name: "Kurt Alme", party: "R", photo: "alme", state: "MT", now: "Former U.S. attorney" },
+    { name: "Kevin Hern", party: "R", photo: "hern", state: "OK", now: "U.S. representative" },
+    { name: "Harriet Hageman", party: "R", photo: "hageman", state: "WY", now: "U.S. representative" },
   ],
   // Sherrod Brown served 2007-2025, so he returns rather than arrives
-  returning: [{ name: "Sherrod Brown", party: "D", state: "OH" }],
+  returning: [{ name: "Sherrod Brown", party: "D", photo: "brown", state: "OH" }],
 };
 
 export const house = {

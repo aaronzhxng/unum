@@ -7,8 +7,9 @@
 //
 // When more races are called, update the results file and rebuild.
 
+import fs from "node:fs";
 import { esc, page, hl, kicker, bottom, card, hemicycle } from "../lib.mjs";
-import { AS_OF, SOURCE_LINE, SOURCES, senate, house, governors } from "./2026-11-04-results.mjs";
+import { AS_OF, SOURCE_LINE, SOURCES, PHOTO_CREDITS, senate, house, governors } from "./2026-11-04-results.mjs";
 
 const check = (ok, what) => {
   if (!ok) throw new Error(`Fact check failed: ${what}`);
@@ -28,14 +29,18 @@ const top = (...cards) => `<div class="top">${cards.join("")}</div>`;
 const COLOR = { D: "var(--dem)", R: "var(--rep)", uncalled: "var(--vacant)" };
 const pct = (n) => `${n.toFixed(1)}%`;
 const lastName = (name) => name.split(" ").slice(1).join(" ") || name;
-// Newcomers have no official photo yet, so everyone gets initials in their
-// party's color
+// A photo when the person has one, ringed in their party's color; otherwise
+// initials in that color
 const initials = (name) => {
   const words = name.split(" ");
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 };
-const face = (name, party, size = 64) =>
-  `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${COLOR[party]};color:#fff;display:grid;place-items:center;font:700 ${Math.round(size * 0.36)}px Inter;flex:none">${esc(initials(name))}</div>`;
+const photoUri = (key) =>
+  `data:image/jpeg;base64,${fs.readFileSync(new URL(`./2026-11-04-photos/${key}.jpg`, import.meta.url)).toString("base64")}`;
+const face = (name, party, size = 64, photo) =>
+  photo
+    ? `<img src="${photoUri(photo)}" alt="" style="box-sizing:border-box;width:${size}px;height:${size}px;border-radius:50%;border:3px solid ${COLOR[party]};object-fit:cover;flex:none">`
+    : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${COLOR[party]};color:#fff;display:grid;place-items:center;font:700 ${Math.round(size * 0.36)}px Inter;flex:none">${esc(initials(name))}</div>`;
 
 const stat = (n, label, color) =>
   `<div class="panel" style="padding:18px 22px;text-align:center"><div class="big" style="font-size:88px;color:${color}">${n}</div><div style="font-size:17px;color:var(--gray);margin-top:6px">${label}</div></div>`;
@@ -45,13 +50,18 @@ const chip = (text, color = COLOR.D) =>
   `<span style="font:600 15px Inter;padding:5px 12px;border-radius:999px;color:#fff;background:${color};white-space:nowrap">${esc(text)}</span>`;
 const tag = (text) =>
   `<span style="font:600 13px Inter;padding:3px 10px;border-radius:999px;background:#fff3c4;color:#7a5b00;white-space:nowrap">${esc(text)}</span>`;
-const row = (left, right, extra = "") =>
-  `<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #e6e3dc">${left}<div style="display:flex;align-items:center;gap:10px">${extra}${right}</div></div>`;
+const row = (left, right, extra = "", pad = 14) =>
+  `<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:${pad}px 0;border-bottom:1px solid #e6e3dc">${left}<div style="display:flex;align-items:center;gap:10px">${extra}${right}</div></div>`;
 const result = (winner, wParty, loser, lParty) =>
   `<span style="font-size:17px"><b class="c-${wParty.toLowerCase()}">${esc(lastName(winner[0]))} ${pct(winner[1])}</b> <span style="color:var(--muted)">·</span> <span style="color:var(--gray)">${esc(lastName(loser[0]))} ${pct(loser[1])}</span></span>`;
 const NUMBER_WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const houseMembers = (list) => NUMBER_WORDS[list.filter((n) => n.now === "U.S. representative").length];
 // The source on every post, since results are projections that can change
+// Credits the photos on a post whose license requires it
+const photoCredit = (people) => {
+  const named = people.filter((p) => PHOTO_CREDITS[p.photo]).map((p) => PHOTO_CREDITS[p.photo]);
+  return `<div style="font-size:12.5px;line-height:1.35;color:var(--muted);padding-top:6px">Photos: U.S. Congress, Wikimedia Commons, including ${esc(named.join("; "))}.</div>`;
+};
 const asOf = `<div style="font-size:14px;color:var(--muted);margin-top:auto;padding-top:14px">Source: ${esc(SOURCE_LINE)}, as of ${esc(AS_OF)}. Results can change as votes are counted.</div>`;
 
 export const templates = [];
@@ -148,15 +158,17 @@ add({
           label: "Flipped from R to D",
           aside: `${senate.flips.length} seats`,
           w: 952,
+          pad: "14px 34px 16px",
           inner: `${senate.flips
             .map((f) =>
               row(
-                `<div style="display:flex;align-items:center;gap:16px">${face(f.winner[0], "D", 52)}<div><b style="font-size:20px">${esc(f.state)}</b><div style="font-size:15px;color:var(--gray);margin-top:2px">${esc(f.winner[0])} defeats ${esc(f.loser[0])}</div></div></div>`,
+                `<div style="display:flex;align-items:center;gap:16px">${face(f.winner[0], "D", 52, f.photo)}<div><b style="font-size:20px">${esc(f.state)}</b><div style="font-size:15px;color:var(--gray);margin-top:2px">${esc(f.winner[0])} defeats ${esc(f.loser[0])}</div></div></div>`,
                 result(f.winner, "D", f.loser, "R"),
                 [f.beatIncumbent && tag("Beat incumbent"), f.special && tag("Special election")].filter(Boolean).join(""),
+                10,
               ),
             )
-            .join("")}${asOf}`,
+            .join("")}${asOf}${photoCredit(senate.flips)}`,
         }),
       ),
       bottom: bottom({
@@ -186,11 +198,12 @@ add({
           label: "New to the Senate",
           aside: `${senate.newcomers.length} senators-elect`,
           w: 952,
-          inner: `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px 16px">${senate.newcomers
-            .map((n) => `<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px">${face(n.name, n.party, 70)}
+          pad: "16px 34px",
+          inner: `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px 16px">${senate.newcomers
+            .map((n) => `<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px">${face(n.name, n.party, 66, n.photo)}
                 <div style="font-size:16px;font-weight:700;line-height:1.2">${esc(n.name)}</div>
                 <div style="font-size:13px;color:var(--gray);line-height:1.3;margin-top:-4px">${n.party}-${n.state}${n.now ? ` · ${esc(n.now)}` : ""}</div></div>`)
-            .join("")}</div>${asOf}`,
+            .join("")}</div>${asOf}${photoCredit(senate.newcomers)}`,
         }),
       ),
       bottom: bottom({
