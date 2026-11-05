@@ -68,8 +68,8 @@ const formatDate = (d: Date) =>
             <tr>
               <td style="padding:8px 8px 20px">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-                  <td class="header-cell" style="vertical-align:middle"><a href={`${ORIGIN}/`}><img class="logo" src={`${ORIGIN}/newsletter/email/logo-full.png`} width="224" height="30" alt="Unum: Last Week in Congress" style="display:block" /></a></td>
-                  <td class="header-cell header-links" align="right" style={`vertical-align:middle;font-size:13px;color:${C.faint};white-space:nowrap`}><a href={webUrl} style={`color:${C.blue};text-decoration:none`}>View online</a> | <a href={`${ORIGIN}/newsletter#subscribe`} style={`color:${C.blue};text-decoration:none`}>Subscribe</a></td>
+                  <td class="header-cell" style="vertical-align:middle"><a target="_blank" rel="noopener" href={`${ORIGIN}/`}><img class="logo" src={`${ORIGIN}/newsletter/email/logo-full.png`} width="224" height="30" alt="Unum: Last Week in Congress" style="display:block" /></a></td>
+                  <td class="header-cell header-links" align="right" style={`vertical-align:middle;font-size:13px;color:${C.faint};white-space:nowrap`}><a target="_blank" rel="noopener" href={webUrl} style={`color:${C.blue};text-decoration:none`}>View online</a> | <a target="_blank" rel="noopener" href={`${ORIGIN}/newsletter#subscribe`} style={`color:${C.blue};text-decoration:none`}>Subscribe</a></td>
                 </tr></table>
               </td>
             </tr>
@@ -120,7 +120,7 @@ const formatDate = (d: Date) =>
                             {bill.votes?.map((v) => (
                               <p style={`margin:0 0 4px;font-size:13px;color:${C.muted}`}>{v.chamber} · {formatDate(v.date)}: <b style={`color:${C.text}`}>{v.result} {v.yea}–{v.nay}</b></p>
                             ))}
-                            <p style="margin:8px 0 0;font-size:14px"><a href={url} style={`color:${C.blue};text-decoration:none`}>{label} on Congress.gov →</a></p>
+                            <p style="margin:8px 0 0;font-size:14px"><a target="_blank" rel="noopener" href={url} style={`color:${C.blue};text-decoration:none`}>{label} on Congress.gov →</a></p>
                           </td></tr>
                         </table>
                       );
@@ -135,13 +135,13 @@ const formatDate = (d: Date) =>
                 </p>
                 <p style={`margin:0 0 20px;font-size:15px;line-height:1.6;color:${C.muted}`}>Until next time,<br />{signoff}</p>
                 {/* One image can only have one link, so it goes to the homepage, which has both store buttons */}
-                <a href={`${ORIGIN}/`}><img src={`${ORIGIN}/newsletter/email/app-demo.gif`} width="582" alt="The Unum app. Track senators and representatives by state, and see the laws they wrote. Download on the App Store or Google Play." style="display:block;width:100%;max-width:582px;height:auto;border-radius:12px" /></a>
+                <a target="_blank" rel="noopener" href={`${ORIGIN}/`}><img src={`${ORIGIN}/newsletter/email/app-demo.gif`} width="582" alt="The Unum app. Track senators and representatives by state, and see the laws they wrote. Download on the App Store or Google Play." style="display:block;width:100%;max-width:582px;height:auto;border-radius:12px" /></a>
               </td>
             </tr>
             <tr>
               <td style={`padding:24px 8px;font-size:12px;line-height:1.6;color:${C.faint};text-align:center`}>
-                <a href={webUrl} style={`color:${C.faint}`}>View this issue on the web</a> ·
-                <a href="{{unsubscribe_url}}" style={`color:${C.faint}`}>Unsubscribe</a><br />
+                <a target="_blank" rel="noopener" href={webUrl} style={`color:${C.faint}`}>View this issue on the web</a> ·
+                <a target="_blank" rel="noopener" href="{{unsubscribe_url}}" style={`color:${C.faint}`}>Unsubscribe</a><br />
                 You are getting this because you subscribed to Last Week in Congress at unuminitiative.com.<br />
                 Unum Initiative Inc. · {"{{mailing_address}}"}
               </td>
