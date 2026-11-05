@@ -134,8 +134,8 @@ const formatDate = (d: Date) =>
                   to day, download our free app, Unum: Congress Tracker.
                 </p>
                 <p style={`margin:0 0 20px;font-size:15px;line-height:1.6;color:${C.muted}`}>Until next time,<br />{signoff}</p>
-                {/* One image can only have one link, so it goes to the homepage, which has both store buttons */}
-                <a target="_blank" rel="noopener" href={`${ORIGIN}/`}><img src={`${ORIGIN}/newsletter/email/app-demo.gif`} width="582" alt="The Unum app. Track senators and representatives by state, and see the laws they wrote. Download on the App Store or Google Play." style="display:block;width:100%;max-width:582px;height:auto;border-radius:12px" /></a>
+                {/* /app sends each device to its app store, or to the homepage */}
+                <a target="_blank" rel="noopener" href={`${ORIGIN}/app`}><img src={`${ORIGIN}/newsletter/email/app-demo.gif`} width="582" alt="The Unum app. Track senators and representatives by state, and see the laws they wrote. Download on the App Store or Google Play." style="display:block;width:100%;max-width:582px;height:auto;border-radius:12px" /></a>
               </td>
             </tr>
             <tr>
