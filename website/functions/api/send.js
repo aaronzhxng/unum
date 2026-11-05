@@ -32,7 +32,7 @@ export async function onRequestPost({ request, env }) {
   const page = await env.ASSETS.fetch(new Request(`${origin}/newsletter/${issue}/email.html`));
   if (!page.ok) return fail(404, "That issue has no email version on this site.");
   const template = await page.text();
-  const subject = template.match(/<title>([^<]*)<\/title>/)?.[1].replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"') ?? "Last Week in Congress";
+  const subject = template.match(/<title>([^<]*)<\/title>/)?.[1].replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"') ?? "Congress Weekly";
   const fill = (unsubscribe) =>
     template
       .replaceAll("{{origin}}", origin)

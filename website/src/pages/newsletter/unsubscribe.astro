@@ -4,7 +4,7 @@
 import NewsletterNotice from "../../components/NewsletterNotice.astro";
 ---
 
-<NewsletterNotice title="Unsubscribe" heading="Unsubscribe from Last Week in Congress?">
+<NewsletterNotice title="Unsubscribe" heading="Unsubscribe from Congress Weekly?">
   <p>You will stop getting the weekly email. You can sign up again anytime.</p>
   <form slot="actions" action="/api/unsubscribe" method="post" data-unsubscribe>
     <input type="hidden" name="token" />

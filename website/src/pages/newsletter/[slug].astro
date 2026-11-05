@@ -1,5 +1,5 @@
 ---
-// One issue of Last Week in Congress, built from its file in
+// One issue of Congress Weekly, built from its file in
 // src/content/newsletter.
 import { render } from "astro:content";
 import { getIssues } from "../../newsletter.mjs";
@@ -32,10 +32,10 @@ const numbers = [
 ---
 
 <Layout
-  brandStack={{ lines: ["last week", "in congress"] }}
+  brandStack={{ lines: ["congress", "weekly"] }}
   newsletterNav
   navSubscribe
-  title={`Last Week in Congress: ${week}, ${year}`}
+  title={`Congress Weekly: ${week}, ${year}`}
   description={description}
 >
   <article>

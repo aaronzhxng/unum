@@ -10,9 +10,9 @@ interface Props {
 const { title, heading } = Astro.props;
 ---
 
-<Layout title={title} brandStack={{ lines: ["last week", "in congress"] }} newsletterNav noIndex>
+<Layout title={title} brandStack={{ lines: ["congress", "weekly"] }} newsletterNav noIndex>
   <section class="container section page-intro">
-    <p class="eyebrow">Last Week in Congress</p>
+    <p class="eyebrow">Congress Weekly</p>
     <h1>{heading}</h1>
     <div class="lede stack"><slot /></div>
     <slot name="actions" />

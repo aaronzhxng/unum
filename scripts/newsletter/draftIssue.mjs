@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Drafts a Last Week in Congress issue from Congress.gov, as a file in
+// Drafts a Congress Weekly issue from Congress.gov, as a file in
 // website/src/content/newsletter/ marked draft: true, so it shows on
 // preview links but not the live site until the draft line is removed.
 //

@@ -9,9 +9,9 @@ import Layout from "../../layouts/Layout.astro";
 const issues = await getIssues();
 ---
 
-<Layout title="Send an issue" brandStack={{ lines: ["last week", "in congress"] }} noIndex>
+<Layout title="Send an issue" brandStack={{ lines: ["congress", "weekly"] }} noIndex>
   <section class="container section page-intro">
-    <p class="eyebrow">Last Week in Congress</p>
+    <p class="eyebrow">Congress Weekly</p>
     <h1>Send an issue</h1>
     <form class="send" data-send>
       <label>

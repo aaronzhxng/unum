@@ -10,7 +10,6 @@
 //   NEWSLETTER_FROM    optional, the From line on emails
 
 export const SITE = "https://unuminitiative.com";
-// "Last Week in Congress" gets cut off in inboxes; the emails themselves keep it
 const DEFAULT_FROM = "Congress Weekly <newsletter@send.unuminitiative.com>";
 export const REPLY_TO = "contact@unuminitiative.com";
 export const fromLine = (env) => env.NEWSLETTER_FROM || DEFAULT_FROM;
@@ -71,12 +70,12 @@ export async function sendEmail(env, { to, subject, html, text, headers }) {
 export function confirmationEmail(token, origin = SITE) {
   const link = `${origin}/api/confirm?token=${token}`;
   return {
-    subject: "Confirm your subscription to Last Week in Congress",
-    text: `Thanks for signing up for Last Week in Congress, a free weekly email from Unum on what Congress did last week.\n\nConfirm your subscription:\n${link}\n\nIf you did not sign up, ignore this email and you will not hear from us.`,
+    subject: "Confirm your subscription to Congress Weekly",
+    text: `Thanks for signing up for Congress Weekly, a free weekly email from Unum on what Congress did last week.\n\nConfirm your subscription:\n${link}\n\nIf you did not sign up, ignore this email and you will not hear from us.`,
     html: `<div style="font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#1a1a1a;line-height:1.5">
-  <p style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#008cff;margin:0 0 12px">Last Week in Congress</p>
+  <p style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#008cff;margin:0 0 12px">Congress Weekly</p>
   <h1 style="font-size:24px;line-height:1.25;margin:0 0 16px">Confirm your subscription</h1>
-  <p style="margin:0 0 24px;color:#555">Thanks for signing up for Last Week in Congress, a free weekly email from Unum on what Congress did last week, in plain language.</p>
+  <p style="margin:0 0 24px;color:#555">Thanks for signing up for Congress Weekly, a free weekly email from Unum on what Congress did last week, in plain language.</p>
   <p style="margin:0 0 28px"><a href="${link}" style="display:inline-block;background:#008cff;color:#fff;text-decoration:none;font-weight:600;padding:12px 24px;border-radius:999px">Confirm my subscription</a></p>
   <p style="margin:0;font-size:14px;color:#888">If you did not sign up, ignore this email and you will not hear from us.</p>
 </div>`,
