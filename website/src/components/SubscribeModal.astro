@@ -1,7 +1,8 @@
 ---
 // The subscribe card as a popup, opened by any element with
 // data-subscribe-open (the header's Subscribe button, the newsletter page's
-// hero button). Escape, the close button, or a click outside closes it.
+// hero button), or by a link ending in #subscribe (the email's Subscribe link).
+// Escape, the close button, or a click outside closes it.
 import SubscribeCard from "./SubscribeCard.astro";
 ---
 
@@ -82,6 +83,7 @@ import SubscribeCard from "./SubscribeCard.astro";
         modal.querySelector<HTMLInputElement>("input[type=email]")?.focus();
       });
     }
+    if (location.hash === "#subscribe") modal.showModal();
     modal.querySelector("[data-subscribe-close]")?.addEventListener("click", () => modal.close());
     // A click on the backdrop lands on the dialog itself, outside the card
     modal.addEventListener("click", (event) => {

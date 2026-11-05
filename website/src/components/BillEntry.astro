@@ -5,6 +5,7 @@
 // so it reads well on any screen and in search results.
 import { billInfo, policyArea } from "../policyAreas.mjs";
 import { memberPhoto, sponsorParts } from "../members.mjs";
+import { fitLabel } from "../fitLabel.mjs";
 
 interface Stage {
   label: string;
@@ -41,6 +42,10 @@ const policy = policyArea(bill.policyArea);
 const photo = memberPhoto(bill.sponsorId);
 const { initials, color } = sponsorParts(bill.sponsor);
 
+const FIT = { charWidth: 8.2, chrome: 92 };
+const area = bill.policyArea ? fitLabel(bill.policyArea, FIT) : null;
+const sponsorName = fitLabel(bill.sponsor, FIT);
+
 const formatDate = (date: Date) =>
   date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 ---
@@ -52,10 +57,10 @@ const formatDate = (date: Date) =>
         stage track and the section heading. */}
     <div class="tags">
       {
-        bill.policyArea && (
+        area && (
           <span class="tag area">
             <img src={`/newsletter/icons/${policy.icon}`} alt="" width="28" height="28" />
-            {bill.policyArea}
+            <span>{area.first}{area.second && " "}{area.second && <br class:list={["fit-break", area.breakClass]} />}{area.second}</span>
           </span>
         )
       }
@@ -69,7 +74,7 @@ const formatDate = (date: Date) =>
             </span>
           )
         }
-        {bill.sponsor}
+        <span>{sponsorName.first}{sponsorName.second && " "}{sponsorName.second && <br class:list={["fit-break", sponsorName.breakClass]} />}{sponsorName.second}</span>
       </span>
     </div>
     <p class="summary">{bill.summary}</p>

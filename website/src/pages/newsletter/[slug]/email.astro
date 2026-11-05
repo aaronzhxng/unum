@@ -7,8 +7,8 @@
 import { render } from "astro:content";
 import { getIssues } from "../../../newsletter.mjs";
 import { billInfo, policyArea } from "../../../policyAreas.mjs";
-import { APP_STORE_URL, GOOGLE_PLAY_URL } from "../../../site.mjs";
 import { memberPhoto, sponsorParts } from "../../../members.mjs";
+import { FIT_WIDTHS, fitLabel } from "../../../fitLabel.mjs";
 
 export async function getStaticPaths() {
   const issues = await getIssues();
@@ -33,8 +33,17 @@ const numbers = [
   [stats.outOfCommittee, "out of committee"],
   [stats.introduced, "introduced"],
 ];
-const tag = `display:inline-block;margin:0 8px 8px 0;padding:6px 13px 6px 7px;border:1px solid ${C.border};border-radius:8px;background:#fff;font-size:14px;line-height:26px`;
-const tagImage = "display:inline-block;margin-right:8px;vertical-align:middle";
+const tag = `display:inline-block;margin:0 8px 8px 0;padding:6px 13px 6px 7px;border:1px solid ${C.border};border-radius:8px;background:#fff;vertical-align:top`;
+const tagText = "vertical-align:middle;font-size:14px;line-height:18px";
+// Bold policy areas run wider than regular sponsor names
+const FIT_AREA = { charWidth: 7.5, chrome: 146 };
+const FIT_NAME = { charWidth: 7, chrome: 146 };
+// The bubble breaks, plus the header's smaller logo and stacking on phones
+const phoneRules = `
+  @media (max-width: 480px) { .tag { display: table !important; } }
+  @media (max-width: 400px) { .logo { width: 179px !important; height: 24px !important; } }
+  @media (max-width: 350px) { .header-cell { display: block !important; text-align: left !important; } .header-links { padding-top: 8px !important; } }
+  ${FIT_WIDTHS.map((w) => `@media (max-width: ${w}px) { .fit-${w} { display: inline !important; } }`).join("\n  ")}`;
 const stageColor = { done: C.text, current: C.blue, todo: "#b0b0b0", failed: C.red };
 const formatDate = (d: Date) =>
   d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
@@ -47,13 +56,7 @@ const formatDate = (d: Date) =>
     <meta name="robots" content="noindex" />
     <title>{headline}</title>
     {/* The policy area and sponsor bubbles go on two lines on phones. Apps that ignore this wrap them only when they run out of room. */}
-    <style is:inline>
-      @media (max-width: 480px) {
-        .tag {
-          display: table !important;
-        }
-      }
-    </style>
+    <style is:inline set:html={phoneRules} />
   </head>
   <body style={`margin:0;padding:0;background:${C.paper};font-family:${FONT};color:${C.text}`}>
     {/* The preview line inbox apps show after the subject */}
@@ -64,9 +67,9 @@ const formatDate = (d: Date) =>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px">
             <tr>
               <td style="padding:8px 8px 20px">
-                <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-                  <td style="vertical-align:middle"><img src={`${ORIGIN}/newsletter/email/logo.png`} width="32" height="32" alt="Unum" style="display:block;border-radius:7px" /></td>
-                  <td style={`vertical-align:middle;padding-left:10px;font-size:15px;font-weight:600;color:${C.text}`}>Last Week in Congress</td>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td class="header-cell" style="vertical-align:middle"><a href={`${ORIGIN}/`}><img class="logo" src={`${ORIGIN}/newsletter/email/logo-full.png`} width="224" height="30" alt="Unum: Last Week in Congress" style="display:block" /></a></td>
+                  <td class="header-cell header-links" align="right" style={`vertical-align:middle;font-size:13px;color:${C.faint};white-space:nowrap`}><a href={webUrl} style={`color:${C.blue};text-decoration:none`}>View online</a> | <a href={`${ORIGIN}/newsletter#subscribe`} style={`color:${C.blue};text-decoration:none`}>Subscribe</a></td>
                 </tr></table>
               </td>
             </tr>
@@ -95,18 +98,22 @@ const formatDate = (d: Date) =>
                       const policy = policyArea(bill.policyArea);
                       const photo = memberPhoto(bill.sponsorId);
                       const sponsor = sponsorParts(bill.sponsor);
+                      const area = bill.policyArea ? fitLabel(bill.policyArea, FIT_AREA) : null;
+                      const name = fitLabel(bill.sponsor, FIT_NAME);
+                      const hiddenBreak = "display:none";
                       return (
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`border-bottom:1px solid ${C.border}`}>
                           <tr><td style="padding:20px 0">
                             <p style="margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
                             {/* Separate white bubbles. No space between the spans, so the gap is exactly the margin. */}
-                            <div style="margin:0 0 4px">{bill.policyArea && (<span class="tag" style={`${tag};color:${policy.color};font-weight:600`}><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="26" height="26" alt="" style={tagImage} />{bill.policyArea}</span>)}<span class="tag" style={`${tag};color:${C.muted}`}>{photo ? (<img src={`${ORIGIN}${photo}`} width="24" height="24" alt="" style={`${tagImage};border-radius:50%;border:1px solid ${sponsor.color}`} />) : (<span style={`display:inline-block;width:26px;height:26px;line-height:26px;margin-right:8px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:10px;font-weight:600;text-align:center;vertical-align:middle`}>{sponsor.initials}</span>)}{bill.sponsor}</span></div>
+                            <div style="margin:0 0 4px">{area && (<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px"><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="26" height="26" alt="" style="display:block" /></td><td style={`${tagText};color:${policy.color};font-weight:600`}>{area.first}{area.second && " "}{area.second && <br class={area.breakClass} style={hiddenBreak} />}{area.second}</td></tr></table></div>)}<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px">{photo ? (<img src={`${ORIGIN}${photo}`} width="24" height="24" alt="" style={`display:block;border-radius:50%;border:1px solid ${sponsor.color}`} />) : (<div style={`width:26px;height:26px;line-height:26px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:10px;font-weight:600;text-align:center`}>{sponsor.initials}</div>)}</td><td style={`${tagText};color:${C.muted}`}>{name.first}{name.second && " "}{name.second && <br class={name.breakClass} style={hiddenBreak} />}{name.second}</td></tr></table></div></div>
                             <p style={`margin:0 0 12px;font-size:15px;line-height:1.55;color:${C.muted}`}>{bill.summary}</p>
                             <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
                               {bill.stages.map((s, i) => (
                                 <>
                                   {i > 0 && <span style="color:#c4c4c4"> → </span>}
-                                  <span style={`color:${stageColor[s.status]};font-weight:${s.status === "todo" ? 400 : 600}`}>{s.label}</span>
+                                  {/* A finished bill's last stage is where it stands now, so it reads like a current stage */}
+                                  <span style={`color:${s.status === "done" && i === bill.stages.length - 1 ? C.blue : stageColor[s.status]};font-weight:${s.status === "todo" ? 400 : 600}`}>{s.label}</span>
                                 </>
                               ))}
                             </p>
@@ -126,11 +133,9 @@ const formatDate = (d: Date) =>
                   Thanks for reading Last Week in Congress. To follow these bills and your own representatives day
                   to day, download our free app, Unum: Congress Tracker.
                 </p>
-                <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-                  <td style="padding-right:12px"><a href={APP_STORE_URL}><img src={`${ORIGIN}/newsletter/email/app-store-badge.png`} height="40" alt="Download on the App Store" style="display:block;height:40px;width:auto" /></a></td>
-                  <td><a href={GOOGLE_PLAY_URL}><img src={`${ORIGIN}/newsletter/email/google-play-badge.png`} height="40" alt="Get it on Google Play" style="display:block;height:40px;width:auto" /></a></td>
-                </tr></table>
-                <p style={`margin:20px 0 0;font-size:15px;line-height:1.6;color:${C.muted}`}>Until next time,<br />{signoff}</p>
+                <p style={`margin:0 0 20px;font-size:15px;line-height:1.6;color:${C.muted}`}>Until next time,<br />{signoff}</p>
+                {/* One image can only have one link, so it goes to the homepage, which has both store buttons */}
+                <a href={`${ORIGIN}/`}><img src={`${ORIGIN}/newsletter/email/app-demo.gif`} width="582" alt="The Unum app. Track senators and representatives by state, and see the laws they wrote. Download on the App Store or Google Play." style="display:block;width:100%;max-width:582px;height:auto;border-radius:12px" /></a>
               </td>
             </tr>
             <tr>

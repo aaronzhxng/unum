@@ -238,6 +238,65 @@ main p {
   outline-offset: 3px;
 }
 
+/* Line breaks that keep a bubble as wide as its text (see src/fitLabel.mjs) */
+.fit-break {
+  display: none;
+}
+
+@media (max-width: 500px) {
+  .fit-500 {
+    display: inline;
+  }
+}
+
+@media (max-width: 480px) {
+  .fit-480 {
+    display: inline;
+  }
+}
+
+@media (max-width: 460px) {
+  .fit-460 {
+    display: inline;
+  }
+}
+
+@media (max-width: 440px) {
+  .fit-440 {
+    display: inline;
+  }
+}
+
+@media (max-width: 420px) {
+  .fit-420 {
+    display: inline;
+  }
+}
+
+@media (max-width: 400px) {
+  .fit-400 {
+    display: inline;
+  }
+}
+
+@media (max-width: 380px) {
+  .fit-380 {
+    display: inline;
+  }
+}
+
+@media (max-width: 360px) {
+  .fit-360 {
+    display: inline;
+  }
+}
+
+@media (max-width: 340px) {
+  .fit-340 {
+    display: inline;
+  }
+}
+
 .text-link {
   color: var(--blue);
   font-weight: 400;

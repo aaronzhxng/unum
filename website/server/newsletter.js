@@ -10,7 +10,8 @@
 //   NEWSLETTER_FROM    optional, the From line on emails
 
 export const SITE = "https://unuminitiative.com";
-const DEFAULT_FROM = "Last Week in Congress <newsletter@send.unuminitiative.com>";
+// "Last Week in Congress" gets cut off in inboxes; the emails themselves keep it
+const DEFAULT_FROM = "Congress Weekly <newsletter@send.unuminitiative.com>";
 export const REPLY_TO = "contact@unuminitiative.com";
 export const fromLine = (env) => env.NEWSLETTER_FROM || DEFAULT_FROM;
 
