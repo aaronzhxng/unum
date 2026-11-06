@@ -1,0 +1,57 @@
+---
+// One bill in an email: title, policy area and sponsor bubbles, summary,
+// stages, votes, and its Congress.gov link.
+import { billInfo, policyArea } from "../policyAreas.mjs";
+import { memberPhoto, sponsorParts } from "../members.mjs";
+import { fitLabel } from "../fitLabel.mjs";
+import { C, ORIGIN } from "../emailTheme.mjs";
+
+const { bill } = Astro.props;
+const tag = `display:inline-block;margin:0 8px 8px 0;padding:6px 13px 6px 7px;border:1px solid ${C.border};border-radius:8px;background:#fff;vertical-align:top`;
+const tagText = "vertical-align:middle;font-size:14px;line-height:18px";
+// Bold policy areas run wider than regular sponsor names
+const FIT_AREA = { charWidth: 7.5, chrome: 146 };
+const FIT_NAME = { charWidth: 7, chrome: 146 };
+const stageColor = { done: C.text, current: C.blue, todo: "#b0b0b0", failed: C.red };
+const formatDate = (d: Date) =>
+  d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+const { label, url } = billInfo(bill.id);
+const policy = policyArea(bill.policyArea);
+const photo = memberPhoto(bill.sponsorId);
+const sponsor = sponsorParts(bill.sponsor);
+const area = bill.policyArea ? fitLabel(bill.policyArea, FIT_AREA) : null;
+const name = fitLabel(bill.sponsor, FIT_NAME);
+const hiddenBreak = "display:none";
+---
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`border-bottom:1px solid ${C.border}`}>
+                          <tr><td style="padding:20px 0">
+                            <p style="margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
+                            {/* Separate white bubbles. No space between the spans, so the gap is exactly the margin. */}
+                            <div style="margin:0 0 4px">{area && (<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px"><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="26" height="26" alt="" style="display:block" /></td><td style={`${tagText};color:${policy.color};font-weight:600`}>{area.first}{area.second && " "}{area.second && <br class={area.breakClass} style={hiddenBreak} />}{area.second}</td></tr></table></div>)}<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px">{photo ? (<img src={`${ORIGIN}${photo}`} width="24" height="24" alt="" style={`display:block;border-radius:50%;border:1px solid ${sponsor.color}`} />) : (<div style={`width:26px;height:26px;line-height:26px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:10px;font-weight:600;text-align:center`}>{sponsor.initials}</div>)}</td><td style={`${tagText};color:${C.muted}`}>{name.first}{name.second && " "}{name.second && <br class={name.breakClass} style={hiddenBreak} />}{name.second}</td></tr></table></div></div>
+                            <p style={`margin:0 0 12px;font-size:15px;line-height:1.55;color:${C.muted}`}>{bill.summary}</p>
+                            <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
+                              {bill.stages.map((s, i) => (
+                                <>
+                                  {i > 0 && <span style="color:#c4c4c4"> → </span>}
+                                  {/* A finished bill's last stage is where it stands now, so it reads like a current stage */}
+                                  <span style={`color:${s.status === "done" && i === bill.stages.length - 1 ? C.blue : stageColor[s.status]};font-weight:${s.status === "todo" ? 400 : 600}`}>{s.label}</span>
+                                </>
+                              ))}
+                            </p>
+                            {bill.votes?.map((v) => {
+                              const yea = Math.round((100 * v.yea) / (v.yea + v.nay));
+                              return (
+                                <div>
+                                  <p style={`margin:0 0 5px;font-size:13px;color:${C.muted}`}>{v.chamber} · {formatDate(v.date)}: <b style={`color:${C.text}`}>{v.result} {v.yea}–{v.nay}</b></p>
+                                  {/* Yea share of the vote against nays, as on the website */}
+                                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px"><tr>
+                                    <td width={`${yea}%`} height="6" style={`height:6px;font-size:0;line-height:0;background:${C.green}`}>&nbsp;</td>
+                                    <td width={`${100 - yea}%`} height="6" style={`height:6px;font-size:0;line-height:0;background:${C.red}`}>&nbsp;</td>
+                                  </tr></table>
+                                </div>
+                              );
+                            })}
+                            <p style="margin:8px 0 0;font-size:14px"><a target="_blank" rel="noopener" href={url} style={`color:${C.blue};text-decoration:none`}>{label} on Congress.gov →</a></p>
+                          </td></tr>
+                        </table>

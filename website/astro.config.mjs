@@ -16,7 +16,7 @@ export default defineConfig({
     sitemap({
       filter: (page) =>
         !/\/newsletter\/[^/]+\/email/.test(page) &&
-        !/\/newsletter\/(send|check-email|confirmed|unsubscribe|unsubscribed|invalid-link)$/.test(page),
+        !/\/newsletter\/(send|welcome-email|subscribed|unsubscribe|unsubscribed|invalid-link)$/.test(page),
     }),
   ],
 });

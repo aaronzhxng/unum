@@ -1,6 +1,6 @@
 // Shared pieces of the newsletter signup, used by the Pages Functions in
 // functions/api/. Subscribers live in the D1 database bound as DB; each has
-// one random token that goes in their confirm and unsubscribe links.
+// one random token that goes in their unsubscribe link.
 //
 // Settings, in the Pages project's environment (Production and Preview):
 //   DB                 D1 database binding
@@ -8,6 +8,7 @@
 //   TURNSTILE_SECRET   secret; Preview uses Cloudflare's always-pass test
 //                      secret 1x0000000000000000000000000000000AA
 //   NEWSLETTER_FROM    optional, the From line on emails
+//   MAILING_ADDRESS    the postal address in the emails' footer
 
 export const SITE = "https://unuminitiative.com";
 const DEFAULT_FROM = "Congress Weekly <newsletter@send.unuminitiative.com>";
@@ -67,19 +68,31 @@ export async function sendEmail(env, { to, subject, html, text, headers }) {
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }
 
-export function confirmationEmail(token, origin = SITE) {
-  const link = `${origin}/api/confirm?token=${token}`;
-  return {
-    subject: "Confirm your subscription to Congress Weekly",
-    text: `Thanks for signing up for Congress Weekly, a free weekly email from Unum on what Congress did last week.\n\nConfirm your subscription:\n${link}\n\nIf you did not sign up, ignore this email and you will not hear from us.`,
-    html: `<div style="font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#1a1a1a;line-height:1.5">
-  <p style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#008cff;margin:0 0 12px">Congress Weekly</p>
-  <h1 style="font-size:24px;line-height:1.25;margin:0 0 16px">Confirm your subscription</h1>
-  <p style="margin:0 0 24px;color:#555">Thanks for signing up for Congress Weekly, a free weekly email from Unum on what Congress did last week, in plain language.</p>
-  <p style="margin:0 0 28px"><a href="${link}" style="display:inline-block;background:#008cff;color:#fff;text-decoration:none;font-weight:600;padding:12px 24px;border-radius:999px">Confirm my subscription</a></p>
-  <p style="margin:0;font-size:14px;color:#888">If you did not sign up, ignore this email and you will not hear from us.</p>
-</div>`,
-  };
+// Fills in a built email's {{...}} placeholders
+export const fillEmail = (html, { origin, unsubscribe, address }) =>
+  html
+    .replaceAll("{{origin}}", origin)
+    .replaceAll("{{unsubscribe_url}}", unsubscribe)
+    .replaceAll("{{mailing_address}}", address);
+
+// Lets Gmail and Apple Mail show their own one-click Unsubscribe
+export const unsubscribeHeaders = (url) => ({
+  "List-Unsubscribe": `<${url}>`,
+  "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+});
+
+export async function sendWelcome(env, { to, token, origin }) {
+  const page = await env.ASSETS.fetch(new Request(`${origin}/newsletter/welcome-email.html`));
+  if (!page.ok) throw new Error(`No welcome email on this site (${page.status})`);
+  const unsubscribe = `${origin}/api/unsubscribe?token=${token}`;
+  const address = env.MAILING_ADDRESS || "";
+  await sendEmail(env, {
+    to,
+    subject: "Welcome to Congress Weekly",
+    html: fillEmail(await page.text(), { origin, unsubscribe, address }),
+    text: `Welcome to Congress Weekly, a newsletter by Unum.\n\nEvery Monday morning, we recap the last week in Congress in plain English: bills signed, votes cast, and bills moving through committee. See you on Monday for your first issue.\n\nRead past issues: ${origin}/newsletter\nFeedback: ${REPLY_TO}\n\nUnsubscribe: ${unsubscribe}\nUnum Initiative Inc. · ${address}`,
+    headers: unsubscribeHeaders(unsubscribe),
+  });
 }
 
 // Answers fetch() calls from the signup form with JSON, and plain form

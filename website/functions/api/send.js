@@ -5,7 +5,7 @@
 //   mode=test   one copy to the address in "to"
 //   mode=all    every active subscriber, once per issue, from the live site
 //               only, and only once MAILING_ADDRESS is set
-import { db, now, SITE, REPLY_TO, fromLine, sendEmail } from "../../server/newsletter.js";
+import { db, now, SITE, REPLY_TO, fromLine, sendEmail, fillEmail, unsubscribeHeaders } from "../../server/newsletter.js";
 
 const BATCH = 100; // Resend's most emails per batch call
 
@@ -33,11 +33,7 @@ export async function onRequestPost({ request, env }) {
   if (!page.ok) return fail(404, "That issue has no email version on this site.");
   const template = await page.text();
   const subject = template.match(/<title>([^<]*)<\/title>/)?.[1].replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"') ?? "Congress Weekly";
-  const fill = (unsubscribe) =>
-    template
-      .replaceAll("{{origin}}", origin)
-      .replaceAll("{{unsubscribe_url}}", unsubscribe)
-      .replaceAll("{{mailing_address}}", env.MAILING_ADDRESS || "[mailing address]");
+  const fill = (unsubscribe) => fillEmail(template, { origin, unsubscribe, address: env.MAILING_ADDRESS || "[mailing address]" });
   const text = (unsubscribe) =>
     `${subject}\n\nRead this week's issue: ${origin}/newsletter/${issue}\n\nUnsubscribe: ${unsubscribe}\nUnum Initiative Inc. · ${env.MAILING_ADDRESS || ""}`;
 
@@ -75,8 +71,7 @@ export async function onRequestPost({ request, env }) {
         subject,
         html: fill(unsubscribe),
         text: text(unsubscribe),
-        // Lets Gmail and Apple Mail show their own one-click Unsubscribe
-        headers: { "List-Unsubscribe": `<${unsubscribe}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+        headers: unsubscribeHeaders(unsubscribe),
       };
     });
     const res = await fetch("https://api.resend.com/emails/batch", {

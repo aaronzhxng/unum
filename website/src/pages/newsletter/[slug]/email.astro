@@ -1,14 +1,12 @@
 ---
 // The email version of an issue, at /newsletter/<slug>/email.html, built
-// from the same file as the web page. Email apps only handle simple HTML,
-// so it is all tables and inline styles. /api/send fills in the {{...}}
-// placeholders for each send: the site address for images and links, each
-// subscriber's unsubscribe link, and the mailing address.
+// from the same file as the web page. /api/send fills in the {{...}}
+// placeholders for each send.
 import { render } from "astro:content";
 import { getIssues } from "../../../newsletter.mjs";
-import { billInfo, policyArea } from "../../../policyAreas.mjs";
-import { memberPhoto, sponsorParts } from "../../../members.mjs";
-import { FIT_WIDTHS, fitLabel } from "../../../fitLabel.mjs";
+import EmailShell from "../../../components/EmailShell.astro";
+import EmailBill from "../../../components/EmailBill.astro";
+import { C, ORIGIN } from "../../../emailTheme.mjs";
 
 export async function getStaticPaths() {
   const issues = await getIssues();
@@ -19,66 +17,24 @@ const { issue } = Astro.props;
 const { Content } = await render(issue);
 const { week, date, headline, description, stats, sections, signoff } = issue.data;
 const year = date.getUTCFullYear();
-const ORIGIN = "{{origin}}";
 const webUrl = `${ORIGIN}/newsletter/${issue.id}`;
-const homeUrl = `${ORIGIN}/`;
-
-const C = {
-  paper: "#f4f1eb", card: "#ffffff", text: "#1a1a1a", muted: "#555555", faint: "#8a8a8a",
-  border: "#e6e3dc", blue: "#008cff", green: "#21954a", red: "#d45252",
-};
-const FONT = "-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif";
 const numbers = [
   [stats.signed, "signed into law"],
   [stats.passedBoth, "passed both chambers"],
   [stats.outOfCommittee, "out of committee"],
   [stats.introduced, "introduced"],
 ];
-const tag = `display:inline-block;margin:0 8px 8px 0;padding:6px 13px 6px 7px;border:1px solid ${C.border};border-radius:8px;background:#fff;vertical-align:top`;
-const tagText = "vertical-align:middle;font-size:14px;line-height:18px";
-// Bold policy areas run wider than regular sponsor names
-const FIT_AREA = { charWidth: 7.5, chrome: 146 };
-const FIT_NAME = { charWidth: 7, chrome: 146 };
-// The bubble breaks, plus the header's smaller logo and stacking on phones
-const phoneRules = `
-  @media (max-width: 480px) { .tag { display: table !important; } .header-sep { display: none !important; } .header-link { display: block !important; line-height: 20px; } }
-  @media (max-width: 400px) { .logo { font-size: 42px !important; line-height: 32px !important; letter-spacing: -1.5px !important; } .logo-icon { width: 28px !important; height: 28px !important; margin-right: 6px !important; vertical-align: -3px !important; } .logo-name { margin-left: 7px !important; font-size: 12px !important; line-height: 13px !important; } }
-  @media (max-width: 350px) { .header-cell { display: block !important; text-align: left !important; } .header-links { padding-top: 8px !important; } }
-  ${FIT_WIDTHS.map((w) => `@media (max-width: ${w}px) { .fit-${w} { display: inline !important; } }`).join("\n  ")}`;
-const stageColor = { done: C.text, current: C.blue, todo: "#b0b0b0", failed: C.red };
-const formatDate = (d: Date) =>
-  d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <title>{headline}</title>
-    {/* The policy area and sponsor bubbles go on two lines on phones. Apps that ignore this wrap them only when they run out of room. */}
-    <style is:inline set:html={phoneRules} />
-  </head>
-  <body style={`margin:0;padding:0;background:${C.paper};font-family:${FONT};color:${C.text}`}>
-    {/* The preview line inbox apps show after the subject */}
-    <div style="display:none;max-height:0;overflow:hidden">{description}</div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`background:${C.paper}`}>
-      <tr>
-        <td align="center" style="padding:24px 12px">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px">
-            <tr>
-              <td style="padding:8px 8px 20px">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-                  <td class="header-cell" style="vertical-align:middle">
-                    {/* Real text, so mail apps recolor the words in dark mode, which they cannot do to an image. Everything shares one line so it all hangs off the text baseline, which lands somewhere different in each app's font. "unum" has no tall letters, so its height is its x-height: about 78% of the icon, as in the website logo. The icon drops 4px below the baseline to center those letters on it, and the small words end on the same baseline and rise to the same height. */}
-                    <a class="logo" target="_blank" rel="noopener" href={homeUrl} style={`display:block;font-size:51px;line-height:38px;font-weight:600;letter-spacing:-1.8px;color:${C.text};text-decoration:none;white-space:nowrap`}><img class="logo-icon" src={`${ORIGIN}/newsletter/email/logo-icon.png`} width="34" height="34" alt="" style="vertical-align:-4px;border:0;border-radius:8px;margin-right:8px" />unum<span class="logo-name" style="display:inline-block;margin-left:9px;font-size:14px;line-height:16px;font-weight:500;letter-spacing:0">last week<br />in congress</span></a>
-                  </td>
-                  <td class="header-cell header-links" align="right" style={`vertical-align:middle;font-size:13px;color:${C.faint};white-space:nowrap`}><a class="header-link" target="_blank" rel="noopener" href={webUrl} style={`color:${C.blue};text-decoration:none`}>View online</a><span class="header-sep"> | </span><a class="header-link" target="_blank" rel="noopener" href={`${ORIGIN}/newsletter#subscribe`} style={`color:${C.blue};text-decoration:none`}>Subscribe</a></td>
-                </tr></table>
-              </td>
-            </tr>
-            <tr>
-              <td style={`background:${C.card};border:1px solid ${C.border};border-radius:20px;padding:32px 28px`}>
+<EmailShell
+  title={headline}
+  preheader={description}
+  links={[
+    { label: "View online", href: webUrl },
+    { label: "Subscribe", href: `${ORIGIN}/newsletter#subscribe` },
+  ]}
+  footerLinks={[{ label: "View this issue on the web", href: webUrl }]}
+>
                 <p style={`margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${C.blue}`}>{week}, {year}</p>
                 <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.01em">{headline}</h1>
                 <div style={`font-size:16px;line-height:1.6;color:${C.muted}`}><Content /></div>
@@ -97,38 +53,7 @@ const formatDate = (d: Date) =>
                 {sections.map((section) => (
                   <>
                     <h2 style={`margin:32px 0 4px;font-size:20px;line-height:1.3;color:${C.text}`}>{section.heading}</h2>
-                    {section.bills.map((bill) => {
-                      const { label, url } = billInfo(bill.id);
-                      const policy = policyArea(bill.policyArea);
-                      const photo = memberPhoto(bill.sponsorId);
-                      const sponsor = sponsorParts(bill.sponsor);
-                      const area = bill.policyArea ? fitLabel(bill.policyArea, FIT_AREA) : null;
-                      const name = fitLabel(bill.sponsor, FIT_NAME);
-                      const hiddenBreak = "display:none";
-                      return (
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`border-bottom:1px solid ${C.border}`}>
-                          <tr><td style="padding:20px 0">
-                            <p style="margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
-                            {/* Separate white bubbles. No space between the spans, so the gap is exactly the margin. */}
-                            <div style="margin:0 0 4px">{area && (<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px"><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="26" height="26" alt="" style="display:block" /></td><td style={`${tagText};color:${policy.color};font-weight:600`}>{area.first}{area.second && " "}{area.second && <br class={area.breakClass} style={hiddenBreak} />}{area.second}</td></tr></table></div>)}<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px">{photo ? (<img src={`${ORIGIN}${photo}`} width="24" height="24" alt="" style={`display:block;border-radius:50%;border:1px solid ${sponsor.color}`} />) : (<div style={`width:26px;height:26px;line-height:26px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:10px;font-weight:600;text-align:center`}>{sponsor.initials}</div>)}</td><td style={`${tagText};color:${C.muted}`}>{name.first}{name.second && " "}{name.second && <br class={name.breakClass} style={hiddenBreak} />}{name.second}</td></tr></table></div></div>
-                            <p style={`margin:0 0 12px;font-size:15px;line-height:1.55;color:${C.muted}`}>{bill.summary}</p>
-                            <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
-                              {bill.stages.map((s, i) => (
-                                <>
-                                  {i > 0 && <span style="color:#c4c4c4"> → </span>}
-                                  {/* A finished bill's last stage is where it stands now, so it reads like a current stage */}
-                                  <span style={`color:${s.status === "done" && i === bill.stages.length - 1 ? C.blue : stageColor[s.status]};font-weight:${s.status === "todo" ? 400 : 600}`}>{s.label}</span>
-                                </>
-                              ))}
-                            </p>
-                            {bill.votes?.map((v) => (
-                              <p style={`margin:0 0 4px;font-size:13px;color:${C.muted}`}>{v.chamber} · {formatDate(v.date)}: <b style={`color:${C.text}`}>{v.result} {v.yea}–{v.nay}</b></p>
-                            ))}
-                            <p style="margin:8px 0 0;font-size:14px"><a target="_blank" rel="noopener" href={url} style={`color:${C.blue};text-decoration:none`}>{label} on Congress.gov →</a></p>
-                          </td></tr>
-                        </table>
-                      );
-                    })}
+                    {section.bills.map((bill) => <EmailBill bill={bill} />)}
                   </>
                 ))}
 
@@ -140,19 +65,4 @@ const formatDate = (d: Date) =>
                 <p style={`margin:0 0 20px;font-size:15px;line-height:1.6;color:${C.muted}`}>Until next time,<br />{signoff}</p>
                 {/* /app sends each device to its app store, or to the homepage */}
                 <a target="_blank" rel="noopener" href={`${ORIGIN}/app`}><img src={`${ORIGIN}/newsletter/email/app-demo.gif`} width="582" alt="The Unum app. Track senators and representatives by state, and see the laws they wrote. Download on the App Store or Google Play." style="display:block;width:100%;max-width:582px;height:auto;border-radius:12px" /></a>
-              </td>
-            </tr>
-            <tr>
-              <td style={`padding:24px 8px;font-size:12px;line-height:1.6;color:${C.faint};text-align:center`}>
-                <a target="_blank" rel="noopener" href={webUrl} style={`color:${C.faint}`}>View this issue on the web</a> ·
-                <a target="_blank" rel="noopener" href="{{unsubscribe_url}}" style={`color:${C.faint}`}>Unsubscribe</a><br />
-                You are getting this because you subscribed to Congress Weekly at unuminitiative.com.<br />
-                Unum Initiative Inc. · {"{{mailing_address}}"}
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
+</EmailShell>

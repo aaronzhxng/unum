@@ -32,6 +32,7 @@ const issues = await getIssues();
         <button type="submit" class="button" value="test">Send test</button>
         <button type="submit" class="button danger" value="all">Send to all subscribers</button>
         <a class="text-link" href="#" data-preview>Preview the email</a>
+        <a class="text-link" href="#" data-preview-welcome>Preview the welcome email</a>
       </div>
       <p class="result" role="status" data-result></p>
     </form>
@@ -95,16 +96,23 @@ const issues = await getIssues();
   const preview = form.querySelector<HTMLAnchorElement>("[data-preview]")!;
   const issue = form.querySelector<HTMLSelectElement>("select")!;
 
-  // The email file has placeholders that /api/send fills in, so the preview
-  // fills them the same way before showing it
-  preview.addEventListener("click", async (event) => {
-    event.preventDefault();
+  // The email files have placeholders that the server fills in, so the
+  // previews fill them the same way before showing them
+  const open = async (path: string) => {
     const tab = window.open("", "_blank");
-    const html = (await (await fetch(`/newsletter/${issue.value}/email.html`)).text())
+    const html = (await (await fetch(path)).text())
       .replaceAll("{{origin}}", location.origin)
       .replaceAll("{{unsubscribe_url}}", `${location.origin}/newsletter/unsubscribe`)
       .replaceAll("{{mailing_address}}", "[mailing address]");
     if (tab) tab.location.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  };
+  preview.addEventListener("click", (event) => {
+    event.preventDefault();
+    open(`/newsletter/${issue.value}/email.html`);
+  });
+  form.querySelector("[data-preview-welcome]")!.addEventListener("click", (event) => {
+    event.preventDefault();
+    open("/newsletter/welcome-email.html");
   });
 
   const call = async (mode: string) => {
