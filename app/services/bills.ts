@@ -1,6 +1,6 @@
 import { getDb } from "../utils/database";
 import { queryClient } from "../utils/queryClient";
-import { apiClient } from "./api";
+import { apiClient, BACKEND_URL } from "./api";
 
 interface Bill {
   congress: number;
@@ -27,7 +27,7 @@ const congressParam = (congress?: number) =>
 
 // ─── SQLite helpers ───────────────────────────────────────────────────────────
 
-const upsertBills = (bills: Bill[], preserveOrder = false): void => {
+const upsertBills = (bills: Bill[], preserveOrder = false, orderBase = 0): void => {
   const db = getDb();
   const stmt = db.prepareSync(
     `INSERT INTO bills (bill_id, type, number, congress, title, origin_chamber,
@@ -62,7 +62,7 @@ const upsertBills = (bills: Bill[], preserveOrder = false): void => {
         bill.updateDate ?? null,
         bill.policyArea?.name ?? null,
         bill.sponsors?.[0]?.state ?? null,
-        preserveOrder ? index : null,
+        preserveOrder ? orderBase + index : null,
         JSON.stringify(bill),
         now,
       ]);
@@ -168,45 +168,151 @@ const setLastSyncDate = (date: string): void => {
   } catch {}
 };
 
-// ─── Background delta sync ────────────────────────────────────────────────────
+const getMeta = (key: string): string | null => {
+  try {
+    return (
+      getDb().getFirstSync<{ value: string }>(
+        `SELECT value FROM meta WHERE key = ?`,
+        [key],
+      )?.value ?? null
+    );
+  } catch {
+    return null;
+  }
+};
+
+const setMeta = (key: string, value: string): void => {
+  try {
+    getDb().runSync(
+      `INSERT INTO meta (key, value) VALUES (?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [key, value],
+    );
+  } catch {}
+};
+
+const clearMeta = (key: string): void => {
+  try {
+    getDb().runSync(`DELETE FROM meta WHERE key = ?`, [key]);
+  } catch {}
+};
+
+// ─── Background sync ─────────────────────────
+
+const SYNC_CURSOR = "bills_sync_cursor";
+const FIRST_DOWNLOAD_OFFSET = "bills_first_download_offset";
+const BATCH = 500;
+// New installs start with this many, the most recent, so the list opens fast
+const FIRST_BATCH = 1000;
+
+type ChangesResponse = BillsResponse & { cursor: number; more: boolean };
+type PageResponse = BillsResponse & { head: number; more: boolean };
+
+// Lets the bills screen show that newer bills are on the way
+let syncing = false;
+const syncListeners = new Set<() => void>();
+const setSyncing = (value: boolean) => {
+  syncing = value;
+  syncListeners.forEach((listener) => listener());
+};
+export const billSync = {
+  isSyncing: () => syncing,
+  subscribe: (listener: () => void) => {
+    syncListeners.add(listener);
+    return () => {
+      syncListeners.delete(listener);
+    };
+  },
+};
+
+const refreshList = () =>
+  queryClient.invalidateQueries({ queryKey: ["bills", "v2"] });
+
+// Saves its place after every batch, so closing the app or losing signal
+// picks up where it stopped instead of starting over
+const finishFirstDownload = async (start: number): Promise<void> => {
+  for (let offset = start; ; offset += BATCH) {
+    const page = await apiClient.get<PageResponse>(
+      `/bills/sync?offset=${offset}&limit=${BATCH}`,
+    );
+    upsertBills(page.bills, true, offset);
+    if (!page.more) {
+      setMeta(SYNC_CURSOR, String(page.head));
+      clearMeta(FIRST_DOWNLOAD_OFFSET);
+      return;
+    }
+    setMeta(FIRST_DOWNLOAD_OFFSET, String(offset + BATCH));
+  }
+};
+
+const syncChanges = async (): Promise<number> => {
+  let cursor = getMeta(SYNC_CURSOR);
+  // Phones from before this sync existed only know the day they last synced
+  const lastSync = cursor === null ? getLastSyncDate() : null;
+  let url =
+    lastSync !== null
+      ? `/bills/sync?since=${lastSync}&limit=${BATCH}`
+      : `/bills/sync?after=${cursor ?? 0}&limit=${BATCH}`;
+  let total = 0;
+  while (true) {
+    const page = await apiClient.get<ChangesResponse>(url);
+    if (page.bills.length > 0) upsertBills(page.bills);
+    total += page.bills.length;
+    cursor = String(page.cursor);
+    setMeta(SYNC_CURSOR, cursor);
+    if (!page.more) return total;
+    url = `/bills/sync?after=${cursor}&limit=${BATCH}`;
+  }
+};
+
+// The original route, for when the backend's new one is not available
+const syncChangesFromOriginalRoute = async (): Promise<number> => {
+  const since = getLastSyncDate();
+  const fresh = await apiClient.get<BillsResponse>(
+    since ? `/bills?since=${since}` : `/bills`,
+  );
+  if (fresh.bills.length > 0) upsertBills(fresh.bills);
+  return fresh.bills.length;
+};
 
 let syncInProgress = false;
 
 const runDeltaSync = async (): Promise<void> => {
   if (syncInProgress) return;
   syncInProgress = true;
+  setSyncing(true);
 
   try {
-    const lastSync = getLastSyncDate();
-    const since = lastSync ?? undefined;
-
-    const url = since ? `/bills?since=${since}` : `/bills`;
-    const fresh = await apiClient.get<BillsResponse>(url);
-
-    if (fresh.bills.length > 0) {
-      upsertBills(fresh.bills);
-      // New bills were written to SQLite — tell React Query so the UI
-      // re-reads the cache immediately without waiting for the next
-      // focus-triggered staleness check.
-      queryClient.invalidateQueries({ queryKey: ["bills", "v2"] });
+    let listChanged = false;
+    try {
+      const offset = getMeta(FIRST_DOWNLOAD_OFFSET);
+      if (offset !== null) {
+        await finishFirstDownload(Number(offset));
+        listChanged = true;
+      }
+      if ((await syncChanges()) > 0) listChanged = true;
+    } catch (error) {
+      if (getMeta(FIRST_DOWNLOAD_OFFSET) !== null) throw error;
+      if ((await syncChangesFromOriginalRoute()) > 0) listChanged = true;
     }
-
-    const today = new Date().toISOString().split("T")[0];
-    setLastSyncDate(today);
+    if (listChanged) refreshList();
+    setLastSyncDate(new Date().toISOString().split("T")[0]);
   } catch (error) {
-    // Delta sync is background-only — failures are expected when Congress.gov
-    // is temporarily unavailable. Bills load from SQLite cache regardless.
-    if (__DEV__) console.warn("Delta sync failed (non-critical):", error);
+    // Background-only: bills keep loading from SQLite, and the next sync
+    // resumes from the saved place
+    if (__DEV__) console.warn("Bill sync failed (non-critical):", error);
   } finally {
     syncInProgress = false;
+    setSyncing(false);
   }
 };
-
-const BACKEND_URL = "https://unum-production.up.railway.app";
 
 const enrichBackend = async (): Promise<void> => {
   try {
     const db = getDb();
+
+    // Needs every bill, so it waits for a new install's download to finish
+    if (getMeta(FIRST_DOWNLOAD_OFFSET) !== null) return;
 
     // Only run once
     const already = db.getFirstSync<{ value: string }>(
@@ -286,26 +392,36 @@ export const billsService = {
       enrichBackend().catch(() => {});
       return cached;
     }
-    // First launch — fetch policy areas AND bills together
-    // First launch — fetch policy areas AND bills together
-    const [fresh] = await Promise.all([
-      apiClient.get<BillsResponse>("/bills"),
-      billsService
-        .getPolicyAreas()
-        .then(savePolicyAreaMap)
-        .catch(() => {}),
-    ]);
-
-    upsertBills(fresh.bills, true); // preserve order on full fetch
-
-    const today = new Date().toISOString().split("T")[0];
-    setLastSyncDate(today);
+    // New install: the most recent bills now, the rest in the background
+    const policyAreas = billsService
+      .getPolicyAreas()
+      .then(savePolicyAreaMap)
+      .catch(() => {});
+    let first: BillsResponse;
+    try {
+      const page = await apiClient.get<PageResponse>(
+        `/bills/sync?offset=0&limit=${FIRST_BATCH}`,
+      );
+      first = page;
+      upsertBills(page.bills, true);
+      setMeta(
+        page.more ? FIRST_DOWNLOAD_OFFSET : SYNC_CURSOR,
+        String(page.more ? FIRST_BATCH : page.head),
+      );
+      runDeltaSync();
+    } catch {
+      // The new route is not available: everything at once, the original way
+      first = await apiClient.get<BillsResponse>("/bills");
+      upsertBills(first.bills, true);
+      setLastSyncDate(new Date().toISOString().split("T")[0]);
+    }
+    await policyAreas;
 
     // One-time: send sponsor_state and policy_area to Railway for cron use
     enrichBackend().catch(() => {});
 
     // Return with policy areas already applied
-    return getAllBillsFromSQLite() ?? fresh;
+    return getAllBillsFromSQLite() ?? first;
   },
 
   getById: async (billId: string, congress?: number): Promise<any> => {

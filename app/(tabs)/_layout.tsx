@@ -275,7 +275,8 @@ function TabsLayoutInner() {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   const pagerRef = useRef<PagerView>(null);
-  const { tabBarHidden } = useTabBar();
+  const { tabBarHidden, setActiveTab } = useTabBar();
+  useEffect(() => setActiveTab(activeIndex), [activeIndex, setActiveTab]);
   const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
   // Guard against stale onPageSelected events that fire during the
   // focus-recovery snap. Without this, a late drift event can override

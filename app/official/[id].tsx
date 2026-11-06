@@ -513,36 +513,35 @@ export default function OfficialDetail() {
     staleTime: 5 * 60 * 1000, // add this
   });
 
-  const cachedSponsored = officialBillsCache.get(`sponsored_v2_${id}`);
-  const cachedCosponsored = officialBillsCache.get(`cosponsored_v2_${id}`);
+  const cachedSponsored = officialBillsCache.get(`sponsored_v3_${id}`);
+  const cachedCosponsored = officialBillsCache.get(`cosponsored_v3_${id}`);
 
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
     queryFn: async () => {
-      const cached = officialBillsCache.get(`sponsored_v2_${id}`);
-      if (cached) return cached;
       const result = await officialsService.getSponsored(id as string);
-      officialBillsCache.save(`sponsored_v2_${id}`, result);
+      officialBillsCache.save(`sponsored_v3_${id}`, result);
       return result;
     },
     enabled: !!id,
     retry: 1,
     initialData: cachedSponsored ?? undefined,
+    // The saved copy shows at once, then is checked for newer bills
+    initialDataUpdatedAt: 0,
     staleTime: 5 * 60 * 1000, // add this
   });
 
   const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
     queryKey: ["officialCosponsored", id],
     queryFn: async () => {
-      const cached = officialBillsCache.get(`cosponsored_v2_${id}`);
-      if (cached) return cached;
       const result = await officialsService.getCosponsored(id as string);
-      officialBillsCache.save(`cosponsored_v2_${id}`, result);
+      officialBillsCache.save(`cosponsored_v3_${id}`, result);
       return result;
     },
     enabled: !!id,
     retry: 1,
     initialData: cachedCosponsored ?? undefined,
+    initialDataUpdatedAt: 0,
     staleTime: 5 * 60 * 1000, // add this
   });
 
@@ -706,7 +705,11 @@ export default function OfficialDetail() {
     const all = allBills
       .filter((bill) => {
         const billId = `${bill.type.toLowerCase()}${bill.number}`;
-        const action = actionMap.get(billId) ?? "";
+        // The bill's own latest action, since the local bills table may not
+        // have this bill or its newest action yet
+        const action = `${actionMap.get(billId) ?? ""} ${
+          bill.latestAction?.text?.toLowerCase() ?? ""
+        }`;
         return (
           action.includes("became public law") ||
           action.includes("signed by president") ||

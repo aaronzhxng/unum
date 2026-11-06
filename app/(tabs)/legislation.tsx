@@ -14,6 +14,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import {
   BackHandler,
@@ -38,7 +39,7 @@ import NewListNameModal from "../global_components/NewListNameModal";
 import ReportErrorModal from "../global_components/ReportErrorModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
-import { billsService } from "../services/bills";
+import { billSync, billsService } from "../services/bills";
 import { abbrevBillType } from "../utils/billTypeAbbr";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
@@ -53,6 +54,15 @@ function useDebounced<T>(value: T, delay: number): T {
   }, [value, delay]);
   return debounced;
 }
+
+const actionTime = (bill: any) =>
+  new Date(bill.latestAction?.actionDate ?? bill.updateDate ?? 0).getTime();
+
+// Bills with the same date, in a steady order: by type, then by number
+const BILL_TYPE_ORDER = ["HR", "S", "HJRES", "SJRES", "HCONRES", "SCONRES", "HRES", "SRES"];
+const compareBillNumbers = (a: any, b: any) =>
+  BILL_TYPE_ORDER.indexOf(a.type) - BILL_TYPE_ORDER.indexOf(b.type) ||
+  Number(a.number) - Number(b.number);
 
 export default function LegislationScreen() {
   const filterButtonRef = useRef<View>(null);
@@ -198,6 +208,11 @@ export default function LegislationScreen() {
     setTimeout(() => setShowActionToast(false), 1500);
   };
 
+  const updatingBills = useSyncExternalStore(
+    billSync.subscribe,
+    billSync.isSyncing,
+  );
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["bills", "v2"],
     queryFn: billsService.getAll,
@@ -312,15 +327,11 @@ export default function LegislationScreen() {
       );
     } else if (selectedSort === "Recent Action") {
       filtered.sort(
-        (a, b) =>
-          new Date(b.latestAction?.actionDate ?? b.updateDate ?? 0).getTime() -
-          new Date(a.latestAction?.actionDate ?? a.updateDate ?? 0).getTime(),
+        (a, b) => actionTime(b) - actionTime(a) || compareBillNumbers(a, b),
       );
     } else if (selectedSort === "Oldest First") {
       filtered.sort(
-        (a, b) =>
-          new Date(a.latestAction?.actionDate ?? a.updateDate ?? 0).getTime() -
-          new Date(b.latestAction?.actionDate ?? b.updateDate ?? 0).getTime(),
+        (a, b) => actionTime(a) - actionTime(b) || compareBillNumbers(a, b),
       );
     }
     return filtered;
@@ -592,6 +603,18 @@ export default function LegislationScreen() {
         </View>
       </View>
 
+      {updatingBills && (
+        <Text
+          style={{
+            color: "#7B7C81",
+            fontSize: 12,
+            textAlign: "center",
+            paddingVertical: 4,
+          }}
+        >
+          Updating bills…
+        </Text>
+      )}
       {isFiltering ? (
         <View
           style={{
