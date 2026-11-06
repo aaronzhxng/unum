@@ -142,13 +142,17 @@ const features: Feature[] = [
                   data-text={feature.text}
                   aria-hidden={index === 0 ? "false" : "true"}
                 >
+                  {/* Browsers soften small text when they resize an image, so these
+                      widths are the on-screen widths (220, 250 and 318px) at 1x, 1.25x,
+                      1.5x, 2x and 3x, letting the browser draw a file pixel for pixel.
+                      If --phone-w changes, change these and sizes to match. */}
                   <Image
                     src={feature.image}
                     alt={`Unum app screen: ${feature.label ?? feature.title}`}
-                    width={1280}
-                    widths={[640, 960, 1280]}
+                    width={954}
+                    widths={[220, 250, 318, 398, 440, 477, 500, 636, 660, 750, 954]}
                     quality={90}
-                    sizes="(max-width: 640px) 220px, (max-width: 899px) 250px, 320px"
+                    sizes="(max-width: 640px) 220px, (max-width: 899px) 250px, min(318px, calc((min(100vw, 1080px) - 112px) * 0.4 - 68.6px))"
                     loading={index < 3 ? "eager" : "lazy"}
                   />
                 </div>
