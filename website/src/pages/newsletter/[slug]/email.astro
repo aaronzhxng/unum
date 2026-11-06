@@ -42,7 +42,7 @@ const FIT_NAME = { charWidth: 7, chrome: 146 };
 // The bubble breaks, plus the header's smaller logo and stacking on phones
 const phoneRules = `
   @media (max-width: 480px) { .tag { display: table !important; } .header-sep { display: none !important; } .header-link { display: block !important; line-height: 20px; } }
-  @media (max-width: 400px) { .logo-icon { width: 28px !important; height: 28px !important; } .logo-word { padding: 0 0 6px 6px !important; font-size: 40px !important; line-height: 22px !important; letter-spacing: -1.4px !important; } .logo-name { padding-left: 7px !important; font-size: 12px !important; line-height: 13px !important; } }
+  @media (max-width: 400px) { .logo { font-size: 42px !important; line-height: 32px !important; letter-spacing: -1.5px !important; } .logo-icon { width: 28px !important; height: 28px !important; margin-right: 6px !important; vertical-align: -3px !important; } .logo-name { margin-left: 7px !important; font-size: 12px !important; line-height: 13px !important; } }
   @media (max-width: 350px) { .header-cell { display: block !important; text-align: left !important; } .header-links { padding-top: 8px !important; } }
   ${FIT_WIDTHS.map((w) => `@media (max-width: ${w}px) { .fit-${w} { display: inline !important; } }`).join("\n  ")}`;
 const stageColor = { done: C.text, current: C.blue, todo: "#b0b0b0", failed: C.red };
@@ -70,12 +70,8 @@ const formatDate = (d: Date) =>
               <td style="padding:8px 8px 20px">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
                   <td class="header-cell" style="vertical-align:middle">
-                    {/* Real text, so mail apps recolor the words in dark mode, which they cannot do to an image. Sizes keep the website logo's proportions to the icon, and the padding lifts the words to the icon's center, since "unum" has no tall letters. */}
-                    <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-                      <td style="vertical-align:middle"><a target="_blank" rel="noopener" href={homeUrl}><img class="logo-icon" src={`${ORIGIN}/newsletter/email/logo-icon.png`} width="34" height="34" alt="Unum" style="display:block;border-radius:8px" /></a></td>
-                      <td class="logo-word" style={`vertical-align:middle;padding:0 0 8px 8px;font-size:49px;line-height:26px;font-weight:600;letter-spacing:-1.7px;color:${C.text}`}><a target="_blank" rel="noopener" href={homeUrl} style={`color:${C.text};text-decoration:none`}>unum</a></td>
-                      <td class="logo-name" style={`vertical-align:middle;padding:0 0 2px 8px;font-size:14px;line-height:16px;font-weight:500;color:${C.text};white-space:nowrap`}><a target="_blank" rel="noopener" href={homeUrl} style={`color:${C.text};text-decoration:none`}>last week<br />in congress</a></td>
-                    </tr></table>
+                    {/* Real text, so mail apps recolor the words in dark mode, which they cannot do to an image. Everything shares one line so it all hangs off the text baseline, which lands somewhere different in each app's font. "unum" has no tall letters, so its height is its x-height: about 78% of the icon, as in the website logo. The icon drops 4px below the baseline to center those letters on it, and the small words end on the same baseline and rise to the same height. */}
+                    <a class="logo" target="_blank" rel="noopener" href={homeUrl} style={`display:block;font-size:51px;line-height:38px;font-weight:600;letter-spacing:-1.8px;color:${C.text};text-decoration:none;white-space:nowrap`}><img class="logo-icon" src={`${ORIGIN}/newsletter/email/logo-icon.png`} width="34" height="34" alt="" style="vertical-align:-4px;border:0;border-radius:8px;margin-right:8px" />unum<span class="logo-name" style="display:inline-block;margin-left:9px;font-size:14px;line-height:16px;font-weight:500;letter-spacing:0">last week<br />in congress</span></a>
                   </td>
                   <td class="header-cell header-links" align="right" style={`vertical-align:middle;font-size:13px;color:${C.faint};white-space:nowrap`}><a class="header-link" target="_blank" rel="noopener" href={webUrl} style={`color:${C.blue};text-decoration:none`}>View online</a><span class="header-sep"> | </span><a class="header-link" target="_blank" rel="noopener" href={`${ORIGIN}/newsletter#subscribe`} style={`color:${C.blue};text-decoration:none`}>Subscribe</a></td>
                 </tr></table>
