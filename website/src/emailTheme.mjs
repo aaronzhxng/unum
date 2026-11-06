@@ -10,9 +10,9 @@ export const C = {
 };
 export const FONT = "-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif";
 
-// The bubble breaks, plus the header's smaller logo and stacking on phones
+// On phones: bubbles on two lines, links on their own line under a smaller
+// logo, and the line breaks that keep bubbles as wide as their text
 export const phoneRules = `
-  @media (max-width: 480px) { .tag { display: table !important; } .header-sep { display: none !important; } .header-link { display: block !important; line-height: 20px; } }
-  @media (max-width: 400px) { .logo { font-size: 42px !important; line-height: 32px !important; letter-spacing: -1.5px !important; } .logo-icon { width: 28px !important; height: 28px !important; margin-right: 6px !important; vertical-align: -3px !important; } .logo-name { margin-left: 7px !important; font-size: 12px !important; line-height: 13px !important; } }
-  @media (max-width: 350px) { .header-cell { display: block !important; text-align: left !important; } .header-links { padding-top: 8px !important; } }
+  @media (max-width: 480px) { .tag { display: table !important; } .header-cell { display: block !important; text-align: left !important; } .header-links { padding: 10px 0 0 !important; } }
+  @media (max-width: 400px) { .logo { font-size: 42px !important; line-height: 32px !important; letter-spacing: -1.5px !important; } .logo-icon { width: 28px !important; height: 28px !important; margin-right: 6px !important; vertical-align: -2.5px !important; } .logo-name { margin-left: 7px !important; font-size: 12px !important; line-height: 13px !important; } }
   ${FIT_WIDTHS.map((w) => `@media (max-width: ${w}px) { .fit-${w} { display: inline !important; } }`).join("\n  ")}`;

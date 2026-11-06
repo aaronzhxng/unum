@@ -18,9 +18,8 @@ export async function onRequestPost({ request, env }) {
 
   const DB = await db(env);
   const existing = await DB.prepare("SELECT status, token FROM subscribers WHERE email = ?").bind(email).first();
-  // Already subscribed: the same answer as a new address, so the form never
-  // reveals who is on the list, and no second welcome email
-  if (existing?.status === "active") return reply(request, true, DONE);
+  // Already subscribed: no second welcome email, and the form says so
+  if (existing?.status === "active") return reply(request, true, DONE, { already: true });
 
   const token = existing?.token ?? newToken();
   if (existing) {

@@ -174,9 +174,12 @@ const { align = "start", id = align } = Astro.props;
           headers: { Accept: "application/json" },
         });
         if (!response.ok) throw new Error(String(response.status));
+        const { already } = await response.json();
         form.reset();
         note.classList.add("ok");
-        note.textContent = "You are subscribed! Check your inbox for a welcome email.";
+        note.textContent = already
+          ? "You are already subscribed. See you on Monday!"
+          : "You are subscribed! Check your inbox for a welcome email.";
       } catch {
         note.classList.add("error");
         note.textContent = "Something went wrong. Please try again in a moment.";

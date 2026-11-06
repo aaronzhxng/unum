@@ -97,9 +97,9 @@ export async function sendWelcome(env, { to, token, origin }) {
 
 // Answers fetch() calls from the signup form with JSON, and plain form
 // posts (no JavaScript) with a redirect to a page
-export function reply(request, ok, page) {
+export function reply(request, ok, page, details = {}) {
   if ((request.headers.get("Accept") || "").includes("application/json")) {
-    return Response.json({ ok }, { status: ok ? 200 : 400 });
+    return Response.json({ ok, ...details }, { status: ok ? 200 : 400 });
   }
   return Response.redirect(new URL(page, request.url).toString(), 303);
 }
