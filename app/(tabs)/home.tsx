@@ -1669,7 +1669,8 @@ function HomeCarousel({
                 lineHeight: 18,
                 fontWeight: "500",
                 color: "#1a1a1a",
-                marginLeft: 16,
+                // Lines up with the list name in the header above
+                marginLeft: componentStyles.header.marginLeft,
                 marginRight: 16 + DOTS_WIDTH,
                 marginBottom: 8,
                 marginTop: 8,
@@ -1701,14 +1702,19 @@ function HomeCarousel({
       {count > 1 && (
         <View
           pointerEvents="none"
+          // The page's background color, so titles disappear behind the dots
+          // as they slide past, all the way to the carousel's edge
           style={{
             position: "absolute",
             top: 8,
-            right: 16,
+            right: 0,
             height: 18,
+            paddingLeft: 8,
+            paddingRight: 16,
             flexDirection: "row",
             alignItems: "center",
             gap: 6,
+            backgroundColor: "#fafafa",
           }}
         >
           {slides.map((slide, i) => (

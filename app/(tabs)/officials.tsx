@@ -32,6 +32,7 @@ import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import ReportErrorModal from "../global_components/ReportErrorModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
+import { committeeLabel, committeesService } from "../services/committees";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
@@ -109,6 +110,10 @@ const LOCATION_OPTIONS = [
   "Wisconsin",
   "Wyoming",
 ];
+
+const DROPDOWN_TABS = ["States", "Committees"] as const;
+const COMMITTEE_CHAMBERS = ["House", "Senate", "Joint"] as const;
+
 export default function OfficialsScreen() {
   const stateDropdownRef = useRef<View>(null);
   const firstCardPlusRef = useRef<View>(null);
@@ -124,6 +129,15 @@ export default function OfficialsScreen() {
     useState("New York");
   const [showListSelection, setShowListSelection] = useState(false);
   const [selectedList, setSelectedList] = useState("All States");
+  // A chosen committee takes over the list from selectedList. The dropdown's
+  // tab only changes what it offers until something in it is picked.
+  const [selectedCommitteeId, setSelectedCommitteeId] = useState<string | null>(
+    null,
+  );
+  const [dropdownTab, setDropdownTab] =
+    useState<(typeof DROPDOWN_TABS)[number]>("States");
+  const [committeeChamber, setCommitteeChamber] =
+    useState<(typeof COMMITTEE_CHAMBERS)[number]>("House");
 
   // New List Modal
   const [showNewListModal, setShowNewListModal] = useState(false);
@@ -230,8 +244,30 @@ export default function OfficialsScreen() {
 
   const allOfficials = data?.officials || [];
 
-  // Filter officials based on selected state
+  const committeesQuery = useQuery({
+    queryKey: ["committees"],
+    queryFn: committeesService.getAll,
+    enabled: dropdownTab === "Committees",
+  });
+  const committees = committeesQuery.data?.committees ?? [];
+  const selectedCommittee = committees.find(
+    (c) => c.id === selectedCommitteeId,
+  );
+  const listTitle = selectedCommittee
+    ? committeeLabel(selectedCommittee)
+    : selectedList;
+
+  // Filter officials based on the selected committee or state
   const officials = useMemo(() => {
+    if (selectedCommittee) {
+      // Already in committee order. Anyone missing from the officials list,
+      // like a member sworn in today, joins once that list catches up.
+      const byId = new Map(allOfficials.map((o) => [o.bioguideId, o]));
+      return selectedCommittee.members.flatMap((member) => {
+        const official = byId.get(member.bioguideId);
+        return official ? [{ ...official, committeeTitle: member.title }] : [];
+      });
+    }
     const filtered =
       selectedList === "All States"
         ? allOfficials
@@ -256,7 +292,7 @@ export default function OfficialsScreen() {
       // Both reps: sort by district number
       return (a.district ?? 0) - (b.district ?? 0);
     });
-  }, [allOfficials, selectedList]);
+  }, [allOfficials, selectedList, selectedCommittee]);
 
   const currentOfficial = allOfficials.find(
     (o) => o.bioguideId === currentOfficialId,
@@ -403,7 +439,15 @@ export default function OfficialsScreen() {
             style={{ flexShrink: 1 }}
           >
             <Pressable
-              onPress={() => setShowListSelection(!showListSelection)}
+              onPress={() => {
+                // Opens on what's showing. From a state, the Committees tab
+                // still remembers the chamber last looked at.
+                setDropdownTab(selectedCommittee ? "Committees" : "States");
+                if (selectedCommittee) {
+                  setCommitteeChamber(selectedCommittee.chamber);
+                }
+                setShowListSelection(!showListSelection);
+              }}
               style={({ pressed }) => ({
                 flexShrink: 1,
                 transform: [{ scale: pressed ? 0.96 : 1 }],
@@ -420,12 +464,15 @@ export default function OfficialsScreen() {
                 <Text
                   style={[
                     componentStyles.header,
-                    { alignItems: "center", maxWidth: 220, flexShrink: 1 },
+                    selectedCommittee
+                      ? { flexShrink: 1 }
+                      : { alignItems: "center", maxWidth: 220, flexShrink: 1 },
                   ]}
-                  numberOfLines={1}
+                  // About a third of committee names need the second line
+                  numberOfLines={selectedCommittee ? 2 : 1}
                   ellipsizeMode="tail"
                 >
-                  {selectedList}
+                  {listTitle}
                 </Text>
                 {showListSelection ? (
                   <ChevronUp
@@ -443,46 +490,53 @@ export default function OfficialsScreen() {
               </View>
             </Pressable>
           </View>
-          <Pressable
-            onPress={() =>
-              router.push({
-                pathname: "/congressional-map",
-                params: { state: selectedList },
-              } as any)
-            }
-            hitSlop={6}
-            accessibilityLabel="Open congressional district map"
-            style={({ pressed }) => ({
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 6,
-              flexShrink: 0,
-              marginLeft: 10,
-              marginBottom: 12,
-              paddingVertical: 6,
-              paddingLeft: 10,
-              paddingRight: 12,
-              borderRadius: 999,
-              backgroundColor: "#E8F4FF",
-              transform: [{ scale: pressed ? 0.94 : 1 }],
-            })}
-          >
-            <MapPinned size={18} color="#008CFF" />
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#008CFF" }}>
-              District map
-            </Text>
-          </Pressable>
+          {!selectedCommittee && (
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: "/congressional-map",
+                  params: { state: selectedList },
+                } as any)
+              }
+              hitSlop={6}
+              accessibilityLabel="Open congressional district map"
+              style={({ pressed }) => ({
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                flexShrink: 0,
+                marginLeft: 10,
+                marginBottom: 12,
+                paddingVertical: 6,
+                paddingLeft: 10,
+                paddingRight: 12,
+                borderRadius: 999,
+                backgroundColor: "#E8F4FF",
+                transform: [{ scale: pressed ? 0.94 : 1 }],
+              })}
+            >
+              <MapPinned size={18} color="#008CFF" />
+              <Text
+                style={{ fontSize: 13, fontWeight: "600", color: "#008CFF" }}
+              >
+                District map
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         <View style={componentStyles.headerRight}>
-          <Pressable
-            onPress={() => setShowSearchModal(true)}
-            style={({ pressed }) => ({
-              transform: [{ scale: pressed ? 0.75 : 1 }],
-            })}
-          >
-            <Search size={24} color="#535353" />
-          </Pressable>
+          {/* Committees are short enough to scroll, and the name needs the room */}
+          {!selectedCommittee && (
+            <Pressable
+              onPress={() => setShowSearchModal(true)}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.75 : 1 }],
+              })}
+            >
+              <Search size={24} color="#535353" />
+            </Pressable>
+          )}
           <Pressable
             onPress={() => setShowOptionsModal(true)}
             style={({ pressed }) => ({
@@ -495,6 +549,8 @@ export default function OfficialsScreen() {
       </View>
 
       <FlatList
+        // A new list starts at the top, so a committee opens on its chair
+        key={selectedCommitteeId ?? selectedList}
         data={officials}
         keyExtractor={(item) => item.bioguideId}
         contentContainerStyle={componentStyles.listContent}
@@ -548,13 +604,16 @@ export default function OfficialsScreen() {
       <SearchModal
         isVisible={showSearchModal}
         skipEntryAnimation={searchInstantOpen}
-        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onClose={() => {
+          setSearchInstantOpen(false);
+          setShowSearchModal(false);
+        }}
         onNavigatingAway={() => {
           searchNavigatedAwayRef.current = true;
           setShowSearchModal(false);
         }}
         onSearch={setSearchQuery}
-        searchContext={selectedList}
+        searchContext={listTitle}
         items={officials}
         onItemPress={(item) => {
           router.navigate(`/official/${item.bioguideId}`);
@@ -571,7 +630,9 @@ export default function OfficialsScreen() {
         setShowOptionsModal={setShowOptionsModal}
         onSetPriority={handleSetPriority}
         onReportError={handleReportError}
-        selectedState={selectedList}
+        // The state actions are hidden while a committee is showing, since
+        // they'd apply to a state that isn't on screen
+        selectedState={selectedCommittee ? "All States" : selectedList}
         onNotifVersionChange={() => {
           setNotifVersion((v) => v + 1);
           setEnabledStateNotifs(
@@ -601,71 +662,226 @@ export default function OfficialsScreen() {
           style={[componentStyles.modalOverlay, { justifyContent: "center" }]}
           onPress={() => setShowListSelection(false)}
         >
-          <ScrollView
-            style={[componentStyles.dropdown, { marginVertical: 96 }]}
-          >
-            {[
-              ...(priorityState && priorityState !== "All States"
-                ? [priorityState]
-                : []),
-              ...LOCATION_OPTIONS.filter((o) => o !== priorityState),
-            ].map((option) => {
-              const stateNotifEnabled =
-                option !== "All States" && enabledStateNotifs.has(option);
-              return (
-                <Pressable
-                  key={option}
-                  style={({ pressed }) =>
-                    pressed
-                      ? componentStyles.dropdownItemPressed
-                      : componentStyles.dropdownItem
-                  }
-                  onPress={() => {
-                    setSelectedList(option);
-                    setShowListSelection(false);
-                  }}
-                >
-                  <View
+          {/* A fixed height, so the card doesn't resize between short and long lists */}
+          <View style={{ flex: 1, marginVertical: 96 }}>
+            <View style={[componentStyles.dropdown, { flex: 1 }]}>
+              <View
+                accessibilityRole="tablist"
+                style={{
+                  flexDirection: "row",
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#e0e0e0",
+                }}
+              >
+                {DROPDOWN_TABS.map((tab) => (
+                  <Pressable
+                    key={tab}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: dropdownTab === tab }}
+                    onPress={() => setDropdownTab(tab)}
                     style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
+                      flex: 1,
+                      paddingVertical: 14,
                       alignItems: "center",
+                      marginBottom: -1,
+                      borderBottomWidth: 2,
+                      borderBottomColor:
+                        dropdownTab === tab ? "#008CFF" : "transparent",
                     }}
                   >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
+                    <Text
+                      style={[
+                        componentStyles.dropdownItemText,
+                        dropdownTab === tab
+                          ? { fontWeight: "600", color: "#008CFF" }
+                          : { color: "#535353" },
+                      ]}
                     >
-                      <Text
-                        style={[
-                          componentStyles.dropdownItemText,
-                          selectedList === option && { fontWeight: "600" },
-                        ]}
+                      {tab}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              {dropdownTab === "Committees" && (
+                <View
+                  accessibilityRole="tablist"
+                  style={{
+                    flexDirection: "row",
+                    gap: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                  }}
+                >
+                  {COMMITTEE_CHAMBERS.map((chamber) => {
+                    const isSelected = committeeChamber === chamber;
+                    return (
+                      <Pressable
+                        key={chamber}
+                        accessibilityRole="tab"
+                        accessibilityLabel={`${chamber} committees`}
+                        accessibilityState={{ selected: isSelected }}
+                        onPress={() => setCommitteeChamber(chamber)}
+                        hitSlop={4}
+                        style={{
+                          paddingVertical: 6,
+                          paddingHorizontal: 14,
+                          borderRadius: 999,
+                          backgroundColor: isSelected
+                            ? "#E8F4FF"
+                            : "transparent",
+                        }}
                       >
-                        {option}
-                        {option === priorityState
-                          ? ` (Priority ${placeKind(option)})`
-                          : ""}
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: isSelected ? "600" : "400",
+                            color: isSelected ? "#008CFF" : "#535353",
+                          }}
+                        >
+                          {chamber}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+              {/* Keyed so switching tabs starts at the top of the new list */}
+              <ScrollView
+                key={dropdownTab === "States" ? "States" : committeeChamber}
+                style={{ flex: 1 }}
+              >
+                {dropdownTab === "States" &&
+                  [
+                    ...(priorityState && priorityState !== "All States"
+                      ? [priorityState]
+                      : []),
+                    ...LOCATION_OPTIONS.filter((o) => o !== priorityState),
+                  ].map((option) => {
+                    const stateNotifEnabled =
+                      option !== "All States" && enabledStateNotifs.has(option);
+                    const isSelected =
+                      !selectedCommittee && selectedList === option;
+                    return (
+                      <Pressable
+                        key={option}
+                        style={({ pressed }) =>
+                          pressed
+                            ? componentStyles.dropdownItemPressed
+                            : componentStyles.dropdownItem
+                        }
+                        onPress={() => {
+                          setSelectedList(option);
+                          setSelectedCommitteeId(null);
+                          setShowListSelection(false);
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <Text
+                              style={[
+                                componentStyles.dropdownItemText,
+                                isSelected && { fontWeight: "600" },
+                              ]}
+                            >
+                              {option}
+                              {option === priorityState
+                                ? ` (Priority ${placeKind(option)})`
+                                : ""}
+                            </Text>
+                            {stateNotifEnabled && (
+                              <Bell
+                                size={14}
+                                style={{ marginTop: 4 }}
+                                color="#008CFF"
+                              />
+                            )}
+                          </View>
+                          {isSelected && (
+                            <Check size={20} color="#008CFF" strokeWidth={4} />
+                          )}
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+
+                {dropdownTab === "Committees" &&
+                  committees.length === 0 &&
+                  (committeesQuery.isError ? (
+                    <Pressable
+                      style={componentStyles.dropdownItem}
+                      onPress={() => committeesQuery.refetch()}
+                    >
+                      <Text style={componentStyles.dropdownItemText}>
+                        Couldn't load committees. Tap to try again.
                       </Text>
-                      {stateNotifEnabled && (
-                        <Bell
-                          size={14}
-                          style={{ marginTop: 4 }}
-                          color="#008CFF"
-                        />
-                      )}
+                    </Pressable>
+                  ) : (
+                    <View style={{ padding: 24, alignItems: "center" }}>
+                      <LoadingSpinner />
                     </View>
-                    {selectedList === option && (
-                      <Check size={20} color="#008CFF" strokeWidth={4} />
-                    )}
-                  </View>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+                  ))}
+
+                {dropdownTab === "Committees" &&
+                  committees
+                    .filter((c) => c.chamber === committeeChamber)
+                    .map((committee) => {
+                      const isSelected = selectedCommitteeId === committee.id;
+                      return (
+                        <Pressable
+                          key={committee.id}
+                          style={({ pressed }) =>
+                            pressed
+                              ? componentStyles.dropdownItemPressed
+                              : componentStyles.dropdownItem
+                          }
+                          onPress={() => {
+                            setSelectedCommitteeId(committee.id);
+                            setShowListSelection(false);
+                          }}
+                        >
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              gap: 12,
+                            }}
+                          >
+                            <Text
+                              style={[
+                                componentStyles.dropdownItemText,
+                                { flexShrink: 1 },
+                                isSelected && { fontWeight: "600" },
+                              ]}
+                            >
+                              {committee.shortName}
+                            </Text>
+                            {isSelected && (
+                              <Check
+                                size={20}
+                                color="#008CFF"
+                                strokeWidth={4}
+                              />
+                            )}
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+              </ScrollView>
+            </View>
+          </View>
         </Pressable>
       </Modal>
 

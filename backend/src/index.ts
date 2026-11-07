@@ -10,6 +10,7 @@ import db from "./db";
 import { loadMemberList, MemberKind, startMemberWarmUp } from "./memberLegislation";
 import compression from "compression";
 import { billsChangedSince, billsPage, changesAfter, seqBeforeDate, startBillStore, storeReady } from "./billStore";
+import { committeesJson, refreshCommittees, startCommitteeRefresh } from "./committees";
 
 // Load zip-to-districts crosswalk
 const zipDistrictMap = new Map<string, { state: string; district: number }[]>();
@@ -1022,6 +1023,15 @@ app.get("/api/officials", async (req, res) => {
   }
 });
 
+// Every committee with its members in order, chair first
+app.get("/api/committees", async (_req, res) => {
+  // Empty only until the first download finishes, right after a first deploy
+  if (!committeesJson()) await refreshCommittees();
+  const json = committeesJson();
+  if (!json) return res.status(503).json({ error: "Committees aren't available yet" });
+  res.type("application/json").send(json);
+});
+
 // Get single official
 app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
@@ -1384,4 +1394,5 @@ app.listen(PORT, () => {
   startCronScheduler();
   startBillStore();
   startMemberWarmUp();
+  startCommitteeRefresh();
 });

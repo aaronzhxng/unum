@@ -186,6 +186,27 @@ const OfficialCard = React.memo(function OfficialCard({
         </View>
         {/* Official Info */}
         <View style={{ flex: 1 }}>
+          {/* Their role on the committee being viewed, e.g. Chair */}
+          {item.committeeTitle && (
+            <View
+              style={{
+                alignSelf: "flex-start",
+                paddingVertical: 2,
+                paddingHorizontal: 8,
+                // Hangs out by its padding, so the title lines up with the name
+                marginLeft: -8,
+                marginBottom: 4,
+                borderRadius: 999,
+                backgroundColor: "#E8F4FF",
+              }}
+            >
+              <Text
+                style={{ fontSize: 12, fontWeight: "600", color: "#008CFF" }}
+              >
+                {item.committeeTitle}
+              </Text>
+            </View>
+          )}
           <Text style={componentStyles.name} numberOfLines={1}>
             {item.name?.includes(",")
               ? item.name
