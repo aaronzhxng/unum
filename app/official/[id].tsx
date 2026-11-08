@@ -114,6 +114,9 @@ const LEADERSHIP_ROLES: Record<string, string> = {
 };
 
 const titleBubble = {
+  // Long titles like "Chair, Senate Health, Education, Labor, and Pensions"
+  // wrap inside the bubble instead of running off a narrow screen
+  maxWidth: "100%",
   paddingVertical: 3,
   paddingHorizontal: 8,
   borderRadius: 10,

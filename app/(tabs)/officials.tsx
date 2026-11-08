@@ -483,8 +483,13 @@ export default function OfficialsScreen() {
                       ? { flexShrink: 1 }
                       : { alignItems: "center", maxWidth: 220, flexShrink: 1 },
                   ]}
-                  // About a third of committee names need the second line
+                  // About a third of committee names need the second line.
+                  // The longest, like "Senate Homeland Security and
+                  // Governmental Affairs", shrink a little on narrow phones
+                  // rather than end in "…".
                   numberOfLines={selectedCommittee ? 2 : 1}
+                  adjustsFontSizeToFit={!!selectedCommittee}
+                  minimumFontScale={0.8}
                   ellipsizeMode="tail"
                 >
                   {listTitle}
