@@ -15,8 +15,9 @@ const SHORT_NAMES: Record<string, string> = {
   HSQJ: "January 6 Select Subcommittee",
 };
 // Listed as committees by the source, but they aren't. The January 6 panel
-// returns with subcommittees, and the Narcotics Caucus with caucuses.
-const HIDDEN = new Set(["HSQJ", "SCNC"]);
+// returns with subcommittees, and the Narcotics Caucus with caucuses. The
+// Helsinki Commission is also missing its House members in the source.
+const HIDDEN = new Set(["HSQJ", "SCNC", "JCSE"]);
 // Congress has about 50 committees and about 1,300 seats on them, so anything
 // far below that is a bad download rather than a real change
 const MIN_COMMITTEES = 40;
@@ -39,12 +40,19 @@ export type CommitteeMember = {
   title: string | null;
 };
 
+export type Subcommittee = {
+  id: string;
+  name: string;
+  members: CommitteeMember[];
+};
+
 export type Committee = {
   id: string;
   name: string;
   shortName: string;
   chamber: "House" | "Senate" | "Joint";
   members: CommitteeMember[];
+  subcommittees: Subcommittee[];
 };
 
 const CHAMBERS = { house: "House", senate: "Senate", joint: "Joint" } as const;
@@ -65,12 +73,15 @@ const cleanTitle = (title?: string): string | null => {
   return title;
 };
 
-// Chair, then the minority's leader, then each party by rank. Some committees
-// call the minority's leader the Vice Chair instead of the Ranking Member.
+// Chair, then the minority's leader, then members who sit in by virtue of
+// another post (on a subcommittee, usually the full committee's chair and
+// ranking member), then each party by rank. Some committees call the
+// minority's leader the Vice Chair instead of the Ranking Member.
 const orderGroup = ({ title, side }: CommitteeMember) => {
   if (title === "Chair" || title === "Co-Chair") return 0;
   if (title === "Ranking Member" || (title === "Vice Chair" && side === "minority")) return 1;
-  return side === "majority" ? 2 : 3;
+  if (title === "Ex Officio") return 2;
+  return side === "majority" ? 3 : 4;
 };
 
 const SIDE_ORDER: Record<Side, number> = { majority: 0, minority: 1 };
@@ -84,6 +95,16 @@ export const orderMembers = (members: CommitteeMember[]): CommitteeMember[] =>
       a.rank - b.rank,
   );
 
+const membersOf = (membership: Record<string, any[]>, id: string): CommitteeMember[] =>
+  orderMembers(
+    (membership[id] ?? []).map((member) => ({
+      bioguideId: member.bioguide,
+      side: member.party,
+      rank: member.rank,
+      title: cleanTitle(member.title),
+    })),
+  );
+
 export const buildCommittees = (committees: any[], membership: Record<string, any[]>): Committee[] =>
   committees
     .filter((committee) => !HIDDEN.has(committee.thomas_id))
@@ -92,14 +113,16 @@ export const buildCommittees = (committees: any[], membership: Record<string, an
       name: committee.name as string,
       shortName: SHORT_NAMES[committee.thomas_id] ?? shortNameOf(committee.name),
       chamber: CHAMBERS[committee.type as keyof typeof CHAMBERS],
-      members: orderMembers(
-        (membership[committee.thomas_id] ?? []).map((member) => ({
-          bioguideId: member.bioguide,
-          side: member.party,
-          rank: member.rank,
-          title: cleanTitle(member.title),
-        })),
-      ),
+      members: membersOf(membership, committee.thomas_id),
+      // In the source's order. Subcommittees with nobody listed are ones the
+      // chamber no longer uses.
+      subcommittees: (committee.subcommittees ?? [])
+        .map((sub: any) => ({
+          id: committee.thomas_id + sub.thomas_id,
+          name: sub.name as string,
+          members: membersOf(membership, committee.thomas_id + sub.thomas_id),
+        }))
+        .filter((sub: Subcommittee) => sub.members.length > 0),
     }))
     .filter((committee) => committee.members.length > 0)
     .sort(

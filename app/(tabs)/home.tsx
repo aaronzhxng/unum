@@ -1380,7 +1380,7 @@ const Card = React.memo(function Card({
                   backgroundColor:
                     POLICY_AREA_COLORS[(item as any).policyArea] ?? "#008CFF",
                   borderRadius: 6,
-                  paddingHorizontal: 6,
+                  paddingHorizontal: 4,
                   paddingVertical: 4,
                   marginBottom: 6,
                   alignItems: "center",
@@ -1390,6 +1390,9 @@ const Card = React.memo(function Card({
                 <Text
                   style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
                   numberOfLines={1}
+                  // Long numbers like HR.10035 shrink slightly instead of cutting off
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
                 >
                   {item.id?.replace(
                     /^([a-zA-Z]+)(\d+)$/,
@@ -1779,7 +1782,7 @@ function FeaturedBillCard({
                     POLICY_AREA_COLORS[bill.policyArea] ??
                     "#008CFF",
                   borderRadius: 6,
-                  paddingHorizontal: 6,
+                  paddingHorizontal: 4,
                   paddingVertical: 4,
                   marginBottom: 6,
                   alignItems: "center",
@@ -1793,6 +1796,9 @@ function FeaturedBillCard({
                     fontWeight: "700",
                   }}
                   numberOfLines={1}
+                  // Long numbers like HR.10035 shrink slightly instead of cutting off
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
                 >
                   {`${abbrevBillType(bill.type)}.${bill.number}`}
                 </Text>

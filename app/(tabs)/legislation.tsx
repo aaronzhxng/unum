@@ -1019,7 +1019,7 @@ const BillCard = React.memo(function BillCard({
             style={{
               backgroundColor: dotColor,
               borderRadius: 6,
-              paddingHorizontal: 6,
+              paddingHorizontal: 4,
               paddingVertical: 4,
               marginBottom: 6,
               alignItems: "center",
@@ -1029,6 +1029,9 @@ const BillCard = React.memo(function BillCard({
             <Text
               style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
               numberOfLines={1}
+              // Long numbers like HR.10035 shrink slightly instead of cutting off
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
             >
               {abbrevBillType(item.type)}.{item.number}
             </Text>

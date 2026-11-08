@@ -8,12 +8,20 @@ export type CommitteeMember = {
   title: string | null;
 };
 
+export type Subcommittee = {
+  id: string;
+  name: string;
+  members: CommitteeMember[];
+};
+
 export type Committee = {
   id: string;
   name: string;
   shortName: string;
   chamber: "House" | "Senate" | "Joint";
   members: CommitteeMember[];
+  // Missing from copies cached before subcommittees were added
+  subcommittees?: Subcommittee[];
 };
 
 type CommitteesResponse = { committees: Committee[]; updatedAt: number };

@@ -443,7 +443,7 @@ export default function SearchModal({
                                   style={{
                                     backgroundColor: dotColor,
                                     borderRadius: 6,
-                                    paddingHorizontal: 6,
+                                    paddingHorizontal: 4,
                                     paddingVertical: 4,
                                     marginBottom: 6,
                                     alignItems: "center",
@@ -457,6 +457,9 @@ export default function SearchModal({
                                       fontWeight: "700",
                                     }}
                                     numberOfLines={1}
+                                    // Long numbers like HR.10035 shrink slightly instead of cutting off
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.8}
                                   >
                                     {abbrevBillType(item.billType || item.type)}.{item.number}
                                   </Text>

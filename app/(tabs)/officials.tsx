@@ -134,6 +134,10 @@ export default function OfficialsScreen() {
   const [selectedCommitteeId, setSelectedCommitteeId] = useState<string | null>(
     null,
   );
+  // Null shows the full committee
+  const [selectedSubcommitteeId, setSelectedSubcommitteeId] = useState<
+    string | null
+  >(null);
   const [dropdownTab, setDropdownTab] =
     useState<(typeof DROPDOWN_TABS)[number]>("States");
   const [committeeChamber, setCommitteeChamber] =
@@ -253,6 +257,11 @@ export default function OfficialsScreen() {
   const selectedCommittee = committees.find(
     (c) => c.id === selectedCommitteeId,
   );
+  // Copies saved before subcommittees were added have none
+  const subcommittees = selectedCommittee?.subcommittees ?? [];
+  const selectedSubcommittee = subcommittees.find(
+    (s) => s.id === selectedSubcommitteeId,
+  );
   const listTitle = selectedCommittee
     ? committeeLabel(selectedCommittee)
     : selectedList;
@@ -263,7 +272,8 @@ export default function OfficialsScreen() {
       // Already in committee order. Anyone missing from the officials list,
       // like a member sworn in today, joins once that list catches up.
       const byId = new Map(allOfficials.map((o) => [o.bioguideId, o]));
-      return selectedCommittee.members.flatMap((member) => {
+      const members = (selectedSubcommittee ?? selectedCommittee).members;
+      return members.flatMap((member) => {
         const official = byId.get(member.bioguideId);
         return official ? [{ ...official, committeeTitle: member.title }] : [];
       });
@@ -292,7 +302,7 @@ export default function OfficialsScreen() {
       // Both reps: sort by district number
       return (a.district ?? 0) - (b.district ?? 0);
     });
-  }, [allOfficials, selectedList, selectedCommittee]);
+  }, [allOfficials, selectedList, selectedCommittee, selectedSubcommittee]);
 
   const currentOfficial = allOfficials.find(
     (o) => o.bioguideId === currentOfficialId,
@@ -548,9 +558,65 @@ export default function OfficialsScreen() {
         </View>
       </View>
 
+      {subcommittees.length > 0 && (
+        <View style={{ marginBottom: 8 }}>
+          {/* Bleeds to the screen edges so chips scroll off them */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginHorizontal: -16 }}
+            contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+          >
+            {[null, ...subcommittees].map((sub) => {
+              const isSelected = (sub?.id ?? null) === selectedSubcommitteeId;
+              return (
+                <Pressable
+                  key={sub?.id ?? "full"}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: isSelected }}
+                  onPress={() => setSelectedSubcommitteeId(sub?.id ?? null)}
+                  style={({ pressed }) => ({
+                    maxWidth: 220,
+                    paddingVertical: 6,
+                    paddingHorizontal: 14,
+                    borderRadius: 999,
+                    backgroundColor: isSelected ? "#E8F4FF" : "#efefef",
+                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                  })}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 14,
+                      fontWeight: isSelected ? "600" : "400",
+                      color: isSelected ? "#008CFF" : "#535353",
+                    }}
+                  >
+                    {sub ? sub.name : "Full committee"}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+          {/* Chips cut long names short, so the chosen one is spelled out */}
+          {selectedSubcommittee && (
+            <Text
+              style={{
+                fontSize: 13,
+                color: "#7B7C81",
+                marginTop: 8,
+                marginLeft: componentStyles.header.marginLeft,
+              }}
+            >
+              Subcommittee on {selectedSubcommittee.name}
+            </Text>
+          )}
+        </View>
+      )}
+
       <FlatList
         // A new list starts at the top, so a committee opens on its chair
-        key={selectedCommitteeId ?? selectedList}
+        key={selectedSubcommitteeId ?? selectedCommitteeId ?? selectedList}
         data={officials}
         keyExtractor={(item) => item.bioguideId}
         contentContainerStyle={componentStyles.listContent}
@@ -848,6 +914,7 @@ export default function OfficialsScreen() {
                           }
                           onPress={() => {
                             setSelectedCommitteeId(committee.id);
+                            setSelectedSubcommitteeId(null);
                             setShowListSelection(false);
                           }}
                         >
