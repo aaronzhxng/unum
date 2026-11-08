@@ -32,7 +32,11 @@ import OfficialsOptionsModal from "../global_components/OfficialsOptionsModal";
 import ReportErrorModal from "../global_components/ReportErrorModal";
 import SearchModal from "../global_components/SearchModal";
 import { styles as componentStyles } from "../global_styles/styles";
-import { committeeLabel, committeesService } from "../services/committees";
+import {
+  COMMITTEES_STALE_MS,
+  committeeLabel,
+  committeesService,
+} from "../services/committees";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { notificationPreferences } from "../utils/notificationPreferences";
@@ -252,6 +256,7 @@ export default function OfficialsScreen() {
     queryKey: ["committees"],
     queryFn: committeesService.getAll,
     enabled: dropdownTab === "Committees",
+    staleTime: COMMITTEES_STALE_MS,
   });
   const committees = committeesQuery.data?.committees ?? [];
   const selectedCommittee = committees.find(

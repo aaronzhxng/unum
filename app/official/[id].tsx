@@ -33,6 +33,7 @@ import {
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
+import memberDetails from "../data/member-details.json";
 import officialsStatic from "../data/officials-static.json";
 import AddModal from "../global_components/AddModal";
 import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
@@ -44,7 +45,11 @@ import ScreenTourOverlay, {
   ScreenTourStep,
 } from "../global_components/ScreenTourOverlay";
 import SearchModal from "../global_components/SearchModal";
-import { committeeLabel, committeesService } from "../services/committees";
+import {
+  COMMITTEES_STALE_MS,
+  committeeLabel,
+  committeesService,
+} from "../services/committees";
 import { officialsService } from "../services/officials";
 import { abbrevBillType } from "../utils/billTypeAbbr";
 import { billCongressCache } from "../utils/billCongressCache";
@@ -550,15 +555,37 @@ export default function OfficialDetail() {
     setTimeout(() => setShowActionToast(false), 1500);
   };
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["official", id],
-    queryFn: () => officialsService.getById(id as string),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000, // add this
-  });
+  // Copies saved on the phone, read once per member rather than every render
+  const saved = useMemo(
+    () => ({
+      // The last download, or else the copy bundled with the app
+      details:
+        officialBillsCache.get(`details_v1_${id}`) ??
+        ((memberDetails as any)[id as string]
+          ? { member: (memberDetails as any)[id as string] }
+          : undefined),
+      bio: officialBillsCache.get(`bio_v1_${id}`) ?? undefined,
+      sponsored: officialBillsCache.get(`sponsored_v3_${id}`),
+      cosponsored: officialBillsCache.get(`cosponsored_v3_${id}`),
+    }),
+    [id],
+  );
+  const cachedSponsored = saved.sponsored;
+  const cachedCosponsored = saved.cosponsored;
 
-  const cachedSponsored = officialBillsCache.get(`sponsored_v3_${id}`);
-  const cachedCosponsored = officialBillsCache.get(`cosponsored_v3_${id}`);
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["official", id],
+    queryFn: async () => {
+      const result = await officialsService.getById(id as string);
+      officialBillsCache.save(`details_v1_${id}`, result);
+      return result;
+    },
+    enabled: !!id,
+    // The saved copy shows at once, then is checked for changes
+    initialData: saved.details,
+    initialDataUpdatedAt: 0,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
@@ -589,12 +616,19 @@ export default function OfficialDetail() {
     staleTime: 5 * 60 * 1000, // add this
   });
 
-  // Add after the policyAreasData query
+  // Bios hardly ever change, so a saved one is used as is until the phone's
+  // cache expires it (7 days)
   const { data: bioData, isLoading: bioLoading } = useQuery({
     queryKey: ["officialBio", id],
-    queryFn: () => officialsService.getBio(id as string),
+    queryFn: async () => {
+      const result = await officialsService.getBio(id as string);
+      officialBillsCache.save(`bio_v1_${id}`, result);
+      return result;
+    },
     enabled: !!id,
     retry: 1,
+    initialData: saved.bio,
+    staleTime: Infinity,
   });
 
   const official = data?.member;
@@ -608,6 +642,9 @@ export default function OfficialDetail() {
   const { data: committeesData } = useQuery({
     queryKey: ["committees"],
     queryFn: committeesService.getAll,
+    // Kept in memory between profiles instead of reread from the phone each
+    // time; the service refreshes its own copy in the background
+    staleTime: COMMITTEES_STALE_MS,
   });
 
   // Chamber leadership, like Speaker or Whip, stays in the header. Committee
@@ -943,7 +980,8 @@ export default function OfficialDetail() {
     );
   }
 
-  if (error || !official) {
+  // A failed check for newer details keeps the saved copy on screen
+  if (!official) {
     return (
       <ErrorScreen
         onRetry={refetch}
@@ -1284,7 +1322,7 @@ export default function OfficialDetail() {
         style={componentStyles.tabsNegative}
       >
         <View style={componentStyles.tabs}>
-          {["Profile", "Roles", "Bio", "Bills"].map((label, index) => (
+          {["Record", "Roles", "Bio", "Bills"].map((label, index) => (
             <Pressable
               key={label}
               onPress={() => {

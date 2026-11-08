@@ -1,5 +1,5 @@
-// Each member's sponsored and cosponsored bills, kept ready in the database so
-// a profile opens instantly. Long-serving members can take several seconds to
+// Each member's details and sponsored and cosponsored bills, kept ready in the
+// database so a profile opens instantly. Long-serving members can take several seconds to
 // download, so a job keeps every current member fresh in the background, and
 // a visitor gets the saved copy even when it is due for a refresh.
 import axios from "axios";
@@ -38,43 +38,71 @@ const fetchMemberList = async (id: string, kind: MemberKind): Promise<MemberList
   }
 };
 
-const cacheKey = (id: string, kind: MemberKind) => `member-${kind}-${id}`;
-
-const readSaved = (id: string, kind: MemberKind) => {
-  const row = db
-    .prepare(`SELECT data, cached_at FROM congress_cache WHERE cache_key = ?`)
-    .get(cacheKey(id, kind)) as { data: string; cached_at: number } | undefined;
-  return row ? { list: JSON.parse(row.data) as MemberList, age: Date.now() - row.cached_at } : null;
+// The member's own record (name, party, terms), which opens their profile
+const fetchMemberDetails = async (id: string): Promise<any> => {
+  const { data } = await axios.get(`https://api.congress.gov/v3/member/${id}`, {
+    headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
+    params: { format: "json" },
+    timeout: 15000,
+  });
+  return data;
 };
 
-const inFlight = new Map<string, Promise<MemberList>>();
+const listKey = (id: string, kind: MemberKind) => `member-${kind}-${id}`;
+// The key the details were cached under before they moved here, so the
+// copies already saved still count
+const detailsKey = (id: string) => `official-${id}`;
 
-// Downloads and saves a list, sharing one download between simultaneous callers
-const refresh = (id: string, kind: MemberKind): Promise<MemberList> => {
-  const key = cacheKey(id, kind);
+const readSaved = <T>(key: string) => {
+  const row = db
+    .prepare(`SELECT data, cached_at FROM congress_cache WHERE cache_key = ?`)
+    .get(key) as { data: string; cached_at: number } | undefined;
+  return row ? { value: JSON.parse(row.data) as T, age: Date.now() - row.cached_at } : null;
+};
+
+const isDue = (key: string) => {
+  const saved = readSaved(key);
+  return !saved || saved.age > REFRESH_AFTER_MS;
+};
+
+const inFlight = new Map<string, Promise<any>>();
+
+// Downloads and saves under key, sharing one download between simultaneous
+// callers
+const refresh = <T>(key: string, download: () => Promise<T>): Promise<T> => {
   const running = inFlight.get(key);
   if (running) return running;
-  const download = fetchMemberList(id, kind)
-    .then((list) => {
+  const pending = download()
+    .then((value) => {
       db.prepare(
         `INSERT INTO congress_cache (cache_key, data, cached_at) VALUES (?, ?, ?)
          ON CONFLICT(cache_key) DO UPDATE SET data = excluded.data, cached_at = excluded.cached_at`,
-      ).run(key, JSON.stringify(list), Date.now());
-      return list;
+      ).run(key, JSON.stringify(value), Date.now());
+      return value;
     })
     .finally(() => inFlight.delete(key));
-  inFlight.set(key, download);
-  return download;
+  inFlight.set(key, pending);
+  return pending;
 };
 
-export const loadMemberList = async (id: string, kind: MemberKind): Promise<MemberList> => {
-  const saved = readSaved(id, kind);
-  if (!saved) return refresh(id, kind);
+// The saved copy, even when it's due for a refresh, so a visitor never waits
+// on Congress.gov unless nothing has been saved yet
+const load = async <T>(key: string, download: () => Promise<T>): Promise<T> => {
+  const saved = readSaved<T>(key);
+  if (!saved) return refresh(key, download);
   if (saved.age > REFRESH_AFTER_MS) {
-    refresh(id, kind).catch((error) => console.warn(`Refresh failed for ${id}:`, error.message));
+    refresh(key, download).catch((error) => console.warn(`Refresh failed for ${key}:`, error.message));
   }
-  return saved.list;
+  return saved.value;
 };
+
+const refreshList = (id: string, kind: MemberKind) => refresh(listKey(id, kind), () => fetchMemberList(id, kind));
+const refreshDetails = (id: string) => refresh(detailsKey(id), () => fetchMemberDetails(id));
+
+export const loadMemberList = (id: string, kind: MemberKind): Promise<MemberList> =>
+  load(listKey(id, kind), () => fetchMemberList(id, kind));
+
+export const loadMemberDetails = (id: string): Promise<any> => load(detailsKey(id), () => fetchMemberDetails(id));
 
 let currentMembers: { ids: string[]; fetchedAt: number } = { ids: [], fetchedAt: 0 };
 
@@ -101,15 +129,10 @@ const warmMembers = async (): Promise<void> => {
   warming = true;
   try {
     const due = (await currentMemberIds())
-      .filter((id) =>
-        (["sponsored", "cosponsored"] as const).some((kind) => {
-          const saved = readSaved(id, kind);
-          return !saved || saved.age > REFRESH_AFTER_MS;
-        }),
-      )
+      .filter((id) => isDue(detailsKey(id)) || isDue(listKey(id, "sponsored")) || isDue(listKey(id, "cosponsored")))
       .slice(0, WARM_PER_MINUTE);
     for (const id of due) {
-      await Promise.all([refresh(id, "sponsored"), refresh(id, "cosponsored")]);
+      await Promise.all([refreshDetails(id), refreshList(id, "sponsored"), refreshList(id, "cosponsored")]);
     }
   } catch (error: any) {
     console.warn("Member list warm-up failed:", error.message);

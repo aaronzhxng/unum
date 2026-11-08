@@ -28,6 +28,10 @@ type CommitteesResponse = { committees: Committee[]; updatedAt: number };
 
 const STALE_MS = 60 * 60 * 1000; // 1 hour, like the officials list
 
+// How long screens reuse the copy already in memory before asking getAll
+// again, which reads and parses the whole saved list
+export const COMMITTEES_STALE_MS = 10 * 60 * 1000;
+
 const readCache = (): {
   data: CommitteesResponse;
   fetchedAt: number;

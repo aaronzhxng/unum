@@ -7,7 +7,7 @@ import fs from "fs";
 import path from "path";
 import { runCronJob, runCronJobForToken, startCronScheduler } from "./cron";
 import db from "./db";
-import { loadMemberList, MemberKind, startMemberWarmUp } from "./memberLegislation";
+import { loadMemberDetails, loadMemberList, MemberKind, startMemberWarmUp } from "./memberLegislation";
 import compression from "compression";
 import { billsChangedSince, billsPage, changesAfter, seqBeforeDate, startBillStore, storeReady } from "./billStore";
 import { committeesJson, refreshCommittees, startCommitteeRefresh } from "./committees";
@@ -38,7 +38,6 @@ axios.defaults.timeout = 20000;
 const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes — for search/bill detail endpoints
 const VOTE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — vote records are permanent
 const COSPONSOR_CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours — cosponsors rarely change
-const OFFICIAL_DETAIL_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — official details are static
 const memoryCache = new Map<string, { data: any; timestamp: number }>();
 
 function getCached(key: string, ttl: number = CONGRESS_CACHE_TTL): any | null {
@@ -1033,21 +1032,16 @@ app.get("/api/committees", async (_req, res) => {
 });
 
 // Get single official
+// A member's details, from the saved copy kept fresh in the background
 app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
-    const cacheKey = `official-${req.params.bioguideId}`;
-    const cached = getCached(cacheKey, OFFICIAL_DETAIL_CACHE_TTL);
-    if (cached) return res.json(cached);
-    const { bioguideId } = req.params;
-    const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { format: "json" },
-      },
-    );
-    setCache(cacheKey, response.data);
-    res.json(response.data);
+    const bioguideId = String(req.params.bioguideId ?? "")
+      .trim()
+      .toUpperCase();
+    if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+      return res.status(400).json({ error: "Invalid bioguideId" });
+    }
+    res.json(await loadMemberDetails(bioguideId));
   } catch (error) {
     console.error("Error fetching official:", error);
     res.status(500).json({ error: "Failed to fetch official details" });
