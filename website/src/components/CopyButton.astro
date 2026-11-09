@@ -1,0 +1,117 @@
+---
+// A small button that copies text (the contact email) to the clipboard, for
+// people who use webmail and don't want a mailto link opening a mail app.
+interface Props {
+  text: string;
+  label: string;
+}
+const { text, label } = Astro.props;
+---
+
+<button type="button" class="copy-button" data-copy-text={text} aria-label={label}>
+  <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+    <rect x="9" y="9" width="12" height="12" rx="2.5" />
+    <path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5" />
+  </svg>
+  <svg class="icon-check" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+  <span class="copy-tip" role="status"></span>
+</button>
+
+<style>
+  .copy-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: 2px;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-faint);
+    vertical-align: middle;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .copy-button:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .copy-button:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .icon-check,
+  .copied .icon-copy {
+    display: none;
+  }
+
+  .copied .icon-check {
+    display: block;
+  }
+
+  .copy-button.copied {
+    color: var(--blue);
+  }
+
+  .copy-tip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--text);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .copied .copy-tip {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-text]")) {
+    const tip = button.querySelector<HTMLElement>(".copy-tip")!;
+    let timer: number | undefined;
+
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copyText!);
+      } catch {
+        return;
+      }
+      tip.textContent = "Copied";
+      button.classList.add("copied");
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        button.classList.remove("copied");
+        tip.textContent = "";
+      }, 1500);
+    });
+  }
+</script>

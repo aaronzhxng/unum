@@ -124,7 +124,8 @@ export const styles = StyleSheet.create({
   },
   tabsNegative: {
     marginHorizontal: 0,
-    marginBottom: 24,
+    // 16 for the Bills tab's toggle row; the other tabs add 8 to their tops
+    marginBottom: 16,
   },
   tabs: {
     flexDirection: "row",

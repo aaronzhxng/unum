@@ -1,0 +1,68 @@
+---
+// The email version of an issue, at /newsletter/<slug>/email.html, built
+// from the same file as the web page. /api/send fills in the {{...}}
+// placeholders for each send.
+import { render } from "astro:content";
+import { getIssues } from "../../../newsletter.mjs";
+import EmailShell from "../../../components/EmailShell.astro";
+import EmailBill from "../../../components/EmailBill.astro";
+import { C, ORIGIN } from "../../../emailTheme.mjs";
+
+export async function getStaticPaths() {
+  const issues = await getIssues();
+  return issues.map((issue) => ({ params: { slug: issue.id }, props: { issue } }));
+}
+
+const { issue } = Astro.props;
+const { Content } = await render(issue);
+const { week, date, headline, description, stats, sections, signoff } = issue.data;
+const year = date.getUTCFullYear();
+const webUrl = `${ORIGIN}/newsletter/${issue.id}`;
+const numbers = [
+  [stats.signed, "signed into law"],
+  [stats.passedBoth, "passed both chambers"],
+  [stats.outOfCommittee, "out of committee"],
+  [stats.introduced, "introduced"],
+];
+---
+
+<EmailShell
+  title={headline}
+  preheader={description}
+  links={[
+    { label: "View online", href: webUrl },
+    { label: "Subscribe", href: `${ORIGIN}/newsletter#subscribe` },
+  ]}
+  footerLinks={[{ label: "View this issue on the web", href: webUrl }]}
+>
+                <p style={`margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${C.blue}`}>{week}, {year}</p>
+                <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.01em">{headline}</h1>
+                <div style={`font-size:16px;line-height:1.6;color:${C.muted}`}><Content /></div>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`margin:24px 0 8px;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border}`}>
+                  <tr>
+                    {numbers.map(([n, label]) => (
+                      <td width="25%" style="padding:16px 4px;vertical-align:top">
+                        <div style="font-size:26px;font-weight:600;line-height:1.1">{n}</div>
+                        <div style={`font-size:12px;color:${C.muted};margin-top:4px`}>{label}</div>
+                      </td>
+                    ))}
+                  </tr>
+                </table>
+
+                {sections.map((section) => (
+                  <>
+                    <h2 style={`margin:32px 0 4px;font-size:20px;line-height:1.3;color:${C.text}`}>{section.heading}</h2>
+                    {section.bills.map((bill) => <EmailBill bill={bill} />)}
+                  </>
+                ))}
+
+                <h2 style="margin:32px 0 8px;font-size:20px;line-height:1.3">From the team</h2>
+                <p style={`margin:0 0 16px;font-size:15px;line-height:1.6;color:${C.muted}`}>
+                  Thanks for reading Unum's Congress Weekly. To follow these bills and your own representatives day
+                  to day, download our free app, Unum: Congress Tracker.
+                </p>
+                <p style={`margin:0 0 20px;font-size:15px;line-height:1.6;color:${C.muted}`}>Until next time,<br />{signoff}</p>
+                {/* /app sends each device to its app store, or to the homepage */}
+                <a target="_blank" rel="noopener" href={`${ORIGIN}/app`}><img src={`${ORIGIN}/newsletter/email/app-demo.gif`} width="582" alt="The Unum app. Track senators and representatives by state, and see the laws they wrote. Download on the App Store or Google Play." style="display:block;width:100%;max-width:582px;height:auto;border-radius:12px" /></a>
+</EmailShell>

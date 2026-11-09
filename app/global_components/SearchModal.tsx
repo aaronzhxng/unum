@@ -19,6 +19,7 @@ import officialNicknames from "../data/nicknames.json";
 import { styles as componentStyles } from "../global_styles/styles";
 import { abbrevBillType, BILL_TYPE_SEARCH_ALIASES } from "../utils/billTypeAbbr";
 import { getBillIcon } from "../utils/billIcons";
+import { houseTitle } from "../utils/officialTitle";
 import AddModal from "./AddModal";
 
 const POLICY_AREA_COLORS: Record<string, string> = {
@@ -442,7 +443,7 @@ export default function SearchModal({
                                   style={{
                                     backgroundColor: dotColor,
                                     borderRadius: 6,
-                                    paddingHorizontal: 6,
+                                    paddingHorizontal: 4,
                                     paddingVertical: 4,
                                     marginBottom: 6,
                                     alignItems: "center",
@@ -456,6 +457,9 @@ export default function SearchModal({
                                       fontWeight: "700",
                                     }}
                                     numberOfLines={1}
+                                    // Long numbers like HR.10035 shrink slightly instead of cutting off
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.8}
                                   >
                                     {abbrevBillType(item.billType || item.type)}.{item.number}
                                   </Text>
@@ -568,6 +572,8 @@ export default function SearchModal({
                                 : screenWidth < 400
                                   ? (item.role ?? "")
                                       .replace(/^Representative/, "Rep")
+                                      .replace(/^Resident Commissioner/, "Res. Comm.")
+                                      .replace(/^Delegate/, "Del")
                                       .replace(/^Senator/, "Sen")
                                   : (item.role ?? "")}
                             </Text>
@@ -624,7 +630,7 @@ export default function SearchModal({
                 role:
                   selectedAddItem.role ??
                   (selectedAddItem.chamber === "House of Representatives"
-                    ? `Representative, ${selectedAddItem.state}${selectedAddItem.district ? `, District ${selectedAddItem.district}` : ""}`
+                    ? `${houseTitle(selectedAddItem.state).full}, ${selectedAddItem.state}${selectedAddItem.district ? `, District ${selectedAddItem.district}` : ""}`
                     : `Senator, ${selectedAddItem.state}`),
                 date: selectedAddItem.date,
                 latestAction:
@@ -653,8 +659,8 @@ function formatRole(
 ): string {
   const small = !!(screenWidth && screenWidth < 400);
   if (chamber === "House of Representatives") {
-    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    const full = `${houseTitle(state).full}, ${state}${district ? `, District ${district}` : ""}`;
+    const abbr = `${houseTitle(state).abbr}, ${state}${district ? `, District ${district}` : ""}`;
     return small ? abbr : full;
   }
   const full = `Senator, ${state}`;

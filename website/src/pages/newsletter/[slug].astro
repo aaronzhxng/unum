@@ -1,0 +1,188 @@
+---
+// One issue of Congress Weekly, built from its file in
+// src/content/newsletter.
+import { render } from "astro:content";
+import { getIssues } from "../../newsletter.mjs";
+import Layout from "../../layouts/Layout.astro";
+import BillEntry from "../../components/BillEntry.astro";
+import SubscribeCard from "../../components/SubscribeCard.astro";
+
+export async function getStaticPaths() {
+  // Newest first, so each issue knows its neighbors
+  const issues = await getIssues();
+  return issues.map((issue, i) => ({
+    params: { slug: issue.id },
+    props: { issue, newer: issues[i - 1], older: issues[i + 1] },
+  }));
+}
+
+const { issue, newer, older } = Astro.props;
+const { Content } = await render(issue);
+// The signoff is only for the emailed version
+const { week, date, headline, description, stats, sections } = issue.data;
+const year = date.getUTCFullYear();
+const sent = date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+const numbers = [
+  { value: stats.signed, label: "signed into law" },
+  { value: stats.passedBoth, label: "passed both chambers" },
+  { value: stats.outOfCommittee, label: "out of committee" },
+  { value: stats.introduced, label: "introduced" },
+];
+---
+
+<Layout
+  brandStack={{ lines: ["congress", "weekly"] }}
+  newsletterNav
+  navSubscribe
+  title={`Congress Weekly: ${week}, ${year}`}
+  description={description}
+>
+  <article>
+    <header class="container section page-intro">
+      <div class="eyebrow-row">
+        <p class="eyebrow">Last Week in Congress · {week}, {year}</p>
+        <nav class="issue-nav" aria-label="Other issues">
+          {older && <a href={`/newsletter/${older.id}`} rel="prev">← {older.data.week}</a>}
+          {newer && <a href={`/newsletter/${newer.id}`} rel="next">{newer.data.week} →</a>}
+        </nav>
+      </div>
+      <h1>{headline}</h1>
+      <div class="opening lede stack">
+        <Content />
+      </div>
+      <p class="sent">Sent {sent}</p>
+    </header>
+
+    <section class="container" aria-label="The week in numbers">
+      <ul class="numbers" role="list">
+        {
+          numbers.map((n) => (
+            <li>
+              <span class="number">{n.value}</span>
+              <span class="muted">{n.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      sections.map((section, i) => (
+        <>
+          {/* A full-width line between sections */}
+          {i > 0 && (
+            <div class="container" aria-hidden="true">
+              <hr class="section-rule" />
+            </div>
+          )}
+          <section class="container section split issue-section">
+            <h2>{section.heading}</h2>
+            <div class="bills">
+              {section.bills.map((bill) => (
+                <BillEntry bill={bill} />
+              ))}
+            </div>
+          </section>
+        </>
+      ))
+    }
+
+  </article>
+
+  <section class="container section">
+    <SubscribeCard />
+  </section>
+</Layout>
+
+<style>
+  .sent {
+    font-size: 14px;
+    color: var(--text-faint);
+    margin-top: calc(16px - var(--intro-gap));
+  }
+
+  .opening :global(p) {
+    color: var(--text-muted);
+  }
+
+  .numbers {
+    list-style: none;
+    margin: 0;
+    padding: 28px 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .numbers li {
+    display: grid;
+    gap: 2px;
+    line-height: 1.4;
+  }
+
+  .number {
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .issue-section {
+    padding-bottom: 0;
+  }
+
+  .section-rule {
+    margin: 40px 0 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* The first bill's divider would double up with the heading's top line */
+  .bills > :global(:first-child) {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  /* The eyebrow, with links to the neighboring issues on the same line */
+  .eyebrow-row {
+    justify-self: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-bottom: calc(var(--label-gap) - var(--intro-gap));
+  }
+
+  .eyebrow-row .eyebrow {
+    margin-bottom: 0;
+  }
+
+  .issue-nav {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+  }
+
+  .issue-nav a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .issue-nav a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 760px) {
+    .numbers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .number {
+      font-size: 32px;
+    }
+  }
+</style>

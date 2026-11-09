@@ -1,10 +1,10 @@
 {
-  "weekOf": "2026-10-19",
-  "weekEnd": "2026-10-25",
+  "weekOf": "2026-11-2",
+  "weekEnd": "2026-11-8",
   "bills": [
     {
-      "billId": "hr10841",
-      "note": "This bill prohibits the use of AI to deprive or defraud individuals of the right to vote in elections for public office."
+      "billId": "hr8205",
+      "note": "This bills reviews NIH and FDA programs that fund research and treatments for ALS and other neurodegenerative diseases through 2031."
     }
   ]
 }

@@ -7,6 +7,10 @@ import fs from "fs";
 import path from "path";
 import { runCronJob, runCronJobForToken, startCronScheduler } from "./cron";
 import db from "./db";
+import { loadMemberDetails, loadMemberList, MemberKind, startMemberWarmUp } from "./memberLegislation";
+import compression from "compression";
+import { billsChangedSince, billsPage, changesAfter, seqBeforeDate, startBillStore, storeReady } from "./billStore";
+import { committeesJson, refreshCommittees, startCommitteeRefresh } from "./committees";
 
 // Load zip-to-districts crosswalk
 const zipDistrictMap = new Map<string, { state: string; district: number }[]>();
@@ -32,10 +36,8 @@ axios.defaults.timeout = 20000;
 
 // ─── Congress.gov response cache (SQLite-backed, survives deploys) ────────────
 const CONGRESS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes — for search/bill detail endpoints
-const MEMBER_LEGISLATION_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — sponsored/cosponsored lists
 const VOTE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — vote records are permanent
 const COSPONSOR_CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours — cosponsors rarely change
-const OFFICIAL_DETAIL_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — official details are static
 const memoryCache = new Map<string, { data: any; timestamp: number }>();
 
 function getCached(key: string, ttl: number = CONGRESS_CACHE_TTL): any | null {
@@ -128,6 +130,7 @@ app.use(
     origin: ["https://unum-production.up.railway.app"],
   }),
 );
+app.use(compression());
 app.use(express.json({ limit: "50kb" }));
 
 const globalLimiter = rateLimit({
@@ -158,8 +161,29 @@ app.get("/health", (req, res) => {
 let billsCache: { data: any; timestamp: number } | null = null;
 const BILLS_CACHE_TTL = 60 * 60 * 1000;
 
+// How phones stay current, from the backend's own copy of the bills, in small
+// batches so an interrupted sync picks up where it stopped.
+//   ?offset=N    every bill, newest first, for a new install
+//   ?after=SEQ   what changed after a batch's cursor
+//   ?since=DATE  the same, for a phone that only knows the day it last synced
+app.get("/api/bills/sync", (req, res) => {
+  if (!storeReady()) return res.status(503).json({ error: "Bill store is not ready" });
+  const limit = Math.min(Math.max(Number(req.query.limit) || 500, 1), 1000);
+  if (req.query.offset !== undefined) {
+    return res.json(billsPage(Math.max(Number(req.query.offset) || 0, 0), limit));
+  }
+  const after = req.query.since
+    ? seqBeforeDate(String(req.query.since))
+    : Math.max(Number(req.query.after) || 0, 0);
+  res.json(changesAfter(after, limit));
+});
+
 app.get("/api/bills", async (req, res) => {
   const since = req.query.since as string | undefined;
+
+  // Answered from the backend's own copy once it is ready, for app versions
+  // that still ask for everything at once
+  if (storeReady()) return res.json(billsChangedSince(since));
 
   // Delta sync: if ?since=date is provided, skip cache and fetch only updated bills
   if (!since) {
@@ -998,180 +1022,49 @@ app.get("/api/officials", async (req, res) => {
   }
 });
 
+// Every committee with its members in order, chair first
+app.get("/api/committees", async (_req, res) => {
+  // Empty only until the first download finishes, right after a first deploy
+  if (!committeesJson()) await refreshCommittees();
+  const json = committeesJson();
+  if (!json) return res.status(503).json({ error: "Committees aren't available yet" });
+  res.type("application/json").send(json);
+});
+
 // Get single official
+// A member's details, from the saved copy kept fresh in the background
 app.get("/api/officials/:bioguideId", async (req, res) => {
   try {
-    const cacheKey = `official-${req.params.bioguideId}`;
-    const cached = getCached(cacheKey, OFFICIAL_DETAIL_CACHE_TTL);
-    if (cached) return res.json(cached);
-    const { bioguideId } = req.params;
-    const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { format: "json" },
-      },
-    );
-    setCache(cacheKey, response.data);
-    res.json(response.data);
+    const bioguideId = String(req.params.bioguideId ?? "")
+      .trim()
+      .toUpperCase();
+    if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+      return res.status(400).json({ error: "Invalid bioguideId" });
+    }
+    res.json(await loadMemberDetails(bioguideId));
   } catch (error) {
     console.error("Error fetching official:", error);
     res.status(500).json({ error: "Failed to fetch official details" });
   }
 });
 
-// Get sponsored legislation - optimized to stop at 119th congress boundary
-app.get(
-  "/api/officials/:bioguideId/sponsored",
-  congressProxyLimiter,
-  async (req, res) => {
-    try {
-      const { bioguideId: rawBioguideId } = req.params;
-      const bioguideId = String(rawBioguideId ?? "")
-        .trim()
-        .toUpperCase();
-      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
-        return res.status(400).json({ error: "Invalid bioguideId" });
-      }
-      const cacheKey = `sponsored-${bioguideId}`;
-      const cached = getCached(cacheKey, MEMBER_LEGISLATION_CACHE_TTL);
-      if (cached) return res.json(cached);
-      let allLegislation: any[] = [];
-      let offset = 0;
-      const limit = 250;
-      let hasMore = true;
-      let allTimeCo = 0;
-
-      // First get total count from pagination
-      const firstPage = await axios.get(
-        `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
-        {
-          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { limit, offset, format: "json" },
-        },
-      );
-      allTimeCo = firstPage.data.pagination?.count ?? 0;
-      const firstPageItems = firstPage.data.sponsoredLegislation || [];
-
-      // Check if this page has any 119th congress items
-      const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
-      allLegislation = allLegislation.concat(filtered119);
-
-      // Stop early if we've already passed into older congresses
-      const hasOlder = firstPageItems.some(
-        (b: any) => b.congress !== undefined && b.congress < 119,
-      );
-
-      hasMore = !!firstPage.data.pagination?.next && !hasOlder;
-      offset += limit;
-
-      while (hasMore) {
-        const response = await axios.get(
-          `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
-          {
-            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-            params: { limit, offset, format: "json" },
-          },
-        );
-        const page = response.data.sponsoredLegislation || [];
-        const page119 = page.filter((b: any) => b.congress === 119);
-        allLegislation = allLegislation.concat(page119);
-
-        const hasOlderBills = page.some(
-          (b: any) => b.congress !== undefined && b.congress < 119,
-        );
-        hasMore =
-          !!response.data.pagination?.next &&
-          page.length === limit &&
-          !hasOlderBills;
-        offset += limit;
-      }
-
-      const sponsoredResult = { legislation: allLegislation, count: allTimeCo };
-      setCache(cacheKey, sponsoredResult);
-      res.json(sponsoredResult);
-    } catch (error) {
-      console.error("Error fetching sponsored legislation:", error);
-      res.status(500).json({ error: "Failed to fetch sponsored legislation" });
+// Sponsored and cosponsored legislation, from the saved copy
+const memberListRoute = (kind: MemberKind) => async (req: any, res: any) => {
+  try {
+    const bioguideId = String(req.params.bioguideId ?? "")
+      .trim()
+      .toUpperCase();
+    if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
+      return res.status(400).json({ error: "Invalid bioguideId" });
     }
-  },
-);
-
-// Get cosponsored legislation - same optimization
-app.get(
-  "/api/officials/:bioguideId/cosponsored",
-  congressProxyLimiter,
-  async (req, res) => {
-    try {
-      const { bioguideId: rawBioguideId } = req.params;
-      const bioguideId = String(rawBioguideId ?? "")
-        .trim()
-        .toUpperCase();
-      if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
-        return res.status(400).json({ error: "Invalid bioguideId" });
-      }
-      const cacheKey = `cosponsored-${bioguideId}`;
-      const cached = getCached(cacheKey, MEMBER_LEGISLATION_CACHE_TTL);
-      if (cached) return res.json(cached);
-      let allLegislation: any[] = [];
-      let offset = 0;
-      const limit = 250;
-      let hasMore = true;
-      let allTimeCount = 0;
-
-      const firstPage = await axios.get(
-        `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
-        {
-          headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-          params: { limit, offset, format: "json" },
-        },
-      );
-      allTimeCount = firstPage.data.pagination?.count ?? 0;
-      const firstPageItems = firstPage.data.cosponsoredLegislation || [];
-      const filtered119 = firstPageItems.filter((b: any) => b.congress === 119);
-      allLegislation = allLegislation.concat(filtered119);
-
-      const hasOlder = firstPageItems.some(
-        (b: any) => b.congress !== undefined && b.congress < 119,
-      );
-      hasMore = !!firstPage.data.pagination?.next && !hasOlder;
-      offset += limit;
-
-      while (hasMore) {
-        const response = await axios.get(
-          `https://api.congress.gov/v3/member/${bioguideId}/cosponsored-legislation`,
-          {
-            headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-            params: { limit, offset, format: "json" },
-          },
-        );
-        const page = response.data.cosponsoredLegislation || [];
-        const page119 = page.filter((b: any) => b.congress === 119);
-        allLegislation = allLegislation.concat(page119);
-
-        const hasOlderBills = page.some(
-          (b: any) => b.congress !== undefined && b.congress < 119,
-        );
-        hasMore =
-          !!response.data.pagination?.next &&
-          page.length === limit &&
-          !hasOlderBills;
-        offset += limit;
-      }
-      const cosponsoredResult = {
-        legislation: allLegislation,
-        count: allTimeCount,
-      };
-      setCache(cacheKey, cosponsoredResult);
-      res.json(cosponsoredResult);
-    } catch (error) {
-      console.error("Error fetching cosponsored legislation:", error);
-      res
-        .status(500)
-        .json({ error: "Failed to fetch cosponsored legislation" });
-    }
-  },
-);
+    res.json(await loadMemberList(bioguideId, kind));
+  } catch (error) {
+    console.error(`Error fetching ${kind} legislation:`, error);
+    res.status(500).json({ error: `Failed to fetch ${kind} legislation` });
+  }
+};
+app.get("/api/officials/:bioguideId/sponsored", congressProxyLimiter, memberListRoute("sponsored"));
+app.get("/api/officials/:bioguideId/cosponsored", congressProxyLimiter, memberListRoute("cosponsored"));
 
 app.get(
   "/api/officials/:bioguideId/policy-areas",
@@ -1185,54 +1078,9 @@ app.get(
       if (!/^[A-Z][0-9A-Z]{6}$/.test(bioguideId)) {
         return res.status(400).json({ error: "Invalid bioguideId" });
       }
-      const cacheKey = `policy-areas-${bioguideId}`;
-      const cached = getCached(cacheKey);
-      if (cached) return res.json(cached);
-      const fetchUntil119 = async (
-        path: string,
-        key: string,
-        validatedId: string,
-      ): Promise<any[]> => {
-        let all: any[] = [];
-        let offset = 0;
-        const limit = 250;
-        let hasMore = true;
-
-        while (hasMore) {
-          const response = await axios.get(
-            `https://api.congress.gov/v3/member/${validatedId}/${path}`,
-            {
-              headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-              params: { limit, offset, format: "json" },
-            },
-          );
-          const page = response.data[key] || [];
-          const page119 = page.filter((b: any) => b.congress === 119);
-          all = all.concat(page119);
-
-          const hasOlderBills = page.some(
-            (b: any) => b.congress !== undefined && b.congress < 119,
-          );
-          hasMore =
-            !!response.data.pagination?.next &&
-            page.length === limit &&
-            !hasOlderBills;
-          offset += limit;
-        }
-        return all;
-      };
-
-      const [sponsored, cosponsored] = await Promise.all([
-        fetchUntil119(
-          "sponsored-legislation",
-          "sponsoredLegislation",
-          bioguideId,
-        ),
-        fetchUntil119(
-          "cosponsored-legislation",
-          "cosponsoredLegislation",
-          bioguideId,
-        ),
+      const [{ legislation: sponsored }, { legislation: cosponsored }] = await Promise.all([
+        loadMemberList(bioguideId, "sponsored"),
+        loadMemberList(bioguideId, "cosponsored"),
       ]);
 
       const counts: { [key: string]: number } = {};
@@ -1251,7 +1099,6 @@ app.get(
         totalSponsored: sponsored.length,
         totalCosponsored: cosponsored.length,
       };
-      setCache(cacheKey, policyAreasResult);
       res.json(policyAreasResult);
     } catch (error) {
       console.error("Error fetching policy areas:", error);
@@ -1539,4 +1386,7 @@ app.get("/download", (req, res) => {
 
 app.listen(PORT, () => {
   startCronScheduler();
+  startBillStore();
+  startMemberWarmUp();
+  startCommitteeRefresh();
 });

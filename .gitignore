@@ -74,3 +74,8 @@ scripts/newsletter/cards/
 # Astro build cache (website/), so it never shows as a change on branches
 # without the website's own .gitignore
 .astro/
+
+# Social post prototype output (social/), so it never shows as a change on
+# branches without social/prototypes/.gitignore
+social/prototypes/out/
+social/prototypes/data/

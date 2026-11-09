@@ -9,10 +9,12 @@ import {
   MoreVertical,
   Search,
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  AccessibilityInfo,
   FlatList,
   Image,
+  LayoutChangeEvent,
   Modal,
   Platform,
   Pressable,
@@ -41,6 +43,7 @@ import { ListItem, storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import { syncListItemsFromBills } from "../utils/syncListItems";
 import { educationTopics } from "../education_tab/content";
+import { houseTitle } from "../utils/officialTitle";
 type Item = ListItem;
 
 export default function HomeScreen() {
@@ -348,15 +351,6 @@ export default function HomeScreen() {
 
   const [voterCardDismissed, setVoterCardDismissed] = useState(false);
 
-  const dismissVoterCard = () => {
-    const db = getDb();
-    db.runSync(
-      `INSERT INTO meta (key, value) VALUES ('voter_card_dismissed', 'true')
-     ON CONFLICT(key) DO UPDATE SET value = 'true'`,
-    );
-    setVoterCardDismissed(true);
-  };
-
   useEffect(() => {
     refreshLists();
   }, []);
@@ -652,195 +646,10 @@ export default function HomeScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          {!voterCardDismissed && <VoterCard onDismiss={dismissVoterCard} />}
-          {!suggestedBillsDismissed &&
-            featuredData?.bills &&
-            featuredData.bills.length > 0 && (
-              <View style={{ marginBottom: 8 }}>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "500",
-                    color: "#1a1a1a",
-                    marginHorizontal: 16,
-                    marginBottom: 8,
-                    marginTop: 8,
-                  }}
-                >
-                  {(() => {
-                    if (!featuredData?.weekOf) return "Bills of the Week";
-                    const parseDate = (str: string) => {
-                      const [y, m, d] = str.split("-").map(Number);
-                      return new Date(y, m - 1, d);
-                    };
-                    const fmt = (d: Date) =>
-                      d.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      });
-                    const start = parseDate(featuredData.weekOf);
-                    const end = featuredData.weekEnd
-                      ? parseDate(featuredData.weekEnd)
-                      : null;
-                    return `Bills of the week (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
-                  })()}
-                </Text>
-                {featuredData.bills.map((bill: any) => (
-                  <View key={bill.billId} style={{ marginBottom: 12 }}>
-                    <Pressable
-                      onPress={() => router.navigate(`/bill/${bill.billId}`)}
-                      style={({ pressed }) => ({
-                        transform: [{ scale: pressed ? 0.98 : 1 }],
-                      })}
-                    >
-                      <View
-                        style={[
-                          componentStyles.officialCard,
-                          {
-                            backgroundColor: "#E8F4FF",
-                            borderWidth: 1,
-                            borderColor: "#008CFF33",
-                            shadowOpacity: 0,
-                            elevation: 0,
-                          },
-                        ]}
-                      >
-                        {/* Left column: badge + icon */}
-                        <View
-                          style={{
-                            alignItems: "center",
-                            flexShrink: 0,
-                            width: 64,
-                            marginRight: 12,
-                          }}
-                        >
-                          <View
-                            style={{
-                              backgroundColor:
-                                POLICY_AREA_COLORS[bill.policyArea] ??
-                                "#008CFF",
-                              borderRadius: 6,
-                              paddingHorizontal: 6,
-                              paddingVertical: 4,
-                              marginBottom: 6,
-                              alignItems: "center",
-                              width: "100%",
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: "#fff",
-                                fontSize: 12,
-                                fontWeight: "700",
-                              }}
-                              numberOfLines={1}
-                            >
-                              {`${abbrevBillType(bill.type)}.${bill.number}`}
-                            </Text>
-                          </View>
-                          <Image
-                            source={
-                              bill.policyArea
-                                ? getBillIcon(bill.policyArea)
-                                : getBillIcon()
-                            }
-                            style={{ width: 50, height: 50, borderRadius: 6 }}
-                            resizeMode="contain"
-                          />
-                        </View>
-
-                        {/* Right column: info */}
-                        <View
-                          style={{
-                            flex: 1,
-                            alignSelf: "stretch",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <View>
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                flexWrap: "nowrap",
-                                marginBottom: 4,
-                              }}
-                            >
-                              {bill.latestActionDate && (
-                                <Text
-                                  style={[
-                                    componentStyles.subtitle,
-                                    { flexShrink: 0 },
-                                  ]}
-                                  numberOfLines={1}
-                                >
-                                  {new Date(
-                                    bill.latestActionDate + "T12:00:00",
-                                  ).toLocaleDateString("en-US", {
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                    year: "numeric",
-                                  })}
-                                </Text>
-                              )}
-                              {bill.policyArea && (
-                                <>
-                                  <Text style={componentStyles.separator}>
-                                    ·
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontSize: 12,
-                                      color:
-                                        POLICY_AREA_COLORS[bill.policyArea] ??
-                                        "#008CFF",
-                                      fontWeight: "600",
-                                      flexShrink: 1,
-                                    }}
-                                    numberOfLines={1}
-                                  >
-                                    {bill.policyArea}
-                                  </Text>
-                                </>
-                              )}
-                            </View>
-                            <Text
-                              style={componentStyles.name}
-                              numberOfLines={2}
-                            >
-                              {bill.title}
-                            </Text>
-                          </View>
-                          {bill.latestAction && (
-                            <Text
-                              style={componentStyles.subtitle}
-                              numberOfLines={1}
-                            >
-                              {bill.latestAction}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                    </Pressable>
-
-                    {/* Editorial note below the card */}
-                    {bill.note && (
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: "#7B7C81",
-                          fontStyle: "italic",
-                          marginTop: 0,
-                          marginLeft: 16,
-                        }}
-                      >
-                        {bill.note}
-                      </Text>
-                    )}
-                  </View>
-                ))}
-              </View>
-            )}
+          <HomeCarousel
+            showArticles={!voterCardDismissed}
+            featured={suggestedBillsDismissed ? undefined : featuredData}
+          />
           <View
             style={{
               flex: 1,
@@ -926,208 +735,12 @@ export default function HomeScreen() {
             data={items}
             keyExtractor={(item, index) => item.id || index.toString()}
             contentContainerStyle={componentStyles.listContent}
-            ListHeaderComponent={() => (
-              <View>
-                {!voterCardDismissed && !isEditMode && (
-                  <VoterCard onDismiss={dismissVoterCard} />
-                )}
-                {!suggestedBillsDismissed &&
-                  featuredData?.bills &&
-                  featuredData.bills.length > 0 && (
-                    <View style={{ marginBottom: 8 }}>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          fontWeight: "500",
-                          color: "#000",
-                          marginHorizontal: 16,
-                          marginBottom: 8,
-                          marginTop: 8,
-                        }}
-                      >
-                        {(() => {
-                          if (!featuredData?.weekOf) return "Bills of the week";
-                          const parseDate = (str: string) => {
-                            const [y, m, d] = str.split("-").map(Number);
-                            return new Date(y, m - 1, d);
-                          };
-                          const fmt = (d: Date) =>
-                            d.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            });
-                          const start = parseDate(featuredData.weekOf);
-                          const end = featuredData.weekEnd
-                            ? parseDate(featuredData.weekEnd)
-                            : null;
-                          return `Bills of the week (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
-                        })()}
-                      </Text>
-                      {featuredData.bills.map((bill: any) => (
-                        <View key={bill.billId} style={{ marginBottom: 12 }}>
-                          <Pressable
-                            onPress={() =>
-                              router.navigate(`/bill/${bill.billId}`)
-                            }
-                            style={({ pressed }) => ({
-                              transform: [{ scale: pressed ? 0.98 : 1 }],
-                            })}
-                          >
-                            <View
-                              style={[
-                                componentStyles.officialCard,
-                                {
-                                  backgroundColor: "#E8F4FF",
-                                  borderWidth: 1,
-                                  borderColor: "#008CFF33",
-                                  shadowOpacity: 0,
-                                  elevation: 0,
-                                },
-                              ]}
-                            >
-                              {/* Left column: badge + icon */}
-                              <View
-                                style={{
-                                  alignItems: "center",
-                                  flexShrink: 0,
-                                  width: 64,
-                                  marginRight: 12,
-                                }}
-                              >
-                                <View
-                                  style={{
-                                    backgroundColor:
-                                      POLICY_AREA_COLORS[bill.policyArea] ??
-                                      "#008CFF",
-                                    borderRadius: 6,
-                                    paddingHorizontal: 6,
-                                    paddingVertical: 4,
-                                    marginBottom: 6,
-                                    alignItems: "center",
-                                    width: "100%",
-                                  }}
-                                >
-                                  <Text
-                                    style={{
-                                      color: "#fff",
-                                      fontSize: 12,
-                                      fontWeight: "700",
-                                    }}
-                                    numberOfLines={1}
-                                  >
-                                    {`${abbrevBillType(bill.type)}.${bill.number}`}
-                                  </Text>
-                                </View>
-                                <Image
-                                  source={
-                                    bill.policyArea
-                                      ? getBillIcon(bill.policyArea)
-                                      : getBillIcon()
-                                  }
-                                  style={{
-                                    width: 50,
-                                    height: 50,
-                                    borderRadius: 6,
-                                  }}
-                                  resizeMode="contain"
-                                />
-                              </View>
-
-                              {/* Right column: info */}
-                              <View
-                                style={{
-                                  flex: 1,
-                                  alignSelf: "stretch",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <View>
-                                  <View
-                                    style={{
-                                      flexDirection: "row",
-                                      alignItems: "center",
-                                      flexWrap: "nowrap",
-                                      marginBottom: 4,
-                                    }}
-                                  >
-                                    {bill.latestActionDate && (
-                                      <Text
-                                        style={[
-                                          componentStyles.subtitle,
-                                          { flexShrink: 0 },
-                                        ]}
-                                        numberOfLines={1}
-                                      >
-                                        {new Date(
-                                          bill.latestActionDate + "T12:00:00",
-                                        ).toLocaleDateString("en-US", {
-                                          month: "2-digit",
-                                          day: "2-digit",
-                                          year: "numeric",
-                                        })}
-                                      </Text>
-                                    )}
-                                    {bill.policyArea && (
-                                      <>
-                                        <Text style={componentStyles.separator}>
-                                          ·
-                                        </Text>
-                                        <Text
-                                          style={{
-                                            fontSize: 12,
-                                            color:
-                                              POLICY_AREA_COLORS[
-                                                bill.policyArea
-                                              ] ?? "#008CFF",
-                                            fontWeight: "600",
-                                            flexShrink: 1,
-                                          }}
-                                          numberOfLines={1}
-                                        >
-                                          {bill.policyArea}
-                                        </Text>
-                                      </>
-                                    )}
-                                  </View>
-                                  <Text
-                                    style={componentStyles.name}
-                                    numberOfLines={2}
-                                  >
-                                    {bill.title}
-                                  </Text>
-                                </View>
-                                {bill.latestAction && (
-                                  <Text
-                                    style={componentStyles.subtitle}
-                                    numberOfLines={1}
-                                  >
-                                    {bill.latestAction}
-                                  </Text>
-                                )}
-                              </View>
-                            </View>
-                          </Pressable>
-
-                          {/* Editorial note below the card */}
-                          {bill.note && (
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                color: "#7B7C81",
-                                fontStyle: "italic",
-                                marginTop: 0,
-                                marginLeft: 16,
-                              }}
-                            >
-                              {bill.note}
-                            </Text>
-                          )}
-                        </View>
-                      ))}
-                    </View>
-                  )}
-              </View>
-            )}
+            ListHeaderComponent={
+              <HomeCarousel
+                showArticles={!voterCardDismissed && !isEditMode}
+                featured={suggestedBillsDismissed ? undefined : featuredData}
+              />
+            }
             renderItem={({ item }) => (
               <Card
                 item={item}
@@ -1574,8 +1187,9 @@ function formatRole(
 ): string {
   const threshold = Platform.OS === "ios" ? 32 : 39;
   if (chamber === "House of Representatives") {
-    const full = `Representative, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `Rep, ${state}${district ? `, District ${district}` : ""}`;
+    const title = houseTitle(state);
+    const full = `${title.full}, ${state}${district ? `, District ${district}` : ""}`;
+    const abbr = `${title.abbr}, ${state}${district ? `, District ${district}` : ""}`;
     if (screenWidth && screenWidth < 390) return abbr;
     return full.length > threshold ? abbr : full;
   }
@@ -1766,7 +1380,7 @@ const Card = React.memo(function Card({
                   backgroundColor:
                     POLICY_AREA_COLORS[(item as any).policyArea] ?? "#008CFF",
                   borderRadius: 6,
-                  paddingHorizontal: 6,
+                  paddingHorizontal: 4,
                   paddingVertical: 4,
                   marginBottom: 6,
                   alignItems: "center",
@@ -1776,6 +1390,9 @@ const Card = React.memo(function Card({
                 <Text
                   style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
                   numberOfLines={1}
+                  // Long numbers like HR.10035 shrink slightly instead of cutting off
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
                 >
                   {item.id?.replace(
                     /^([a-zA-Z]+)(\d+)$/,
@@ -1880,10 +1497,37 @@ const Card = React.memo(function Card({
   );
 });
 
-function VoterCard({ onDismiss }: { onDismiss: () => void }) {
-  const router = useRouter();
+type HomeArticle = {
+  topicId: string;
+  topicIcon: any;
+  subtopic: (typeof educationTopics)[number]["subtopics"][number];
+};
 
-  const allSubtopics = educationTopics
+const VOTER_REGISTRATION_ID = "voter-registration";
+
+const VOTER_REGISTRATION_ARTICLE: HomeArticle | undefined = educationTopics
+  .flatMap((t) =>
+    t.subtopics.map((s) => ({ topicId: t.id, topicIcon: t.icon, subtopic: s })),
+  )
+  .find((a) => a.subtopic.id === VOTER_REGISTRATION_ID);
+
+// "Bills of the week (Nov 2 – Nov 8)", from the featured bills' dates
+const billsHeading = (featured: any): string => {
+  if (!featured?.weekOf) return "Bills of the week";
+  const parseDate = (str: string) => {
+    const [y, m, d] = str.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const start = parseDate(featured.weekOf);
+  const end = featured.weekEnd ? parseDate(featured.weekEnd) : null;
+  return `Bills of the week (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
+};
+
+// The article shown under "Today's Article", changing every 12 hours
+const todaysArticle = (): HomeArticle => {
+  const allSubtopics: HomeArticle[] = educationTopics
     .filter(
       (t) => t.id !== "elections-voting" && t.id !== "us-history-foundations",
     )
@@ -1893,9 +1537,369 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
         topicIcon: t.icon,
         subtopic: s,
       })),
-    );
+    )
+    // Has its own slide, so it shouldn't come up in the rotation too
+    .filter((a) => a.subtopic.id !== VOTER_REGISTRATION_ID);
   const slotIndex = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
-  const current = allSubtopics[slotIndex % allSubtopics.length];
+  return allSubtopics[slotIndex % allSubtopics.length];
+};
+
+type CardSize = {
+  minHeight: number;
+  onLayout: (event: LayoutChangeEvent) => void;
+};
+
+const CAROUSEL_MS = 6000;
+const DOTS_WIDTH = 56;
+
+// The cards at the top of the home page, one at a time, with the position dots
+// across from the title. Every card matches the tallest. Below it, a slide has
+// its description, or a gray line in the same space, centered, when it has none.
+function HomeCarousel({
+  showArticles,
+  featured,
+}: {
+  showArticles: boolean;
+  featured?: any;
+}) {
+  const router = useRouter();
+  const { width: screenWidth } = useWindowDimensions();
+  // The page has side padding, so a slide is narrower than the screen
+  const [width, setWidth] = useState(screenWidth - 32);
+  const { activeTab } = useTabBar();
+  const scrollRef = useRef<ScrollView>(null);
+  const [index, setIndex] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [focused, setFocused] = useState(true);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [cardHeight, setCardHeight] = useState(0);
+
+  const slides = useMemo(() => {
+    const list: {
+      key: string;
+      title: string;
+      card: (size: CardSize) => React.ReactNode;
+      description?: string;
+    }[] = [];
+    if (showArticles) {
+      if (VOTER_REGISTRATION_ARTICLE) {
+        list.push({
+          key: "voter",
+          title: "Voting",
+          card: (size) => (
+            <ArticleCard
+              article={VOTER_REGISTRATION_ARTICLE}
+              title="Have you registered to vote?"
+              size={size}
+            />
+          ),
+        });
+      }
+      list.push({
+        key: "article",
+        title: "Today's Article",
+        card: (size) => <ArticleCard article={todaysArticle()} size={size} />,
+      });
+    }
+    for (const bill of featured?.bills ?? []) {
+      list.push({
+        key: bill.billId,
+        title: billsHeading(featured),
+        card: (size) => (
+          <FeaturedBillCard bill={bill} router={router} size={size} />
+        ),
+        description: bill.note,
+      });
+    }
+    return list;
+  }, [showArticles, featured, router]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => setFocused(false);
+    }, []),
+  );
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+  }, []);
+
+  const cardSize: CardSize = {
+    minHeight: cardHeight,
+    onLayout: (event) => {
+      const { height } = event.nativeEvent.layout;
+      setCardHeight((tallest) => Math.max(tallest, height));
+    },
+  };
+
+  const count = slides.length;
+  const current = count ? Math.min(index, count - 1) : 0;
+
+  // Stops while off screen or being swiped, and for people who asked for less
+  // motion, who can still swipe
+  useEffect(() => {
+    if (count < 2 || !focused || activeTab !== 0 || dragging || reduceMotion) return;
+    const timer = setTimeout(() => {
+      const next = (current + 1) % count;
+      scrollRef.current?.scrollTo({ x: next * width, animated: true });
+      setIndex(next);
+    }, CAROUSEL_MS);
+    return () => clearTimeout(timer);
+  }, [current, count, focused, activeTab, dragging, reduceMotion, width]);
+
+  if (count === 0) return null;
+
+  return (
+    <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScrollBeginDrag={() => setDragging(true)}
+        onScrollEndDrag={() => setDragging(false)}
+        onMomentumScrollEnd={(event) =>
+          setIndex(Math.round(event.nativeEvent.contentOffset.x / width))
+        }
+      >
+        {slides.map((slide) => (
+          <View key={slide.key} style={{ width }}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 14,
+                lineHeight: 18,
+                fontWeight: "500",
+                color: "#1a1a1a",
+                // Lines up with the list name in the header above
+                marginLeft: componentStyles.header.marginLeft,
+                marginRight: 16 + DOTS_WIDTH,
+                marginBottom: 8,
+                marginTop: 8,
+              }}
+            >
+              {slide.title}
+            </Text>
+            {slide.card(cardSize)}
+            <View style={{ flex: 1, minHeight: 24, justifyContent: "center" }}>
+              {slide.description ? (
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "#7B7C81",
+                    fontStyle: "italic",
+                    marginHorizontal: 16,
+                    marginVertical: 8,
+                  }}
+                >
+                  {slide.description}
+                </Text>
+              ) : (
+                <View style={{ height: 1, backgroundColor: "#e0e0e0" }} />
+              )}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+      {count > 1 && (
+        <View
+          pointerEvents="none"
+          // The page's background color, so titles disappear behind the dots
+          // as they slide past, all the way to the carousel's edge
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 0,
+            height: 18,
+            paddingLeft: 8,
+            paddingRight: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            backgroundColor: "#fafafa",
+          }}
+        >
+          {slides.map((slide, i) => (
+            <View
+              key={slide.key}
+              style={{
+                width: i === current ? 16 : 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: i === current ? "#008CFF" : "#e0e0e0",
+              }}
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function FeaturedBillCard({
+  bill,
+  router,
+  size,
+}: {
+  bill: any;
+  router: any;
+  size: CardSize;
+}) {
+  return (
+        <Pressable
+          onPress={() => router.navigate(`/bill/${bill.billId}`)}
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.98 : 1 }],
+          })}
+        >
+          <View
+            style={[
+              componentStyles.officialCard,
+              {
+                backgroundColor: "#E8F4FF",
+                borderWidth: 1,
+                borderColor: "#008CFF33",
+                shadowOpacity: 0,
+                elevation: 0,
+              },
+              { marginBottom: 0, minHeight: size.minHeight },
+            ]}
+            onLayout={size.onLayout}
+          >
+            {/* Left column: badge + icon */}
+            <View
+              style={{
+                alignItems: "center",
+                flexShrink: 0,
+                width: 64,
+                marginRight: 12,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor:
+                    POLICY_AREA_COLORS[bill.policyArea] ??
+                    "#008CFF",
+                  borderRadius: 6,
+                  paddingHorizontal: 4,
+                  paddingVertical: 4,
+                  marginBottom: 6,
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                  numberOfLines={1}
+                  // Long numbers like HR.10035 shrink slightly instead of cutting off
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {`${abbrevBillType(bill.type)}.${bill.number}`}
+                </Text>
+              </View>
+              <Image
+                source={
+                  bill.policyArea
+                    ? getBillIcon(bill.policyArea)
+                    : getBillIcon()
+                }
+                style={{ width: 50, height: 50, borderRadius: 6 }}
+                resizeMode="contain"
+              />
+            </View>
+
+            {/* Right column: info */}
+            <View
+              style={{
+                flex: 1,
+                alignSelf: "stretch",
+                justifyContent: "space-between",
+              }}
+            >
+              <View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    flexWrap: "nowrap",
+                    marginBottom: 4,
+                  }}
+                >
+                  {bill.latestActionDate && (
+                    <Text
+                      style={[
+                        componentStyles.subtitle,
+                        { flexShrink: 0 },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {new Date(
+                        bill.latestActionDate + "T12:00:00",
+                      ).toLocaleDateString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                      })}
+                    </Text>
+                  )}
+                  {bill.policyArea && (
+                    <>
+                      <Text style={componentStyles.separator}>
+                        ·
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color:
+                            POLICY_AREA_COLORS[bill.policyArea] ??
+                            "#008CFF",
+                          fontWeight: "600",
+                          flexShrink: 1,
+                        }}
+                        numberOfLines={1}
+                      >
+                        {bill.policyArea}
+                      </Text>
+                    </>
+                  )}
+                </View>
+                <Text
+                  style={componentStyles.name}
+                  numberOfLines={2}
+                >
+                  {bill.title}
+                </Text>
+              </View>
+              {bill.latestAction && (
+                <Text
+                  style={componentStyles.subtitle}
+                  numberOfLines={1}
+                >
+                  {bill.latestAction}
+                </Text>
+              )}
+            </View>
+          </View>
+        </Pressable>
+  );
+}
+
+function ArticleCard({
+  article: current,
+  title,
+  size,
+}: {
+  article: HomeArticle;
+  title?: string;
+  size: CardSize;
+}) {
+  const router = useRouter();
 
   return (
     <Pressable
@@ -1918,7 +1922,9 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
             shadowOpacity: 0,
             elevation: 0,
           },
+          { marginBottom: 0, minHeight: size.minHeight },
         ]}
+        onLayout={size.onLayout}
       >
         <View
           style={{
@@ -1946,7 +1952,7 @@ function VoterCard({ onDismiss }: { onDismiss: () => void }) {
             }}
             numberOfLines={2}
           >
-            {current.subtopic.title}
+            {title ?? current.subtopic.title}
           </Text>
           <Text
             style={{ fontSize: 13, color: "#535353", lineHeight: 18 }}

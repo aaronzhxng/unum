@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://unuminitiative.com/sitemap-index.xml

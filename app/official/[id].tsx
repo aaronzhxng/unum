@@ -33,8 +33,10 @@ import {
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
+import memberDetails from "../data/member-details.json";
 import officialsStatic from "../data/officials-static.json";
 import AddModal from "../global_components/AddModal";
+import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import ErrorScreen from "../global_components/ErrorScreen";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
@@ -43,6 +45,11 @@ import ScreenTourOverlay, {
   ScreenTourStep,
 } from "../global_components/ScreenTourOverlay";
 import SearchModal from "../global_components/SearchModal";
+import {
+  COMMITTEES_STALE_MS,
+  committeeLabel,
+  committeesService,
+} from "../services/committees";
 import { officialsService } from "../services/officials";
 import { abbrevBillType } from "../utils/billTypeAbbr";
 import { billCongressCache } from "../utils/billCongressCache";
@@ -54,6 +61,7 @@ import { officialBillsCache } from "../utils/officialBillsCache";
 import { screenTour } from "../utils/screenTour";
 import { storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+import { houseTitle, isNonVotingSeat } from "../utils/officialTitle";
 import { trySwipeBack } from "../utils/swipeBackGuard";
 import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
@@ -105,6 +113,21 @@ const LEADERSHIP_ROLES: Record<string, string> = {
   G000386: "President Pro Tempore",
 };
 
+const titleBubble = {
+  // Long titles like "Chair, Senate Health, Education, Labor, and Pensions"
+  // wrap inside the bubble instead of running off a narrow screen
+  maxWidth: "100%",
+  paddingVertical: 3,
+  paddingHorizontal: 8,
+  borderRadius: 10,
+  backgroundColor: "#E8F4FF",
+} as const;
+const titleBubbleText = {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#008CFF",
+} as const;
+
 function LegislationCard({ item }: { item: any }) {
   const router = useRouter();
   const policyArea = item.policyArea?.name ?? null;
@@ -145,7 +168,7 @@ function LegislationCard({ item }: { item: any }) {
             style={{
               backgroundColor: dotColor,
               borderRadius: 6,
-              paddingHorizontal: 6,
+              paddingHorizontal: 4,
               paddingVertical: 4,
               marginBottom: 6,
               alignItems: "center",
@@ -155,6 +178,9 @@ function LegislationCard({ item }: { item: any }) {
             <Text
               style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
               numberOfLines={1}
+              // Long numbers like HR.10035 shrink slightly instead of cutting off
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
             >
               {abbrevBillType(item.type)}.{item.number}
             </Text>
@@ -253,7 +279,11 @@ export default function OfficialDetail() {
         );
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50 && Math.abs(gestureState.vx) > 0.3 && trySwipeBack()) {
+        if (
+          gestureState.dx > 50 &&
+          Math.abs(gestureState.vx) > 0.3 &&
+          trySwipeBack()
+        ) {
           handleBack();
         }
       },
@@ -265,11 +295,18 @@ export default function OfficialDetail() {
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [sponsoredChambers, setSponsoredChambers] = useState<string[]>([]);
-  const [sponsoredPolicyAreas, setSponsoredPolicyAreas] = useState<string[]>([]);
-  const [sponsoredLegislationTypes, setSponsoredLegislationTypes] = useState<string[]>([]);
+  const [sponsoredPolicyAreas, setSponsoredPolicyAreas] = useState<string[]>(
+    [],
+  );
+  const [sponsoredLegislationTypes, setSponsoredLegislationTypes] = useState<
+    string[]
+  >([]);
   const [cosponsoredChambers, setCosponsoredChambers] = useState<string[]>([]);
-  const [cosponsoredPolicyAreas, setCosponsoredPolicyAreas] = useState<string[]>([]);
-  const [cosponsoredLegislationTypes, setCosponsoredLegislationTypes] = useState<string[]>([]);
+  const [cosponsoredPolicyAreas, setCosponsoredPolicyAreas] = useState<
+    string[]
+  >([]);
+  const [cosponsoredLegislationTypes, setCosponsoredLegislationTypes] =
+    useState<string[]>([]);
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -308,6 +345,10 @@ export default function OfficialDetail() {
 
   const [imageError, setImageError] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  // Which list the Bills tab shows
+  const [billKind, setBillKind] = useState<"sponsored" | "cosponsored">(
+    "sponsored",
+  );
 
   const [tourActive, setTourActive] = useState(false);
   const [tourStep, setTourStep] = useState(0);
@@ -467,22 +508,35 @@ export default function OfficialDetail() {
   }
 
   const toggleChamber = (id: string) => {
-    const set = activeTab === 2 ? setSponsoredChambers : setCosponsoredChambers;
-    set((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
+    const set =
+      billKind === "sponsored" ? setSponsoredChambers : setCosponsoredChambers;
+    set((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
   };
 
   const togglePolicyArea = (id: string) => {
-    const set = activeTab === 2 ? setSponsoredPolicyAreas : setCosponsoredPolicyAreas;
-    set((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
+    const set =
+      billKind === "sponsored"
+        ? setSponsoredPolicyAreas
+        : setCosponsoredPolicyAreas;
+    set((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
   };
 
   const toggleLegislationType = (id: string) => {
-    const set = activeTab === 2 ? setSponsoredLegislationTypes : setCosponsoredLegislationTypes;
-    set((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
+    const set =
+      billKind === "sponsored"
+        ? setSponsoredLegislationTypes
+        : setCosponsoredLegislationTypes;
+    set((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
   };
 
   const handleCancel = () => {
-    if (activeTab === 2) {
+    if (billKind === "sponsored") {
       setSponsoredChambers([]);
       setSponsoredPolicyAreas([]);
       setSponsoredLegislationTypes([]);
@@ -504,52 +558,80 @@ export default function OfficialDetail() {
     setTimeout(() => setShowActionToast(false), 1500);
   };
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["official", id],
-    queryFn: () => officialsService.getById(id as string),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000, // add this
-  });
+  // Copies saved on the phone, read once per member rather than every render
+  const saved = useMemo(
+    () => ({
+      // The last download, or else the copy bundled with the app
+      details:
+        officialBillsCache.get(`details_v1_${id}`) ??
+        ((memberDetails as any)[id as string]
+          ? { member: (memberDetails as any)[id as string] }
+          : undefined),
+      bio: officialBillsCache.get(`bio_v1_${id}`) ?? undefined,
+      sponsored: officialBillsCache.get(`sponsored_v3_${id}`),
+      cosponsored: officialBillsCache.get(`cosponsored_v3_${id}`),
+    }),
+    [id],
+  );
+  const cachedSponsored = saved.sponsored;
+  const cachedCosponsored = saved.cosponsored;
 
-  const cachedSponsored = officialBillsCache.get(`sponsored_v2_${id}`);
-  const cachedCosponsored = officialBillsCache.get(`cosponsored_v2_${id}`);
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["official", id],
+    queryFn: async () => {
+      const result = await officialsService.getById(id as string);
+      officialBillsCache.save(`details_v1_${id}`, result);
+      return result;
+    },
+    enabled: !!id,
+    // The saved copy shows at once, then is checked for changes
+    initialData: saved.details,
+    initialDataUpdatedAt: 0,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: sponsoredData, isLoading: sponsoredLoading } = useQuery({
     queryKey: ["officialSponsored", id],
     queryFn: async () => {
-      const cached = officialBillsCache.get(`sponsored_v2_${id}`);
-      if (cached) return cached;
       const result = await officialsService.getSponsored(id as string);
-      officialBillsCache.save(`sponsored_v2_${id}`, result);
+      officialBillsCache.save(`sponsored_v3_${id}`, result);
       return result;
     },
     enabled: !!id,
     retry: 1,
     initialData: cachedSponsored ?? undefined,
+    // The saved copy shows at once, then is checked for newer bills
+    initialDataUpdatedAt: 0,
     staleTime: 5 * 60 * 1000, // add this
   });
 
   const { data: cosponsoredData, isLoading: cosponsoredLoading } = useQuery({
     queryKey: ["officialCosponsored", id],
     queryFn: async () => {
-      const cached = officialBillsCache.get(`cosponsored_v2_${id}`);
-      if (cached) return cached;
       const result = await officialsService.getCosponsored(id as string);
-      officialBillsCache.save(`cosponsored_v2_${id}`, result);
+      officialBillsCache.save(`cosponsored_v3_${id}`, result);
       return result;
     },
     enabled: !!id,
     retry: 1,
     initialData: cachedCosponsored ?? undefined,
+    initialDataUpdatedAt: 0,
     staleTime: 5 * 60 * 1000, // add this
   });
 
-  // Add after the policyAreasData query
+  // Bios hardly ever change, so a saved one is used as is until the phone's
+  // cache expires it (7 days)
   const { data: bioData, isLoading: bioLoading } = useQuery({
     queryKey: ["officialBio", id],
-    queryFn: () => officialsService.getBio(id as string),
+    queryFn: async () => {
+      const result = await officialsService.getBio(id as string);
+      officialBillsCache.save(`bio_v1_${id}`, result);
+      return result;
+    },
     enabled: !!id,
     retry: 1,
+    initialData: saved.bio,
+    staleTime: Infinity,
   });
 
   const official = data?.member;
@@ -559,6 +641,76 @@ export default function OfficialDetail() {
     caucuses: [],
     education: [],
   };
+
+  const { data: committeesData } = useQuery({
+    queryKey: ["committees"],
+    queryFn: committeesService.getAll,
+    // Kept in memory between profiles instead of reread from the phone each
+    // time; the service refreshes its own copy in the background
+    staleTime: COMMITTEES_STALE_MS,
+  });
+
+  // Chamber leadership, like Speaker or Whip, stays in the header. Committee
+  // and caucus roles can run to 20+, so they live in the Roles tab.
+  const chamberTitle = LEADERSHIP_ROLES[id as string] as string | undefined;
+
+  // Every committee, subcommittee, and caucus post for the Roles tab. Each
+  // list puts the senior titles first, then plain seats.
+  const roles = useMemo(() => {
+    type Role = { title: string | null; name: string; rank: number };
+    const RANK = [
+      "Chair",
+      "Co-Chair",
+      "Ranking Member",
+      "Vice Chair",
+      "Ex Officio",
+    ];
+    const rankOf = (title: string | null) =>
+      title && RANK.includes(title) ? RANK.indexOf(title) : RANK.length;
+    const committees: Role[] = [];
+    const subcommittees: Role[] = [];
+    for (const committee of committeesData?.committees ?? []) {
+      const label = committeeLabel(committee);
+      const seat = committee.members.find((m) => m.bioguideId === id);
+      if (seat) {
+        committees.push({
+          title: seat.title,
+          name: label,
+          rank: rankOf(seat.title),
+        });
+      }
+      for (const sub of committee.subcommittees ?? []) {
+        const subSeat = sub.members.find((m) => m.bioguideId === id);
+        if (subSeat) {
+          subcommittees.push({
+            title: subSeat.title,
+            name: `${label} Subcommittee on ${sub.name}`,
+            rank: rankOf(subSeat.title),
+          });
+        }
+      }
+    }
+    const byRank = (a: Role, b: Role) => a.rank - b.rank;
+    return {
+      // Until the live list first loads, the copy bundled with the app
+      committees: committeesData
+        ? committees.sort(byRank)
+        : (staticData.committees ?? []).map((name: string): Role => ({
+            title: null,
+            name,
+            rank: 0,
+          })),
+      subcommittees: subcommittees.sort(byRank),
+      // Already chairs first
+      caucuses: (staticData.caucusLeadership ?? []).map(
+        (c: { title: string; name: string }): Role => ({
+          title: c.title,
+          name: c.name,
+          rank: 0,
+        }),
+      ),
+    };
+  }, [committeesData, id, staticData]);
 
   const sponsoredBills = useMemo(
     () =>
@@ -591,10 +743,20 @@ export default function OfficialDetail() {
 
       if (chambers.length > 0) {
         const houseTypes = ["HR", "HRES", "HJRES", "HCONRES", "HAMDT"];
-        const senateTypes = ["S", "SRES", "SJRES", "SCONRES", "SAMDT", "PN", "TREATY"];
+        const senateTypes = [
+          "S",
+          "SRES",
+          "SJRES",
+          "SCONRES",
+          "SAMDT",
+          "PN",
+          "TREATY",
+        ];
         filtered = filtered.filter((bill: any) => {
-          if (chambers.includes("house") && houseTypes.includes(bill.type)) return true;
-          if (chambers.includes("senate") && senateTypes.includes(bill.type)) return true;
+          if (chambers.includes("house") && houseTypes.includes(bill.type))
+            return true;
+          if (chambers.includes("senate") && senateTypes.includes(bill.type))
+            return true;
           return false;
         });
       }
@@ -626,8 +788,12 @@ export default function OfficialDetail() {
         case "Most Recent Action":
           return sorted.sort(
             (a, b) =>
-              new Date(b.latestAction?.actionDate ?? b.introducedDate ?? 0).getTime() -
-              new Date(a.latestAction?.actionDate ?? a.introducedDate ?? 0).getTime(),
+              new Date(
+                b.latestAction?.actionDate ?? b.introducedDate ?? 0,
+              ).getTime() -
+              new Date(
+                a.latestAction?.actionDate ?? a.introducedDate ?? 0,
+              ).getTime(),
           );
         case "Newest First":
           return sorted.sort(
@@ -648,8 +814,18 @@ export default function OfficialDetail() {
     };
 
     return {
-      filteredSponsored: filterAndSort(sponsoredBills, sponsoredChambers, sponsoredPolicyAreas, sponsoredLegislationTypes),
-      filteredCosponsored: filterAndSort(cosponsoredBills, cosponsoredChambers, cosponsoredPolicyAreas, cosponsoredLegislationTypes),
+      filteredSponsored: filterAndSort(
+        sponsoredBills,
+        sponsoredChambers,
+        sponsoredPolicyAreas,
+        sponsoredLegislationTypes,
+      ),
+      filteredCosponsored: filterAndSort(
+        cosponsoredBills,
+        cosponsoredChambers,
+        cosponsoredPolicyAreas,
+        cosponsoredLegislationTypes,
+      ),
     };
   }, [
     sponsoredBills,
@@ -704,7 +880,11 @@ export default function OfficialDetail() {
     const all = allBills
       .filter((bill) => {
         const billId = `${bill.type.toLowerCase()}${bill.number}`;
-        const action = actionMap.get(billId) ?? "";
+        // The bill's own latest action, since the local bills table may not
+        // have this bill or its newest action yet
+        const action = `${actionMap.get(billId) ?? ""} ${
+          bill.latestAction?.text?.toLowerCase() ?? ""
+        }`;
         return (
           action.includes("became public law") ||
           action.includes("signed by president") ||
@@ -773,6 +953,25 @@ export default function OfficialDetail() {
     });
   };
 
+  // The district a House member serves, for the map preview (senators get
+  // none). The latest term has the two-letter state code and the district,
+  // which is missing or 0 for at-large seats.
+  const servedArea = useMemo(() => {
+    const terms = official?.terms;
+    const lastTerm = terms?.[terms.length - 1];
+    if (!lastTerm?.stateCode || lastTerm.chamber === "Senate") return null;
+    return {
+      stateAbbr: lastTerm.stateCode as string,
+      district: Number(lastTerm.district ?? 0),
+    };
+  }, [official]);
+
+  // Memoized so the map isn't handed a new array (and reloaded) every render
+  const servedFocusDistricts = useMemo(
+    () => (servedArea ? [servedArea] : null),
+    [servedArea],
+  );
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -784,7 +983,8 @@ export default function OfficialDetail() {
     );
   }
 
-  if (error || !official) {
+  // A failed check for newer details keeps the saved copy on screen
+  if (!official) {
     return (
       <ErrorScreen
         onRetry={refetch}
@@ -801,6 +1001,59 @@ export default function OfficialDetail() {
   //     </View>
   //   );
   // }
+
+  // The header names a full committee they chair, if any, and counts the
+  // rest of their leadership posts. Ex officio seats aren't leadership.
+  const headerChair = roles.committees.find(
+    (r: { title: string | null }) =>
+      r.title === "Chair" || r.title === "Co-Chair",
+  );
+  const otherLeadershipCount =
+    [...roles.committees, ...roles.subcommittees, ...roles.caucuses].filter(
+      (r) => r.title && r.title !== "Ex Officio",
+    ).length - (headerChair ? 1 : 0);
+  const hasHeaderRoles =
+    !!chamberTitle || !!headerChair || otherLeadershipCount > 0;
+
+  // The Bills tab's current list
+  const sponsoredShown = billKind === "sponsored";
+  const shownBills = sponsoredShown ? filteredSponsored : filteredCosponsored;
+  const billsLoading = sponsoredShown ? sponsoredLoading : cosponsoredLoading;
+  const allTimeCount =
+    (sponsoredShown ? sponsoredData?.count : cosponsoredData?.count) ?? 0;
+
+  // A Roles tab section, with any title as a small label above the name
+  const roleSection = (
+    heading: string,
+    list: { title: string | null; name: string }[],
+  ) =>
+    list.length > 0 && (
+      <View style={componentStyles.section}>
+        <View style={componentStyles.termRow}>
+          <Text style={componentStyles.sectionTitle}>{heading}</Text>
+        </View>
+        <View style={{ paddingBottom: 8 }}>
+          {list.map(({ title, name }) => (
+            <View key={`${title} ${name}`} style={{ paddingVertical: 10 }}>
+              {title && (
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "700",
+                    letterSpacing: 0.5,
+                    color: "#008CFF",
+                    marginBottom: 2,
+                  }}
+                >
+                  {title.toUpperCase()}
+                </Text>
+              )}
+              <Text style={componentStyles.term}>{name}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
 
   const officialTourSteps: ScreenTourStep[] = [
     {
@@ -823,9 +1076,9 @@ export default function OfficialDetail() {
       targetLayout: tourLayouts[2],
     },
     {
-      title: "Bio, Sponsor, & Cosponsor Tabs",
+      title: "Roles, Bio, & Bills Tabs",
       description:
-        "The Sponsor and Cosponsor tabs list every bill this official has introduced or co-signed in the current Congress. Tap either tab to explore.",
+        "Roles shows this official's committees and caucus posts, and Bio their background. Bills lists every bill they've sponsored or cosponsored in the current Congress.",
       horizontalInset: 16,
       targetLayout: tourLayouts[3],
     },
@@ -881,22 +1134,29 @@ export default function OfficialDetail() {
 
       {/* Official Header - fixed above tabs */}
       <View ref={headerRef} collapsable={false} style={componentStyles.header}>
-        <Text style={componentStyles.roleTop}>
+        <Text
+          style={[
+            componentStyles.roleTop,
+            (isNonVotingSeat(official.state) || hasHeaderRoles) && {
+              marginBottom: 8,
+            },
+          ]}
+        >
           {official.partyHistory?.[0]?.partyName?.charAt(0) || ""} ·{" "}
           {(() => {
             const lastTerm = official.terms?.[official.terms.length - 1];
-            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
             const isHouse =
               lastTerm?.chamber === "House of Representatives" ||
               lastTerm?.chamber === "House" ||
-              TERRITORY_STATES.has(official.state) ||
+              isNonVotingSeat(official.state) ||
               lastTerm?.district != null;
             if (isHouse) {
               const district = lastTerm?.district
                 ? ` - District ${lastTerm.district}`
                 : "";
-              const full = `Representative, ${official.state}${district}`;
-              const abbr = `Rep, ${official.state}${district}`;
+              const title = houseTitle(official.state);
+              const full = `${title.full}, ${official.state}${district}`;
+              const abbr = `${title.abbr}, ${official.state}${district}`;
               return screenWidth < 390 ? abbr : full;
             }
             return screenWidth < 390
@@ -904,10 +1164,67 @@ export default function OfficialDetail() {
               : `Senator, ${official.state}`;
           })()}
         </Text>
-        {LEADERSHIP_ROLES[official.bioguideId] && (
-          <Text style={componentStyles.roleTop}>
-            {LEADERSHIP_ROLES[official.bioguideId]}
+        {isNonVotingSeat(official.state) && (
+          <Text
+            style={[
+              componentStyles.roleTop,
+              hasHeaderRoles && { marginBottom: 8 },
+            ]}
+          >
+            Non-voting member
           </Text>
+        )}
+        {hasHeaderRoles && (
+          // The bubbles start at the line's edge, so their padding puts each
+          // title's first letter under the party letter above
+          <View style={{ alignItems: "flex-start", gap: 6, marginBottom: 24 }}>
+            {chamberTitle && (
+              <View style={titleBubble}>
+                <Text style={titleBubbleText}>{chamberTitle}</Text>
+              </View>
+            )}
+            {(headerChair || otherLeadershipCount > 0) && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                {headerChair && (
+                  <View style={titleBubble}>
+                    <Text style={titleBubbleText}>
+                      {headerChair.title}, {headerChair.name}
+                    </Text>
+                  </View>
+                )}
+                {otherLeadershipCount > 0 && (
+                  // Opens the Roles tab, where they're all listed
+                  <Pressable
+                    onPress={() => {
+                      setActiveTab(1);
+                      pagerRef.current?.setPage(1);
+                    }}
+                    hitSlop={6}
+                    style={({ pressed }) => [
+                      titleBubble,
+                      {
+                        backgroundColor: "#efefef",
+                        transform: [{ scale: pressed ? 0.96 : 1 }],
+                      },
+                    ]}
+                  >
+                    <Text style={[titleBubbleText, { color: "#535353" }]}>
+                      {headerChair ? "+ " : ""}
+                      {otherLeadershipCount} leadership role
+                      {otherLeadershipCount === 1 ? "" : "s"}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </View>
         )}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           {/* Avatar */}
@@ -956,9 +1273,7 @@ export default function OfficialDetail() {
           </Pressable>
 
           {/* Name + Buttons */}
-          <View
-            style={{ flex: 1, justifyContent: "space-between", gap: 6 }}
-          >
+          <View style={{ flex: 1, justifyContent: "space-between", gap: 6 }}>
             <Text style={componentStyles.name}>{official.directOrderName}</Text>
             {official.officialWebsiteUrl && (
               <View style={{ flexDirection: "row", gap: 16 }}>
@@ -1010,7 +1325,7 @@ export default function OfficialDetail() {
         style={componentStyles.tabsNegative}
       >
         <View style={componentStyles.tabs}>
-          {["Profile", "Bio", "Sponsor", "Cosponsor"].map((label, index) => (
+          {["Record", "Roles", "Bio", "Bills"].map((label, index) => (
             <Pressable
               key={label}
               onPress={() => {
@@ -1051,7 +1366,7 @@ export default function OfficialDetail() {
               style={{
                 paddingHorizontal: 32,
                 marginBottom: 8,
-                marginTop: 8,
+                marginTop: 16,
               }}
             >
               <Text style={{ fontSize: 16, fontWeight: "700" }}>
@@ -1104,11 +1419,77 @@ export default function OfficialDetail() {
               </View>
             )}
 
+            {/* District map preview (House members only) */}
+            {servedArea && (
+              <>
+                <View
+                  style={{
+                    paddingHorizontal: 32,
+                    marginTop: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: "700" }}>
+                    District
+                  </Text>
+                </View>
+                {/* Outer view carries the card shadow; the inner one clips the
+                    map to the rounded corners. On iOS, clipping and shadow
+                    can't share a view — overflow: hidden cuts the shadow off. */}
+                <View
+                  style={{
+                    marginHorizontal: 16,
+                    marginBottom: 24,
+                    borderRadius: 24,
+                    backgroundColor: "#fafafa",
+                    shadowColor: "#000000",
+                    shadowOpacity: 0.15,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <View style={{ borderRadius: 24, overflow: "hidden" }}>
+                    <CongressionalDistrictMap
+                      stateAbbr={servedArea.stateAbbr}
+                      focusDistricts={servedFocusDistricts}
+                      interactive={false}
+                      width={screenWidth - 32}
+                      height={220}
+                      visible={activeTab === 0}
+                    />
+                    {/* Covers the map so a tap opens the full map, while
+                        swipes still reach this page and the tab pager instead
+                        of being swallowed by the map's web view */}
+                    <Pressable
+                      onPress={() =>
+                        router.push({
+                          pathname: "/congressional-map",
+                          params: {
+                            state: official.state,
+                            district: String(servedArea.district),
+                          },
+                        } as any)
+                      }
+                      accessibilityLabel="Open the congressional map"
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                      }}
+                    />
+                  </View>
+                </View>
+              </>
+            )}
+
             {/* Top Policy Areas */}
             <View
               ref={policyAreasRef}
               collapsable={false}
-              style={componentStyles.section}
+              style={[componentStyles.section, { marginBottom: 96 }]}
             >
               <View style={componentStyles.termRow}>
                 <Text style={componentStyles.sectionTitle}>
@@ -1170,85 +1551,78 @@ export default function OfficialDetail() {
                 </Text>
               )}
             </View>
-
-            {/* Committees */}
-            {staticData.committees.length > 0 && (
-              <View style={componentStyles.section}>
-                <View style={componentStyles.termRow}>
-                  <Text style={componentStyles.sectionTitle}>Committees</Text>
-                </View>
-                {staticData.committees.map(
-                  (committee: string, index: number) => (
-                    <View key={index} style={componentStyles.termRow}>
-                      <Text style={componentStyles.term}>{committee}</Text>
-                    </View>
-                  ),
-                )}
-              </View>
-            )}
-
-            {/* Congressional History */}
-            <View style={[componentStyles.section, { marginBottom: 96 }]}>
-              <View style={componentStyles.termRow}>
-                <Text style={componentStyles.sectionTitle}>
-                  Congressional History
-                </Text>
-              </View>
-              {official.terms && official.terms.length > 0 ? (
-                [...official.terms]
-                  .sort((a: any, b: any) => b.startYear - a.startYear)
-                  .map((term: any, index: number) => (
-                    <View key={index} style={componentStyles.termRow}>
-                      <Text
-                        style={[componentStyles.term, { flex: 1 }]}
-                        numberOfLines={1}
-                      >
-                        {term.chamber === "Senate" ? "Senator" : "Rep"},{" "}
-                        {official.state}
-                        {term.district ? `, District ${term.district}` : ""}
-                      </Text>
-                      <Text
-                        style={[
-                          componentStyles.term,
-                          { flex: 0, textAlign: "right" },
-                        ]}
-                      >
-                        {term.startYear}
-                        {term.endYear ? ` – ${term.endYear}` : " – Present"}
-                      </Text>
-                    </View>
-                  ))
-              ) : (
-                <View style={componentStyles.termRow}>
-                  <Text style={componentStyles.term}>
-                    {official.terms?.[0]?.chamber === "House of Representatives"
-                      ? `Representative, ${official.state}`
-                      : `Senator, ${official.state}`}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Caucuses */}
-            {staticData.caucuses.length > 0 && (
-              <View style={componentStyles.section}>
-                <View style={componentStyles.termRow}>
-                  <Text style={componentStyles.sectionTitle}>Caucuses</Text>
-                </View>
-                {staticData.caucuses.map((caucus: string, index: number) => (
-                  <View key={index} style={componentStyles.termRow}>
-                    <Text style={componentStyles.term}>{caucus}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
           </ScrollView>
         </View>
 
-        {/* Page 1: Bio */}
+        {/* Page 1: Roles */}
         <View key="1" style={{ flex: 1 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <View style={{ marginBottom: 96, paddingTop: 4 }}>
+            <View style={{ marginBottom: 96, paddingTop: 12 }}>
+              {roleSection("Committees", roles.committees)}
+              {roleSection("Subcommittees", roles.subcommittees)}
+              {roleSection("Caucus Leadership", roles.caucuses)}
+              {roles.committees.length === 0 &&
+                roles.subcommittees.length === 0 &&
+                roles.caucuses.length === 0 && (
+                  <View style={{ padding: 32, alignItems: "center" }}>
+                    <Text style={{ color: "#7B7C81", fontSize: 14 }}>
+                      No committee or caucus roles yet.
+                    </Text>
+                  </View>
+                )}
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* Page 2: Bio */}
+        <View key="2" style={{ flex: 1 }}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <View style={{ marginBottom: 96, paddingTop: 12 }}>
+              {/* Congressional History */}
+              <View style={componentStyles.section}>
+                <View style={componentStyles.termRow}>
+                  <Text style={componentStyles.sectionTitle}>
+                    Congressional History
+                  </Text>
+                </View>
+                {official.terms && official.terms.length > 0 ? (
+                  [...official.terms]
+                    .sort((a: any, b: any) => b.startYear - a.startYear)
+                    .map((term: any, index: number) => (
+                      <View key={index} style={componentStyles.termRow}>
+                        <Text
+                          style={[componentStyles.term, { flex: 1 }]}
+                          numberOfLines={1}
+                        >
+                          {term.chamber === "Senate"
+                            ? "Senator"
+                            : houseTitle(official.state).abbr}
+                          , {official.state}
+                          {term.district ? `, District ${term.district}` : ""}
+                        </Text>
+                        <Text
+                          style={[
+                            componentStyles.term,
+                            { flex: 0, textAlign: "right" },
+                          ]}
+                        >
+                          {term.startYear}
+                          {term.endYear ? ` – ${term.endYear}` : " – Present"}
+                        </Text>
+                      </View>
+                    ))
+                ) : (
+                  <View style={componentStyles.termRow}>
+                    <Text style={componentStyles.term}>
+                      {official.terms?.[0]?.chamber ===
+                      "House of Representatives"
+                        ? `${houseTitle(official.state).full}, ${official.state}`
+                        : `Senator, ${official.state}`}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
               {/* Education */}
               {staticData.education.length > 0 && (
                 <View style={componentStyles.section}>
@@ -1377,141 +1751,39 @@ export default function OfficialDetail() {
             </View>
           </ScrollView>
         </View>
-
-        {/* Page 1: Sponsored */}
-        <View key="2" style={{ flex: 1, marginHorizontal: 16 }}>
-          <ScrollView keyboardShouldPersistTaps="handled">
-            <View style={{ marginBottom: 96 }}>
-              {sponsoredLoading ? (
-                <View
-                  style={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingVertical: 60,
-                  }}
-                >
-                  <LoadingSpinner />
-                  <Text
-                    style={{ color: "#7B7C81", marginTop: 16, fontSize: 13 }}
-                  >
-                    Loading legislation...
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  <View style={componentStyles.legislationHeader}>
-                    <View style={componentStyles.legislationHeaderLeft}>
-                      <Pressable
-                        style={({ pressed }) => [
-                          componentStyles.button,
-                          { transform: [{ scale: pressed ? 0.96 : 1 }] },
-                        ]}
-                        onPress={() => setShowFilterModal(true)}
-                      >
-                        {screenWidth < 390 ? (
-                          <View>
-                            <Text
-                              style={[
-                                componentStyles.legislationHeaderTotal,
-                                { fontSize: 12 },
-                              ]}
-                            >
-                              {`${filteredSponsored.length.toLocaleString()} in 119th`}
-                            </Text>
-                            <Text
-                              style={[
-                                componentStyles.legislationHeaderTotal,
-                                { fontSize: 12 },
-                              ]}
-                            >
-                              {`${(sponsoredData?.count ?? 0).toLocaleString()} all-time`}
-                            </Text>
-                          </View>
-                        ) : (
-                          <Text style={componentStyles.legislationHeaderTotal}>
-                            {`${filteredSponsored.length.toLocaleString()} in 119th · ${(sponsoredData?.count ?? 0).toLocaleString()} all-time`}
-                          </Text>
-                        )}
-                        {showFilterModal ? (
-                          <ChevronUp size={16} color="#7B7C81" />
-                        ) : (
-                          <ChevronDown size={16} color="#7B7C81" />
-                        )}
-                      </Pressable>
-                      <Pressable
-                        style={({ pressed }) => [
-                          componentStyles.button,
-                          { transform: [{ scale: pressed ? 0.96 : 1 }] },
-                        ]}
-                        onPress={() => setShowSortDropdown(!showSortDropdown)}
-                      >
-                        <Text
-                          style={[
-                            componentStyles.sortText,
-                            {
-                              fontSize: screenWidth < 390 ? 11 : 13,
-                              flexShrink: 1,
-                              marginRight: 0,
-                            },
-                          ]}
-                        >
-                          {selectedSort}
-                        </Text>
-                        <View style={{ flexShrink: 0 }}>
-                          {showSortDropdown ? (
-                            <ChevronUp size={16} color="#7B7C81" />
-                          ) : (
-                            <ChevronDown size={16} color="#7B7C81" />
-                          )}
-                        </View>
-                      </Pressable>
-                    </View>
-                    <Pressable
-                      style={({ pressed }) => [
-                        componentStyles.button,
-                        { transform: [{ scale: pressed ? 0.75 : 1 }] },
-                      ]}
-                      onPress={() => setShowSearchModal(true)}
-                    >
-                      <Search size={24} color="#535353" />
-                    </Pressable>
-                  </View>
-
-                  {filteredSponsored.length === 0 ? (
-                    <View style={{ paddingVertical: 60, alignItems: "center" }}>
-                      <Text style={{ color: "#7B7C81", fontSize: 13 }}>
-                        No legislation found
-                      </Text>
-                    </View>
-                  ) : (
-                    filteredSponsored.map((item: any, index: number) => (
-                      <LegislationCard
-                        key={`${item.type}-${item.number}-${item.congress}-${index}`}
-                        item={item}
-                      />
-                    ))
-                  )}
-                </>
-              )}
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "#535353",
-                  textAlign: "center",
-                  paddingVertical: 16,
-                }}
-              >
-                Bills are currently limited to the 119th Congress (2025–2027).
-              </Text>
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* Page 2: Cosponsored */}
+        {/* Page 3: Bills, sponsored or cosponsored */}
         <View key="3" style={{ flex: 1, marginHorizontal: 16 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ marginBottom: 96 }}>
-              {cosponsoredLoading ? (
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
+                {(["sponsored", "cosponsored"] as const).map((kind) => {
+                  const selected = billKind === kind;
+                  return (
+                    <Pressable
+                      key={kind}
+                      onPress={() => setBillKind(kind)}
+                      style={({ pressed }) => ({
+                        paddingVertical: 6,
+                        paddingHorizontal: 14,
+                        borderRadius: 999,
+                        backgroundColor: selected ? "#E8F4FF" : "#efefef",
+                        transform: [{ scale: pressed ? 0.96 : 1 }],
+                      })}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "600",
+                          color: selected ? "#008CFF" : "#535353",
+                        }}
+                      >
+                        {kind === "sponsored" ? "Sponsored" : "Cosponsored"}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {billsLoading ? (
                 <View
                   style={{
                     justifyContent: "center",
@@ -1545,7 +1817,7 @@ export default function OfficialDetail() {
                                 { fontSize: 12 },
                               ]}
                             >
-                              {`${filteredCosponsored.length.toLocaleString()} in 119th`}
+                              {`${shownBills.length.toLocaleString()} in 119th`}
                             </Text>
                             <Text
                               style={[
@@ -1553,12 +1825,12 @@ export default function OfficialDetail() {
                                 { fontSize: 12 },
                               ]}
                             >
-                              {`${(cosponsoredData?.count ?? 0).toLocaleString()} all-time`}
+                              {`${allTimeCount.toLocaleString()} all-time`}
                             </Text>
                           </View>
                         ) : (
                           <Text style={componentStyles.legislationHeaderTotal}>
-                            {`${filteredCosponsored.length.toLocaleString()} in 119th · ${(cosponsoredData?.count ?? 0).toLocaleString()} all-time`}
+                            {`${shownBills.length.toLocaleString()} in 119th · ${allTimeCount.toLocaleString()} all-time`}
                           </Text>
                         )}
                         {showFilterModal ? (
@@ -1606,16 +1878,16 @@ export default function OfficialDetail() {
                     </Pressable>
                   </View>
 
-                  {filteredCosponsored.length === 0 ? (
+                  {shownBills.length === 0 ? (
                     <View style={{ paddingVertical: 60, alignItems: "center" }}>
                       <Text style={{ color: "#7B7C81", fontSize: 13 }}>
                         No legislation found
                       </Text>
                     </View>
                   ) : (
-                    filteredCosponsored.map((item: any, index: number) => (
+                    shownBills.map((item: any, index: number) => (
                       <LegislationCard
-                        key={`${item.type}-${item.number}-${item.congress}-${index}`}
+                        key={`${billKind}-${item.type}-${item.number}-${item.congress}-${index}`}
                         item={item}
                       />
                     ))
@@ -1642,9 +1914,9 @@ export default function OfficialDetail() {
         isVisible={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onSearch={setSearchQuery}
-        searchContext={activeTab === 2 ? "Sponsored" : "Cosponsored"}
+        searchContext={billKind === "sponsored" ? "Sponsored" : "Cosponsored"}
         items={toSearchable(
-          activeTab === 2 ? filteredSponsored : filteredCosponsored,
+          billKind === "sponsored" ? filteredSponsored : filteredCosponsored,
         )}
         onItemPress={(item) => {
           router.navigate(`/bill/${item.billType.toLowerCase()}${item.number}`);
@@ -1667,18 +1939,44 @@ export default function OfficialDetail() {
       <LegislationFilterModal
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
-        selectedChambers={activeTab === 2 ? sponsoredChambers : cosponsoredChambers}
-        selectedPolicyAreas={activeTab === 2 ? sponsoredPolicyAreas : cosponsoredPolicyAreas}
-        selectedLegislationTypes={activeTab === 2 ? sponsoredLegislationTypes : cosponsoredLegislationTypes}
+        selectedChambers={
+          billKind === "sponsored" ? sponsoredChambers : cosponsoredChambers
+        }
+        selectedPolicyAreas={
+          billKind === "sponsored"
+            ? sponsoredPolicyAreas
+            : cosponsoredPolicyAreas
+        }
+        selectedLegislationTypes={
+          billKind === "sponsored"
+            ? sponsoredLegislationTypes
+            : cosponsoredLegislationTypes
+        }
         toggleChamber={toggleChamber}
         togglePolicyArea={togglePolicyArea}
         toggleLegislationType={toggleLegislationType}
         onCancel={handleCancel}
         onApply={handleApply}
-        setSelectedChambers={activeTab === 2 ? setSponsoredChambers : setCosponsoredChambers}
-        setSelectedPolicyAreas={activeTab === 2 ? setSponsoredPolicyAreas : setCosponsoredPolicyAreas}
-        setSelectedLegislationTypes={activeTab === 2 ? setSponsoredLegislationTypes : setCosponsoredLegislationTypes}
-        resultCount={activeTab === 2 ? filteredSponsored.length : filteredCosponsored.length}
+        setSelectedChambers={
+          billKind === "sponsored"
+            ? setSponsoredChambers
+            : setCosponsoredChambers
+        }
+        setSelectedPolicyAreas={
+          billKind === "sponsored"
+            ? setSponsoredPolicyAreas
+            : setCosponsoredPolicyAreas
+        }
+        setSelectedLegislationTypes={
+          billKind === "sponsored"
+            ? setSponsoredLegislationTypes
+            : setCosponsoredLegislationTypes
+        }
+        resultCount={
+          billKind === "sponsored"
+            ? filteredSponsored.length
+            : filteredCosponsored.length
+        }
       />
 
       <AddModal
@@ -1697,14 +1995,13 @@ export default function OfficialDetail() {
           party: official.partyHistory?.[0]?.partyName?.charAt(0) || "",
           role: (() => {
             const t = official.terms?.[official.terms.length - 1];
-            const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
             const isHouse =
               t?.chamber === "House of Representatives" ||
               t?.chamber === "House" ||
-              TERRITORY_STATES.has(official.state) ||
+              isNonVotingSeat(official.state) ||
               t?.district != null;
             return isHouse
-              ? `Representative, ${official.state}${t?.district ? ` - District ${t.district}` : ""}`
+              ? `${houseTitle(official.state).full}, ${official.state}${t?.district ? ` - District ${t.district}` : ""}`
               : `Senator, ${official.state}`;
           })(),
           photoUrl: official.depiction?.imageUrl,

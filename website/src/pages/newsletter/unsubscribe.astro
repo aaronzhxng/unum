@@ -1,0 +1,19 @@
+---
+// Where the unsubscribe link in each email lands. The button sends the
+// token from the link to /api/unsubscribe.
+import NewsletterNotice from "../../components/NewsletterNotice.astro";
+---
+
+<NewsletterNotice title="Unsubscribe" heading="Unsubscribe from Congress Weekly?">
+  <p>You will stop getting the weekly email. You can sign up again anytime.</p>
+  <form slot="actions" action="/api/unsubscribe" method="post" data-unsubscribe>
+    <input type="hidden" name="token" />
+    <button type="submit" class="button">Unsubscribe</button>
+  </form>
+</NewsletterNotice>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>("[data-unsubscribe]");
+  const token = new URLSearchParams(location.search).get("token");
+  if (form) form.querySelector<HTMLInputElement>("input[name=token]")!.value = token ?? "";
+</script>

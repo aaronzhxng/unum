@@ -586,112 +586,6 @@ const checkFollowedOfficials = async (filterToken?: string) => {
 
 // ── Pre-warm member legislation cache ─────────────────────────────────────────
 
-const PREWARM_FRESHNESS_MS = 22 * 60 * 60 * 1000; // refresh if > 22h old (matches 24h backend TTL)
-const PREWARM_BATCH_LIMIT = 20; // max officials to refresh per cron run
-
-const fetchMemberLegislationFull = async (
-  bioguideId: string,
-  endpoint: "sponsored-legislation" | "cosponsored-legislation",
-  dataKey: "sponsoredLegislation" | "cosponsoredLegislation",
-): Promise<{ legislation: any[]; count: number }> => {
-  let allLegislation: any[] = [];
-  let offset = 0;
-  const limit = 250;
-  let allTimeCount = 0;
-
-  const firstPage = await axios.get(
-    `https://api.congress.gov/v3/member/${bioguideId}/${endpoint}`,
-    {
-      headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-      params: { limit, offset, format: "json" },
-      timeout: 15000,
-    },
-  );
-  allTimeCount = firstPage.data.pagination?.count ?? 0;
-  const firstItems: any[] = firstPage.data[dataKey] || [];
-  allLegislation = allLegislation.concat(
-    firstItems.filter((b: any) => b.congress === 119),
-  );
-
-  const hasOlderFirst = firstItems.some(
-    (b: any) => b.congress !== undefined && b.congress < 119,
-  );
-  let hasMore = !!firstPage.data.pagination?.next && !hasOlderFirst;
-  offset += limit;
-
-  while (hasMore) {
-    const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}/${endpoint}`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit, offset, format: "json" },
-        timeout: 15000,
-      },
-    );
-    const page: any[] = response.data[dataKey] || [];
-    allLegislation = allLegislation.concat(
-      page.filter((b: any) => b.congress === 119),
-    );
-    const hasOlder = page.some(
-      (b: any) => b.congress !== undefined && b.congress < 119,
-    );
-    hasMore = !!response.data.pagination?.next && page.length === limit && !hasOlder;
-    offset += limit;
-  }
-
-  return { legislation: allLegislation, count: allTimeCount };
-};
-
-const writeLegislationCache = (key: string, data: any): void => {
-  db.prepare(
-    `INSERT INTO congress_cache (cache_key, data, cached_at) VALUES (?, ?, ?)
-     ON CONFLICT(cache_key) DO UPDATE SET data = excluded.data, cached_at = excluded.cached_at`,
-  ).run(key, JSON.stringify(data), Date.now());
-};
-
-const prewarmFollowedOfficials = async (): Promise<void> => {
-  const registrations = getAllRegistrations();
-  const officialIds = new Set<string>();
-  for (const reg of registrations) {
-    const followed: { bioguideId: string }[] = JSON.parse(
-      reg.followed_officials || "[]",
-    );
-    for (const o of followed) {
-      const id = o.bioguideId.replace(/^official_/, "");
-      if (/^[A-Z][0-9A-Z]{6}$/.test(id)) officialIds.add(id);
-    }
-  }
-
-  const stale = [...officialIds]
-    .filter((id) => {
-      const row = db
-        .prepare(`SELECT cached_at FROM congress_cache WHERE cache_key = ?`)
-        .get(`sponsored-${id}`) as { cached_at: number } | undefined;
-      return !row || Date.now() - row.cached_at > PREWARM_FRESHNESS_MS;
-    })
-    .slice(0, PREWARM_BATCH_LIMIT);
-
-  if (stale.length === 0) {
-    console.log("Member legislation cache: all followed officials are fresh.");
-    return;
-  }
-  console.log(`Pre-warming legislation cache for ${stale.length} officials...`);
-
-  for (const bioguideId of stale) {
-    try {
-      const [sponsored, cosponsored] = await Promise.all([
-        fetchMemberLegislationFull(bioguideId, "sponsored-legislation", "sponsoredLegislation"),
-        fetchMemberLegislationFull(bioguideId, "cosponsored-legislation", "cosponsoredLegislation"),
-      ]);
-      writeLegislationCache(`sponsored-${bioguideId}`, sponsored);
-      writeLegislationCache(`cosponsored-${bioguideId}`, cosponsored);
-      console.log(`  Cached ${bioguideId}: ${sponsored.legislation.length} sponsored, ${cosponsored.legislation.length} cosponsored`);
-    } catch (err) {
-      console.warn(`  Pre-warm failed for ${bioguideId}:`, err);
-    }
-  }
-  console.log("Pre-warming complete.");
-};
 
 // ── Main runner ───────────────────────────────────────────────────────────────
 
@@ -805,7 +699,6 @@ export const runCronJob = async () => {
   );
   await syncRecentBills();
   await enrichMissingPolicyAreas();
-  await prewarmFollowedOfficials();
   await checkNewBills();
   await checkFollowedBills();
   await checkFollowedOfficials();

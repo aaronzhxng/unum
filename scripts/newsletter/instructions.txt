@@ -1,3 +1,18 @@
+Weekly routine:
+
+Draft: run node scripts/newsletter/draftIssue.mjs on Monday. It writes last week's issue into the website's issues folder, marked as a draft, and saves any new sponsor photos.
+Edit with me: I fill in the headline and description, sharpen the opening note, trim the sections, pick a few new bills from the list it provides, and write any summaries marked TODO.
+Review: push, then read it on the preview link. Drafts appear on previews but never on the live site, even if merged by accident.
+Publish: delete the draft: true line, merge, send yourself a test, then send to all.
+
+Commands:
+
+node scripts/newsletter/draftIssue.mjs
+node scripts/newsletter/draftIssue.mjs --week 2026-10-26
+node scripts/newsletter/memberPhotos.mjs
+
+Old beehiiv commands:
+
 node scripts/newsletter/generateDigest.js
 node scripts/newsletter/generateDigest.js --weeks-ago 1
 node scripts/newsletter/curatePicks.js hr6644 s269 sjres80

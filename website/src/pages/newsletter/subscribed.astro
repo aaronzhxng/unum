@@ -1,0 +1,10 @@
+---
+// Where the signup form lands without JavaScript. With it, the form says this
+// in place.
+import NewsletterNotice from "../../components/NewsletterNotice.astro";
+---
+
+<NewsletterNotice title="You are subscribed" heading="You are subscribed">
+  <p>Check your inbox for a welcome email. Your first issue of Congress Weekly arrives next Monday.</p>
+  <a slot="actions" class="button" href="/newsletter">Read the latest issue</a>
+</NewsletterNotice>

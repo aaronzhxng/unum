@@ -183,6 +183,14 @@ export default function RootLayout() {
                 options={{ headerShown: false, animation: "slide_from_right" }}
               />
               <Stack.Screen
+                name="congressional-map"
+                options={{
+                  headerShown: false,
+                  gestureEnabled: false, // screen has its own edge-swipe strip
+                  animation: "slide_from_right",
+                }}
+              />
+              <Stack.Screen
                 name="tips"
                 options={{
                   headerShown: false,

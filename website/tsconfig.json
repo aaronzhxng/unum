@@ -1,0 +1,8 @@
+{
+  // The website's own TypeScript settings. Without this file, the build looks
+  // up to the repo root and finds the Expo app's tsconfig.json, which needs
+  // the app's packages installed.
+  "extends": "astro/tsconfigs/base",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
+}
