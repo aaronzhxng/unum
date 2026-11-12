@@ -75,7 +75,16 @@ export const member = (id) => {
   const m = members.get(id);
   if (!m) throw new Error(`Unknown member ${id}`);
   const pa = has(`pa-${id}.json`) ? read(`pa-${id}.json`) : null;
-  return { ...m, areas: pa?.policyAreas || [], sponsored: pa?.totalSponsored, cosponsored: pa?.totalCosponsored };
+  return { ...m, areas: pa?.policyAreas || [], sponsored: billCount(id, "sponsored"), cosponsored: billCount(id, "cosponsored") };
+};
+
+// Bills and resolutions this Congress, as the app's Bills tab counts them.
+// The member lists also hold amendments (no type), which the policy-areas
+// totals include, so those totals overcount, by 40 for Schumer's sponsored.
+const billCount = (id, kind) => {
+  const f = `${kind}-${id}.json`;
+  if (!has(f)) return undefined;
+  return read(f).legislation.filter((b) => b.type).length;
 };
 
 // ---------------------------------------------------------------------------

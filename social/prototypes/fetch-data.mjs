@@ -54,6 +54,8 @@ for (const id of MEMBERS) {
   console.log("  backend: member", id);
   save(`member-${id}.json`, await get(`${BACKEND}/api/officials/${id}`));
   save(`pa-${id}.json`, await get(`${BACKEND}/api/officials/${id}/policy-areas`));
+  save(`sponsored-${id}.json`, await get(`${BACKEND}/api/officials/${id}/sponsored`));
+  save(`cosponsored-${id}.json`, await get(`${BACKEND}/api/officials/${id}/cosponsored`));
 }
 
 console.log("  congress.gov: laws, House roll calls");

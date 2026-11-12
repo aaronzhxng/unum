@@ -245,7 +245,8 @@ body { background: var(--paper); }
 
 .profile .who { font-size: 16px; font-weight: 600; margin: 0 0 18px 4px; }
 .profile .id { display: flex; align-items: center; gap: 24px; margin-left: 4px; }
-.photo { border-radius: 50%; object-fit: cover; background: #ddd; flex: none; }
+/* Cropped from the top like the app's avatars, which keeps faces near the middle of the circle */
+.photo { border-radius: 50%; object-fit: cover; object-position: 50% 0; background: #ddd; flex: none; }
 .ring-d { box-shadow: 0 0 0 4px var(--dem); } .ring-r { box-shadow: 0 0 0 4px var(--rep); } .ring-i { box-shadow: 0 0 0 4px var(--ind); }
 .profile .id b { font-size: 22px; font-weight: 700; display: block; }
 .profile .links { font-size: 15px; color: var(--blue); font-weight: 600; margin-top: 6px; display: flex; gap: 26px; }
