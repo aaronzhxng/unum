@@ -21,7 +21,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..", "..");
@@ -50,7 +50,7 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 
 // The week runs Monday through Sunday; the issue covers Monday to Friday by
 // name and goes out the next Monday
-function weekOf(monday) {
+export function weekOf(monday) {
   const start = new Date(`${monday}T00:00:00Z`);
   if (start.getUTCDay() !== 1) throw new Error(`${monday} is not a Monday`);
   const friday = addDays(start, 4);
@@ -76,7 +76,7 @@ function lastMonday() {
 // Congress.gov
 // ---------------------------------------------------------------------------
 
-async function api(route, params = {}) {
+export async function api(route, params = {}) {
   const url = new URL(`https://api.congress.gov/v3${route}`);
   for (const [k, v] of Object.entries({ format: "json", ...params })) url.searchParams.set(k, v);
   for (let attempt = 0; ; attempt++) {
@@ -90,7 +90,7 @@ async function api(route, params = {}) {
   }
 }
 
-async function pages(route, key, params) {
+export async function pages(route, key, params) {
   const all = [];
   for (let offset = 0; ; offset += 250) {
     const data = await api(route, { ...params, limit: 250, offset });
@@ -99,7 +99,7 @@ async function pages(route, key, params) {
   }
 }
 
-async function pool(items, size, fn) {
+export async function pool(items, size, fn) {
   const out = new Array(items.length);
   let next = 0;
   await Promise.all(
@@ -114,7 +114,7 @@ async function pool(items, size, fn) {
 }
 
 const idOf = (b) => `${b.type}${b.number}`.toLowerCase();
-const routeOf = (id) => {
+export const routeOf = (id) => {
   const [, type, number] = id.match(/^([a-z]+)(\d+)$/);
   return `/bill/${CONGRESS}/${type}/${number}`;
 };
@@ -126,11 +126,11 @@ const routeOf = (id) => {
 const PASSED = /^Passed\/agreed to in (House|Senate)/;
 const FAILED = /Failed of passage|On passage Failed|pass the bill[^.]*Failed|not agreed to in (the )?(House|Senate)/i;
 const REPORTED = /Reported by|Ordered to be Reported|Placed on .*Calendar/i;
-const FINAL_VOTE = /passage|pass the bill|pass the joint resolution|agreed to|cloture|override|concur/i;
+const FINAL_VOTE = /passage|pass the bill|pass the joint resolution|agreed to|cloture|override|concur|discharge/i;
 
 const chamberOf = (a) => (/Senate/.test(a.text) ? "Senate" : /House/.test(a.text) ? "House" : a.sourceSystem?.name?.includes("House") ? "House" : "Senate");
 
-function facts(id, actions) {
+export function facts(id, actions) {
   const type = id.replace(/\d+/, "");
   const origin = type.startsWith("h") ? "House" : "Senate";
   const other = origin === "House" ? "Senate" : "House";
@@ -179,7 +179,7 @@ function stages(f) {
 
 // Recorded final votes in the week, with counts from the action text, e.g.
 // "Failed of passage in Senate by Yea-Nay Vote. 49 - 50"
-function votes(actions, w) {
+export function votes(actions, w) {
   return actions
     .filter((a) => a.recordedVotes?.length && a.actionDate >= w.start && a.actionDate <= w.end && FINAL_VOTE.test(a.text))
     .map((a) => {
@@ -195,6 +195,53 @@ function votes(actions, w) {
     .filter(Boolean)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 2);
+}
+
+// The one dated line each bill gets in an issue: what happened to it that
+// week, naming the committee where one was involved. committees is the list
+// from the bill's /committees route.
+const committeeName = (c) => `the ${c.chamber} ${c.name}`;
+const committeeActivity = (committees, activity, w) =>
+  committees.find((c) =>
+    (c.activities || []).some((a) => a.name === activity && (!w || (a.date.slice(0, 10) >= w.start && a.date.slice(0, 10) <= w.end))),
+  );
+
+export function keyEvent(id, actions, committees, w) {
+  const f = facts(id, actions);
+  const inWeek = (d) => d && d >= w.start && d <= w.end;
+  if (inWeek(f.law)) return { label: "Signed into law", date: f.law };
+  if (inWeek(f.presented)) return { label: "Sent to the President", date: f.presented };
+  const passed = ["House", "Senate"].filter((c) => inWeek(f.passed[c])).sort((a, b) => f.passed[b].localeCompare(f.passed[a]))[0];
+  if (passed) return { label: `Passed the ${passed}`, date: f.passed[passed] };
+  const failed = ["House", "Senate"].find((c) => inWeek(f.failed[c]));
+  if (failed) return { label: `Failed in the ${failed}`, date: f.failed[failed] };
+  // A committee's own bill, written and reported in one step
+  const original = committeeActivity(committees, "Reported Original Measure", w);
+  if (original) {
+    const date = original.activities.find((a) => a.name === "Reported Original Measure").date.slice(0, 10);
+    return { label: `Written and reported by ${committeeName(original)}`, date };
+  }
+  const reported = committeeActivity(committees, "Reported By", w);
+  if (reported) {
+    const date = reported.activities.find((a) => a.name === "Reported By").date.slice(0, 10);
+    return { label: `Reported by ${committeeName(reported)}`, date };
+  }
+  // Some bills skip committee and go straight onto the calendar
+  const calendar = actions.find((a) => inWeek(a.actionDate) && /Placed on .*Calendar/i.test(a.text));
+  if (calendar && !committees.length) {
+    return { label: inWeek(f.introduced) ? `Introduced and placed directly on the ${chamberOf(calendar)} calendar` : `Placed on the ${chamberOf(calendar)} calendar`, date: calendar.actionDate };
+  }
+  if (inWeek(f.introduced)) {
+    const referred = committees.filter((c) => (c.activities || []).some((a) => a.name === "Referred To"));
+    const where = referred.length ? ` and sent to ${committeeName(referred[0])}${referred.length > 1 ? ` and ${plural(referred.length - 1, "other committee")}` : ""}` : "";
+    return { label: `Introduced${where}`, date: f.introduced };
+  }
+  const vote = votes(actions, w)[0];
+  if (vote) {
+    const outcome = { Blocked: "Blocked in", Failed: "Rejected in", Passed: "Passed", Advanced: "Advanced in", "Agreed to": "Agreed to in" }[vote.result];
+    return { label: outcome ? `${outcome} the ${vote.chamber}` : `${vote.chamber} vote`, date: vote.date };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -221,8 +268,12 @@ function summaryText(summaries) {
   return text;
 }
 
-async function details(id) {
-  const [{ bill }, { summaries }] = await Promise.all([api(routeOf(id)), api(`${routeOf(id)}/summaries`)]);
+export async function details(id) {
+  const [{ bill }, { summaries }, { committees }] = await Promise.all([
+    api(routeOf(id)),
+    api(`${routeOf(id)}/summaries`),
+    api(`${routeOf(id)}/committees`),
+  ]);
   const s = bill.sponsors?.[0];
   return {
     title: bill.title,
@@ -230,6 +281,7 @@ async function details(id) {
     sponsor: s ? sponsorName(s) : "Unknown sponsor",
     sponsorId: s?.bioguideId,
     summary: summaryText(summaries),
+    committees: committees || [],
   };
 }
 
@@ -238,6 +290,23 @@ async function details(id) {
 // ---------------------------------------------------------------------------
 
 const q = (s) => JSON.stringify(String(s));
+const total = (n) => (typeof n === "number" ? n : n.house + n.senate);
+// Every committee the bill has been to by the end of the week, in the order it
+// got there, with where it last stood in each. The issue lists them when there
+// is more than one.
+const COMMITTEE_STATUS = { "Reported By": "reported", "Reported Original Measure": "reported", "Discharged From": "discharged", "Markup By": "marked up", "Referred To": "referred" };
+export function committeeTrail(committees, w) {
+  return committees
+    .map((c) => {
+      const acts = (c.activities || []).filter((a) => COMMITTEE_STATUS[a.name] && a.date.slice(0, 10) <= w.end).sort((a, b) => a.date.localeCompare(b.date));
+      if (!acts.length) return null;
+      const last = acts[acts.length - 1];
+      return { name: `${c.chamber} ${c.name}`, status: COMMITTEE_STATUS[last.name], date: last.date.slice(0, 10), since: acts[0].date };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.since.localeCompare(b.since))
+    .map(({ since, ...c }) => c);
+}
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 function billYaml(b) {
@@ -247,7 +316,9 @@ function billYaml(b) {
     b.policyArea && `        policyArea: ${q(b.policyArea)}`,
     `        sponsor: ${q(b.sponsor)}`,
     b.sponsorId && `        sponsorId: ${b.sponsorId}`,
+    b.when && `        when: { label: ${q(b.when.label)}, date: ${b.when.date} }`,
     `        summary: ${q(b.summary || "TODO: no official summary yet; write one from the bill text")}`,
+    ...(b.committeeList?.length > 1 ? [`        committees:`, ...b.committeeList.map((c) => `          - { name: ${q(c.name)}, status: ${c.status}, date: ${c.date} }`)] : []),
     `        stages:`,
     ...b.stages.map((s) => `          - { label: ${q(s.label)}, status: ${s.status} }`),
   ];
@@ -288,14 +359,18 @@ async function main() {
     if (weekActions.some((a) => REPORTED.test(a.text))) groups.committee.push(h.id);
     if (inWeek(f.introduced)) groups.introduced.push(h.id);
   }
+  const byChamber = (ids, chamber) => ({
+    house: ids.filter((id) => chamber(id) === "House").length,
+    senate: ids.filter((id) => chamber(id) === "Senate").length,
+  });
   const stats = {
     signed: groups.signed.length,
     passedBoth: histories.filter((h) => {
       const f = byId.get(h.id).f;
       return f.passed.House && f.passed.Senate && inWeek([f.passed.House, f.passed.Senate].sort()[1]) && !/^(h|s)res$/.test(f.type);
     }).length,
-    outOfCommittee: groups.committee.length,
-    introduced: groups.introduced.length,
+    outOfCommittee: byChamber(groups.committee, (id) => chamberOf(byId.get(id).actions.find((a) => inWeek(a.actionDate) && REPORTED.test(a.text)))),
+    introduced: byChamber(groups.introduced, (id) => (id.startsWith("h") ? "House" : "Senate")),
   };
   console.log(`  ${JSON.stringify(stats)}`);
 
@@ -317,7 +392,14 @@ async function main() {
   const featured = [...new Set(sections.flatMap((s) => s.ids))];
   console.log(`  filling in ${featured.length} bills…`);
   const info = new Map(await pool(featured, 4, async (id) => [id, await details(id)]));
-  const bill = (id) => ({ id, ...info.get(id), stages: stages(byId.get(id).f), votes: byId.get(id).v });
+  const bill = (id) => ({
+    id,
+    ...info.get(id),
+    when: keyEvent(id, byId.get(id).actions, info.get(id).committees, w),
+    committeeList: committeeTrail(info.get(id).committees, w),
+    stages: stages(byId.get(id).f),
+    votes: byId.get(id).v,
+  });
 
   const titleOf = (id) => byId.get(id).title.replace(/\s+/g, " ");
   const comments = [
@@ -329,7 +411,7 @@ async function main() {
   const s = groups.signed.length, p = groups.presented.length;
   const opening = [
     `Good morning. Last week, ${s ? `${plural(s, "bill was", "bills were")} signed into law` : "no bills were signed into law"}${p ? `, and ${plural(p, "more bill was", "more bills were")} sent to the President` : ""}.`,
-    `${stats.passedBoth ? `${plural(stats.passedBoth, "bill")} passed both chambers, ` : "No bills passed both chambers, "}${plural(stats.outOfCommittee, "bill")} came out of committee, and ${stats.introduced} bills and resolutions were introduced.`,
+    `${stats.passedBoth ? `${plural(stats.passedBoth, "bill")} passed both chambers, ` : "No bills passed both chambers, "}${plural(total(stats.outOfCommittee), "bill")} came out of committee, and ${total(stats.introduced)} bills and resolutions were introduced.`,
   ];
 
   const md = [
@@ -340,7 +422,7 @@ async function main() {
     `headline: ${q("TODO: headline")}`,
     `description: ${q("TODO: one-line summary for the archive and link previews")}`,
     "stats:",
-    ...Object.entries(stats).map(([k, v]) => `  ${k}: ${v}`),
+    ...Object.entries(stats).map(([k, v]) => (typeof v === "number" ? `  ${k}: ${v}` : `  ${k}: { house: ${v.house}, senate: ${v.senate} }`)),
     "sections:",
     ...sections.flatMap((sec) => [`  - heading: ${sec.heading}`, "    bills:", ...sec.ids.map((id) => billYaml(bill(id)))]),
     `signoff: ${SIGNOFF}`,
@@ -357,7 +439,10 @@ async function main() {
   if (!arg("out")) execFileSync(process.execPath, [path.join(HERE, "memberPhotos.mjs")], { stdio: "inherit" });
 }
 
-main().catch((e) => {
-  console.error(e.message);
-  process.exit(1);
-});
+// Run as a command; other scripts can import the helpers above
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
+  main().catch((e) => {
+    console.error(e.message);
+    process.exit(1);
+  });
+}

@@ -16,6 +16,7 @@ sections:
         policyArea: Congress
         sponsor: Rep. Bryan Steil (R-WI-1)
         sponsorId: S001213
+        when: { label: "Blocked in the Senate", date: 2026-09-30 }
         summary: This bill generally prohibits Members of Congress and their spouses and dependent children from purchasing stocks and requires public notice before these individuals may sell stocks.
         stages:
           - { label: Introduced, status: done }
@@ -32,6 +33,7 @@ sections:
         policyArea: Health
         sponsor: Sen. Susan Collins (R-ME)
         sponsorId: C001035
+        when: { label: "Signed into law", date: 2026-09-30 }
         summary: This bill reauthorizes through FY2030 the CDC's work on vector-borne diseases, including a national strategy, grants for regional centers of excellence, and cooperative agreements with state and local health departments.
         stages:
           - { label: Introduced, status: done }
@@ -45,6 +47,7 @@ sections:
         policyArea: Crime and Law Enforcement
         sponsor: Rep. Tim Walberg (R-MI-5)
         sponsorId: W000798
+        when: { label: "Passed the Senate", date: 2026-09-30 }
         summary: This bill requires the Department of Labor to provide training and education to its employees on how to effectively assist law enforcement in detecting human trafficking.
         stages:
           - { label: Introduced, status: done }
@@ -56,6 +59,7 @@ sections:
         policyArea: Finance and Financial Sector
         sponsor: Rep. Ben Cline (R-VA-6)
         sponsorId: C001118
+        when: { label: "Passed the Senate", date: 2026-09-28 }
         summary: This bill raises the debt limit for small business bankruptcy reorganization from about $3.4 million to $7.5 million, restoring a higher limit that expired in 2024.
         stages:
           - { label: Introduced, status: done }
@@ -67,7 +71,11 @@ sections:
         policyArea: Law
         sponsor: Rep. Derek Schmidt (R-KS-2)
         sponsorId: S001228
+        when: { label: "Passed the Senate", date: 2026-09-30 }
         summary: This bill authorizes a new type of entity, peace officer standards and training agencies, to access criminal history record information maintained by the FBI.
+        committees:
+          - { name: "House Judiciary Committee", status: reported, date: 2026-05-04 }
+          - { name: "Senate Judiciary Committee", status: discharged, date: 2026-10-01 }
         stages:
           - { label: Introduced, status: done }
           - { label: Passed House, status: done }
@@ -78,7 +86,11 @@ sections:
         policyArea: Taxation
         sponsor: Rep. Claudia Tenney (R-NY-24)
         sponsorId: T000478
+        when: { label: "Passed the Senate", date: 2026-09-30 }
         summary: This bill extends some federal tax deadlines for U.S. nationals who are unlawfully or wrongfully detained or held hostage abroad, and for their spouses.
+        committees:
+          - { name: "House Ways and Means Committee", status: reported, date: 2026-09-08 }
+          - { name: "Senate Finance Committee", status: discharged, date: 2026-10-01 }
         stages:
           - { label: Introduced, status: done }
           - { label: Passed House, status: done }
@@ -89,6 +101,7 @@ sections:
         policyArea: Arts, Culture, Religion
         sponsor: Sen. Marsha Blackburn (R-TN)
         sponsorId: B001243
+        when: { label: "Sent to the President", date: 2026-09-29 }
         summary: This bill directs the National Travel and Tourism Office of the Department of Commerce to promote tourism to music-related and sports attractions.
         stages:
           - { label: Introduced, status: done }
@@ -102,6 +115,7 @@ sections:
         policyArea: Health
         sponsor: Sen. Bill Cassidy (R-LA)
         sponsorId: C001075
+        when: { label: "Passed the Senate", date: 2026-09-30 }
         summary: This bill expands federal requirements and resources for preventing and responding to cybersecurity incidents in the health care and public health sectors.
         stages:
           - { label: Introduced, status: done }
@@ -113,6 +127,7 @@ sections:
         policyArea: International Affairs
         sponsor: Sen. Chris Van Hollen (D-MD)
         sponsorId: V000128
+        when: { label: "Rejected in the Senate", date: 2026-09-29 }
         summary: This resolution requests that the State Department submit an unclassified report on Israel's human rights practices, including information on the killings of nine named U.S. citizens, the condition of U.S. citizens held in Israeli prisons, and Palestinian children in Israeli military detention in the West Bank. The Senate voted against discharging it from committee.
         stages:
           - { label: Introduced, status: done }

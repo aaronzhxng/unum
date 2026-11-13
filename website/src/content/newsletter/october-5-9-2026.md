@@ -6,8 +6,8 @@ description: Neither chamber passed a bill during the pre-election recess, but t
 stats:
   signed: 3
   passedBoth: 0
-  outOfCommittee: 12
-  introduced: 94
+  outOfCommittee: { house: 12, senate: 0 }
+  introduced: { house: 94, senate: 0 }
 sections:
   - heading: Signed into law
     bills:
@@ -16,6 +16,7 @@ sections:
         policyArea: Government Operations and Politics
         sponsor: Sen. Joni Ernst (R-IA)
         sponsorId: E000295
+        when: { label: "Signed into law", date: 2026-10-07 }
         summary: This bill requires federal agencies to report each year on projects that are more than five years behind schedule or at least $1 billion over their original cost estimate, and the Office of Management and Budget to report those projects to Congress.
         stages:
           - { label: Introduced, status: done }
@@ -27,7 +28,11 @@ sections:
         policyArea: Social Welfare
         sponsor: Rep. David Kustoff (R-TN-8)
         sponsorId: K000392
+        when: { label: "Signed into law", date: 2026-10-07 }
         summary: This bill requires the Social Security Administration to give anyone whose Social Security number was misused, or whose card was lost in the mail, a single point of contact who tracks the case until it is resolved.
+        committees:
+          - { name: "House Ways and Means Committee", status: reported, date: 2025-10-31 }
+          - { name: "Senate Finance Committee", status: discharged, date: 2026-09-17 }
         stages:
           - { label: Introduced, status: done }
           - { label: Passed House, status: done }
@@ -38,6 +43,7 @@ sections:
         policyArea: Arts, Culture, Religion
         sponsor: Sen. Marsha Blackburn (R-TN)
         sponsorId: B001243
+        when: { label: "Signed into law", date: 2026-10-09 }
         summary: This bill directs the National Travel and Tourism Office of the Department of Commerce to promote travel to U.S. music festivals, concert venues, and other music and sports attractions.
         stages:
           - { label: Introduced, status: done }
@@ -51,6 +57,7 @@ sections:
         policyArea: Commerce
         sponsor: Rep. Tony Wied (R-WI-8)
         sponsorId: W000829
+        when: { label: "Reported by the House Small Business Committee", date: 2026-10-09 }
         summary: This bill requires the Small Business Administration to keep a webpage of resources for small businesses moving some or all of their manufacturing back to the United States. The Small Business Committee approved it 23–0.
         stages:
           - { label: Introduced, status: done }
@@ -64,6 +71,7 @@ sections:
         policyArea: Government Operations and Politics
         sponsor: Rep. Don Davis (D-NC-1)
         sponsorId: D000230
+        when: { label: "Introduced and sent to the House Committee on House Administration", date: 2026-10-05 }
         summary: This bill bars candidates for federal office from trading prediction market contracts on the outcome of their own elections, with fines of $10,000 per violation or three times any profit, whichever is greater.
         stages:
           - { label: Introduced, status: done }
@@ -75,6 +83,7 @@ sections:
         policyArea: Science, Technology, Communications
         sponsor: Rep. Scott Franklin (R-FL-18)
         sponsorId: F000472
+        when: { label: "Introduced and sent to the House Science, Space, and Technology Committee", date: 2026-10-05 }
         summary: This bill writes the administration's "Gold Standard Science" standards into law for the EPA's Science Advisory Board, bars registered lobbyists from serving on it, and keeps members from reviewing their own work.
         stages:
           - { label: Introduced, status: done }
@@ -86,6 +95,7 @@ sections:
         policyArea: International Affairs
         sponsor: Rep. Brad Finstad (R-MN-1)
         sponsorId: F000475
+        when: { label: "Introduced and sent to the House Oversight and Government Reform Committee", date: 2026-10-05 }
         summary: This bill bars federal agencies from buying computers or printers from companies owned, controlled, or connected to the Chinese government, unless the President waives the ban for national security reasons.
         stages:
           - { label: Introduced, status: done }
