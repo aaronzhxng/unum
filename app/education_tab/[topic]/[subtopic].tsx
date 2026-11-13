@@ -22,6 +22,17 @@ import {
   getEducationTopic,
 } from "../content";
 import { parseRichText } from "../glossary";
+
+// Glossary terms not to link on a page, where the word means something else
+// there or the page already covers it
+const LEADERSHIP_SKIP = ["vice-president", "majority-party", "trifecta", "president"];
+const SKIP_GLOSSARY: Record<string, string[]> = {
+  "senate-leadership": LEADERSHIP_SKIP,
+  "house-leadership": LEADERSHIP_SKIP,
+  // "Majority" on these pages is not a majority in Congress
+  "who-are-the-justices-on-the-supreme-court": ["majority-party"],
+  "what-are-basic-principles-of-us-law": ["majority-party"],
+};
 import { trySwipeBack } from "../../utils/swipeBackGuard";
 
 const CONTENT_PADDING = 20;
@@ -275,18 +286,7 @@ export default function EducationSubtopicScreen() {
                   </Text>
                 ) : null}
                 <RichText
-                  segments={parseRichText(
-                    section.content,
-                    subtopic === "senate-leadership" ||
-                      subtopic === "house-leadership"
-                      ? [
-                          "vice-president",
-                          "majority-party",
-                          "trifecta",
-                          "president",
-                        ]
-                      : undefined,
-                  )}
+                  segments={parseRichText(section.content, SKIP_GLOSSARY[subtopic as string])}
                   style={{
                     fontSize: 15,
                     color: "#1a3a5c",
@@ -449,18 +449,7 @@ export default function EducationSubtopicScreen() {
               ) : null}
 
               <RichText
-                segments={parseRichText(
-                  section.content,
-                  subtopic === "senate-leadership" ||
-                    subtopic === "house-leadership"
-                    ? [
-                        "vice-president",
-                        "majority-party",
-                        "trifecta",
-                        "president",
-                      ]
-                    : undefined,
-                )}
+                segments={parseRichText(section.content, SKIP_GLOSSARY[subtopic as string])}
                 style={{
                   fontSize: isLead ? 16 : 15,
                   color: "#444",

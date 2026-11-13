@@ -1,5 +1,6 @@
 import { getDb } from "../utils/database";
 import { apiClient } from "./api";
+import { withoutNicknames } from "../utils/names";
 
 interface Official {
   bioguideId: string;
@@ -36,7 +37,8 @@ const getCachedOfficialsList = (): {
     // Force cache clear if version doesn't match
     const parsed = JSON.parse(row.data);
     if (parsed.__cacheVersion !== OFFICIALS_CACHE_VERSION) return null;
-    return { data: parsed, fetchedAt: row.fetched_at };
+    // Saved before nicknames were taken out of names
+    return { data: withoutNicknames(parsed), fetchedAt: row.fetched_at };
   } catch {
     return null;
   }

@@ -89,9 +89,11 @@ export default function EducationTopicScreen() {
           </Pressable>
           <Text
             style={[componentStyles.header, { marginBottom: 0, flexShrink: 1 }]}
-            numberOfLines={1}
+            // Long titles wrap onto a second line, and only shrink if two
+            // lines still aren't enough
+            numberOfLines={2}
             adjustsFontSizeToFit
-            minimumFontScale={0.7}
+            minimumFontScale={0.8}
           >
             {topicData.title}
           </Text>

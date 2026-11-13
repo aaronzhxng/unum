@@ -1,8 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Dimensions, Modal, Pressable, ScrollView, Text, View } from "react-native";
-
-const SCREEN_HEIGHT = Dimensions.get("window").height;
+import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import RichText from "../education_tab/RichText";
 import { capitalizeFirst, glossaryBySlug } from "../education_tab/glossary";
 
@@ -20,6 +18,7 @@ interface Props {
  */
 export default function GlossaryPopup({ slug, onClose, onNavigateGlossary }: Props) {
   const router = useRouter();
+  const { height } = useWindowDimensions();
 
   if (!slug) return null;
   const entry = glossaryBySlug[slug];
@@ -39,18 +38,11 @@ export default function GlossaryPopup({ slug, onClose, onNavigateGlossary }: Pro
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      {/* Tap anywhere outside the card to close */}
-      <Pressable
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          backgroundColor: "rgba(0,0,0,0.25)",
-        }}
-        onPress={onClose}
-      >
-        {/* Inner pressable prevents card taps from bubbling to the overlay */}
-        <Pressable
-          onPress={() => {}}
+      <View style={{ flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.25)" }}>
+        {/* Tap anywhere outside the card to close. It sits behind the card
+            rather than around it, so swipes on the definition scroll it. */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View
           style={{
             marginHorizontal: 24,
             backgroundColor: "#fafafa",
@@ -74,8 +66,9 @@ export default function GlossaryPopup({ slug, onClose, onNavigateGlossary }: Pro
             {entry.term}
           </Text>
           <ScrollView
-            style={{ maxHeight: Math.min(280, SCREEN_HEIGHT * 0.38) }}
-            showsVerticalScrollIndicator={false}
+            // Long definitions scroll; the bar shows there is more
+            style={{ maxHeight: height * 0.55 }}
+            persistentScrollbar
           >
             <RichText
               segments={capitalizeFirst(entry.definition)}
@@ -96,8 +89,8 @@ export default function GlossaryPopup({ slug, onClose, onNavigateGlossary }: Pro
               </Text>
             </Pressable>
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

@@ -2,6 +2,7 @@
 // API surface is IDENTICAL — no screen changes needed.
 
 import { getDb, ListItem, UserList } from "./database";
+import { withoutNickname } from "./names";
 
 const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -239,7 +240,8 @@ const upsertListItem = (
 const rowToListItem = (row: any): ListItem => ({
   id: row.item_id,
   type: row.item_type as "official" | "bill",
-  name: row.name,
+  // Officials saved before nicknames were taken out of names
+  name: row.item_type === "official" ? withoutNickname(row.name) : row.name,
   party: row.party ?? undefined,
   role: row.role ?? undefined,
   date: row.date ?? undefined,

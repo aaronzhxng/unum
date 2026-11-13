@@ -79,6 +79,8 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     marginRight: 48,
+    // Wraps within the screen instead of running off its right edge
+    flexShrink: 1,
   },
   tabsNegative: {
     marginHorizontal: 0,
@@ -96,7 +98,9 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#555",
     marginBottom: -2,
-    height: 42,
+    // A minimum, so large system text grows the tab instead of being cut
+    // off by the line under it
+    minHeight: 42,
   },
   tabActive: {
     color: "#000",
@@ -125,6 +129,8 @@ export const styles = StyleSheet.create({
   detailInfo: {
     fontSize: 14,
     color: "#535353",
+    // Wraps within the screen instead of running off its right edge
+    flexShrink: 1,
     // marginRight: 84,
   },
   section: {

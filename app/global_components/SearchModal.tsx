@@ -10,7 +10,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useWindowDimensions,
 } from "react-native";
 
 const SHORT_SCREEN = Dimensions.get("window").height < 750;
@@ -19,8 +18,10 @@ import officialNicknames from "../data/nicknames.json";
 import { styles as componentStyles } from "../global_styles/styles";
 import { abbrevBillType, BILL_TYPE_SEARCH_ALIASES } from "../utils/billTypeAbbr";
 import { getBillIcon } from "../utils/billIcons";
-import { houseTitle } from "../utils/officialTitle";
+import { houseTitle, roleOptions, roleOptionsFromText } from "../utils/officialTitle";
+import FitText from "./FitText";
 import AddModal from "./AddModal";
+import { billTitleLines } from "../utils/billTitleLines";
 
 const POLICY_AREA_COLORS: Record<string, string> = {
   "Agriculture and Food": "#7CB342",
@@ -91,7 +92,6 @@ export default function SearchModal({
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const { width: screenWidth } = useWindowDimensions();
 
   // Define handleClose first so useEffect can reference it
   const handleClose = useCallback(() => {
@@ -523,7 +523,7 @@ export default function SearchModal({
                                   </View>
                                   <Text
                                     style={componentStyles.name}
-                                    numberOfLines={2}
+                                    numberOfLines={billTitleLines()}
                                   >
                                     {item.title ??
                                       (item.name?.includes(" - ")
@@ -558,25 +558,27 @@ export default function SearchModal({
                                   .join(" ")
                               : item.name}
                           </Text>
-                          <View style={componentStyles.metaRow}>
-                            <Text style={componentStyles.subtitle}>
-                              {item.partyName?.charAt(0) || item.party || ""}
-                              {(item.partyName || item.party) && " · "}
-                              {item.chamber
-                                ? formatRole(
-                                    item.chamber,
-                                    item.state,
-                                    item.district,
-                                    screenWidth,
-                                  )
-                                : screenWidth < 400
-                                  ? (item.role ?? "")
-                                      .replace(/^Representative/, "Rep")
-                                      .replace(/^Resident Commissioner/, "Res. Comm.")
-                                      .replace(/^Delegate/, "Del")
-                                      .replace(/^Senator/, "Sen")
-                                  : (item.role ?? "")}
-                            </Text>
+                          <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
+                            {(item.partyName || item.party) && (
+                              <>
+                                <Text style={componentStyles.subtitle}>
+                                  {item.partyName?.charAt(0) || item.party}
+                                </Text>
+                                <Text style={componentStyles.separator}>·</Text>
+                              </>
+                            )}
+                            <FitText
+                              style={componentStyles.subtitle}
+                              options={
+                                item.chamber
+                                  ? roleOptions({
+                                      house: item.chamber === "House of Representatives",
+                                      state: item.state,
+                                      district: item.district,
+                                    })
+                                  : roleOptionsFromText(item.role ?? "")
+                              }
+                            />
                           </View>
                         </View>
                       )}
@@ -649,23 +651,6 @@ export default function SearchModal({
       />
     </Modal>
   );
-}
-
-function formatRole(
-  chamber: string,
-  state: string,
-  district?: number | null,
-  screenWidth?: number,
-): string {
-  const small = !!(screenWidth && screenWidth < 400);
-  if (chamber === "House of Representatives") {
-    const full = `${houseTitle(state).full}, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `${houseTitle(state).abbr}, ${state}${district ? `, District ${district}` : ""}`;
-    return small ? abbr : full;
-  }
-  const full = `Senator, ${state}`;
-  const abbr = `Sen, ${state}`;
-  return small ? abbr : full;
 }
 
 function OfficialAvatar({ item, style }: { item: any; style?: any }) {

@@ -9,14 +9,19 @@ import {
   MoreVertical,
   Search,
 } from "lucide-react-native";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   AccessibilityInfo,
   FlatList,
   Image,
   LayoutChangeEvent,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -43,7 +48,9 @@ import { ListItem, storage } from "../utils/storage";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import { syncListItemsFromBills } from "../utils/syncListItems";
 import { educationTopics } from "../education_tab/content";
-import { houseTitle } from "../utils/officialTitle";
+import FitText from "../global_components/FitText";
+import { roleOptionsFromText } from "../utils/officialTitle";
+import { billTitleLines } from "../utils/billTitleLines";
 type Item = ListItem;
 
 export default function HomeScreen() {
@@ -933,7 +940,10 @@ export default function HomeScreen() {
       <SearchModal
         isVisible={showSearchModal}
         skipEntryAnimation={searchInstantOpen}
-        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onClose={() => {
+          setSearchInstantOpen(false);
+          setShowSearchModal(false);
+        }}
         onNavigatingAway={() => {
           searchNavigatedAwayRef.current = true;
           setShowSearchModal(false);
@@ -1179,26 +1189,6 @@ const POLICY_AREA_COLORS: Record<string, string> = {
   "Water Resources Development": "#0277BD",
 };
 
-function formatRole(
-  chamber: string,
-  state: string,
-  district?: number | null,
-  screenWidth?: number,
-): string {
-  const threshold = Platform.OS === "ios" ? 32 : 39;
-  if (chamber === "House of Representatives") {
-    const title = houseTitle(state);
-    const full = `${title.full}, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `${title.abbr}, ${state}${district ? `, District ${district}` : ""}`;
-    if (screenWidth && screenWidth < 390) return abbr;
-    return full.length > threshold ? abbr : full;
-  }
-  const full = `Senator, ${state}`;
-  const abbr = `Sen, ${state}`;
-  if (screenWidth && screenWidth < 390) return abbr;
-  return full.length > threshold + 1 ? abbr : full;
-}
-
 const Card = React.memo(function Card({
   item,
   isEditMode,
@@ -1217,7 +1207,6 @@ const Card = React.memo(function Card({
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const isOfficial = item.type === "official";
-  const { width: screenWidth } = useWindowDimensions();
 
   const handlePress = () => {
     if (isEditMode) {
@@ -1346,16 +1335,10 @@ const Card = React.memo(function Card({
               <Text style={[componentStyles.separator, { flexShrink: 0 }]}>
                 ·
               </Text>
-              <Text
-                style={[componentStyles.subtitle, { flexShrink: 1 }]}
-                numberOfLines={1}
-              >
-                {screenWidth < 390 && item.role
-                  ? item.role
-                      .replace(/^Representative,/, "Rep,")
-                      .replace(/^Senator,/, "Sen,")
-                  : item.role}
-              </Text>
+              <FitText
+                style={componentStyles.subtitle}
+                options={roleOptionsFromText(item.role ?? "")}
+              />
               {item.update ? (
                 <>
                   <Text style={componentStyles.separator}>·</Text>
@@ -1476,7 +1459,10 @@ const Card = React.memo(function Card({
                   )}
                 </View>
                 {/* Descriptive title only — strip the HR.123 prefix */}
-                <Text style={componentStyles.name} numberOfLines={2}>
+                <Text
+                  style={componentStyles.name}
+                  numberOfLines={billTitleLines()}
+                >
                   {item.name?.includes(" - ")
                     ? item.name.split(" - ").slice(1).join(" - ")
                     : item.name}
@@ -1511,9 +1497,10 @@ const VOTER_REGISTRATION_ARTICLE: HomeArticle | undefined = educationTopics
   )
   .find((a) => a.subtopic.id === VOTER_REGISTRATION_ID);
 
-// "Bills of the week (Nov 2 – Nov 8)", from the featured bills' dates
-const billsHeading = (featured: any): string => {
-  if (!featured?.weekOf) return "Bills of the week";
+// "Bills of the week" and "(Nov 2 – Nov 8)", from the featured bills' dates.
+// The dates go on a second line when they don't fit beside it.
+const billsHeading = (featured: any): { title: string; detail?: string } => {
+  if (!featured?.weekOf) return { title: "Bills of the week" };
   const parseDate = (str: string) => {
     const [y, m, d] = str.split("-").map(Number);
     return new Date(y, m - 1, d);
@@ -1522,7 +1509,10 @@ const billsHeading = (featured: any): string => {
     d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const start = parseDate(featured.weekOf);
   const end = featured.weekEnd ? parseDate(featured.weekEnd) : null;
-  return `Bills of the week (${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`;
+  return {
+    title: "Bills of the week",
+    detail: `(${fmt(start)}${end ? ` – ${fmt(end)}` : ""})`,
+  };
 };
 
 // The article shown under "Today's Article", changing every 12 hours
@@ -1551,6 +1541,12 @@ type CardSize = {
 
 const CAROUSEL_MS = 6000;
 const DOTS_WIDTH = 56;
+const CAROUSEL_TITLE = {
+  fontSize: 14,
+  lineHeight: 18,
+  fontWeight: "500" as const,
+  color: "#1a1a1a",
+};
 
 // The cards at the top of the home page, one at a time, with the position dots
 // across from the title. Every card matches the tallest. Below it, a slide has
@@ -1563,7 +1559,7 @@ function HomeCarousel({
   featured?: any;
 }) {
   const router = useRouter();
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, fontScale } = useWindowDimensions();
   // The page has side padding, so a slide is narrower than the screen
   const [width, setWidth] = useState(screenWidth - 32);
   const { activeTab } = useTabBar();
@@ -1573,11 +1569,25 @@ function HomeCarousel({
   const [focused, setFocused] = useState(true);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [cardHeight, setCardHeight] = useState(0);
+  // The slide whose description is opened past four lines
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  // On small screens or with large text, a title may not fit beside the
+  // dots. First the dates move to a second line, on every slide so the cards
+  // stay level, then the dots go on their own line below the titles.
+  const [detailBelow, setDetailBelow] = useState(false);
+  const [dotsBelow, setDotsBelow] = useState(false);
+  const [titleHeight, setTitleHeight] = useState(18);
+  useEffect(() => {
+    setDetailBelow(false);
+    setDotsBelow(false);
+  }, [width, fontScale]);
 
   const slides = useMemo(() => {
     const list: {
       key: string;
       title: string;
+      // Shown after the title, or on a line of its own when they don't fit
+      detail?: string;
       card: (size: CardSize) => React.ReactNode;
       description?: string;
     }[] = [];
@@ -1604,7 +1614,7 @@ function HomeCarousel({
     for (const bill of featured?.bills ?? []) {
       list.push({
         key: bill.billId,
-        title: billsHeading(featured),
+        ...billsHeading(featured),
         card: (size) => (
           <FeaturedBillCard bill={bill} router={router} size={size} />
         ),
@@ -1639,14 +1649,32 @@ function HomeCarousel({
   // Stops while off screen or being swiped, and for people who asked for less
   // motion, who can still swipe
   useEffect(() => {
-    if (count < 2 || !focused || activeTab !== 0 || dragging || reduceMotion) return;
+    // Also stays put while someone reads an opened description
+    if (
+      count < 2 ||
+      !focused ||
+      activeTab !== 0 ||
+      dragging ||
+      reduceMotion ||
+      expandedKey
+    )
+      return;
     const timer = setTimeout(() => {
       const next = (current + 1) % count;
       scrollRef.current?.scrollTo({ x: next * width, animated: true });
       setIndex(next);
     }, CAROUSEL_MS);
     return () => clearTimeout(timer);
-  }, [current, count, focused, activeTab, dragging, reduceMotion, width]);
+  }, [
+    current,
+    count,
+    focused,
+    activeTab,
+    dragging,
+    reduceMotion,
+    width,
+    expandedKey,
+  ]);
 
   if (count === 0) return null;
 
@@ -1665,36 +1693,51 @@ function HomeCarousel({
       >
         {slides.map((slide) => (
           <View key={slide.key} style={{ width }}>
-            <Text
-              numberOfLines={1}
+            <View
+              onLayout={(event) =>
+                setTitleHeight(event.nativeEvent.layout.height)
+              }
               style={{
-                fontSize: 14,
-                lineHeight: 18,
-                fontWeight: "500",
-                color: "#1a1a1a",
                 // Lines up with the list name in the header above
                 marginLeft: componentStyles.header.marginLeft,
-                marginRight: 16 + DOTS_WIDTH,
-                marginBottom: 8,
+                marginRight: dotsBelow ? 16 : 16 + DOTS_WIDTH,
+                // Room for the dots' own line
+                marginBottom: dotsBelow ? 20 : 8,
                 marginTop: 8,
               }}
             >
-              {slide.title}
-            </Text>
+              <Text
+                // Left free to wrap until checked, so a title too long for
+                // its space shows up as more than one line
+                numberOfLines={dotsBelow ? 1 : undefined}
+                onTextLayout={(event) => {
+                  if (dotsBelow || event.nativeEvent.lines.length < 2) return;
+                  if (slide.detail && !detailBelow) setDetailBelow(true);
+                  else if (count > 1) setDotsBelow(true);
+                }}
+                style={CAROUSEL_TITLE}
+              >
+                {slide.detail && !detailBelow
+                  ? `${slide.title} ${slide.detail}`
+                  : slide.title}
+              </Text>
+              {detailBelow && (
+                // A blank line on slides without dates keeps the cards level
+                <Text numberOfLines={1} style={CAROUSEL_TITLE}>
+                  {slide.detail ?? " "}
+                </Text>
+              )}
+            </View>
             {slide.card(cardSize)}
             <View style={{ flex: 1, minHeight: 24, justifyContent: "center" }}>
               {slide.description ? (
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: "#7B7C81",
-                    fontStyle: "italic",
-                    marginHorizontal: 16,
-                    marginVertical: 8,
-                  }}
-                >
-                  {slide.description}
-                </Text>
+                <SlideDescription
+                  text={slide.description}
+                  expanded={expandedKey === slide.key}
+                  onToggle={() =>
+                    setExpandedKey((k) => (k === slide.key ? null : slide.key))
+                  }
+                />
               ) : (
                 <View style={{ height: 1, backgroundColor: "#e0e0e0" }} />
               )}
@@ -1709,9 +1752,9 @@ function HomeCarousel({
           // as they slide past, all the way to the carousel's edge
           style={{
             position: "absolute",
-            top: 8,
+            top: dotsBelow ? 8 + titleHeight + 4 : 8,
             right: 0,
-            height: 18,
+            height: dotsBelow ? 8 : 18,
             paddingLeft: 8,
             paddingRight: 16,
             flexDirection: "row",
@@ -1737,6 +1780,84 @@ function HomeCarousel({
   );
 }
 
+const DESCRIPTION_LINES = 4;
+const DESCRIPTION_STYLE = {
+  fontSize: 12,
+  color: "#7B7C81",
+  fontStyle: "italic" as const,
+};
+
+// A featured bill's note, cut at four lines with "See more" so the space
+// under the other slides, which have none, stays modest. Opening it makes
+// every slide that much taller, since they share one height.
+function SlideDescription({
+  text,
+  expanded,
+  onToggle,
+}: {
+  text: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  // The note's lines at full length, measured out of sight
+  const [lines, setLines] = useState<string[] | null>(null);
+  const long = !!lines && lines.length > DESCRIPTION_LINES;
+
+  // The first four lines, the last trimmed to leave room for "… See more"
+  const shortened = useMemo(() => {
+    if (!lines || !long) return text;
+    const kept = lines.slice(0, DESCRIPTION_LINES);
+    const last = kept[DESCRIPTION_LINES - 1].replace(/\s+$/, "");
+    const room = Math.max(0, last.length - "… See more".length - 2);
+    kept[DESCRIPTION_LINES - 1] = last.slice(0, room).replace(/\s+\S*$/, "");
+    return kept.join("").replace(/\s+$/, "");
+  }, [lines, long, text]);
+
+  const link = { color: "#008CFF", fontStyle: "normal" as const };
+
+  return (
+    <View style={{ marginHorizontal: 16, marginVertical: 8 }}>
+      {/* The whole note, laid out at the same width to count its lines.
+          First, so it sits under the visible note, and it ignores touches. */}
+      <View
+        pointerEvents="none"
+        style={{ position: "absolute", left: 0, right: 0, top: 0, opacity: 0 }}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Text
+          style={DESCRIPTION_STYLE}
+          onTextLayout={(e) => {
+            const next = e.nativeEvent.lines.map((line) => line.text);
+            setLines((prev) =>
+              prev && prev.join("\n") === next.join("\n") ? prev : next,
+            );
+          }}
+        >
+          {text}
+        </Text>
+      </View>
+      {/* A long note opens and closes with a tap anywhere on it */}
+      {expanded || !long ? (
+        <Text style={DESCRIPTION_STYLE} onPress={long ? onToggle : undefined}>
+          {text}
+          {long && <Text style={link}> See less</Text>}
+        </Text>
+      ) : (
+        <Text
+          style={DESCRIPTION_STYLE}
+          numberOfLines={DESCRIPTION_LINES}
+          onPress={onToggle}
+          accessibilityRole="button"
+          accessibilityHint="Shows the whole note"
+        >
+          {shortened}… <Text style={link}>See more</Text>
+        </Text>
+      )}
+    </View>
+  );
+}
+
 function FeaturedBillCard({
   bill,
   router,
@@ -1747,146 +1868,129 @@ function FeaturedBillCard({
   size: CardSize;
 }) {
   return (
-        <Pressable
-          onPress={() => router.navigate(`/bill/${bill.billId}`)}
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.98 : 1 }],
-          })}
+    <Pressable
+      onPress={() => router.navigate(`/bill/${bill.billId}`)}
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+      })}
+    >
+      <View
+        style={[
+          componentStyles.officialCard,
+          {
+            backgroundColor: "#E8F4FF",
+            borderWidth: 1,
+            borderColor: "#008CFF33",
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+          { marginBottom: 0, minHeight: size.minHeight },
+        ]}
+        onLayout={size.onLayout}
+      >
+        {/* Left column: badge + icon */}
+        <View
+          style={{
+            alignItems: "center",
+            flexShrink: 0,
+            width: 64,
+            marginRight: 12,
+          }}
         >
           <View
-            style={[
-              componentStyles.officialCard,
-              {
-                backgroundColor: "#E8F4FF",
-                borderWidth: 1,
-                borderColor: "#008CFF33",
-                shadowOpacity: 0,
-                elevation: 0,
-              },
-              { marginBottom: 0, minHeight: size.minHeight },
-            ]}
-            onLayout={size.onLayout}
+            style={{
+              backgroundColor: POLICY_AREA_COLORS[bill.policyArea] ?? "#008CFF",
+              borderRadius: 6,
+              paddingHorizontal: 4,
+              paddingVertical: 4,
+              marginBottom: 6,
+              alignItems: "center",
+              width: "100%",
+            }}
           >
-            {/* Left column: badge + icon */}
-            <View
+            <Text
               style={{
-                alignItems: "center",
-                flexShrink: 0,
-                width: 64,
-                marginRight: 12,
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: "700",
               }}
+              numberOfLines={1}
+              // Long numbers like HR.10035 shrink slightly instead of cutting off
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
             >
-              <View
-                style={{
-                  backgroundColor:
-                    POLICY_AREA_COLORS[bill.policyArea] ??
-                    "#008CFF",
-                  borderRadius: 6,
-                  paddingHorizontal: 4,
-                  paddingVertical: 4,
-                  marginBottom: 6,
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 12,
-                    fontWeight: "700",
-                  }}
-                  numberOfLines={1}
-                  // Long numbers like HR.10035 shrink slightly instead of cutting off
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.8}
-                >
-                  {`${abbrevBillType(bill.type)}.${bill.number}`}
-                </Text>
-              </View>
-              <Image
-                source={
-                  bill.policyArea
-                    ? getBillIcon(bill.policyArea)
-                    : getBillIcon()
-                }
-                style={{ width: 50, height: 50, borderRadius: 6 }}
-                resizeMode="contain"
-              />
-            </View>
+              {`${abbrevBillType(bill.type)}.${bill.number}`}
+            </Text>
+          </View>
+          <Image
+            source={
+              bill.policyArea ? getBillIcon(bill.policyArea) : getBillIcon()
+            }
+            style={{ width: 50, height: 50, borderRadius: 6 }}
+            resizeMode="contain"
+          />
+        </View>
 
-            {/* Right column: info */}
+        {/* Right column: info */}
+        <View
+          style={{
+            flex: 1,
+            alignSelf: "stretch",
+            justifyContent: "space-between",
+          }}
+        >
+          <View>
             <View
               style={{
-                flex: 1,
-                alignSelf: "stretch",
-                justifyContent: "space-between",
+                flexDirection: "row",
+                alignItems: "center",
+                flexWrap: "nowrap",
+                marginBottom: 4,
               }}
             >
-              <View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    flexWrap: "nowrap",
-                    marginBottom: 4,
-                  }}
-                >
-                  {bill.latestActionDate && (
-                    <Text
-                      style={[
-                        componentStyles.subtitle,
-                        { flexShrink: 0 },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {new Date(
-                        bill.latestActionDate + "T12:00:00",
-                      ).toLocaleDateString("en-US", {
-                        month: "2-digit",
-                        day: "2-digit",
-                        year: "numeric",
-                      })}
-                    </Text>
-                  )}
-                  {bill.policyArea && (
-                    <>
-                      <Text style={componentStyles.separator}>
-                        ·
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color:
-                            POLICY_AREA_COLORS[bill.policyArea] ??
-                            "#008CFF",
-                          fontWeight: "600",
-                          flexShrink: 1,
-                        }}
-                        numberOfLines={1}
-                      >
-                        {bill.policyArea}
-                      </Text>
-                    </>
-                  )}
-                </View>
+              {bill.latestActionDate && (
                 <Text
-                  style={componentStyles.name}
-                  numberOfLines={2}
-                >
-                  {bill.title}
-                </Text>
-              </View>
-              {bill.latestAction && (
-                <Text
-                  style={componentStyles.subtitle}
+                  style={[componentStyles.subtitle, { flexShrink: 0 }]}
                   numberOfLines={1}
                 >
-                  {bill.latestAction}
+                  {new Date(
+                    bill.latestActionDate + "T12:00:00",
+                  ).toLocaleDateString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric",
+                  })}
                 </Text>
               )}
+              {bill.policyArea && (
+                <>
+                  <Text style={componentStyles.separator}>·</Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: POLICY_AREA_COLORS[bill.policyArea] ?? "#008CFF",
+                      fontWeight: "600",
+                      flexShrink: 1,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {bill.policyArea}
+                  </Text>
+                </>
+              )}
             </View>
+            <Text style={componentStyles.name} numberOfLines={billTitleLines()}>
+              {bill.title}
+            </Text>
           </View>
-        </Pressable>
+          {bill.latestAction && (
+            <Text style={componentStyles.subtitle} numberOfLines={1}>
+              {bill.latestAction}
+            </Text>
+          )}
+        </View>
+      </View>
+    </Pressable>
   );
 }
 

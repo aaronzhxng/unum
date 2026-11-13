@@ -1,3 +1,5 @@
+import { withoutNicknames } from "../utils/names";
+
 // Production, unless EXPO_PUBLIC_API_URL points at a test backend, e.g.
 // EXPO_PUBLIC_API_URL=http://192.168.1.20:4555 npx expo start
 export const BACKEND_URL =
@@ -18,7 +20,8 @@ class ApiClient {
       throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json();
+    // Names come without nicknames, wherever in the response they are
+    return withoutNicknames(await response.json());
   }
 }
 
