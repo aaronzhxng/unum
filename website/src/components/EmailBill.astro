@@ -22,14 +22,19 @@ const sponsor = sponsorParts(bill.sponsor);
 const area = bill.policyArea ? fitLabel(bill.policyArea, FIT_AREA) : null;
 const name = fitLabel(bill.sponsor, FIT_NAME);
 const hiddenBreak = "display:none";
+// Discharged means the chamber took the bill up without a committee vote
+const COMMITTEE_STATUS = { referred: "Referred", "marked up": "Marked up", reported: "Reported", discharged: "Bypassed" };
 ---
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`border-bottom:1px solid ${C.border}`}>
                           <tr><td style="padding:20px 0">
                             <p style="margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.35">{bill.title}</p>
+                            {bill.when && <p style={`margin:-6px 0 10px;font-size:13px;font-weight:500;color:${C.muted}`}>{bill.when.label} · {formatDate(bill.when.date)}</p>}
                             {/* Separate white bubbles. No space between the spans, so the gap is exactly the margin. */}
                             <div style="margin:0 0 4px">{area && (<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px"><img src={`${ORIGIN}/newsletter/icons/${policy.icon}`} width="26" height="26" alt="" style="display:block" /></td><td style={`${tagText};color:${policy.color};font-weight:600`}>{area.first}{area.second && " "}{area.second && <br class={area.breakClass} style={hiddenBreak} />}{area.second}</td></tr></table></div>)}<div class="tag" style={tag}><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;padding-right:8px">{photo ? (<img src={`${ORIGIN}${photo}`} width="24" height="24" alt="" style={`display:block;border-radius:50%;border:1px solid ${sponsor.color}`} />) : (<div style={`width:26px;height:26px;line-height:26px;border-radius:50%;background:${sponsor.color};color:#fff;font-size:10px;font-weight:600;text-align:center`}>{sponsor.initials}</div>)}</td><td style={`${tagText};color:${C.muted}`}>{name.first}{name.second && " "}{name.second && <br class={name.breakClass} style={hiddenBreak} />}{name.second}</td></tr></table></div></div>
                             <p style={`margin:0 0 12px;font-size:15px;line-height:1.55;color:${C.muted}`}>{bill.summary}</p>
+                            {bill.context && <p style={`margin:0 0 12px;padding-left:12px;border-left:2px solid ${C.border};font-size:14px;line-height:1.55;color:${C.muted}`}><b style={`color:${C.text}`}>Background:</b> {bill.context}</p>}
+                            {bill.committees && <p style={`margin:0 0 12px;font-size:13px;line-height:1.55;color:${C.muted}`}><b style={`color:${C.text}`}>Committees</b>{bill.committees.map((c) => <><br />{`${c.name} · ${COMMITTEE_STATUS[c.status]} ${formatDate(c.date)}`}</>)}</p>}
                             <p style="margin:0 0 10px;font-size:13px;line-height:1.6">
                               {bill.stages.map((s, i) => (
                                 <>

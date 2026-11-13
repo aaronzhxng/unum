@@ -23,11 +23,14 @@ const { week, date, headline, description, stats, sections } = issue.data;
 const year = date.getUTCFullYear();
 const sent = date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
+// Counts split by chamber show their total, with the split underneath
+const count = (n: number | { house: number; senate: number }) =>
+  typeof n === "number" ? { value: n } : { value: n.house + n.senate, split: n };
 const numbers = [
-  { value: stats.signed, label: "signed into law" },
-  { value: stats.passedBoth, label: "passed both chambers" },
-  { value: stats.outOfCommittee, label: "out of committee" },
-  { value: stats.introduced, label: "introduced" },
+  { ...count(stats.signed), label: "signed into law" },
+  { ...count(stats.passedBoth), label: "passed both chambers" },
+  { ...count(stats.outOfCommittee), label: "out of committee" },
+  { ...count(stats.introduced), label: "introduced" },
 ];
 ---
 
@@ -59,7 +62,15 @@ const numbers = [
         {
           numbers.map((n) => (
             <li>
-              <span class="number">{n.value}</span>
+              <span class="figure">
+                <span class="number">{n.value}</span>
+                {n.split && (
+                  <span class="chambers">
+                    <span>H: {n.split.house}</span>
+                    <span>S: {n.split.senate}</span>
+                  </span>
+                )}
+              </span>
               <span class="muted">{n.label}</span>
             </li>
           ))
@@ -107,6 +118,7 @@ const numbers = [
   }
 
   .numbers {
+    --number-size: 40px;
     list-style: none;
     margin: 0;
     padding: 28px 0;
@@ -123,8 +135,23 @@ const numbers = [
     line-height: 1.4;
   }
 
+  /* House and Senate counts beside the total, together as tall as it */
+  .figure {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chambers {
+    display: grid;
+    font-size: 13px;
+    line-height: calc(var(--number-size) * 1.1 / 2);
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
   .number {
-    font-size: 40px;
+    font-size: var(--number-size);
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.1;
@@ -181,8 +208,8 @@ const numbers = [
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .number {
-      font-size: 32px;
+    .numbers {
+      --number-size: 32px;
     }
   }
 </style>

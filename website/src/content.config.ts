@@ -19,6 +19,8 @@ const vote = z.object({
   nay: z.number(),
 });
 
+const byChamber = z.union([z.number(), z.object({ house: z.number(), senate: z.number() })]);
+
 const bill = z.object({
   id: z.string().regex(/^[a-z]+\d+$/),
   title: z.string(),
@@ -27,7 +29,16 @@ const bill = z.object({
   // Bioguide ID, for the sponsor's photo in public/newsletter/members
   // (scripts/newsletter/memberPhotos.mjs saves them)
   sponsorId: z.string().regex(/^[A-Z]\d{6}$/).optional(),
+  // The bill's dated event that week, e.g. "Signed into law" (draftIssue.mjs fills it)
+  when: z.object({ label: z.string(), date: z.coerce.date() }).optional(),
   summary: z.string(),
+  // Optional background note, written by hand
+  context: z.string().optional(),
+  // Every committee it has been to, in order, when there is more than one
+  // (draftIssue.mjs fills it)
+  committees: z
+    .array(z.object({ name: z.string(), status: z.enum(["referred", "marked up", "reported", "discharged"]), date: z.coerce.date() }))
+    .optional(),
   stages: z.array(stage),
   votes: z.array(vote).optional(),
 });
@@ -47,8 +58,9 @@ const newsletter = defineCollection({
     stats: z.object({
       signed: z.number(),
       passedBoth: z.number(),
-      outOfCommittee: z.number(),
-      introduced: z.number(),
+      // A plain number, or split by chamber
+      outOfCommittee: byChamber,
+      introduced: byChamber,
     }),
     sections: z.array(
       z.object({
