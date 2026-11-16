@@ -16,7 +16,11 @@ sections:
         policyArea: International Affairs
         sponsor: Rep. Pramila Jayapal (D-WA-7)
         sponsorId: J000298
+        when: { label: "Failed in the Senate", date: 2026-09-24 }
         summary: This directs President Trump to remove U.S. armed forces from hostilities against Iran or any part of its government or military unless a declaration of war has been enacted. This does not prevent the U.S. from defending itself.
+        committees:
+          - { name: "House Foreign Affairs Committee", status: referred, date: 2026-04-23 }
+          - { name: "Senate Foreign Relations Committee", status: discharged, date: 2026-09-24 }
         stages:
           - { label: Introduced, status: done }
           - { label: Passed House, status: done }
@@ -31,7 +35,11 @@ sections:
         policyArea: Energy
         sponsor: Rep. Kim Schrier (D-WA-8)
         sponsorId: S001216
+        when: { label: "Signed into law", date: 2026-09-25 }
         summary: This bill directs the Federal Energy Regulatory Commission to report annually to Congress on the status of the relicensing process for each application for a renewed hydropower dam license.
+        committees:
+          - { name: "House Energy and Commerce Committee", status: reported, date: 2025-07-10 }
+          - { name: "Senate Energy and Natural Resources Committee", status: discharged, date: 2026-09-16 }
         stages:
           - { label: Introduced, status: done }
           - { label: Passed House, status: done }
@@ -42,7 +50,11 @@ sections:
         policyArea: Water Resources Development
         sponsor: Rep. Troy Downing (R-MT-2)
         sponsorId: D000634
+        when: { label: "Signed into law", date: 2026-09-25 }
         summary: This bill reauthorizes through FY2028 the planning, design, and construction of the Assiniboine and Sioux Rural Water System and the Dry Prairie Rural Water System in Montana.
+        committees:
+          - { name: "House Natural Resources Committee", status: reported, date: 2026-06-02 }
+          - { name: "Senate Energy and Natural Resources Committee", status: discharged, date: 2026-09-16 }
         stages:
           - { label: Introduced, status: done }
           - { label: Passed House, status: done }
@@ -53,6 +65,7 @@ sections:
         policyArea: Public Lands and Natural Resources
         sponsor: Sen. Tim Kaine (D-VA)
         sponsorId: K000384
+        when: { label: "Signed into law", date: 2026-09-25 }
         summary: This bill establishes the General George C. Marshall House as part of the National Park System.
         stages:
           - { label: Introduced, status: done }
@@ -64,6 +77,7 @@ sections:
         policyArea: Transportation and Public Works
         sponsor: Sen. Ted Cruz (R-TX)
         sponsorId: C001098
+        when: { label: "Signed into law", date: 2026-09-25 }
         summary: This bill directs the National Oceanic and Atmospheric Administration (NOAA) to publish geospatial data related to public recreational use of federal waterways (e.g., boating and fishing).
         stages:
           - { label: Introduced, status: done }
@@ -77,6 +91,7 @@ sections:
         policyArea: Transportation and Public Works
         sponsor: Sen. Tammy Duckworth (D-IL)
         sponsorId: D000622
+        when: { label: "Passed the Senate", date: 2026-09-24 }
         summary: This bill directs the Federal Aviation Administration (FAA) to publish a list of medications that may be safely prescribed to pilots and air traffic controllers to issue a medical certification. There is no current approved list of medications.
         stages:
           - { label: Introduced, status: done }
@@ -90,6 +105,7 @@ sections:
         policyArea: Finance and Financial Sector
         sponsor: Sen. David McCormick (R-PA)
         sponsorId: M001243
+        when: { label: "Reported by the Senate Banking, Housing, and Urban Affairs Committee", date: 2026-09-22 }
         summary: This extends the Terrorism Risk Insurance Act (TRIA) of 2002 by another 7 years, which established a federal program to help insurers cover losses from acts of terrorism.
         stages:
           - { label: Introduced, status: done }
@@ -100,6 +116,7 @@ sections:
         title: Agricultural Act of 2026
         sponsor: Sen. John Boozman (R-AR)
         sponsorId: B001236
+        when: { label: "Written and reported by the Senate Agriculture, Nutrition, and Forestry Committee", date: 2026-09-24 }
         summary: This bill reauthorizes and modifies a range of federal agriculture, nutrition, conservation, trade, credit, and rural development programs through FY2031.
         stages:
           - { label: Introduced, status: done }
@@ -110,6 +127,7 @@ sections:
         title: A concurrent resolution setting forth the congressional budget for the United States Government for fiscal year 2027 and setting forth the appropriate budgetary levels for fiscal years 2028 through 2036.
         sponsor: Sen. Rand Paul (R-KY)
         sponsorId: P000603
+        when: { label: "Introduced and sent to the Senate Budget Committee", date: 2026-09-22 }
         summary: This sets the congressional budget for the federal government for FY2027 and sets budgetary levels for FY2028 through FY2036.
         stages:
           - { label: Introduced, status: done }

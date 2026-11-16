@@ -7,75 +7,15 @@ import {
   Pressable,
   Text,
   View,
-  useWindowDimensions,
 } from "react-native";
 import LoadingSpinner from "../../global_components/LoadingSpinner";
+import FitText from "../../global_components/FitText";
+import { roleOptionsFromText } from "../../utils/officialTitle";
+import { useWrapped } from "../../utils/useWrapped";
 import { styles as componentStyles } from "../styles"; // adjust path if needed
 import FilterDropdown from "./FilterDropdown"; // Adjust path
 
 type Party = "D" | "R" | "I";
-
-const STATE_TO_ABBR: Record<string, string> = {
-  Alabama: "AL",
-  Alaska: "AK",
-  Arizona: "AZ",
-  Arkansas: "AR",
-  California: "CA",
-  Colorado: "CO",
-  Connecticut: "CT",
-  Delaware: "DE",
-  Florida: "FL",
-  Georgia: "GA",
-  Hawaii: "HI",
-  Idaho: "ID",
-  Illinois: "IL",
-  Indiana: "IN",
-  Iowa: "IA",
-  Kansas: "KS",
-  Kentucky: "KY",
-  Louisiana: "LA",
-  Maine: "ME",
-  Maryland: "MD",
-  Massachusetts: "MA",
-  Michigan: "MI",
-  Minnesota: "MN",
-  Mississippi: "MS",
-  Missouri: "MO",
-  Montana: "MT",
-  Nebraska: "NE",
-  Nevada: "NV",
-  "New Hampshire": "NH",
-  "New Jersey": "NJ",
-  "New Mexico": "NM",
-  "New York": "NY",
-  "North Carolina": "NC",
-  "North Dakota": "ND",
-  Ohio: "OH",
-  Oklahoma: "OK",
-  Oregon: "OR",
-  Pennsylvania: "PA",
-  "Rhode Island": "RI",
-  "South Carolina": "SC",
-  "South Dakota": "SD",
-  Tennessee: "TN",
-  Texas: "TX",
-  Utah: "UT",
-  Vermont: "VT",
-  Virginia: "VA",
-  Washington: "WA",
-  "West Virginia": "WV",
-  Wisconsin: "WI",
-  Wyoming: "WY",
-};
-
-function abbreviateRole(role: string): string {
-  for (const [full, abbr] of Object.entries(STATE_TO_ABBR)) {
-    if (role.includes(full)) {
-      return role.replace(full, abbr);
-    }
-  }
-  return role;
-}
 
 export interface Cosponsor {
   id: string;
@@ -127,6 +67,7 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   selectedParty,
   setSelectedParty,
 }) => {
+  const { wrapped: sortWrapped, onFirstLayout, onSecondLayout } = useWrapped();
   const roleOptions: FilterOption[] = [
     { id: "representative", label: "Representative" },
     { id: "senator", label: "Senator" },
@@ -175,7 +116,7 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
         if (role === "representative")
           return cosponsor.role?.toLowerCase().startsWith("rep");
         if (role === "senator")
-          return cosponsor.role?.toLowerCase().startsWith("senator");
+          return cosponsor.role?.toLowerCase().startsWith("sen");
         return false;
       });
 
@@ -197,9 +138,6 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
   const CosponsorCard = ({ item }: { item: Cosponsor }) => {
     const [imageError, setImageError] = useState(false);
     const router = useRouter();
-    const { width: screenWidth } = useWindowDimensions();
-    const displayRole =
-      screenWidth < 390 ? abbreviateRole(item.role) : item.role;
 
     return (
       <Pressable
@@ -237,12 +175,14 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
           </View>
           <View style={componentStyles.cardText}>
             <Text style={componentStyles.name} numberOfLines={1}>{item.name}</Text>
-            <View style={componentStyles.metaRow}>
+            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
               <Text style={componentStyles.subtitle}>{item.party}</Text>
               <Text style={componentStyles.separator}>·</Text>
-              <Text style={componentStyles.subtitle} numberOfLines={1}>
-                {displayRole}
-              </Text>
+              {/* Takes the room the date leaves, shortened to fit */}
+              <FitText
+                style={componentStyles.subtitle}
+                options={roleOptionsFromText(item.role)}
+              />
               {item.update ? (
                 <>
                   <Text style={componentStyles.separator}>·</Text>
@@ -286,6 +226,9 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
             justifyContent: "space-between",
             alignItems: "center",
             marginTop: -8,
+            // The sort drops below the title when they don't fit side by side
+            flexWrap: "wrap",
+            columnGap: 12,
           },
         ]}
       >
@@ -296,10 +239,11 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
               flexDirection: "row",
               alignItems: "center",
               gap: 4,
-              flex: 1,
+              flexShrink: 1,
               transform: [{ scale: pressed ? 0.96 : 1 }],
             },
           ]}
+          onLayout={onFirstLayout}
           onPress={(e) => {
             e.stopPropagation(); // Block parent events
             e.preventDefault(); // Block default behaviors
@@ -314,7 +258,7 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
           <Text
             style={[
               componentStyles.detailTitle,
-              { lineHeight: 16, fontSize: 16, fontWeight: "600" },
+              { fontSize: 16, fontWeight: "600", flexShrink: 1 },
             ]}
           >
             Cosponsors ({filteredCosponsors.length})
@@ -330,11 +274,13 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
         <Pressable
           style={({ pressed }) => [
             componentStyles.button,
-            { marginRight: -12 },
+            // Its padding lines its text up with the edge it sits against
+            sortWrapped ? { marginLeft: -12, marginTop: 4 } : { marginRight: -12 },
             {
               transform: [{ scale: pressed ? 0.96 : 1 }],
             },
           ]}
+          onLayout={onSecondLayout}
           onPress={(e) => {
             e.stopPropagation();
             setShowCosponsorSort(!showCosponsorSort);

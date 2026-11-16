@@ -18,11 +18,13 @@ const { Content } = await render(issue);
 const { week, date, headline, description, stats, sections, signoff } = issue.data;
 const year = date.getUTCFullYear();
 const webUrl = `${ORIGIN}/newsletter/${issue.id}`;
+const count = (n: number | { house: number; senate: number }) =>
+  typeof n === "number" ? [n, null] : [n.house + n.senate, n];
 const numbers = [
-  [stats.signed, "signed into law"],
-  [stats.passedBoth, "passed both chambers"],
-  [stats.outOfCommittee, "out of committee"],
-  [stats.introduced, "introduced"],
+  [...count(stats.signed), "signed into law"],
+  [...count(stats.passedBoth), "passed both chambers"],
+  [...count(stats.outOfCommittee), "out of committee"],
+  [...count(stats.introduced), "introduced"],
 ];
 ---
 
@@ -41,9 +43,13 @@ const numbers = [
 
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`margin:24px 0 8px;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border}`}>
                   <tr>
-                    {numbers.map(([n, label]) => (
+                    {numbers.map(([n, split, label]) => (
                       <td width="25%" style="padding:16px 4px;vertical-align:top">
-                        <div style="font-size:26px;font-weight:600;line-height:1.1">{n}</div>
+                        {/* House and Senate counts beside the total, together as tall as it */}
+                        <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                          <td style="font-size:26px;font-weight:600;line-height:28px;vertical-align:middle">{n}</td>
+                          {split && <td style="padding-left:7px;font-size:11px;line-height:14px;color:#9a9a9a;white-space:nowrap;vertical-align:middle">H: {split.house}<br />S: {split.senate}</td>}
+                        </tr></table>
                         <div style={`font-size:12px;color:${C.muted};margin-top:4px`}>{label}</div>
                       </td>
                     ))}

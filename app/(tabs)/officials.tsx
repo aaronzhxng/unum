@@ -25,6 +25,7 @@ import AddModal from "../global_components/AddModal";
 import ErrorScreen from "../global_components/ErrorScreen";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
+import { FitGroup } from "../global_components/FitText";
 import OfficialCard, {
   TERRITORY_STATES,
 } from "../global_components/OfficialCard";
@@ -39,6 +40,7 @@ import {
 } from "../services/committees";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
+import { useWrapped } from "../utils/useWrapped";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { houseTitle, placeKind } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
@@ -129,6 +131,14 @@ export default function OfficialsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchNavigatedAwayRef = useRef(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
+  // With large system text, the district map button drops below the state
+  // name. The search and options icons then line up with the name's row.
+  const {
+    wrapped: mapWrapped,
+    onFirstLayout: onStateLayout,
+    onSecondLayout: onMapLayout,
+  } = useWrapped();
+  const [titleHeight, setTitleHeight] = useState(0);
   const [selectedNotifications, setSelectedNotifications] =
     useState("New York");
   const [showListSelection, setShowListSelection] = useState(false);
@@ -440,16 +450,29 @@ export default function OfficialsScreen() {
 
   return (
     <View style={componentStyles.container}>
-      <View style={componentStyles.headerBar}>
-        {/* State name shrinks (with an ellipsis) before the map button does */}
+      <View
+        style={[
+          componentStyles.headerBar,
+          mapWrapped && { alignItems: "flex-start" },
+        ]}
+      >
+        {/* The map button moves to its own row when the state name and it
+            don't fit side by side */}
         <View
           style={[
             componentStyles.headerLeft,
-            { flex: 1, minWidth: 0, marginRight: 16 },
+            {
+              flex: 1,
+              minWidth: 0,
+              marginRight: 16,
+              flexWrap: "wrap",
+              columnGap: 2,
+            },
           ]}
         >
           <View
             ref={stateDropdownRef}
+            onLayout={onStateLayout}
             collapsable={false}
             style={{ flexShrink: 1 }}
           >
@@ -477,12 +500,8 @@ export default function OfficialsScreen() {
                 }}
               >
                 <Text
-                  style={[
-                    componentStyles.header,
-                    selectedCommittee
-                      ? { flexShrink: 1 }
-                      : { alignItems: "center", maxWidth: 220, flexShrink: 1 },
-                  ]}
+                  style={[componentStyles.header, { flexShrink: 1 }]}
+                  onLayout={(e) => setTitleHeight(e.nativeEvent.layout.height)}
                   // About a third of committee names need the second line.
                   // The longest, like "Senate Homeland Security and
                   // Governmental Affairs", shrink a little on narrow phones
@@ -520,13 +539,17 @@ export default function OfficialsScreen() {
               }
               hitSlop={6}
               accessibilityLabel="Open congressional district map"
+              onLayout={onMapLayout}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 6,
                 flexShrink: 0,
-                marginLeft: 10,
-                marginBottom: 12,
+                // Lines up with the state name when on its own row
+                marginLeft: 8,
+                marginTop: mapWrapped ? -6 : 0,
+                // More room above the first card when it has its own row
+                marginBottom: mapWrapped ? 20 : 12,
                 paddingVertical: 6,
                 paddingLeft: 10,
                 paddingRight: 12,
@@ -545,7 +568,12 @@ export default function OfficialsScreen() {
           )}
         </View>
 
-        <View style={componentStyles.headerRight}>
+        <View
+          style={[
+            componentStyles.headerRight,
+            mapWrapped && { marginTop: Math.max(0, (titleHeight - 24) / 2) },
+          ]}
+        >
           {/* Committees are short enough to scroll, and the name needs the room */}
           {!selectedCommittee && (
             <Pressable
@@ -624,24 +652,29 @@ export default function OfficialsScreen() {
         </View>
       )}
 
-      <FlatList
-        // A new list starts at the top, so a committee opens on its chair
+      {/* Each state's cards share how their roles are shortened */}
+      <FitGroup
         key={selectedSubcommitteeId ?? selectedCommitteeId ?? selectedList}
-        data={officials}
-        keyExtractor={(item) => item.bioguideId}
-        contentContainerStyle={componentStyles.listContent}
-        renderItem={({ item, index }) => (
-          <OfficialCard
-            item={item}
-            onAddPress={(id) => {
-              setCurrentOfficialId(id);
-              setShowAddModal(true);
-            }}
-            plusRef={index === 0 ? firstCardPlusRef : undefined}
-          />
-        )}
-        directionalLockEnabled={true}
-      />
+      >
+        <FlatList
+          // A new list starts at the top, so a committee opens on its chair
+          key={selectedSubcommitteeId ?? selectedCommitteeId ?? selectedList}
+          data={officials}
+          keyExtractor={(item) => item.bioguideId}
+          contentContainerStyle={componentStyles.listContent}
+          renderItem={({ item, index }) => (
+            <OfficialCard
+              item={item}
+              onAddPress={(id) => {
+                setCurrentOfficialId(id);
+                setShowAddModal(true);
+              }}
+              plusRef={index === 0 ? firstCardPlusRef : undefined}
+            />
+          )}
+          directionalLockEnabled={true}
+        />
+      </FitGroup>
 
       {/* Add Modal */}
       <AddModal

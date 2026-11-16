@@ -60,11 +60,13 @@ import { notificationPreferences } from "../utils/notificationPreferences";
 import { officialBillsCache } from "../utils/officialBillsCache";
 import { screenTour } from "../utils/screenTour";
 import { storage } from "../utils/storage";
+import { useWrapped } from "../utils/useWrapped";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 import { houseTitle, isNonVotingSeat } from "../utils/officialTitle";
 import { trySwipeBack } from "../utils/swipeBackGuard";
 import OptionsModal from "./official_components/OptionsModal";
 import { styles as componentStyles } from "./styles";
+import { billTitleLines } from "../utils/billTitleLines";
 
 const POLICY_AREA_COLORS: Record<string, string> = {
   "Agriculture and Food": "#7CB342",
@@ -240,7 +242,7 @@ function LegislationCard({ item }: { item: any }) {
             </View>
             <Text
               style={{ fontSize: 15, color: "#535353", fontWeight: "600" }}
-              numberOfLines={2}
+              numberOfLines={billTitleLines()}
             >
               {item.title}
             </Text>
@@ -269,6 +271,13 @@ export default function OfficialDetail() {
   const [activeTab, setActiveTab] = useState(0);
   // const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const { width: screenWidth } = useWindowDimensions();
+  // Whether the Bills tab's sort and search have dropped below the totals.
+  // The sort is narrow beside the totals and takes the room it needs below.
+  const {
+    wrapped: billsSortWrapped,
+    onFirstLayout: onBillsTotalLayout,
+    onSecondLayout: onBillsSortLayout,
+  } = useWrapped();
   // Back swipe on first page
   const backSwipePanResponder = useRef(
     PanResponder.create({
@@ -1367,11 +1376,16 @@ export default function OfficialDetail() {
                 paddingHorizontal: 32,
                 marginBottom: 8,
                 marginTop: 16,
+                // The years drop to a second line when they don't fit
+                flexDirection: "row",
+                flexWrap: "wrap",
+                columnGap: 4,
               }}
             >
               <Text style={{ fontSize: 16, fontWeight: "700" }}>
-                Bills Signed Into Law (2025 - )
+                Bills Signed Into Law
               </Text>
+              <Text style={{ fontSize: 16, fontWeight: "700" }}>(2025 - )</Text>
             </View>
             {!sponsoredLoading ? (
               <>
@@ -1800,45 +1814,70 @@ export default function OfficialDetail() {
                 </View>
               ) : (
                 <>
-                  <View style={componentStyles.legislationHeader}>
-                    <View style={componentStyles.legislationHeaderLeft}>
-                      <Pressable
-                        style={({ pressed }) => [
-                          componentStyles.button,
-                          { transform: [{ scale: pressed ? 0.96 : 1 }] },
-                        ]}
-                        onPress={() => setShowFilterModal(true)}
-                      >
-                        {screenWidth < 390 ? (
-                          <View>
-                            <Text
-                              style={[
-                                componentStyles.legislationHeaderTotal,
-                                { fontSize: 12 },
-                              ]}
-                            >
-                              {`${shownBills.length.toLocaleString()} in 119th`}
-                            </Text>
-                            <Text
-                              style={[
-                                componentStyles.legislationHeaderTotal,
-                                { fontSize: 12 },
-                              ]}
-                            >
-                              {`${allTimeCount.toLocaleString()} all-time`}
-                            </Text>
-                          </View>
-                        ) : (
-                          <Text style={componentStyles.legislationHeaderTotal}>
-                            {`${shownBills.length.toLocaleString()} in 119th · ${allTimeCount.toLocaleString()} all-time`}
+                  {/* Sort and search share a row with the totals when they
+                      fit, and drop below them together when they don't */}
+                  <View
+                    style={[
+                      componentStyles.legislationHeader,
+                      { flexWrap: "wrap", columnGap: 12 },
+                    ]}
+                  >
+                    <Pressable
+                      style={({ pressed }) => [
+                        componentStyles.button,
+                        {
+                          flexShrink: 1,
+                          transform: [{ scale: pressed ? 0.96 : 1 }],
+                        },
+                      ]}
+                      onPress={() => setShowFilterModal(true)}
+                      onLayout={onBillsTotalLayout}
+                    >
+                      {screenWidth < 390 ? (
+                        <View>
+                          <Text
+                            style={[
+                              componentStyles.legislationHeaderTotal,
+                              { fontSize: 12 },
+                            ]}
+                          >
+                            {`${shownBills.length.toLocaleString()} in 119th`}
                           </Text>
-                        )}
-                        {showFilterModal ? (
-                          <ChevronUp size={16} color="#7B7C81" />
-                        ) : (
-                          <ChevronDown size={16} color="#7B7C81" />
-                        )}
-                      </Pressable>
+                          <Text
+                            style={[
+                              componentStyles.legislationHeaderTotal,
+                              { fontSize: 12 },
+                            ]}
+                          >
+                            {`${allTimeCount.toLocaleString()} all-time`}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text
+                          style={[
+                            componentStyles.legislationHeaderTotal,
+                            { flexShrink: 1 },
+                          ]}
+                        >
+                          {`${shownBills.length.toLocaleString()} in 119th · ${allTimeCount.toLocaleString()} all-time`}
+                        </Text>
+                      )}
+                      {showFilterModal ? (
+                        <ChevronUp size={16} color="#7B7C81" />
+                      ) : (
+                        <ChevronDown size={16} color="#7B7C81" />
+                      )}
+                    </Pressable>
+                    <View
+                      onLayout={onBillsSortLayout}
+                      style={{
+                        flexGrow: 1,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 12,
+                      }}
+                    >
                       <Pressable
                         style={({ pressed }) => [
                           componentStyles.button,
@@ -1854,6 +1893,7 @@ export default function OfficialDetail() {
                               flexShrink: 1,
                               marginRight: 0,
                             },
+                            billsSortWrapped && { maxWidth: "100%" },
                           ]}
                         >
                           {selectedSort}
@@ -1866,16 +1906,16 @@ export default function OfficialDetail() {
                           )}
                         </View>
                       </Pressable>
+                      <Pressable
+                        style={({ pressed }) => [
+                          componentStyles.button,
+                          { transform: [{ scale: pressed ? 0.75 : 1 }] },
+                        ]}
+                        onPress={() => setShowSearchModal(true)}
+                      >
+                        <Search size={24} color="#535353" />
+                      </Pressable>
                     </View>
-                    <Pressable
-                      style={({ pressed }) => [
-                        componentStyles.button,
-                        { transform: [{ scale: pressed ? 0.75 : 1 }] },
-                      ]}
-                      onPress={() => setShowSearchModal(true)}
-                    >
-                      <Search size={24} color="#535353" />
-                    </Pressable>
                   </View>
 
                   {shownBills.length === 0 ? (

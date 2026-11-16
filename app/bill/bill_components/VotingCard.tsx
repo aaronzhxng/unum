@@ -266,9 +266,13 @@ const SingleVoteCard = ({
             justifyContent: "space-between",
             alignItems: "center",
             marginBottom: 16,
+            // The button drops below the date when they don't fit side by side
+            flexWrap: "wrap",
+            columnGap: 12,
+            rowGap: 10,
           }}
         >
-          <Text style={[componentStyles.detailTitle, { fontSize: 15 }]}>
+          <Text style={[componentStyles.detailTitle, { fontSize: 15, flexShrink: 1 }]}>
             {vote.chamber} ·{" "}
             {new Date(vote.date).toLocaleDateString("en-US", {
               month: "2-digit",

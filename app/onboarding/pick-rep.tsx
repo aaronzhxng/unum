@@ -11,14 +11,14 @@ import {
   ScrollView,
   Text,
   TextInput,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
 import type { FocusDistrict } from "../global_components/CongressionalDistrictMap";
 import DistrictPickerModal from "../global_components/DistrictPickerModal";
 import { officialsService } from "../services/officials";
-import { houseTitle } from "../utils/officialTitle";
+import { houseTitle, roleOptionsFromText } from "../utils/officialTitle";
+import FitText from "../global_components/FitText";
 
 // State name → abbreviation lookup
 const STATE_TO_ABBR: Record<string, string> = {
@@ -176,7 +176,6 @@ export default function PickRepScreen() {
   const [zipDistricts, setZipDistricts] = useState<FocusDistrict[]>([]);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const officialsRef = useRef<any[]>([]);
-  const { width: screenWidth } = useWindowDimensions();
 
   const stateAbbrForLookup = priorityState ? toAbbr(priorityState) : null;
 
@@ -197,10 +196,8 @@ export default function PickRepScreen() {
       const state = ABBR_TO_STATE[resolvedAbbr] ?? resolvedAbbr;
       const district = o.district ? `, District ${o.district}` : "";
       const title = houseTitle(state);
-      const full = `${title.full}, ${state}${district}`;
-      const abbr = `${title.abbr}, ${state}${district}`;
-      if (screenWidth < 390) return abbr;
-      return full.length > 39 ? abbr : full;
+      // Written out in full; the card shortens it when it doesn't fit
+      return `${title.full}, ${state}${district}`;
     })(),
     photoUrl: `https://bioguide.congress.gov/bioguide/photo/${o.bioguideId[0]}/${o.bioguideId}.jpg`,
   });
@@ -423,10 +420,8 @@ export default function PickRepScreen() {
         role: (() => {
           const district = match.district ? `, District ${match.district}` : "";
           const title = houseTitle(priorityState);
-          const full = `${title.full}, ${priorityState}${district}`;
-          const abbr = `${title.abbr}, ${priorityState}${district}`;
-          if (screenWidth < 390) return abbr;
-          return full.length > 39 ? abbr : full;
+          // Written out in full; the card shortens it when it doesn't fit
+          return `${title.full}, ${priorityState}${district}`;
         })(),
         photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
       });
@@ -676,12 +671,10 @@ export default function PickRepScreen() {
                 >
                   ·
                 </Text>
-                <Text
-                  style={{ flexShrink: 1, fontSize: 13, color: "#7B7C81" }}
-                  numberOfLines={1}
-                >
-                  {rep.role}
-                </Text>
+                <FitText
+                  style={{ fontSize: 13, color: "#7B7C81" }}
+                  options={roleOptionsFromText(rep.role ?? "")}
+                />
               </View>
             </View>
             <View
@@ -830,16 +823,10 @@ export default function PickRepScreen() {
                         >
                           ·
                         </Text>
-                        <Text
-                          style={{
-                            flexShrink: 1,
-                            fontSize: 13,
-                            color: "#7B7C81",
-                          }}
-                          numberOfLines={1}
-                        >
-                          {r.role}
-                        </Text>
+                        <FitText
+                          style={{ fontSize: 13, color: "#7B7C81" }}
+                          options={roleOptionsFromText(r.role ?? "")}
+                        />
                       </View>
                     </View>
                     <View

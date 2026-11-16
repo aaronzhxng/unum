@@ -1,10 +1,18 @@
 {
-  "weekOf": "2026-11-2",
-  "weekEnd": "2026-11-8",
+  "weekOf": "2026-11-9",
+  "weekEnd": "2026-11-15",
   "bills": [
     {
-      "billId": "hr8205",
-      "note": "This bills reviews NIH and FDA programs that fund research and treatments for ALS and other neurodegenerative diseases through 2031."
+      "billId": "hr1744",
+      "note": "This bill renews through 2028 the U.S. Commission on International Religious Freedom."
+    },
+    {
+      "billId": "hr1945",
+      "note": "This bill designates America's National Churchill Museum, at Westminster College in Fulton, Missouri, as a National Historic Landmark. Winston Churchill gave his 1946 Iron Curtain speech at the college."
+    },
+    {
+      "billId": "hr7730",
+      "note": "This bill restores the higher debt limits, which expired in 2024, for two kinds of bankruptcy."
     }
   ]
 }
