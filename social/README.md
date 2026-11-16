@@ -88,3 +88,8 @@ the account password.
 
 Every post is 1000 × 1250 (4:5), exported at 2× (2000 × 2500), which all four
 platforms accept. Platform-specific crops (e.g. 16:9 for X) come later.
+
+## Narrated videos
+
+`video/` makes 30-second videos with a voiceover, captions, and photos of
+Washington and members, from a short script per video. See `video/README.md`.
