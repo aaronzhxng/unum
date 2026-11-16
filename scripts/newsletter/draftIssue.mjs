@@ -143,8 +143,16 @@ function facts(id, actions) {
     law: first(/Became Public Law/),
     presented: first(/Presented to President/),
     vetoed: first(/Vetoed by President/),
-    // Reported in whichever chamber it is in now
-    reported: actions.some((a) => REPORTED.test(a.text) && chamberOf(a) === (passed[origin] ? other : origin)),
+    // Reported in whichever chamber it is in now. Library of Congress copies
+    // often don't name the chamber (the chamber's own entry covers them), and a
+    // bill placed straight on the Senate calendar when received skipped committee.
+    reported: actions.some(
+      (a) =>
+        REPORTED.test(a.text) &&
+        a.sourceSystem?.name !== "Library of Congress" &&
+        !/^Received in the/.test(a.text) &&
+        chamberOf(a) === (passed[origin] ? other : origin),
+    ),
     introduced: first(/^Introduced in (House|Senate)/) || actions.map((a) => a.actionDate).sort()[0],
   };
 }
@@ -193,6 +201,8 @@ function votes(actions, w) {
       return { chamber: a.recordedVotes[0].chamber || chamberOf(a), date: a.actionDate, result, yea: +m[1], nay: +m[2] };
     })
     .filter(Boolean)
+    // Congress.gov lists each House vote twice (House floor and Library of Congress)
+    .filter((v, i, all) => all.findIndex((o) => o.chamber === v.chamber && o.date === v.date && o.yea === v.yea && o.nay === v.nay) === i)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 2);
 }
