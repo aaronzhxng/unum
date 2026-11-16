@@ -2,13 +2,13 @@
 draft: true
 week: November 9–13
 date: 2026-11-16
-headline: "The penny's last week?"
+headline: "The penny's final week"
 description: "Four bills became law, a bill ending the penny heads to the President, and the House passes a run of nuclear energy bills."
 stats:
   signed: 4
   passedBoth: 2
-  outOfCommittee: 28
-  introduced: 127
+  outOfCommittee: { house: 1, senate: 27 }
+  introduced: { house: 91, senate: 36 }
 sections:
   - heading: The big vote
     bills:
@@ -17,7 +17,11 @@ sections:
         policyArea: "Finance and Financial Sector"
         sponsor: "Rep. Frank Lucas (R-OK-3)"
         sponsorId: L000491
-        summary: "This bill allows 403(b) retirement plans, the plans offered to employees of public schools, charities, and churches, to invest in collective investment trusts (pooled investment funds run by a bank or trust company) and in insurance company separate accounts."
+        when: { label: "Passed the House", date: 2026-11-11 }
+        summary: "This bill allows 403(b) retirement plans—the plans offered to employees of public schools, charities, and churches—to invest in pooled-funds managed by banks, trust companies, and insurers."
+        committees:
+          - { name: "House Financial Services Committee", status: reported, date: 2025-11-28 }
+          - { name: "Senate Banking, Housing, and Urban Affairs Committee", status: referred, date: 2026-11-12 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -32,7 +36,8 @@ sections:
         policyArea: "Public Lands and Natural Resources"
         sponsor: "Rep. Robert Onder (R-MO-3)"
         sponsorId: O000177
-        summary: "This bill designates the America’s National Churchill Museum, including the Winston Churchill Memorial, located at Westminster College in Fulton, Missouri, as the America’s National Churchill Museum National Historic Landmark. (Former British Prime Minister Winston Churchill gave a speech titled The Sinews of Peace, also widely known as the Iron Curtain Speech, at the college in 1946.)"
+        when: { label: "Signed into law", date: 2026-11-10 }
+        summary: "This bill designates as a historic landmark America’s National Churchill Museum, which includes the Winston Churchill Memorial, located at Westminster College in Fulton, Missouri. (In 1946, former British Prime Minister Winston Churchill gave a speech there titled “The Sinews of Peace”, which is also widely known as the “Iron Curtain” Speech)."
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -43,6 +48,7 @@ sections:
         policyArea: "Finance and Financial Sector"
         sponsor: "Rep. Ben Cline (R-VA-6)"
         sponsorId: C001118
+        when: { label: "Signed into law", date: 2026-11-10 }
         summary: "This bill restores changes that expired in 2024 applicable to debt limits for Subchapter V (small business reorganization) and Chapter 13 (the wage earner's plan) bankruptcies."
         stages:
           - { label: "Introduced", status: done }
@@ -54,7 +60,12 @@ sections:
         policyArea: "Health"
         sponsor: "Rep. John Joyce (R-PA-13)"
         sponsorId: J000302
+        when: { label: "Signed into law", date: 2026-11-10 }
         summary: "This bill requires the Centers for Medicare & Medicaid Services (CMS) to establish specific billing codes under Medicare for certain materials used in ultralightweight manual wheelchairs."
+        committees:
+          - { name: "House Energy and Commerce Committee", status: reported, date: 2026-07-18 }
+          - { name: "House Ways and Means Committee", status: discharged, date: 2026-07-18 }
+          - { name: "Senate Finance Committee", status: discharged, date: 2026-10-01 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -65,7 +76,11 @@ sections:
         policyArea: "Taxation"
         sponsor: "Rep. Randy Feenstra (R-IA-4)"
         sponsorId: F000446
-        summary: "This bill authorizes the National Taxpayer Advocate to appoint legal counsel within the Taxpayer Advocate Service (TAS) to report directly to the National Taxpayer Advocate. The bill also expands the authority of the National Taxpayer Advocate to take personnel actions with respect to local taxpayer advocates (located in each state) to include actions with respect to any employee of TAS."
+        when: { label: "Signed into law", date: 2026-11-10 }
+        summary: "This bill allows the National Taxpayer Advocate to hire their own in-house lawyers who report directly to them. It also gives the Advocate full hiring and firing authority over every employee in the Taxpayer Advocate Service."
+        committees:
+          - { name: "House Ways and Means Committee", status: reported, date: 2025-03-27 }
+          - { name: "Senate Finance Committee", status: discharged, date: 2026-09-29 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -78,7 +93,11 @@ sections:
         policyArea: "Social Welfare"
         sponsor: "Rep. Lloyd Smucker (R-PA-11)"
         sponsorId: S001199
+        when: { label: "Sent to the President", date: 2026-11-12 }
         summary: "This bill changes certain terms that are used by the Social Security Administration (SSA) to describe the ages at which a worker may claim Social Security retirement benefits."
+        committees:
+          - { name: "House Ways and Means Committee", status: reported, date: 2025-10-03 }
+          - { name: "Senate Finance Committee", status: discharged, date: 2026-09-30 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -89,7 +108,11 @@ sections:
         policyArea: "Law"
         sponsor: "Rep. Derek Schmidt (R-KS-2)"
         sponsorId: S001228
+        when: { label: "Sent to the President", date: 2026-11-12 }
         summary: "This bill authorizes a new type of entity—peace officer standards and training agencies—to access criminal history record information maintained by the Federal Bureau of Investigation. These are the state agencies that set training and certification standards for police officers."
+        committees:
+          - { name: "House Judiciary Committee", status: reported, date: 2026-05-04 }
+          - { name: "Senate Judiciary Committee", status: discharged, date: 2026-10-01 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -100,7 +123,11 @@ sections:
         policyArea: "Public Lands and Natural Resources"
         sponsor: "Rep. Elise Stefanik (R-NY-21)"
         sponsorId: S001196
-        summary: "This bill renames the Saratoga National Historical Park, located in Stillwater, New York, as Saratoga National Battlefield Park."
+        when: { label: "Sent to the President", date: 2026-11-12 }
+        summary: "This bill renames the Saratoga National Historical Park, located in Stillwater, New York, as Saratoga National Battlefield Park. The Second Battle of Saratoga (1777) was a turning point for America’s fate in the Revolutionary War."
+        committees:
+          - { name: "House Natural Resources Committee", status: referred, date: 2025-02-25 }
+          - { name: "Senate Energy and Natural Resources Committee", status: reported, date: 2026-07-23 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -111,7 +138,11 @@ sections:
         policyArea: "Finance and Financial Sector"
         sponsor: "Rep. Lisa McClain (R-MI-9)"
         sponsorId: M001136
+        when: { label: "Sent to the President", date: 2026-11-12 }
         summary: "This bill ends the production of the penny for general circulation, requires rounding to an amount divisible by five for the payment or transfer of cash, and allows the nickel to be composed of different material."
+        committees:
+          - { name: "House Financial Services Committee", status: referred, date: 2026-08-27 }
+          - { name: "Senate Banking, Housing, and Urban Affairs Committee", status: discharged, date: 2026-09-29 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -124,7 +155,11 @@ sections:
         policyArea: "Foreign Trade and International Finance"
         sponsor: "Rep. Blake Moore (R-UT-1)"
         sponsorId: M001213
-        summary: "This bill expands the authority of U.S. Customs and Border Protection (CBP) to provide information to certain persons (e.g., trademark or copyright owners) regarding suspected violations of intellectual property rights in trade."
+        when: { label: "Passed the Senate", date: 2026-11-10 }
+        summary: "This bill expands the authority of U.S. Customs and Border Protection (CBP) to provide information to persons like trademark or copyright owners regarding suspected violations of intellectual property rights in trade."
+        committees:
+          - { name: "House Ways and Means Committee", status: reported, date: 2025-12-30 }
+          - { name: "Senate Finance Committee", status: discharged, date: 2026-11-11 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -135,6 +170,7 @@ sections:
         policyArea: "Armed Forces and National Security"
         sponsor: "Rep. Morgan Luttrell (R-TX-8)"
         sponsorId: L000603
+        when: { label: "Passed the Senate", date: 2026-11-11 }
         summary: "This bill requires the Department of Veterans Affairs (VA) to increase the amounts payable for wartime disability compensation, additional compensation for dependents, the clothing allowance for certain disabled veterans, and dependency and indemnity compensation for surviving spouses and children. Specifically, the VA must increase the amounts by the same percentage as the cost-of-living increase in benefits for Social Security recipients that is effective on December 1, 2026."
         stages:
           - { label: "Introduced", status: done }
@@ -148,7 +184,11 @@ sections:
         policyArea: "Energy"
         sponsor: "Rep. Russell Fry (R-SC-7)"
         sponsorId: F000478
+        when: { label: "Passed the House", date: 2026-11-09 }
         summary: "This bill allows for the construction of a uranium enrichment facility before a license is issued by the Nuclear Regulatory Commission (NRC)."
+        committees:
+          - { name: "House Energy and Commerce Committee", status: reported, date: 2026-11-05 }
+          - { name: "Senate Environment and Public Works Committee", status: referred, date: 2026-11-10 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -161,7 +201,11 @@ sections:
         policyArea: "Armed Forces and National Security"
         sponsor: "Rep. Mike Bost (R-IL-12)"
         sponsorId: B001295
-        summary: "This bill addresses veterans’ benefits, health care, counseling, Department of Veterans Affairs (VA) personnel, VA infrastructure, and the Veterans Community Care Program (VCCP)."
+        when: { label: "Passed the House", date: 2026-11-11 }
+        summary: "This bill modifies the terms for veterans’ benefits, health care, counseling, Department of Veterans Affairs (VA) personnel, VA infrastructure, and the Veterans Community Care Program (VCCP)."
+        committees:
+          - { name: "House Veterans' Affairs Committee", status: referred, date: 2026-06-10 }
+          - { name: "House Armed Services Committee", status: referred, date: 2026-06-10 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -172,7 +216,8 @@ sections:
         policyArea: "Energy"
         sponsor: "Rep. Robert Latta (R-OH-5)"
         sponsorId: L000566
-        summary: "This bill directs the Nuclear Regulatory Commission (NRC) to license future recycling facilities that reprocess certain spent nuclear fuel (i.e., radioactive waste) under regulations for special nuclear material rather than regulations for production and utilization facilities. The bill applies to domestic facilities that reprocess spent nuclear fuel in a manner that does not isolate plutonium."
+        when: { label: "Passed the House", date: 2026-11-09 }
+        summary: "This bill directs the Nuclear Regulatory Commission (NRC) to consider different regulations for licensing future recycling facilities within the United States that reprocess radioactive waste but do not isolate plutonium."
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -187,7 +232,11 @@ sections:
         policyArea: "Public Lands and Natural Resources"
         sponsor: "Rep. Elijah Crane (R-AZ-2)"
         sponsorId: C001132
+        when: { label: "Reported by the Senate Energy and Natural Resources Committee", date: 2026-11-12 }
         summary: "This bill allows the National Park Service (NPS) to expedite the approval of contracts to restore forests, structures, and assets within areas of the Grand Canyon National Park impacted by the Dragon Bravo Fire in Arizona."
+        committees:
+          - { name: "House Natural Resources Committee", status: reported, date: 2026-03-02 }
+          - { name: "Senate Energy and Natural Resources Committee", status: reported, date: 2026-11-12 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -198,7 +247,11 @@ sections:
         policyArea: "Public Lands and Natural Resources"
         sponsor: "Rep. Jennifer Kiggans (R-VA-2)"
         sponsorId: K000399
+        when: { label: "Reported by the Senate Energy and Natural Resources Committee", date: 2026-11-12 }
         summary: "This bill extends through FY2036 three National Park Service (NPS) grant programs that preserve U.S. battlefields and requires the NPS to study additional sites for potential preservation."
+        committees:
+          - { name: "House Natural Resources Committee", status: reported, date: 2026-05-20 }
+          - { name: "Senate Energy and Natural Resources Committee", status: reported, date: 2026-11-12 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -209,7 +262,11 @@ sections:
         policyArea: "Government Operations and Politics"
         sponsor: "Rep. John Moolenaar (R-MI-2)"
         sponsorId: M001194
-        summary: "This bill extends through 2032 the Adams Memorial Commission, whose purpose is to establish a permanent memorial in Washington, DC, to honor John Adams and his legacy."
+        when: { label: "Reported by the Senate Energy and Natural Resources Committee", date: 2026-11-12 }
+        summary: "This bill extends through 2032 the Adams Memorial Commission, whose purpose is to establish a permanent memorial in Washington, D.C., to honor former Founding Father and President John Adams, his wife Abigail, their son and President John Quincy Adams, and the entire Adams family legacy."
+        committees:
+          - { name: "House Natural Resources Committee", status: reported, date: 2025-10-31 }
+          - { name: "Senate Energy and Natural Resources Committee", status: reported, date: 2026-11-12 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "Passed House", status: done }
@@ -222,7 +279,11 @@ sections:
         policyArea: "Science, Technology, Communications"
         sponsor: "Rep. Josh Gottheimer (D-NJ-5)"
         sponsorId: G000583
+        when: { label: "Introduced and sent to the House Intelligence (Permanent Select) Committee and 1 other committee", date: 2026-11-10 }
         summary: "This bill requires developers of the most powerful AI models to give the National Security Agency full access to a model before releasing it, so the agency can evaluate risks such as cyberattacks or help building chemical, biological, or radiological weapons. The Commerce Department would decide which models are covered within six months. Rep. Mike Lawler (R-NY-17) is the lead cosponsor."
+        committees:
+          - { name: "House Energy and Commerce Committee", status: referred, date: 2026-11-10 }
+          - { name: "House Intelligence (Permanent Select) Committee", status: referred, date: 2026-11-10 }
         stages:
           - { label: "Introduced", status: done }
           - { label: "In House", status: current }
@@ -232,6 +293,7 @@ sections:
         title: "Competition in Professional Baseball Act"
         sponsor: "Sen. Richard Durbin (D-IL)"
         sponsorId: D000563
+        when: { label: "Introduced and sent to the Senate Judiciary Committee", date: 2026-11-10 }
         summary: "This bill ends professional baseball's century-old exemption from antitrust law, so Major League Baseball would face the same competition rules as every other professional sport. Sen. Mike Lee (R-UT) is the lead cosponsor."
         stages:
           - { label: "Introduced", status: done }
@@ -242,6 +304,7 @@ sections:
         title: "Ban Flock Act"
         sponsor: "Sen. Bernard Sanders (I-VT)"
         sponsorId: S000033
+        when: { label: "Introduced and sent to the Senate Homeland Security and Governmental Affairs Committee", date: 2026-11-09 }
         summary: "This bill bars federal agencies from using automatic license plate readers, the camera networks sold by companies like Flock Safety, unless a law explicitly allows it. It also bans spending federal money on the cameras and withholds certain federal grants from state and local governments that use them. Sen. Jeff Merkley (D-OR) is the cosponsor."
         stages:
           - { label: "Introduced", status: done }
@@ -360,6 +423,6 @@ signoff: Justin and Aaron at Unum Initiative
 #   sconres41: A concurrent resolution recognizing the significance of equal pay and the disparity in wages paid to Latinas i
 ---
 
-Good morning. Four bills became law last week, including one making the Churchill museum in Fulton, Missouri, a national historic landmark and one restoring higher debt limits for small-business bankruptcies. Four more went to the President, among them the Common Cents Act, which would end production of the penny.
+Good morning. Four bills became law last week, including one making the Churchill museum in Fulton, Missouri, a national historic landmark, and another restoring higher debt limits for small-business bankruptcies. Four more went to the President, among them the Common Cents Act, which would end production of the penny.
 
 The House spent Monday on nuclear energy, passing four bills on uranium enrichment, fuel recycling, and the Nuclear Regulatory Commission. On Wednesday it passed a bill opening 403(b) retirement plans to more kinds of investments, 295 to 128. In all, 2 bills passed both chambers, 28 came out of committee, and 127 bills and resolutions were introduced.
