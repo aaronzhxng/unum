@@ -1,5 +1,4 @@
 ---
-draft: true
 week: November 9–13
 date: 2026-11-16
 headline: "The penny's final week"
