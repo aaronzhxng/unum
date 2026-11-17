@@ -187,6 +187,7 @@ export default function EducationSubtopicScreen() {
               {topicData.title.toUpperCase()}
             </Text>
             <Text
+              selectable
               style={{
                 fontSize: 22,
                 fontWeight: "800",
@@ -242,7 +243,11 @@ export default function EducationSubtopicScreen() {
                   />
                 </View>
                 {section.caption ? (
-                  <Text
+                  <RichText
+                    segments={parseRichText(
+                      section.caption,
+                      SKIP_GLOSSARY[subtopic as string],
+                    )}
                     style={{
                       fontSize: 12,
                       color: "#8a8a8a",
@@ -250,9 +255,9 @@ export default function EducationSubtopicScreen() {
                       marginTop: 8,
                       paddingHorizontal: 2,
                     }}
-                  >
-                    {section.caption}
-                  </Text>
+                    onGlossaryPress={setActivePopupSlug}
+                    onTopicPress={handleTopicPress}
+                  />
                 ) : null}
               </View>
             );
@@ -390,6 +395,7 @@ export default function EducationSubtopicScreen() {
                       }}
                     />
                     <Text
+                      selectable
                       style={{
                         fontSize: 15,
                         fontWeight: "700",
@@ -435,6 +441,7 @@ export default function EducationSubtopicScreen() {
                     }}
                   />
                   <Text
+                    selectable
                     style={{
                       fontSize: 17,
                       fontWeight: "700",
