@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import InfoButton from "../../global_components/InfoButton";
 import LoadingSpinner from "../../global_components/LoadingSpinner";
 import FitText from "../../global_components/FitText";
 import { roleOptionsFromText } from "../../utils/officialTitle";
@@ -232,7 +233,11 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
           },
         ]}
       >
-        {/* Left: Filter trigger - BULLETPROOF VERSION */}
+        {/* Left: Filter trigger, and what cosponsoring means */}
+        <View
+          onLayout={onFirstLayout}
+          style={{ flexDirection: "row", alignItems: "center", flexShrink: 1 }}
+        >
         <Pressable
           style={({ pressed }) => [
             {
@@ -243,7 +248,6 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
               transform: [{ scale: pressed ? 0.96 : 1 }],
             },
           ]}
-          onLayout={onFirstLayout}
           onPress={(e) => {
             e.stopPropagation(); // Block parent events
             e.preventDefault(); // Block default behaviors
@@ -269,6 +273,8 @@ const Cosponsors: React.FC<CosponsorsProps> = ({
             <ChevronDown size={16} color="#7B7C81" />
           )}
         </Pressable>
+          <InfoButton slug="cosponsor" label="What is a cosponsor?" />
+        </View>
 
         {/* Right: Sort button */}
         <Pressable
