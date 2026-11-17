@@ -1,18 +1,18 @@
 {
-  "weekOf": "2026-11-9",
-  "weekEnd": "2026-11-15",
+  "weekOf": "2026-11-16",
+  "weekEnd": "2026-11-22",
   "bills": [
     {
-      "billId": "hr1744",
-      "note": "This bill renews through 2028 the U.S. Commission on International Religious Freedom."
+      "billId": "hr1013",
+      "note": "This bill allows 403(b) retirement plans—the plans offered to employees of public schools, charities, and churches—to invest in pooled-funds managed by banks, trust companies, and insurers."
     },
     {
-      "billId": "hr1945",
-      "note": "This bill designates America's National Churchill Museum, at Westminster College in Fulton, Missouri, as a National Historic Landmark. Winston Churchill gave his 1946 Iron Curtain speech at the college."
+      "billId": "hr5284",
+      "note": "This bill changes certain terms that are used by the Social Security Administration (SSA) to describe the ages at which a worker may claim Social Security retirement benefits."
     },
     {
-      "billId": "hr7730",
-      "note": "This bill restores the higher debt limits, which expired in 2024, for two kinds of bankruptcy."
+      "billId": "hr10167",
+      "note": "This bill ends the production of the penny for general circulation, requires rounding to an amount divisible by five for the payment or transfer of cash, and allows the nickel to be composed of different material."
     }
   ]
 }
