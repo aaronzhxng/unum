@@ -53,14 +53,14 @@ const numbers = [
       </div>
       {/* With a cover, it sits in the left column, as tall as the headline
           and opening beside it in the right column, like the site's other
-          two-column sections */}
+          two-column sections. Its credit and the sent date share the row
+          below. */}
       <div class:list={["intro-body", { "has-cover": cover }]}>
         {
           cover && (
-            <figure class="cover">
+            <div class="cover">
               <img src={cover.src} alt={cover.alt} width="1600" height="840" style={cover.position && `object-position:${cover.position}`} />
-              {cover.credit && <figcaption>Photo: {cover.credit}</figcaption>}
-            </figure>
+            </div>
           )
         }
         <div class="intro-text">
@@ -68,8 +68,16 @@ const numbers = [
           <div class="opening lede stack">
             <Content />
           </div>
-          <p class="sent">Sent {sent}</p>
         </div>
+        {
+          cover?.credit && (
+            // Its length sets how small the type gets to stay on one line
+            <div class="credit-cell" style={`--chars:${`Photo: ${cover.credit}`.length}`}>
+              <p class="credit">Photo: {cover.credit}</p>
+            </div>
+          )
+        }
+        <p class="sent">Sent {sent}</p>
       </div>
     </header>
 
@@ -137,7 +145,6 @@ const numbers = [
 
   /* Stacked, the cover is a band as wide as the text below it */
   .cover {
-    margin: 0;
     width: 100%;
     max-width: 760px;
   }
@@ -151,45 +158,17 @@ const numbers = [
     border-radius: 20px;
   }
 
-  /* Stacked, the headline still comes first, then the photo and the
-     opening */
-  @media (max-width: 899px) {
-    .intro-text {
-      display: contents;
-    }
-
-    .intro-body h1 {
-      order: -1;
-    }
+  /* One line, however long: the type shrinks to fit the column instead */
+  .credit-cell {
+    container-type: inline-size;
+    margin-top: calc(8px - var(--intro-gap));
   }
 
-  /* Side by side: the same columns as the site's split sections. The
-     photo is as tall as the headline and opening beside it: it takes no
-     height of its own (flex-basis 0), so the text sets the row and the photo
-     fills it, with its credit level with the sent date. */
-  @media (min-width: 900px) {
-    .intro-body.has-cover {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
-      column-gap: 64px;
-      align-items: stretch;
-    }
-
-    .has-cover .cover {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .has-cover .cover img {
-      flex: 1 1 0;
-      min-height: 220px;
-      height: auto;
-      aspect-ratio: auto;
-    }
-  }
-
-  .cover figcaption {
-    margin-top: 8px;
-    font-size: 13px;
+  .credit {
+    font-size: min(13px, calc(100cqi / (var(--chars) * 0.56)));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--text-faint);
   }
 
@@ -197,6 +176,68 @@ const numbers = [
     font-size: 14px;
     color: var(--text-faint);
     margin-top: calc(16px - var(--intro-gap));
+  }
+
+  /* Stacked, the headline still comes first, then the photo and its
+     credit, then the opening */
+  @media (max-width: 899px) {
+    .intro-text {
+      display: contents;
+    }
+
+    .intro-body h1 {
+      order: -2;
+    }
+
+    .cover,
+    .credit-cell {
+      order: -1;
+    }
+  }
+
+  /* Side by side: the same columns as the site's split sections. The photo
+     is as tall as the headline and opening beside it: it's laid over its
+     cell rather than sizing it, so the text sets the row's height. The
+     credit and sent date start on the same line in the row below. */
+  @media (min-width: 900px) {
+    .intro-body.has-cover {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
+      column-gap: 64px;
+      row-gap: 16px;
+    }
+
+    .has-cover .cover {
+      grid-column: 1;
+      grid-row: 1;
+      position: relative;
+      min-height: 220px;
+    }
+
+    .has-cover .cover img {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+
+    .has-cover .intro-text {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .has-cover .credit-cell {
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 0;
+      align-self: baseline;
+    }
+
+    .has-cover .sent {
+      grid-column: 2;
+      grid-row: 2;
+      margin-top: 0;
+      align-self: baseline;
+    }
   }
 
   .opening :global(p) {
@@ -267,7 +308,8 @@ const numbers = [
     align-items: baseline;
     justify-content: space-between;
     gap: 8px 24px;
-    margin-bottom: calc(var(--label-gap) - var(--intro-gap));
+    /* The full gap to the photo and headline below, a little more room than
+       a label usually gets above its heading */
   }
 
   .eyebrow-row .eyebrow {
