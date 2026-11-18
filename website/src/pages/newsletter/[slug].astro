@@ -51,9 +51,9 @@ const numbers = [
           {newer && <a href={`/newsletter/${newer.id}`} rel="next">{newer.data.week} →</a>}
         </nav>
       </div>
-      <h1>{headline}</h1>
-      {/* With a cover, a tall crop of it sits in the left column and the
-          opening in the right, like the site's other two-column sections */}
+      {/* With a cover, it sits in the left column, as tall as the headline
+          and opening beside it in the right column, like the site's other
+          two-column sections */}
       <div class:list={["intro-body", { "has-cover": cover }]}>
         {
           cover && (
@@ -64,6 +64,7 @@ const numbers = [
           )
         }
         <div class="intro-text">
+          <h1>{headline}</h1>
           <div class="opening lede stack">
             <Content />
           </div>
@@ -122,11 +123,6 @@ const numbers = [
 </Layout>
 
 <style>
-  /* The headline spans both columns below it, so it runs the full width
-     rather than the reading width other pages' headlines use */
-  h1 {
-    max-width: none;
-  }
 
   .intro-body {
     justify-self: stretch;
@@ -155,10 +151,22 @@ const numbers = [
     border-radius: 20px;
   }
 
+  /* Stacked, the headline still comes first, then the photo and the
+     opening */
+  @media (max-width: 899px) {
+    .intro-text {
+      display: contents;
+    }
+
+    .intro-body h1 {
+      order: -1;
+    }
+  }
+
   /* Side by side: the same columns as the site's split sections. The
-     photo is as tall as the opening beside it: it takes no height of its
-     own (flex-basis 0), so the text sets the row and the photo fills it,
-     with its credit level with the sent date. */
+     photo is as tall as the headline and opening beside it: it takes no
+     height of its own (flex-basis 0), so the text sets the row and the photo
+     fills it, with its credit level with the sent date. */
   @media (min-width: 900px) {
     .intro-body.has-cover {
       grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
