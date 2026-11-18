@@ -3,6 +3,11 @@ week: September 21–25
 date: 2026-09-28
 headline: 6 bills became law, and the Senate rejected an Iran war powers resolution 49–50
 description: Six bills were signed into law across energy, water, public lands, and transportation, and a war powers resolution on Iran failed in the Senate by one vote.
+cover:
+  src: "/newsletter/covers/september-21-25-2026.jpg"
+  alt: "The U.S. Capitol dome under a blue sky with white clouds, an American flag flying nearby."
+  credit: "Carol M. Highsmith, Library of Congress"
+  position: "30% 50%"
 stats:
   signed: 6
   passedBoth: 15

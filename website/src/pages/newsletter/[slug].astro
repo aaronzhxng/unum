@@ -58,7 +58,7 @@ const numbers = [
         {
           cover && (
             <figure class="cover">
-              <img src={cover.src} alt={cover.alt} width="1600" height="840" />
+              <img src={cover.src} alt={cover.alt} width="1600" height="840" style={cover.position && `object-position:${cover.position}`} />
               {cover.credit && <figcaption>Photo: {cover.credit}</figcaption>}
             </figure>
           )

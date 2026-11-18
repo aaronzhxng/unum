@@ -3,6 +3,10 @@ week: September 28–October 2
 date: 2026-10-05
 headline: A stock trading ban for Congress fell 7 votes short in the Senate
 description: The Stop Insider Trading Act got 53 of the 60 votes it needed to advance in the Senate, the Kay Hagan Tick Reauthorization Act became law, and 48 bills passed both chambers.
+cover:
+  src: "/newsletter/covers/september-28-october-2-2026.jpg"
+  alt: "Traders on the floor of the New York Stock Exchange, under banks of screens."
+  credit: "Carol M. Highsmith, Library of Congress"
 stats:
   signed: 1
   passedBoth: 48

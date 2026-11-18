@@ -3,13 +3,16 @@
 //
 //   node scripts/newsletter/cover.mjs november-9-13-2026 capitol-dome-clouds
 //   node scripts/newsletter/cover.mjs november-9-13-2026 capitol-dome-clouds --focus 30
+//   node scripts/newsletter/cover.mjs september-21-25-2026 capitol-dome-clouds --x 35
 //
 // It crops the photo to 1600 x 840 (link previews' shape, sharp enough for a
 // tall crop on the issue page) into
 // website/public/newsletter/covers/<issue>.jpg, and writes the cover's src,
 // alt text and credit into the issue. --focus picks which part of a photo
 // that's too tall or too wide to keep, from 0 (top or left) to 100 (bottom
-// or right); the middle, 50, is the default.
+// or right); the middle, 50, is the default. --x does the same, from left
+// (0) to right (100), for the tall crop beside the issue's opening and the
+// band on the newsletter page.
 //
 // Uses sips, which comes with macOS. Run with no photo to list the library.
 
@@ -22,9 +25,12 @@ const REPO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..")
 const LIBRARY = path.join(REPO, "media", "photos");
 const photos = JSON.parse(fs.readFileSync(path.join(LIBRARY, "photos.json"), "utf8"));
 
-const [slug, photoId] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const flagValues = new Set([process.argv.indexOf("--focus"), process.argv.indexOf("--x")].filter((i) => i > 0).map((i) => i + 1));
+const [slug, photoId] = process.argv.slice(2).filter((a, i) => !a.startsWith("--") && !flagValues.has(i + 2));
 const focusArg = process.argv.indexOf("--focus");
 const focus = focusArg > 0 ? Number(process.argv[focusArg + 1]) : 50;
+const xArg = process.argv.indexOf("--x");
+const x = xArg > 0 ? Number(process.argv[xArg + 1]) : null;
 
 if (!slug || !photoId) {
   console.log("Usage: node scripts/newsletter/cover.mjs <issue> <photo> [--focus 0-100]\n\nPhotos:");
@@ -65,6 +71,7 @@ const block = [
   `  src: ${yaml(`/newsletter/covers/${slug}.jpg`)}`,
   `  alt: ${yaml(photo.alt)}`,
   ...(photo.credit ? [`  credit: ${yaml(photo.credit)}`] : []),
+  ...(x != null ? [`  position: ${yaml(`${x}% 50%`)}`] : []),
 ].join("\n");
 let text = fs.readFileSync(issueFile, "utf8");
 text = text.replace(/^cover:\n(?:  .*\n)+/m, "");

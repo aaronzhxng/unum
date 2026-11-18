@@ -65,6 +65,10 @@ const newsletter = defineCollection({
         alt: z.string(),
         // Who to credit, like "Carol M. Highsmith, Library of Congress"
         credit: z.string().optional(),
+        // Which part of the photo the tall crop on the issue page and the
+        // newsletter page's band keep, as a CSS position like "30% 50%".
+        // The middle when left out.
+        position: z.string().optional(),
       })
       .optional(),
     stats: z.object({
