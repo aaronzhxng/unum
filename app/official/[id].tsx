@@ -8,6 +8,7 @@ import {
   BellRing,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Plus,
   Search,
@@ -33,11 +34,13 @@ import {
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import SortDropdown from "../bill/bill_components/SortDropdown";
+import { useTabBar } from "../context/TabBarContext";
 import memberDetails from "../data/member-details.json";
 import officialsStatic from "../data/officials-static.json";
 import AddModal from "../global_components/AddModal";
 import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import ErrorScreen from "../global_components/ErrorScreen";
+import InfoButton from "../global_components/InfoButton";
 import LegislationFilterModal from "../global_components/LegislationFilterModal";
 import LoadingSpinner from "../global_components/LoadingSpinner";
 import NewListNameModal from "../global_components/NewListNameModal";
@@ -255,6 +258,15 @@ function LegislationCard({ item }: { item: any }) {
     </Pressable>
   );
 }
+
+// A section heading with its ⓘ. The bottom margin is the one section
+// headings carry on their own.
+const HEADING_WITH_INFO = {
+  flexDirection: "row" as const,
+  alignItems: "center" as const,
+  flexShrink: 1,
+  marginBottom: componentStyles.sectionTitle.marginBottom,
+};
 
 export default function OfficialDetail() {
   // console.log("OfficialDetail render:", Date.now());
@@ -651,6 +663,9 @@ export default function OfficialDetail() {
     education: [],
   };
 
+  // For the Roles tab's committee links
+  const { openCommittee } = useTabBar();
+
   const { data: committeesData } = useQuery({
     queryKey: ["committees"],
     queryFn: committeesService.getAll,
@@ -666,7 +681,17 @@ export default function OfficialDetail() {
   // Every committee, subcommittee, and caucus post for the Roles tab. Each
   // list puts the senior titles first, then plain seats.
   const roles = useMemo(() => {
-    type Role = { title: string | null; name: string; rank: number };
+    // Committees and subcommittees carry their ids, so they can open their
+    // full list on the Officials tab
+    type Role = {
+      title: string | null;
+      name: string;
+      rank: number;
+      // Which party's side of the committee the seat is on
+      side?: "majority" | "minority";
+      committeeId?: string;
+      subcommitteeId?: string;
+    };
     const RANK = [
       "Chair",
       "Co-Chair",
@@ -686,6 +711,8 @@ export default function OfficialDetail() {
           title: seat.title,
           name: label,
           rank: rankOf(seat.title),
+          side: seat.side,
+          committeeId: committee.id,
         });
       }
       for (const sub of committee.subcommittees ?? []) {
@@ -695,6 +722,8 @@ export default function OfficialDetail() {
             title: subSeat.title,
             name: `${label} Subcommittee on ${sub.name}`,
             rank: rankOf(subSeat.title),
+            committeeId: committee.id,
+            subcommitteeId: sub.id,
           });
         }
       }
@@ -1011,12 +1040,20 @@ export default function OfficialDetail() {
   //   );
   // }
 
-  // The header names a full committee they chair, if any, and counts the
-  // rest of their leadership posts. Ex officio seats aren't leadership.
-  const headerChair = roles.committees.find(
-    (r: { title: string | null }) =>
-      r.title === "Chair" || r.title === "Co-Chair",
-  );
+  // The header names a full committee they chair or, failing that, one where
+  // they lead the minority party, and counts the rest of their leadership
+  // posts. Some committees call the minority's leader the Vice Chair instead
+  // of the Ranking Member. Ex officio seats aren't leadership.
+  type HeaderRole = { title: string | null; side?: string; name: string };
+  const headerChair =
+    roles.committees.find(
+      (r: HeaderRole) => r.title === "Chair" || r.title === "Co-Chair",
+    ) ??
+    roles.committees.find(
+      (r: HeaderRole) =>
+        r.title === "Ranking Member" ||
+        (r.title === "Vice Chair" && r.side === "minority"),
+    );
   const otherLeadershipCount =
     [...roles.committees, ...roles.subcommittees, ...roles.caucuses].filter(
       (r) => r.title && r.title !== "Ex Officio",
@@ -1031,35 +1068,84 @@ export default function OfficialDetail() {
   const allTimeCount =
     (sponsoredShown ? sponsoredData?.count : cosponsoredData?.count) ?? 0;
 
-  // A Roles tab section, with any title as a small label above the name
+  // Opens a committee's full list on the Officials tab, closing this
+  // profile and anything stacked under it
+  const showCommittee = (committeeId: string, subcommitteeId?: string) => {
+    openCommittee(committeeId, subcommitteeId ?? null);
+    if (router.canDismiss()) router.dismissAll();
+    else router.replace("/(tabs)/home");
+  };
+
+  // A Roles tab section, with any title as a small label above the name.
+  // Committees and subcommittees open their member list when tapped.
   const roleSection = (
     heading: string,
-    list: { title: string | null; name: string }[],
+    infoSlug: string,
+    list: {
+      title: string | null;
+      name: string;
+      committeeId?: string;
+      subcommitteeId?: string;
+    }[],
   ) =>
     list.length > 0 && (
       <View style={componentStyles.section}>
         <View style={componentStyles.termRow}>
-          <Text style={componentStyles.sectionTitle}>{heading}</Text>
+          {/* The heading and its ⓘ center on each other; the pair keeps the
+              heading's usual pull toward the list below */}
+          <View style={HEADING_WITH_INFO}>
+            <Text style={[componentStyles.sectionTitle, { marginBottom: 0 }]}>
+              {heading}
+            </Text>
+            <InfoButton
+              slug={infoSlug}
+              label={`What does ${heading.toLowerCase()} mean?`}
+            />
+          </View>
         </View>
         <View style={{ paddingBottom: 8 }}>
-          {list.map(({ title, name }) => (
-            <View key={`${title} ${name}`} style={{ paddingVertical: 10 }}>
-              {title && (
-                <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: "700",
-                    letterSpacing: 0.5,
-                    color: "#008CFF",
-                    marginBottom: 2,
-                  }}
-                >
-                  {title.toUpperCase()}
-                </Text>
-              )}
-              <Text style={componentStyles.term}>{name}</Text>
-            </View>
-          ))}
+          {list.map(({ title, name, committeeId, subcommitteeId }) => {
+            const text = (
+              <View style={{ flex: 1 }}>
+                {title && (
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "700",
+                      letterSpacing: 0.5,
+                      color: "#008CFF",
+                      marginBottom: 2,
+                    }}
+                  >
+                    {title.toUpperCase()}
+                  </Text>
+                )}
+                <Text style={componentStyles.term}>{name}</Text>
+              </View>
+            );
+            return committeeId ? (
+              <Pressable
+                key={`${title} ${name}`}
+                onPress={() => showCommittee(committeeId, subcommitteeId)}
+                accessibilityRole="button"
+                accessibilityHint="Shows everyone on this committee"
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  paddingVertical: 10,
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                {text}
+                <ChevronRight size={18} color="#B0B0B5" />
+              </Pressable>
+            ) : (
+              <View key={`${title} ${name}`} style={{ paddingVertical: 10 }}>
+                {text}
+              </View>
+            );
+          })}
         </View>
       </View>
     );
@@ -1441,11 +1527,17 @@ export default function OfficialDetail() {
                     paddingHorizontal: 32,
                     marginTop: 8,
                     marginBottom: 8,
+                    flexDirection: "row",
+                    alignItems: "center",
                   }}
                 >
                   <Text style={{ fontSize: 16, fontWeight: "700" }}>
                     District
                   </Text>
+                  <InfoButton
+                    slug="congressional-district"
+                    label="What is a congressional district?"
+                  />
                 </View>
                 {/* Outer view carries the card shadow; the inner one clips the
                     map to the rounded corners. On iOS, clipping and shadow
@@ -1506,9 +1598,17 @@ export default function OfficialDetail() {
               style={[componentStyles.section, { marginBottom: 96 }]}
             >
               <View style={componentStyles.termRow}>
-                <Text style={componentStyles.sectionTitle}>
-                  Top Policy Areas (2025 - )
-                </Text>
+                <View style={HEADING_WITH_INFO}>
+                  <Text
+                    style={[componentStyles.sectionTitle, { marginBottom: 0 }]}
+                  >
+                    Top Policy Areas (2025 - )
+                  </Text>
+                  <InfoButton
+                    slug="policy-area"
+                    label="How are top policy areas worked out?"
+                  />
+                </View>
               </View>
               {topPolicyAreas.length > 0 ? (
                 topPolicyAreas.map((area, index) => {
@@ -1572,9 +1672,17 @@ export default function OfficialDetail() {
         <View key="1" style={{ flex: 1 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ marginBottom: 96, paddingTop: 12 }}>
-              {roleSection("Committees", roles.committees)}
-              {roleSection("Subcommittees", roles.subcommittees)}
-              {roleSection("Caucus Leadership", roles.caucuses)}
+              {roleSection("Committees", "committee", roles.committees)}
+              {roleSection(
+                "Subcommittees",
+                "subcommittee",
+                roles.subcommittees,
+              )}
+              {roleSection(
+                "Caucus Leadership",
+                "congressional-caucus",
+                roles.caucuses,
+              )}
               {roles.committees.length === 0 &&
                 roles.subcommittees.length === 0 &&
                 roles.caucuses.length === 0 && (
@@ -1796,6 +1904,11 @@ export default function OfficialDetail() {
                     </Pressable>
                   );
                 })}
+                <InfoButton
+                  slug="cosponsor"
+                  label="What's the difference between sponsoring and cosponsoring?"
+                  style={{ alignSelf: "center", marginLeft: 0 }}
+                />
               </View>
               {billsLoading ? (
                 <View

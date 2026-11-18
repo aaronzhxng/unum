@@ -25,6 +25,129 @@ export type EducationTopic = {
 
 export const educationTopics: EducationTopic[] = [
   // ════════════════════════════════════════════════════════════════════════════
+  // MIDTERMS 2026
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    id: "midterms-2026",
+    title: "Midterms 2026",
+    subtitle: "What happened on Election Day, and what comes next for Congress.",
+    icon: require("../../assets/education_icons/midtermsicon.png"),
+    subtopics: [
+      {
+        id: "what-happened-on-election-day-2026",
+        icon: require("../../assets/education_icons/midterms1icon.png"),
+        title: "What happened on Election Day 2026?",
+        summary: "The results of the November 3 midterms, and when the new Congress takes office.",
+        body: [
+          {
+            type: "text",
+            content: "Every two years, the whole U.S. holds elections at the same time in order to re-elect the whole [[House of Representatives]] and one-third of the [[Senate]]. When the president is also up for election, this event is called a “general election.” But because the president serves for a term of four years, the congressional elections in between are called “midterm elections.” So, the U.S. held midterm elections on November 3, 2026.\n\nThe most important news was that many candidates belonging to the Democratic Party were elected over [[Republicans|republican-party]]. While we will not know exactly how many members of [[Congress]] belong to each party for some weeks, because in multiple places the votes were so close that they need to be recounted or a second election held in that area, it was clear early on election night that the Democrats will hold a majority in both the Senate and the House. This means many areas were “flipped,” as they last voted for Republican candidates but this time voted for Democrats.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/midterms1.jpg"),
+            caption: "Even after Election Night, surprises came in. On November 3, the difference between Mississippi Senator Cindy Hyde-Smith, a Republican running for re-election, and Democrat Scott Colom, was only 900 votes. It took another week for Mr. Colom (above) to be projected the winner by a majority of only 4,000 out of one million votes. Mr. Colom will be the first Democrat senator for Mississippi since 1982.\n\nCredit: District Attorney’s Office, Sixteenth District Court of Mississippi.",
+          },
+          {
+            type: "text",
+            content: "This does not mean the federal government is any different yet. The [[Constitution]], as changed by the 20th Amendment (1933), says that the term for new members of Congress begins on January 3 after the election. This means that an app like Unum, which reflects what the government looks like right now, will stay like it is until January 3.",
+          },
+          {
+            type: "callout",
+            heading: "As of November 12, 2026",
+            content: "There is a Republican majority of five representatives and six senators. However, [[Vice President]] J.D. Vance, a Republican, serves as President of the Senate and can vote to break a tie.",
+          },
+          {
+            type: "text",
+            content: "On that date, or before, you should check if your members of Congress remain the same, and if they are different, whether or not they belong to the same party. This could directly affect what bills they introduce, what laws they support, and which organizations they work with in your local area and nationwide.\n\nAdditionally, your state and local representatives might have changed. 36 states and three territories also elected their governor. Many states also voted for judges or amendments to their constitution (called ballot measures, or referenda). Although these officials are not the focus of Unum, you should still check reputable news sources to see who will serve in these positions, what they stand for, and what you may expect to see change or stay the same.",
+          },
+          {
+            type: "links",
+            heading: "Check the results",
+            items: [{"label": "Who your next representative, senator, and governor will be, as verified by the Associated Press", "url": "https://apnews.com/projects/elections-2026/"}, {"label": "All results, including ballot measures and state officials (MultiState)", "url": "https://www.multistate.us/elections/"}],
+          },
+          {
+            type: "text",
+            content: "For smaller races, including city council, mayor, or minor budget measures, check the website of your local newspaper of record.",
+          },
+        ],
+      },
+      {
+        id: "congress-before-january-3",
+        icon: require("../../assets/education_icons/midterms2icon.png"),
+        title: "What will happen in Congress before January 3?",
+        summary: "The lame-duck period, and why many laws pass before a new Congress begins.",
+        body: [
+          {
+            type: "text",
+            content: "Probably a lot. There is over a month left of the current Congress (the 119th), which has a Republican majority. In this time, funding for federal agencies, for farmers, and for the military must be agreed on. Because President Donald Trump is also a Republican, this means there will continue to be a unified government. Usually, more laws get passed during a unified government than a divided government. This is because the party leaders in the House and Senate need to work together and with the President to make sure laws get passed.",
+          },
+          {
+            type: "text",
+            content: "Because the President and Congress anticipate that their working relationship will soon change, a lot of laws get passed during the period between an election and the new congressional term (called the “lame-duck period”). For example, after the 2024 elections, the Presidency and Senate majority were going to change from Democratic to Republican. So, 61 percent of the public laws passed by the 118th Congress were pushed through during that lame-duck period before January 2025. Does this mean bills will be passed about Medicare, highway construction, and permitting reform? Keep following Unum so you don’t miss a thing!",
+          },
+        ],
+      },
+      {
+        id: "what-a-democratic-majority-means",
+        icon: require("../../assets/education_icons/midterms3icon.png"),
+        title: "What will a Democratic majority in Congress mean?",
+        summary: "Three possible outcomes of a Democratic Congress and a Republican President.",
+        body: [
+          {
+            type: "text",
+            content: "This is a difficult question to answer. However, here are three possible outcomes. Please remember that Unum is not a news app and does not identify with either party.",
+          },
+          {
+            type: "text",
+            heading: "1. More laws might be stalled.",
+            content: "Both Congress and the President need to agree for [[a bill to become a law|bill]]. If the President chooses to veto a bill, at least two-thirds of each house of Congress needs to vote to override the veto and pass it anyway. Additionally, the Senate has a rule called the [[filibuster]]. With this rule, any one senator can delay passing a law indefinitely unless 60 others vote to continue. The Democratic majority in Congress is not big enough to pass a law if the President and Republicans unite against it.\n\nAdditionally, the United States does not have complete [[party discipline]]. Some members of Congress are very conservative or liberal compared with others in their own party. Some newly elected Democrats are even socialist. If even a few members challenge the party leadership or major bills, the party’s majority could effectively shrink.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/midterms2.jpg"),
+            caption: "In 2021, the Democrats controlled 50 seats of the Senate. However, Sen. Joe Manchin (WV; left) felt an economic reform bill increased the debt by too much, even though the party leadership as well as President Joe Biden (right) supported it. He voted with the Republicans to block it. It took a lot of negotiation with Mr. Manchin to get him to support a smaller bill, the Inflation Reduction Act, which passed in 2022.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/midterms3.png"),
+            caption: "Many more new members of Congress will be serving for the first time than in previous years. The new majority and minority [[leaders|party-leaders]] will have to figure out what all their new members stand for in order to keep them loyal.",
+          },
+          {
+            type: "text",
+            heading: "2. Congress might be presented with different kinds of bills.",
+            content: "The majority party effectively decides how Congress debates. After bills are presented, they go to a committee for review and amendment. If a committee does not like a bill, it can let it “die,” meaning it will never be debated in the whole house. Most members of each committee, including its chair, belong to the majority party.\n\nAdditionally, the party leaders—the Speaker of the House of Representatives, and the Majority Leader in the Senate—have an important role in deciding what bills are discussed, and in what order. They could even let a bill skip the committee stage altogether. All this means a bill that is unpopular with Democratic party leadership may not pass through committee, or be seriously debated. But a bill the leadership considers very important could be hurried through for a floor vote.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/midterms4.png"),
+            caption: "A major priority shared by the President and the Republican leaders was to pass immigration reform as soon as possible. As soon as the 119th Congress met on January 3, the Laken Riley Act was referred to the House Committee on the Judiciary. The committee quickly approved it. Then, the House leadership specified the bill would need only one hour’s debate before a vote. Therefore, the whole bill passed the House in just four days.",
+          },
+          {
+            type: "text",
+            content: "Most likely, the new Congress’s majority leaders will be the current minority leaders. This means Rep. Hakeem Jeffries (NY-8) will be the next Speaker of the House of Representatives, and Sen. Chuck Schumer (NY) will be the next Senate Majority Leader. However, going back to the earlier point about internal party divisions, it is possible that a few members who think Mr. Jeffries and Mr. Schumer are not liberal enough will try to block their election. This could block laws from passing for a while and change the dynamic in Congress directly.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/midterms5.jpg"),
+            caption: "In January 2023, Republican representatives who believed their party leader, Kevin McCarthy, was not conservative enough, blocked him from being elected Speaker of the House. Mr. McCarthy had to try very hard to gain their support. And after he was finally elected, just nine months later, the conservatives again joined together to force him out.",
+          },
+          {
+            type: "text",
+            heading: "3. The President might get more assertive, raising tensions.",
+            content: "If the Democratic Congress keeps passing bills that the Republican President disagrees with, it is likely that he will use more vetoes to prevent them from becoming laws. As head of the Executive Branch, the President could also use executive orders to direct Cabinet secretaries and civil servants to execute laws in more narrow or wide-ranging ways than Congress may have intended.\n\nOf course, presidents have a number of powers that Congress cannot touch, including over foreign affairs and pardons. However, we do not know how far many powers extend. The past few years have seen debate emerge over the President’s ability to fire senior bureaucrats, bomb foreign countries, and introduce tariffs (taxes on trade) without Congressional approval. If this tension continues, the [[Supreme Court]] could get busy clarifying more details about the balance of power between the Executive and Legislature.\n\nIn response, it is very likely a Democratic-controlled Congress would exercise its [[oversight powers]] more aggressively by investigating the Executive, demanding reports be published, and holding public hearings. The Senate may additionally block the President’s appointments to major posts—like Supreme Court justice, Cabinet secretary, general, and ambassador—or refuse to ratify a treaty that the Executive negotiated. Finally, it remains possible that the President, Vice President, another member of the Cabinet, or another federal official, could be [[impeached]] by the House and removed from office by the Senate.",
+          },
+          {
+            type: "image",
+            source: require("../../assets/education_images/midterms6.jpg"),
+            caption: "In 2021, President Joe Biden appointed Alejandro Mayorkas to be Secretary of Homeland Security, which includes border control. Republicans thought he would be too weak on immigration and tried to block his confirmation. In 2023, the Republican-majority House impeached Mr. Mayorkas for apparently failing to enforce immigration laws properly. The Democratic-majority Senate, however, voted against removing him from office.",
+          },
+        ],
+      },
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
   // HOW GOVERNMENT WORKS
   // ════════════════════════════════════════════════════════════════════════════
   {
@@ -2969,6 +3092,14 @@ export const educationTopics: EducationTopic[] = [
     ],
   },
 ];
+
+// Topics still being written, kept off the Education tab and out of search
+const HIDDEN_TOPICS = new Set(["elections-voting", "us-history-foundations"]);
+
+// The topics readers can browse, in the Education tab's order
+export const visibleEducationTopics = educationTopics.filter(
+  (topic) => !HIDDEN_TOPICS.has(topic.id),
+);
 
 export const getEducationTopic = (topicId: string) =>
   educationTopics.find((topic) => topic.id === topicId) ?? null;

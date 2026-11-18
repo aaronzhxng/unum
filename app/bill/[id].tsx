@@ -59,6 +59,7 @@ import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
+import InfoButton from "../global_components/InfoButton";
 import VotingCard, {
   FollowedOfficial,
   VoteData,
@@ -1502,6 +1503,11 @@ export default function BillDetail() {
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
                 >
                   <Text style={componentStyles.detailTitle}>Status: </Text>
+                  <InfoButton
+                    slug="bill-status"
+                    label="How does a bill become law?"
+                    style={{ marginLeft: 0 }}
+                  />
                   <Text style={componentStyles.status}>
                     {bill.latestAction?.text || "Introduced"}
                   </Text>
@@ -1544,6 +1550,11 @@ export default function BillDetail() {
 
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Type: </Text>
+              <InfoButton
+                slug="bill-types"
+                label="What do the types of bills mean?"
+                style={{ marginLeft: 0 }}
+              />
               <Text style={componentStyles.detailInfo}>
                 {getBillTypeName(bill.type, bill.originChamber)}
               </Text>
@@ -1909,6 +1920,29 @@ export default function BillDetail() {
             contentContainerStyle={{ paddingTop: 1 }}
           >
             <View style={{ marginBottom: 96 }}>
+              {votingVisited && !votesLoading && (
+                // What yea, nay and roll call mean, and why some votes need
+                // two-thirds
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    paddingHorizontal: 16,
+                    // The same space above, from the tabs, as below, to the
+                    // first vote's card, which has no margin of its own
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                    How votes work
+                  </Text>
+                  <InfoButton
+                    slug="roll-call-vote"
+                    label="How do votes in Congress work?"
+                  />
+                </View>
+              )}
               {votingVisited && (
                 <VotingCard
                   votes={votesData?.votes ?? []}

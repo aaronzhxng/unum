@@ -21,8 +21,10 @@ export default function RichText({
   onGlossaryPress,
   onTopicPress,
 }: Props) {
+  // Selectable, so readers can highlight and copy a passage. Glossary terms
+  // still open on a tap.
   return (
-    <Text style={style}>
+    <Text style={style} selectable>
       {segments.map((seg, i) => {
         if (seg.type === "glossary") {
           return (

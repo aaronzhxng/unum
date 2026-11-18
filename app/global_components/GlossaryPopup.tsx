@@ -77,7 +77,35 @@ export default function GlossaryPopup({ slug, onClose, onNavigateGlossary }: Pro
               onTopicPress={handleTopicPress}
             />
           </ScrollView>
-          <View style={{ alignItems: "flex-end", marginTop: 16 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: entry.article ? "space-between" : "flex-end",
+              alignItems: "center",
+              gap: 16,
+              marginTop: 16,
+            }}
+          >
+            {entry.article && (
+              <Pressable
+                onPress={() => {
+                  const { topicId, subtopicId } = entry.article!;
+                  onClose();
+                  setTimeout(
+                    () =>
+                      router.push(
+                        `/education_tab/${topicId}/${subtopicId}` as any,
+                      ),
+                    150,
+                  );
+                }}
+                style={({ pressed }) => ({ flexShrink: 1, opacity: pressed ? 0.6 : 1 })}
+              >
+                <Text style={{ fontSize: 14, color: "#008CFF", fontWeight: "600" }}>
+                  Read: {entry.article.title}
+                </Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={onClose}
               style={({ pressed }) => ({

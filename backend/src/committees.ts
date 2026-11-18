@@ -51,6 +51,8 @@ export type Committee = {
   name: string;
   shortName: string;
   chamber: "House" | "Senate" | "Joint";
+  // The committee's own website. Subcommittees don't have their own.
+  url: string | null;
   members: CommitteeMember[];
   subcommittees: Subcommittee[];
 };
@@ -113,6 +115,7 @@ export const buildCommittees = (committees: any[], membership: Record<string, an
       name: committee.name as string,
       shortName: SHORT_NAMES[committee.thomas_id] ?? shortNameOf(committee.name),
       chamber: CHAMBERS[committee.type as keyof typeof CHAMBERS],
+      url: (committee.url as string | undefined) ?? null,
       members: membersOf(membership, committee.thomas_id),
       // In the source's order. Subcommittees with nobody listed are ones the
       // chamber no longer uses.

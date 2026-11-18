@@ -6,6 +6,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  ExternalLink,
   MapPinned,
   MoreVertical,
   Search,
@@ -14,12 +15,15 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
   FlatList,
+  Linking,
   Modal,
+  PixelRatio,
   Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
+import { useTabBar } from "../context/TabBarContext";
 import { useTour } from "../context/TourContext";
 import AddModal from "../global_components/AddModal";
 import ErrorScreen from "../global_components/ErrorScreen";
@@ -118,6 +122,10 @@ const LOCATION_OPTIONS = [
 ];
 
 const DROPDOWN_TABS = ["States", "Committees"] as const;
+const DROPDOWN_TAB_LABELS: Record<(typeof DROPDOWN_TABS)[number], string> = {
+  States: "States and Territories",
+  Committees: "Committees",
+};
 const COMMITTEE_CHAMBERS = ["House", "Senate", "Joint"] as const;
 
 export default function OfficialsScreen() {
@@ -265,7 +273,7 @@ export default function OfficialsScreen() {
   const committeesQuery = useQuery({
     queryKey: ["committees"],
     queryFn: committeesService.getAll,
-    enabled: dropdownTab === "Committees",
+    enabled: dropdownTab === "Committees" || selectedCommitteeId !== null,
     staleTime: COMMITTEES_STALE_MS,
   });
   const committees = committeesQuery.data?.committees ?? [];
@@ -277,6 +285,33 @@ export default function OfficialsScreen() {
   const selectedSubcommittee = subcommittees.find(
     (s) => s.id === selectedSubcommitteeId,
   );
+  // A committee tapped on an official's profile
+  const { committeeRequest, clearCommitteeRequest } = useTabBar();
+  useEffect(() => {
+    if (!committeeRequest) return;
+    setSelectedCommitteeId(committeeRequest.committeeId);
+    setSelectedSubcommitteeId(committeeRequest.subcommitteeId);
+    setShowListSelection(false);
+    clearCommitteeRequest();
+  }, [committeeRequest]);
+
+  // The subcommittee chips scroll so the chosen one sits in the middle, even
+  // when it's the tenth and opened from an official's profile
+  const chipScrollRef = useRef<ScrollView>(null);
+  const chipLayouts = useRef<Record<string, { x: number; width: number }>>({});
+  const chipViewport = useRef(0);
+  const centerChip = (key: string, animated: boolean) => {
+    const chip = chipLayouts.current[key];
+    if (!chip || !chipViewport.current) return;
+    chipScrollRef.current?.scrollTo({
+      x: Math.max(0, chip.x + chip.width / 2 - chipViewport.current / 2),
+      animated,
+    });
+  };
+  useEffect(() => {
+    centerChip(selectedSubcommitteeId ?? "full", true);
+  }, [selectedSubcommitteeId]);
+
   const listTitle = selectedCommittee
     ? committeeLabel(selectedCommittee)
     : selectedList;
@@ -456,8 +491,9 @@ export default function OfficialsScreen() {
           mapWrapped && { alignItems: "flex-start" },
         ]}
       >
-        {/* The map button moves to its own row when the state name and it
-            don't fit side by side */}
+        {/* With large system text, the map button moves to its own row when
+            the state name and it don't fit side by side. At normal sizes they
+            stay on one line, and a long name shrinks a little instead. */}
         <View
           style={[
             componentStyles.headerLeft,
@@ -465,7 +501,7 @@ export default function OfficialsScreen() {
               flex: 1,
               minWidth: 0,
               marginRight: 16,
-              flexWrap: "wrap",
+              flexWrap: PixelRatio.getFontScale() > 1 ? "wrap" : "nowrap",
               columnGap: 2,
             },
           ]}
@@ -502,12 +538,13 @@ export default function OfficialsScreen() {
                 <Text
                   style={[componentStyles.header, { flexShrink: 1 }]}
                   onLayout={(e) => setTitleHeight(e.nativeEvent.layout.height)}
-                  // About a third of committee names need the second line.
-                  // The longest, like "Senate Homeland Security and
-                  // Governmental Affairs", shrink a little on narrow phones
-                  // rather than end in "…".
-                  numberOfLines={selectedCommittee ? 2 : 1}
-                  adjustsFontSizeToFit={!!selectedCommittee}
+                  // Long names take a second line: about a third of committees,
+                  // and states like Northern Mariana Islands beside the map
+                  // button. The longest, like "Senate Homeland Security and
+                  // Governmental Affairs", also shrink a little on narrow
+                  // phones rather than end in "…".
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
                   minimumFontScale={0.8}
                   ellipsizeMode="tail"
                 >
@@ -529,6 +566,37 @@ export default function OfficialsScreen() {
               </View>
             </Pressable>
           </View>
+          {selectedCommittee?.url && (
+            <Pressable
+              onPress={() => Linking.openURL(selectedCommittee.url!)}
+              hitSlop={6}
+              accessibilityRole="link"
+              accessibilityLabel={`Open the ${committeeLabel(selectedCommittee)} Committee's website`}
+              onLayout={onMapLayout}
+              style={({ pressed }) => ({
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                flexShrink: 0,
+                marginLeft: 8,
+                marginTop: mapWrapped ? -6 : 0,
+                marginBottom: mapWrapped ? 20 : 12,
+                paddingVertical: 6,
+                paddingLeft: 10,
+                paddingRight: 12,
+                borderRadius: 999,
+                backgroundColor: "#E8F4FF",
+                transform: [{ scale: pressed ? 0.94 : 1 }],
+              })}
+            >
+              <ExternalLink size={16} color="#008CFF" />
+              <Text
+                style={{ fontSize: 13, fontWeight: "600", color: "#008CFF" }}
+              >
+                Website
+              </Text>
+            </Pressable>
+          )}
           {!selectedCommittee && (
             <Pressable
               onPress={() =>
@@ -600,8 +668,12 @@ export default function OfficialsScreen() {
         <View style={{ marginBottom: 8 }}>
           {/* Bleeds to the screen edges so chips scroll off them */}
           <ScrollView
+            ref={chipScrollRef}
             horizontal
             showsHorizontalScrollIndicator={false}
+            onLayout={(e) => {
+              chipViewport.current = e.nativeEvent.layout.width;
+            }}
             style={{ marginHorizontal: -16 }}
             contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
           >
@@ -613,6 +685,15 @@ export default function OfficialsScreen() {
                   accessibilityRole="tab"
                   accessibilityState={{ selected: isSelected }}
                   onPress={() => setSelectedSubcommitteeId(sub?.id ?? null)}
+                  onLayout={(e) => {
+                    const key = sub?.id ?? "full";
+                    const { x, width } = e.nativeEvent.layout;
+                    chipLayouts.current[key] = { x, width };
+                    // A newly shown committee: jump straight to the chosen chip
+                    if (key === (selectedSubcommitteeId ?? "full")) {
+                      centerChip(key, false);
+                    }
+                  }}
                   style={({ pressed }) => ({
                     maxWidth: 220,
                     paddingVertical: 6,
@@ -724,6 +805,10 @@ export default function OfficialsScreen() {
         onSearch={setSearchQuery}
         searchContext={listTitle}
         items={officials}
+        // From one state, names in other states still turn up, below
+        otherItems={selectedList === "All States" ? undefined : allOfficials}
+        otherLabel="In other states"
+        historyKey="officials"
         onItemPress={(item) => {
           router.navigate(`/official/${item.bioguideId}`);
         }}
@@ -791,7 +876,9 @@ export default function OfficialsScreen() {
                     style={{
                       flex: 1,
                       paddingVertical: 14,
+                      paddingHorizontal: 8,
                       alignItems: "center",
+                      justifyContent: "center",
                       marginBottom: -1,
                       borderBottomWidth: 2,
                       borderBottomColor:
@@ -801,12 +888,14 @@ export default function OfficialsScreen() {
                     <Text
                       style={[
                         componentStyles.dropdownItemText,
+                        // Wraps onto a second line with large text
+                        { textAlign: "center" },
                         dropdownTab === tab
                           ? { fontWeight: "600", color: "#008CFF" }
                           : { color: "#535353" },
                       ]}
                     >
-                      {tab}
+                      {DROPDOWN_TAB_LABELS[tab]}
                     </Text>
                   </Pressable>
                 ))}

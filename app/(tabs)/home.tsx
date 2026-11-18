@@ -1489,13 +1489,22 @@ type HomeArticle = {
   subtopic: (typeof educationTopics)[number]["subtopics"][number];
 };
 
-const VOTER_REGISTRATION_ID = "voter-registration";
+// The topic with its own slide above "Today's Article". Like that slide, it
+// moves to the topic's next article every 12 hours.
+const FEATURED_TOPIC_ID = "midterms-2026";
+const FEATURED_TOPIC = educationTopics.find((t) => t.id === FEATURED_TOPIC_ID);
 
-const VOTER_REGISTRATION_ARTICLE: HomeArticle | undefined = educationTopics
-  .flatMap((t) =>
-    t.subtopics.map((s) => ({ topicId: t.id, topicIcon: t.icon, subtopic: s })),
-  )
-  .find((a) => a.subtopic.id === VOTER_REGISTRATION_ID);
+const articleSlot = () => Math.floor(Date.now() / (12 * 60 * 60 * 1000));
+
+const featuredArticle = (): HomeArticle | undefined => {
+  if (!FEATURED_TOPIC?.subtopics.length) return undefined;
+  const subtopics = FEATURED_TOPIC.subtopics;
+  return {
+    topicId: FEATURED_TOPIC.id,
+    topicIcon: FEATURED_TOPIC.icon,
+    subtopic: subtopics[articleSlot() % subtopics.length],
+  };
+};
 
 // "Bills of the week" and "(Nov 2 – Nov 8)", from the featured bills' dates.
 // The dates go on a second line when they don't fit beside it.
@@ -1529,9 +1538,8 @@ const todaysArticle = (): HomeArticle => {
       })),
     )
     // Has its own slide, so it shouldn't come up in the rotation too
-    .filter((a) => a.subtopic.id !== VOTER_REGISTRATION_ID);
-  const slotIndex = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
-  return allSubtopics[slotIndex % allSubtopics.length];
+    .filter((a) => a.topicId !== FEATURED_TOPIC_ID);
+  return allSubtopics[articleSlot() % allSubtopics.length];
 };
 
 type CardSize = {
@@ -1592,17 +1600,12 @@ function HomeCarousel({
       description?: string;
     }[] = [];
     if (showArticles) {
-      if (VOTER_REGISTRATION_ARTICLE) {
+      const featuredNow = featuredArticle();
+      if (featuredNow) {
         list.push({
-          key: "voter",
-          title: "Voting",
-          card: (size) => (
-            <ArticleCard
-              article={VOTER_REGISTRATION_ARTICLE}
-              title="Have you registered to vote?"
-              size={size}
-            />
-          ),
+          key: "featured-article",
+          title: FEATURED_TOPIC!.title,
+          card: (size) => <ArticleCard article={featuredNow} size={size} />,
         });
       }
       list.push({
@@ -1646,6 +1649,34 @@ function HomeCarousel({
   const count = slides.length;
   const current = count ? Math.min(index, count - 1) : 0;
 
+  // The slides wrap around: a copy of the last sits before the first, and a
+  // copy of the first after the last. Landing on a copy jumps, without
+  // animating, to the slide it copies.
+  const loops = count > 1;
+  const pages = loops ? [slides[count - 1], ...slides, slides[0]] : slides;
+  const lead = loops ? 1 : 0;
+  const jumpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (jumpTimer.current) clearTimeout(jumpTimer.current);
+    },
+    [],
+  );
+  const showPage = (page: number, animated: boolean) =>
+    scrollRef.current?.scrollTo({ x: page * width, animated });
+  const onPageSettled = (page: number) => {
+    if (!loops) return setIndex(page);
+    if (page <= 0) {
+      setIndex(count - 1);
+      showPage(count, false);
+    } else if (page >= count + 1) {
+      setIndex(0);
+      showPage(1, false);
+    } else {
+      setIndex(page - 1);
+    }
+  };
+
   // Stops while off screen or being swiped, and for people who asked for less
   // motion, who can still swipe
   useEffect(() => {
@@ -1660,9 +1691,13 @@ function HomeCarousel({
     )
       return;
     const timer = setTimeout(() => {
-      const next = (current + 1) % count;
-      scrollRef.current?.scrollTo({ x: next * width, animated: true });
-      setIndex(next);
+      // From the last slide, on to the copy of the first, then quietly back
+      // to the real one once the slide has finished
+      showPage(current + 1 + lead, true);
+      setIndex((current + 1) % count);
+      if (current === count - 1) {
+        jumpTimer.current = setTimeout(() => showPage(lead, false), 600);
+      }
     }, CAROUSEL_MS);
     return () => clearTimeout(timer);
   }, [
@@ -1685,14 +1720,29 @@ function HomeCarousel({
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScrollBeginDrag={() => setDragging(true)}
+        onScrollBeginDrag={() => {
+          if (jumpTimer.current) clearTimeout(jumpTimer.current);
+          setDragging(true);
+        }}
         onScrollEndDrag={() => setDragging(false)}
         onMomentumScrollEnd={(event) =>
-          setIndex(Math.round(event.nativeEvent.contentOffset.x / width))
+          onPageSettled(Math.round(event.nativeEvent.contentOffset.x / width))
         }
+        // Starts on the first real slide, and stays on the same slide when
+        // the width or the slides change
+        onContentSizeChange={() => showPage(current + lead, false)}
       >
-        {slides.map((slide) => (
-          <View key={slide.key} style={{ width }}>
+        {pages.map((slide, page) => (
+          <View
+            key={
+              loops && page === 0
+                ? `${slide.key}-before`
+                : loops && page === count + 1
+                  ? `${slide.key}-after`
+                  : slide.key
+            }
+            style={{ width }}
+          >
             <View
               onLayout={(event) =>
                 setTitleHeight(event.nativeEvent.layout.height)

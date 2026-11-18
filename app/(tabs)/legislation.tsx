@@ -60,7 +60,16 @@ const actionTime = (bill: any) =>
   new Date(bill.latestAction?.actionDate ?? bill.updateDate ?? 0).getTime();
 
 // Bills with the same date, in a steady order: by type, then by number
-const BILL_TYPE_ORDER = ["HR", "S", "HJRES", "SJRES", "HCONRES", "SCONRES", "HRES", "SRES"];
+const BILL_TYPE_ORDER = [
+  "HR",
+  "S",
+  "HJRES",
+  "SJRES",
+  "HCONRES",
+  "SCONRES",
+  "HRES",
+  "SRES",
+];
 const compareBillNumbers = (a: any, b: any) =>
   BILL_TYPE_ORDER.indexOf(a.type) - BILL_TYPE_ORDER.indexOf(b.type) ||
   Number(a.number) - Number(b.number);
@@ -131,7 +140,11 @@ export default function LegislationScreen() {
 
   // With large system text, the sort menu drops below the chamber filter.
   // The search and options icons then line up with the filter's row.
-  const { wrapped: sortWrapped, onFirstLayout: onFilterLayout, onSecondLayout: onSortLayout } = useWrapped();
+  const {
+    wrapped: sortWrapped,
+    onFirstLayout: onFilterLayout,
+    onSecondLayout: onSortLayout,
+  } = useWrapped();
   const [titleHeight, setTitleHeight] = useState(0);
 
   const [showReportModal, setShowReportModal] = useState(false);
@@ -469,6 +482,43 @@ export default function LegislationScreen() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // What the search looks through: the loaded bills, then any others the
+  // server found. Built only when either changes, not on every keystroke.
+  const searchItems = useMemo(
+    () => [
+      ...bills.map((item: any) => ({
+        ...item,
+        type: "bill",
+        billType: item.type,
+        name: `${item.type}.${item.number} - ${item.title}`,
+        title: undefined,
+        date: item.latestAction?.actionDate,
+        policyArea: item.policyArea?.name ?? null,
+        latestAction: (item.latestAction as any)?.text ?? item.latestAction,
+      })),
+      ...searchFallbackResults
+        .filter(
+          (b: any) =>
+            !bills.some(
+              (existing: any) =>
+                `${existing.type}${existing.number}` === `${b.type}${b.number}`,
+            ),
+        )
+        .map((item: any) => ({
+          ...item,
+          type: "bill",
+          billType: item.type ?? item.billType,
+          name: `${item.type ?? item.billType}.${item.number} - ${item.title}`,
+          title: undefined,
+          date: item.latestAction?.actionDate,
+          policyArea: item.policyArea?.name ?? item.policyArea ?? null,
+          latestAction: item.latestAction?.text ?? null,
+          congress: item.congress ?? 119,
+        })),
+    ],
+    [bills, searchFallbackResults],
+  );
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -689,45 +739,18 @@ export default function LegislationScreen() {
       <SearchModal
         isVisible={showSearchModal}
         skipEntryAnimation={searchInstantOpen}
-        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onClose={() => {
+          setSearchInstantOpen(false);
+          setShowSearchModal(false);
+        }}
         onNavigatingAway={() => {
           searchNavigatedAwayRef.current = true;
           setShowSearchModal(false);
         }}
         onSearch={setSearchQuery}
         searchContext={getFilterLabel()}
-        items={[
-          ...bills.map((item: any) => ({
-            ...item,
-            type: "bill",
-            billType: item.type,
-            name: `${item.type}.${item.number} - ${item.title}`,
-            title: undefined,
-            date: item.latestAction?.actionDate,
-            policyArea: item.policyArea?.name ?? null,
-            latestAction: (item.latestAction as any)?.text ?? item.latestAction,
-          })),
-          ...searchFallbackResults
-            .filter(
-              (b: any) =>
-                !bills.some(
-                  (existing: any) =>
-                    `${existing.type}${existing.number}` ===
-                    `${b.type}${b.number}`,
-                ),
-            )
-            .map((item: any) => ({
-              ...item,
-              type: "bill",
-              billType: item.type ?? item.billType,
-              name: `${item.type ?? item.billType}.${item.number} - ${item.title}`,
-              title: undefined,
-              date: item.latestAction?.actionDate,
-              policyArea: item.policyArea?.name ?? item.policyArea ?? null,
-              latestAction: item.latestAction?.text ?? null,
-              congress: item.congress ?? 119,
-            })),
-        ]}
+        items={searchItems}
+        historyKey="legislation"
         onItemPress={(item) => {
           billCongressCache.set(
             `${item.billType.toLowerCase()}${item.number}`,
