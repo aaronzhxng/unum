@@ -4,7 +4,8 @@
 //   node scripts/newsletter/cover.mjs november-9-13-2026 capitol-dome-clouds
 //   node scripts/newsletter/cover.mjs november-9-13-2026 capitol-dome-clouds --focus 30
 //
-// It crops the photo to 1200 x 630 (the size link previews use) into
+// It crops the photo to 1600 x 840 (link previews' shape, sharp enough for a
+// tall crop on the issue page) into
 // website/public/newsletter/covers/<issue>.jpg, and writes the cover's src,
 // alt text and credit into the issue. --focus picks which part of a photo
 // that's too tall or too wide to keep, from 0 (top or left) to 100 (bottom
@@ -36,9 +37,9 @@ if (!(focus >= 0 && focus <= 100)) throw new Error("--focus is a number from 0 t
 const issueFile = path.join(REPO, "website", "src", "content", "newsletter", `${slug}.md`);
 if (!fs.existsSync(issueFile)) throw new Error(`No issue at ${issueFile}`);
 
-// Crop to 1200 x 630: scale so the photo covers that box, then keep the
+// Crop to 1600 x 840: scale so the photo covers that box, then keep the
 // focused part of whatever runs over
-const W = 1200, H = 630;
+const W = 1600, H = 840;
 const size = (file) => {
   const out = execFileSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", file], { encoding: "utf8" });
   return { w: Number(out.match(/pixelWidth: (\d+)/)[1]), h: Number(out.match(/pixelHeight: (\d+)/)[1]) };

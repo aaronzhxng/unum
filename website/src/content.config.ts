@@ -57,7 +57,7 @@ const newsletter = defineCollection({
     description: z.string(),
     // A photo for the issue: on the newsletter page's latest-issue card, at
     // the top of the issue and the email, and in link previews. Made with
-    // scripts/newsletter/cover.mjs, 1200 x 630.
+    // scripts/newsletter/cover.mjs, 1600 x 840.
     cover: z
       .object({
         src: z.string(),

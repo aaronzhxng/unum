@@ -35,7 +35,7 @@ const formatDate = (date: Date) =>
         <h2>Latest issue</h2>
         <a class={`card latest${latest.data.cover ? " has-cover" : ""}`} href={`/newsletter/${latest.id}`}>
           {latest.data.cover && (
-            <img class="latest-cover" src={latest.data.cover.src} alt={latest.data.cover.alt} width="1200" height="630" />
+            <img class="latest-cover" src={latest.data.cover.src} alt={latest.data.cover.alt} width="1600" height="840" />
           )}
           <span class="when">
             {latest.data.week}, {latest.data.date.getUTCFullYear()}
