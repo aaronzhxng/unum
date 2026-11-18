@@ -90,7 +90,8 @@ const formatDate = (date: Date) =>
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
-  /* The cover runs edge to edge across the top of the card */
+  /* The cover runs edge to edge across the top of the card, as a band
+     shorter than the photo itself (taller on phones, where it's narrow) */
   .latest.has-cover {
     padding-top: 0;
     overflow: hidden;
@@ -101,7 +102,7 @@ const formatDate = (date: Date) =>
     width: calc(100% + 2 * var(--pad));
     max-width: none;
     height: auto;
-    aspect-ratio: 1200 / 630;
+    aspect-ratio: 3 / 1;
     object-fit: cover;
     margin: 0 calc(-1 * var(--pad)) 12px;
   }
@@ -174,6 +175,10 @@ const formatDate = (date: Date) =>
     .latest {
       --pad: 24px;
       padding: 28px var(--pad);
+    }
+
+    .latest-cover {
+      aspect-ratio: 2 / 1;
     }
 
     .latest-headline {
