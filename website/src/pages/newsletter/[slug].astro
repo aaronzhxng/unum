@@ -155,17 +155,27 @@ const numbers = [
     border-radius: 20px;
   }
 
-  /* Side by side: the same columns as the site's split sections, with a
-     tall crop of the cover on the left */
+  /* Side by side: the same columns as the site's split sections. The
+     photo is as tall as the opening beside it: it takes no height of its
+     own (flex-basis 0), so the text sets the row and the photo fills it,
+     with its credit level with the sent date. */
   @media (min-width: 900px) {
     .intro-body.has-cover {
       grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
       column-gap: 64px;
-      align-items: start;
+      align-items: stretch;
+    }
+
+    .has-cover .cover {
+      display: flex;
+      flex-direction: column;
     }
 
     .has-cover .cover img {
-      aspect-ratio: 4 / 5;
+      flex: 1 1 0;
+      min-height: 220px;
+      height: auto;
+      aspect-ratio: auto;
     }
   }
 
