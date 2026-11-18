@@ -7,6 +7,7 @@ import {
   Image,
   Linking,
   PanResponder,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -50,6 +51,14 @@ export default function EducationSubtopicScreen() {
   );
 
   const [showOptions, setShowOptions] = useState(false);
+  // "Paragraph copied", after a long press copies one on iPhone
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showCopied = () => {
+    setCopied(true);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 1500);
+  };
   const [activePopupSlug, setActivePopupSlug] = useState<string | null>(null);
 
   const handleTopicPress = (topicId: string) => {
@@ -187,7 +196,7 @@ export default function EducationSubtopicScreen() {
               {topicData.title.toUpperCase()}
             </Text>
             <Text
-              selectable
+              selectable={Platform.OS !== "ios"}
               style={{
                 fontSize: 22,
                 fontWeight: "800",
@@ -257,6 +266,7 @@ export default function EducationSubtopicScreen() {
                     }}
                     onGlossaryPress={setActivePopupSlug}
                     onTopicPress={handleTopicPress}
+                    onCopied={showCopied}
                   />
                 ) : null}
               </View>
@@ -300,6 +310,7 @@ export default function EducationSubtopicScreen() {
                   }}
                   onGlossaryPress={setActivePopupSlug}
                   onTopicPress={handleTopicPress}
+                  onCopied={showCopied}
                 />
               </View>
             );
@@ -395,7 +406,7 @@ export default function EducationSubtopicScreen() {
                       }}
                     />
                     <Text
-                      selectable
+                      selectable={Platform.OS !== "ios"}
                       style={{
                         fontSize: 15,
                         fontWeight: "700",
@@ -441,7 +452,7 @@ export default function EducationSubtopicScreen() {
                     }}
                   />
                   <Text
-                    selectable
+                    selectable={Platform.OS !== "ios"}
                     style={{
                       fontSize: 17,
                       fontWeight: "700",
@@ -464,6 +475,7 @@ export default function EducationSubtopicScreen() {
                 }}
                 onGlossaryPress={setActivePopupSlug}
                 onTopicPress={handleTopicPress}
+                onCopied={showCopied}
               />
             </View>
           );
@@ -540,6 +552,25 @@ export default function EducationSubtopicScreen() {
         onClose={() => setShowOptions(false)}
         screen={`education-subtopic/${topic}/${subtopic}`}
       />
+
+      {copied && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            bottom: 48,
+            alignSelf: "center",
+            backgroundColor: "rgba(26,26,26,0.9)",
+            paddingVertical: 10,
+            paddingHorizontal: 18,
+            borderRadius: 999,
+          }}
+        >
+          <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+            Paragraph copied
+          </Text>
+        </View>
+      )}
 
       <GlossaryPopup
         slug={activePopupSlug}
