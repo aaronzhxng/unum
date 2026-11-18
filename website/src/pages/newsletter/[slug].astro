@@ -51,10 +51,10 @@ const numbers = [
           {newer && <a href={`/newsletter/${newer.id}`} rel="next">{newer.data.week} →</a>}
         </nav>
       </div>
-      {/* With a cover, it sits in the left column, as tall as the headline
-          and opening beside it in the right column, like the site's other
-          two-column sections. Its credit and the sent date share the row
-          below. */}
+      {/* With a cover, it sits in the left column, as tall as the headline,
+          opening and details line beside it in the right column, like the
+          site's other two-column sections. Its credit joins the sent date in
+          the details line; stacked on phones, it sits under the photo. */}
       <div class:list={["intro-body", { "has-cover": cover }]}>
         {
           cover && (
@@ -68,16 +68,12 @@ const numbers = [
           <div class="opening lede stack">
             <Content />
           </div>
+          <p class="sent">
+            Sent {sent}
+            {cover?.credit && <span class="credit-inline"> · Cover photo: {cover.credit}</span>}
+          </p>
         </div>
-        {
-          cover?.credit && (
-            // Its length sets how small the type gets to stay on one line
-            <div class="credit-cell" style={`--chars:${`Photo: ${cover.credit}`.length}`}>
-              <p class="credit">Photo: {cover.credit}</p>
-            </div>
-          )
-        }
-        <p class="sent">Sent {sent}</p>
+        {cover?.credit && <p class="credit-under">Photo: {cover.credit}</p>}
       </div>
     </header>
 
@@ -158,24 +154,24 @@ const numbers = [
     border-radius: 20px;
   }
 
-  /* One line, however long: the type shrinks to fit the column instead */
-  .credit-cell {
-    container-type: inline-size;
-    margin-top: calc(8px - var(--intro-gap));
-  }
-
-  .credit {
-    font-size: min(13px, calc(100cqi / (var(--chars) * 0.56)));
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  /* The sent date, with the cover's credit beside it on wide screens */
+  .sent,
+  .credit-under {
+    font-size: 14px;
     color: var(--text-faint);
   }
 
   .sent {
-    font-size: 14px;
-    color: var(--text-faint);
     margin-top: calc(16px - var(--intro-gap));
+  }
+
+  /* Stacked, the credit sits right under the photo instead */
+  .credit-under {
+    margin-top: calc(8px - var(--intro-gap));
+  }
+
+  .credit-inline {
+    display: none;
   }
 
   /* Stacked, the headline still comes first, then the photo and its
@@ -190,25 +186,21 @@ const numbers = [
     }
 
     .cover,
-    .credit-cell {
+    .credit-under {
       order: -1;
     }
   }
 
   /* Side by side: the same columns as the site's split sections. The photo
-     is as tall as the headline and opening beside it: it's laid over its
-     cell rather than sizing it, so the text sets the row's height. The
-     credit and sent date start on the same line in the row below. */
+     is laid over its cell rather than sizing it, so the headline, opening
+     and details line beside it set the height, and the photo fills it. */
   @media (min-width: 900px) {
     .intro-body.has-cover {
       grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
       column-gap: 64px;
-      row-gap: 16px;
     }
 
     .has-cover .cover {
-      grid-column: 1;
-      grid-row: 1;
       position: relative;
       min-height: 220px;
     }
@@ -220,23 +212,12 @@ const numbers = [
       aspect-ratio: auto;
     }
 
-    .has-cover .intro-text {
-      grid-column: 2;
-      grid-row: 1;
+    .credit-inline {
+      display: inline;
     }
 
-    .has-cover .credit-cell {
-      grid-column: 1;
-      grid-row: 2;
-      margin-top: 0;
-      align-self: baseline;
-    }
-
-    .has-cover .sent {
-      grid-column: 2;
-      grid-row: 2;
-      margin-top: 0;
-      align-self: baseline;
+    .credit-under {
+      display: none;
     }
   }
 
