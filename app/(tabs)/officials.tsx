@@ -17,7 +17,6 @@ import {
   FlatList,
   Linking,
   Modal,
-  PixelRatio,
   Pressable,
   ScrollView,
   Text,
@@ -44,7 +43,6 @@ import {
 } from "../services/committees";
 import { officialsService } from "../services/officials";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
-import { useWrapped } from "../utils/useWrapped";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { houseTitle, placeKind } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
@@ -139,14 +137,6 @@ export default function OfficialsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchNavigatedAwayRef = useRef(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
-  // With large system text, the district map button drops below the state
-  // name. The search and options icons then line up with the name's row.
-  const {
-    wrapped: mapWrapped,
-    onFirstLayout: onStateLayout,
-    onSecondLayout: onMapLayout,
-  } = useWrapped();
-  const [titleHeight, setTitleHeight] = useState(0);
   const [selectedNotifications, setSelectedNotifications] =
     useState("New York");
   const [showListSelection, setShowListSelection] = useState(false);
@@ -485,15 +475,11 @@ export default function OfficialsScreen() {
 
   return (
     <View style={componentStyles.container}>
-      <View
-        style={[
-          componentStyles.headerBar,
-          mapWrapped && { alignItems: "flex-start" },
-        ]}
-      >
-        {/* With large system text, the map button moves to its own row when
-            the state name and it don't fit side by side. At normal sizes they
-            stay on one line, and a long name shrinks a little instead. */}
+      <View style={componentStyles.headerBar}>
+        {/* The name, its arrow, and the map or website button all center on
+            one line; the row as a whole keeps the header's space below. The
+            button never moves to a line of its own: a long name, or large
+            system text, takes the name to a second line and shrinks it. */}
         <View
           style={[
             componentStyles.headerLeft,
@@ -501,14 +487,12 @@ export default function OfficialsScreen() {
               flex: 1,
               minWidth: 0,
               marginRight: 16,
-              flexWrap: PixelRatio.getFontScale() > 1 ? "wrap" : "nowrap",
-              columnGap: 2,
+              marginBottom: componentStyles.header.marginBottom,
             },
           ]}
         >
           <View
             ref={stateDropdownRef}
-            onLayout={onStateLayout}
             collapsable={false}
             style={{ flexShrink: 1 }}
           >
@@ -536,32 +520,26 @@ export default function OfficialsScreen() {
                 }}
               >
                 <Text
-                  style={[componentStyles.header, { flexShrink: 1 }]}
-                  onLayout={(e) => setTitleHeight(e.nativeEvent.layout.height)}
+                  style={[
+                    componentStyles.header,
+                    { flexShrink: 1, marginBottom: 0 },
+                  ]}
                   // Long names take a second line: about a third of committees,
                   // and states like Northern Mariana Islands beside the map
                   // button. The longest, like "Senate Homeland Security and
-                  // Governmental Affairs", also shrink a little on narrow
-                  // phones rather than end in "…".
+                  // Governmental Affairs", also shrink on narrow phones or
+                  // with large text rather than end in "…".
                   numberOfLines={2}
                   adjustsFontSizeToFit
-                  minimumFontScale={0.8}
+                  minimumFontScale={0.6}
                   ellipsizeMode="tail"
                 >
                   {listTitle}
                 </Text>
                 {showListSelection ? (
-                  <ChevronUp
-                    size={24}
-                    color="#535353"
-                    style={{ marginBottom: 12 }}
-                  />
+                  <ChevronUp size={24} color="#535353" />
                 ) : (
-                  <ChevronDown
-                    size={24}
-                    color="#535353"
-                    style={{ marginBottom: 12 }}
-                  />
+                  <ChevronDown size={24} color="#535353" />
                 )}
               </View>
             </Pressable>
@@ -572,15 +550,12 @@ export default function OfficialsScreen() {
               hitSlop={6}
               accessibilityRole="link"
               accessibilityLabel={`Open the ${committeeLabel(selectedCommittee)} Committee's website`}
-              onLayout={onMapLayout}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 6,
                 flexShrink: 0,
                 marginLeft: 8,
-                marginTop: mapWrapped ? -6 : 0,
-                marginBottom: mapWrapped ? 20 : 12,
                 paddingVertical: 6,
                 paddingLeft: 10,
                 paddingRight: 12,
@@ -607,17 +582,12 @@ export default function OfficialsScreen() {
               }
               hitSlop={6}
               accessibilityLabel="Open congressional district map"
-              onLayout={onMapLayout}
               style={({ pressed }) => ({
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 6,
                 flexShrink: 0,
-                // Lines up with the state name when on its own row
                 marginLeft: 8,
-                marginTop: mapWrapped ? -6 : 0,
-                // More room above the first card when it has its own row
-                marginBottom: mapWrapped ? 20 : 12,
                 paddingVertical: 6,
                 paddingLeft: 10,
                 paddingRight: 12,
@@ -636,12 +606,7 @@ export default function OfficialsScreen() {
           )}
         </View>
 
-        <View
-          style={[
-            componentStyles.headerRight,
-            mapWrapped && { marginTop: Math.max(0, (titleHeight - 24) / 2) },
-          ]}
-        >
+        <View style={componentStyles.headerRight}>
           {/* Committees are short enough to scroll, and the name needs the room */}
           {!selectedCommittee && (
             <Pressable
