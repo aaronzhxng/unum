@@ -3,6 +3,9 @@ week: November 9–13
 date: 2026-11-16
 headline: "The penny's final week"
 description: "Four bills became law, a bill ending the penny heads to the President, and the House passes a run of nuclear energy bills."
+cover:
+  src: "/newsletter/covers/november-9-13-2026.jpg"
+  alt: "A close-up of a pile of copper pennies."
 stats:
   signed: 4
   passedBoth: 2

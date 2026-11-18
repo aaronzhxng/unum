@@ -33,7 +33,10 @@ const formatDate = (date: Date) =>
     latest && (
       <section class="container section split">
         <h2>Latest issue</h2>
-        <a class="card latest" href={`/newsletter/${latest.id}`}>
+        <a class={`card latest${latest.data.cover ? " has-cover" : ""}`} href={`/newsletter/${latest.id}`}>
+          {latest.data.cover && (
+            <img class="latest-cover" src={latest.data.cover.src} alt={latest.data.cover.alt} width="1200" height="630" />
+          )}
           <span class="when">
             {latest.data.week}, {latest.data.date.getUTCFullYear()}
           </span>
@@ -79,11 +82,28 @@ const formatDate = (date: Date) =>
   }
 
   .latest {
+    --pad: 36px;
     display: grid;
     gap: 12px;
-    padding: 36px;
+    padding: var(--pad);
     text-decoration: none;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  /* The cover runs edge to edge across the top of the card */
+  .latest.has-cover {
+    padding-top: 0;
+    overflow: hidden;
+  }
+
+  .latest-cover {
+    display: block;
+    width: calc(100% + 2 * var(--pad));
+    max-width: none;
+    height: auto;
+    aspect-ratio: 1200 / 630;
+    object-fit: cover;
+    margin: 0 calc(-1 * var(--pad)) 12px;
   }
 
   .latest:hover {
@@ -152,7 +172,8 @@ const formatDate = (date: Date) =>
 
   @media (max-width: 640px) {
     .latest {
-      padding: 28px 24px;
+      --pad: 24px;
+      padding: 28px var(--pad);
     }
 
     .latest-headline {
