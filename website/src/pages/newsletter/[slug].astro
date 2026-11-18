@@ -19,7 +19,7 @@ export async function getStaticPaths() {
 const { issue, newer, older } = Astro.props;
 const { Content } = await render(issue);
 // The signoff is only for the emailed version
-const { week, date, headline, description, stats, sections } = issue.data;
+const { week, date, headline, description, cover, stats, sections } = issue.data;
 const year = date.getUTCFullYear();
 const sent = date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
@@ -40,6 +40,7 @@ const numbers = [
   navSubscribe
   title={`Congress Weekly: ${week}, ${year}`}
   description={description}
+  previewImage={cover}
 >
   <article>
     <header class="container section page-intro">
@@ -50,11 +51,30 @@ const numbers = [
           {newer && <a href={`/newsletter/${newer.id}`} rel="next">{newer.data.week} →</a>}
         </nav>
       </div>
-      <h1>{headline}</h1>
-      <div class="opening lede stack">
-        <Content />
+      {/* With a cover, it sits in the left column, as tall as the headline,
+          opening and details line beside it in the right column, like the
+          site's other two-column sections. Its credit joins the sent date in
+          the details line; stacked on phones, it sits under the photo. */}
+      <div class:list={["intro-body", { "has-cover": cover }]}>
+        {
+          cover && (
+            <div class="cover">
+              <img src={cover.src} alt={cover.alt} width="1600" height="840" style={cover.position && `object-position:${cover.position}`} />
+            </div>
+          )
+        }
+        <div class="intro-text">
+          <h1>{headline}</h1>
+          <div class="opening lede stack">
+            <Content />
+          </div>
+          <p class="sent">
+            Sent {sent}
+            {cover?.credit && <span class="credit-inline"> · Cover photo: {cover.credit}</span>}
+          </p>
+        </div>
+        {cover?.credit && <p class="credit-under">Photo: {cover.credit}</p>}
       </div>
-      <p class="sent">Sent {sent}</p>
     </header>
 
     <section class="container" aria-label="The week in numbers">
@@ -107,10 +127,98 @@ const numbers = [
 </Layout>
 
 <style>
-  .sent {
+
+  .intro-body {
+    justify-self: stretch;
+    display: grid;
+    gap: var(--intro-gap);
+  }
+
+  .intro-text {
+    display: grid;
+    gap: var(--intro-gap);
+  }
+
+  /* Stacked, the cover is a band as wide as the text below it */
+  .cover {
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .cover img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1600 / 840;
+    object-fit: cover;
+    border-radius: 20px;
+  }
+
+  /* The sent date, with the cover's credit beside it on wide screens */
+  .sent,
+  .credit-under {
     font-size: 14px;
     color: var(--text-faint);
+  }
+
+  .sent {
     margin-top: calc(16px - var(--intro-gap));
+  }
+
+  /* Stacked, the credit sits right under the photo instead */
+  .credit-under {
+    margin-top: calc(8px - var(--intro-gap));
+  }
+
+  .credit-inline {
+    display: none;
+  }
+
+  /* Stacked, the headline still comes first, then the photo and its
+     credit, then the opening */
+  @media (max-width: 899px) {
+    .intro-text {
+      display: contents;
+    }
+
+    .intro-body h1 {
+      order: -2;
+    }
+
+    .cover,
+    .credit-under {
+      order: -1;
+    }
+  }
+
+  /* Side by side: the same columns as the site's split sections. The photo
+     is laid over its cell rather than sizing it, so the headline, opening
+     and details line beside it set the height, and the photo fills it. */
+  @media (min-width: 900px) {
+    .intro-body.has-cover {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
+      column-gap: 64px;
+    }
+
+    .has-cover .cover {
+      position: relative;
+      min-height: 220px;
+    }
+
+    .has-cover .cover img {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+
+    .credit-inline {
+      display: inline;
+    }
+
+    .credit-under {
+      display: none;
+    }
   }
 
   .opening :global(p) {
@@ -181,7 +289,8 @@ const numbers = [
     align-items: baseline;
     justify-content: space-between;
     gap: 8px 24px;
-    margin-bottom: calc(var(--label-gap) - var(--intro-gap));
+    /* The full gap to the photo and headline below, a little more room than
+       a label usually gets above its heading */
   }
 
   .eyebrow-row .eyebrow {

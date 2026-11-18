@@ -3,6 +3,10 @@ week: November 2–6
 date: 2026-11-09
 headline: "Two bills became law on Election Day, and Congress passed none"
 description: "The President signed bills on ALS research and religious freedom, two more went to his desk, and government funding still runs out December 11."
+cover:
+  src: "/newsletter/covers/november-2-6-2026.jpg"
+  alt: "The dome of the U.S. Capitol against a clear blue sky."
+  credit: "Carol M. Highsmith, Library of Congress"
 stats:
   signed: 2
   passedBoth: 0

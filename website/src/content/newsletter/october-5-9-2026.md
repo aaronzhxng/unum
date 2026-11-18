@@ -3,6 +3,10 @@ week: October 5–9
 date: 2026-10-12
 headline: 3 bills became law, including one that flags federal projects $1 billion over budget
 description: Neither chamber passed a bill during the pre-election recess, but the President signed 3 bills passed in September, and House committees reported 12 more.
+cover:
+  src: "/newsletter/covers/october-5-9-2026.jpg"
+  alt: "The U.S. Treasury Building in Washington, D.C., with a statue in front of its columns."
+  credit: "Carol M. Highsmith, Library of Congress"
 stats:
   signed: 3
   passedBoth: 0

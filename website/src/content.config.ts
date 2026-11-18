@@ -55,6 +55,22 @@ const newsletter = defineCollection({
     headline: z.string(),
     // One-line summary for the archive, search results, and link previews
     description: z.string(),
+    // A photo for the issue: on the newsletter page's latest-issue card, at
+    // the top of the issue and the email, and in link previews. Made with
+    // scripts/newsletter/cover.mjs, 1600 x 840.
+    cover: z
+      .object({
+        src: z.string(),
+        // What the photo shows, for screen readers and blocked images
+        alt: z.string(),
+        // Who to credit, like "Carol M. Highsmith, Library of Congress"
+        credit: z.string().optional(),
+        // Which part of the photo the tall crop on the issue page and the
+        // newsletter page's band keep, as a CSS position like "30% 50%".
+        // The middle when left out.
+        position: z.string().optional(),
+      })
+      .optional(),
     stats: z.object({
       signed: z.number(),
       passedBoth: z.number(),
