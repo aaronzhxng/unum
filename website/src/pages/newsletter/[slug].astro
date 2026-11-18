@@ -122,6 +122,12 @@ const numbers = [
 </Layout>
 
 <style>
+  /* The headline spans both columns below it, so it runs the full width
+     rather than the reading width other pages' headlines use */
+  h1 {
+    max-width: none;
+  }
+
   .intro-body {
     justify-self: stretch;
     display: grid;
