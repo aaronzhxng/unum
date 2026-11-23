@@ -14,12 +14,14 @@
 // (0) to right (100), for the tall crop beside the issue's opening and the
 // band on the newsletter page.
 //
-// Uses sips, which comes with macOS. Run with no photo to list the library.
+// Uses sips on macOS and sharp (from the website's packages) elsewhere. Run
+// with no photo to list the library.
 
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 
 const REPO = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const LIBRARY = path.join(REPO, "media", "photos");
@@ -46,12 +48,19 @@ if (!fs.existsSync(issueFile)) throw new Error(`No issue at ${issueFile}`);
 // Crop to 1600 x 840: scale so the photo covers that box, then keep the
 // focused part of whatever runs over
 const W = 1600, H = 840;
-const size = (file) => {
+// sips on macOS; elsewhere sharp, which the website installs
+const mac = process.platform === "darwin";
+const sharp = mac ? null : createRequire(path.join(REPO, "website", "package.json"))("sharp");
+const size = async (file) => {
+  if (!mac) {
+    const m = await sharp(file).metadata();
+    return { w: m.width, h: m.height };
+  }
   const out = execFileSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", file], { encoding: "utf8" });
   return { w: Number(out.match(/pixelWidth: (\d+)/)[1]), h: Number(out.match(/pixelHeight: (\d+)/)[1]) };
 };
 const source = path.join(LIBRARY, photo.file);
-const { w, h } = size(source);
+const { w, h } = await size(source);
 const scale = Math.max(W / w, H / h);
 const sw = Math.round(w * scale), sh = Math.round(h * scale);
 const offsetY = Math.round(((sh - H) * focus) / 100);
@@ -60,9 +69,13 @@ const offsetX = Math.round(((sw - W) * focus) / 100);
 const covers = path.join(REPO, "website", "public", "newsletter", "covers");
 fs.mkdirSync(covers, { recursive: true });
 const out = path.join(covers, `${slug}.jpg`);
-execFileSync("sips", ["-z", String(sh), String(sw), source, "--out", out], { stdio: "ignore" });
-execFileSync("sips", ["-c", String(H), String(W), "--cropOffset", String(offsetY), String(offsetX), out, "--out", out], { stdio: "ignore" });
-execFileSync("sips", ["-s", "formatOptions", "82", out, "--out", out], { stdio: "ignore" });
+if (mac) {
+  execFileSync("sips", ["-z", String(sh), String(sw), source, "--out", out], { stdio: "ignore" });
+  execFileSync("sips", ["-c", String(H), String(W), "--cropOffset", String(offsetY), String(offsetX), out, "--out", out], { stdio: "ignore" });
+  execFileSync("sips", ["-s", "formatOptions", "82", out, "--out", out], { stdio: "ignore" });
+} else {
+  await sharp(source).resize(sw, sh).extract({ left: offsetX, top: offsetY, width: W, height: H }).jpeg({ quality: 82 }).toFile(out);
+}
 
 // Into the issue, after its description, replacing any cover it had
 const yaml = (s) => JSON.stringify(s);
