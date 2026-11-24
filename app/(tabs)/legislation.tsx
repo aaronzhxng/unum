@@ -24,7 +24,6 @@ import {
   Pressable,
   Text,
   TextInput,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { useTabBar } from "../context/TabBarContext";
@@ -43,8 +42,10 @@ import { billSync, billsService } from "../services/bills";
 import { abbrevBillType } from "../utils/billTypeAbbr";
 import { billCongressCache } from "../utils/billCongressCache";
 import { getBillIcon } from "../utils/billIcons";
+import { useWrapped } from "../utils/useWrapped";
 import { LIST_UPDATED, listEvents } from "../utils/listEvents";
 import { storage } from "../utils/storage";
+import { billTitleLines } from "../utils/billTitleLines";
 
 function useDebounced<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState<T>(value);
@@ -59,7 +60,16 @@ const actionTime = (bill: any) =>
   new Date(bill.latestAction?.actionDate ?? bill.updateDate ?? 0).getTime();
 
 // Bills with the same date, in a steady order: by type, then by number
-const BILL_TYPE_ORDER = ["HR", "S", "HJRES", "SJRES", "HCONRES", "SCONRES", "HRES", "SRES"];
+const BILL_TYPE_ORDER = [
+  "HR",
+  "S",
+  "HJRES",
+  "SJRES",
+  "HCONRES",
+  "SCONRES",
+  "HRES",
+  "SRES",
+];
 const compareBillNumbers = (a: any, b: any) =>
   BILL_TYPE_ORDER.indexOf(a.type) - BILL_TYPE_ORDER.indexOf(b.type) ||
   Number(a.number) - Number(b.number);
@@ -128,7 +138,14 @@ export default function LegislationScreen() {
     return "Congress";
   };
 
-  const { width: screenWidth } = useWindowDimensions();
+  // With large system text, the sort menu drops below the chamber filter.
+  // The search and options icons then line up with the filter's row.
+  const {
+    wrapped: sortWrapped,
+    onFirstLayout: onFilterLayout,
+    onSecondLayout: onSortLayout,
+  } = useWrapped();
+  const [titleHeight, setTitleHeight] = useState(0);
 
   const [showReportModal, setShowReportModal] = useState(false);
   const handleReportError = () => setShowReportModal(true);
@@ -465,6 +482,43 @@ export default function LegislationScreen() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // What the search looks through: the loaded bills, then any others the
+  // server found. Built only when either changes, not on every keystroke.
+  const searchItems = useMemo(
+    () => [
+      ...bills.map((item: any) => ({
+        ...item,
+        type: "bill",
+        billType: item.type,
+        name: `${item.type}.${item.number} - ${item.title}`,
+        title: undefined,
+        date: item.latestAction?.actionDate,
+        policyArea: item.policyArea?.name ?? null,
+        latestAction: (item.latestAction as any)?.text ?? item.latestAction,
+      })),
+      ...searchFallbackResults
+        .filter(
+          (b: any) =>
+            !bills.some(
+              (existing: any) =>
+                `${existing.type}${existing.number}` === `${b.type}${b.number}`,
+            ),
+        )
+        .map((item: any) => ({
+          ...item,
+          type: "bill",
+          billType: item.type ?? item.billType,
+          name: `${item.type ?? item.billType}.${item.number} - ${item.title}`,
+          title: undefined,
+          date: item.latestAction?.actionDate,
+          policyArea: item.policyArea?.name ?? item.policyArea ?? null,
+          latestAction: item.latestAction?.text ?? null,
+          congress: item.congress ?? 119,
+        })),
+    ],
+    [bills, searchFallbackResults],
+  );
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -483,7 +537,14 @@ export default function LegislationScreen() {
   return (
     <View style={componentStyles.container}>
       {/* Header */}
-      <View style={[componentStyles.headerBar, { alignItems: "center" }]}>
+      <View
+        style={[
+          componentStyles.headerBar,
+          { alignItems: sortWrapped ? "flex-start" : "center" },
+        ]}
+      >
+        {/* The sort menu moves to its own row when it and the filter don't
+            fit side by side */}
         <View
           style={[
             componentStyles.headerLeft,
@@ -492,6 +553,8 @@ export default function LegislationScreen() {
               flexDirection: "row",
               alignItems: "center",
               minWidth: 0,
+              flexWrap: "wrap",
+              columnGap: 12,
             },
           ]}
         >
@@ -501,6 +564,7 @@ export default function LegislationScreen() {
               setShowSortDropdown(false);
               handleFilterOpen();
             }}
+            onLayout={onFilterLayout}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.96 : 1 }],
               flexShrink: 0,
@@ -511,7 +575,10 @@ export default function LegislationScreen() {
               collapsable={false}
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
-              <Text style={[componentStyles.header, { alignItems: "center" }]}>
+              <Text
+                style={[componentStyles.header, { alignItems: "center" }]}
+                onLayout={(e) => setTitleHeight(e.nativeEvent.layout.height)}
+              >
                 {getFilterLabel()}
               </Text>
               {showFilterModal ? (
@@ -536,9 +603,13 @@ export default function LegislationScreen() {
               setShowFilterModal(false);
               setShowSortDropdown(!showSortDropdown);
             }}
+            onLayout={onSortLayout}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.96 : 1 }],
-              marginLeft: 12,
+              flexShrink: 1,
+              marginTop: sortWrapped ? -8 : 0,
+              // More room above the first card when it has its own row
+              marginBottom: sortWrapped ? 8 : 0,
             })}
           >
             <View
@@ -546,19 +617,14 @@ export default function LegislationScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 4,
-                ...(screenWidth < 390 && { maxWidth: 96 }),
               }}
             >
               <Text
                 style={[
                   componentStyles.header,
-                  {
-                    fontSize: 16,
-                    fontWeight: "500",
-                    ...(screenWidth < 390 && { flexShrink: 1 }),
-                  },
+                  { fontSize: 16, fontWeight: "500", flexShrink: 1 },
                 ]}
-                numberOfLines={screenWidth < 390 ? 2 : 1}
+                numberOfLines={1}
               >
                 {selectedSort}
               </Text>
@@ -581,7 +647,12 @@ export default function LegislationScreen() {
           </Pressable>
         </View>
 
-        <View style={componentStyles.headerRight}>
+        <View
+          style={[
+            componentStyles.headerRight,
+            sortWrapped && { marginTop: Math.max(0, (titleHeight - 24) / 2) },
+          ]}
+        >
           <Pressable
             onPress={() => setShowSearchModal(true)}
             style={({ pressed }) => ({
@@ -668,45 +739,18 @@ export default function LegislationScreen() {
       <SearchModal
         isVisible={showSearchModal}
         skipEntryAnimation={searchInstantOpen}
-        onClose={() => { setSearchInstantOpen(false); setShowSearchModal(false); }}
+        onClose={() => {
+          setSearchInstantOpen(false);
+          setShowSearchModal(false);
+        }}
         onNavigatingAway={() => {
           searchNavigatedAwayRef.current = true;
           setShowSearchModal(false);
         }}
         onSearch={setSearchQuery}
         searchContext={getFilterLabel()}
-        items={[
-          ...bills.map((item: any) => ({
-            ...item,
-            type: "bill",
-            billType: item.type,
-            name: `${item.type}.${item.number} - ${item.title}`,
-            title: undefined,
-            date: item.latestAction?.actionDate,
-            policyArea: item.policyArea?.name ?? null,
-            latestAction: (item.latestAction as any)?.text ?? item.latestAction,
-          })),
-          ...searchFallbackResults
-            .filter(
-              (b: any) =>
-                !bills.some(
-                  (existing: any) =>
-                    `${existing.type}${existing.number}` ===
-                    `${b.type}${b.number}`,
-                ),
-            )
-            .map((item: any) => ({
-              ...item,
-              type: "bill",
-              billType: item.type ?? item.billType,
-              name: `${item.type ?? item.billType}.${item.number} - ${item.title}`,
-              title: undefined,
-              date: item.latestAction?.actionDate,
-              policyArea: item.policyArea?.name ?? item.policyArea ?? null,
-              latestAction: item.latestAction?.text ?? null,
-              congress: item.congress ?? 119,
-            })),
-        ]}
+        items={searchItems}
+        historyKey="legislation"
         onItemPress={(item) => {
           billCongressCache.set(
             `${item.billType.toLowerCase()}${item.number}`,
@@ -1081,7 +1125,7 @@ const BillCard = React.memo(function BillCard({
                 </>
               )}
             </View>
-            <Text style={componentStyles.name} numberOfLines={2}>
+            <Text style={componentStyles.name} numberOfLines={billTitleLines()}>
               {item.title}
             </Text>
           </View>

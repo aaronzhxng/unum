@@ -28,6 +28,9 @@ interface Props {
   // Adds a Subscribe link to the nav that opens the popup (issue pages; the
   // newsletter page has its own in the hero)
   navSubscribe?: boolean;
+  // A 1600 x 840 image for link previews in place of the site's own, like an
+  // issue's cover photo
+  previewImage?: { src: string; alt: string };
 }
 
 const {
@@ -36,6 +39,7 @@ const {
   noIndex = false,
   newsletterNav = false,
   navSubscribe = false,
+  previewImage,
   description = "Unum is a free, nonpartisan Congress tracker. Follow U.S. legislation, votes, and the members of Congress who represent you.",
 } = Astro.props;
 
@@ -48,7 +52,7 @@ const currentPath = Astro.url.pathname.replace(/\.html$/, "");
 // Pages build to about.html etc. but are served without the extension, so the
 // canonical URL drops it too (the .html address redirects)
 const canonical = new URL(currentPath === "/index" ? "/" : currentPath, Astro.site);
-const ogImage = new URL("/og-image.png", Astro.site);
+const ogImage = new URL(previewImage?.src ?? "/og-image.png", Astro.site);
 
 // Tells search engines who runs the site and links its official profiles,
 // which helps separate Unum Initiative from other organizations named Unum
@@ -119,8 +123,8 @@ const charStyle = (c: Char) => `--i: ${c.i}`;
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content={previewImage ? "1600" : "1200"} />
+    <meta property="og:image:height" content={previewImage ? "840" : "630"} />
     <meta property="og:image:alt" content="Unum: Everything Congress is doing, in one place" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#f4f1eb" />

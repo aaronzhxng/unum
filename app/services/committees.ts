@@ -19,6 +19,9 @@ export type Committee = {
   name: string;
   shortName: string;
   chamber: "House" | "Senate" | "Joint";
+  // The committee's website. Missing from copies cached before it was added,
+  // and for a couple of committees without one.
+  url?: string | null;
   members: CommitteeMember[];
   // Missing from copies cached before subcommittees were added
   subcommittees?: Subcommittee[];

@@ -1,0 +1,358 @@
+{
+  "arlington-cemetery": {
+    "file": "arlington-cemetery.jpg",
+    "title": "Arlington National Cemetery",
+    "alt": "Rows of white headstones at Arlington National Cemetery under blossoming spring trees.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632173/",
+    "tags": [
+      "veterans",
+      "Armed Forces and National Security"
+    ]
+  },
+  "border-fence": {
+    "file": "border-fence.jpg",
+    "title": "Border fence",
+    "alt": "A section of the steel U.S.-Mexico border fence ending beside a dirt road and farm fields.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2014630481/",
+    "tags": [
+      "Immigration",
+      "border",
+      "Armed Forces and National Security"
+    ]
+  },
+  "capitol-aerial": {
+    "file": "capitol-aerial.jpg",
+    "title": "The Capitol from the air",
+    "alt": "Aerial view of the U.S. Capitol and the surrounding Capitol Hill buildings in Washington, D.C.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2010630477/",
+    "tags": [
+      "congress",
+      "washington"
+    ]
+  },
+  "capitol-christmas-tree": {
+    "file": "capitol-christmas-tree.jpg",
+    "title": "Capitol Christmas tree",
+    "alt": "The Capitol Christmas tree lit with gold lights in front of the U.S. Capitol at night.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632157/",
+    "tags": [
+      "congress",
+      "washington",
+      "holiday"
+    ]
+  },
+  "capitol-dome": {
+    "file": "capitol-dome.jpg",
+    "title": "Capitol dome, tall",
+    "alt": "The dome of the U.S. Capitol against a clear blue sky.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011634360/",
+    "tags": [
+      "congress",
+      "washington"
+    ]
+  },
+  "capitol-dome-clouds": {
+    "file": "capitol-dome-clouds.jpg",
+    "title": "Capitol dome with clouds",
+    "alt": "The U.S. Capitol dome under a blue sky with white clouds, an American flag flying nearby.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011630697/",
+    "tags": [
+      "congress",
+      "washington"
+    ]
+  },
+  "capitol-dome-night": {
+    "file": "capitol-dome-night.jpg",
+    "title": "Capitol dome at night",
+    "alt": "The U.S. Capitol dome, topped by the Statue of Freedom, lit against a black night sky, in black and white.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011636059/",
+    "tags": [
+      "congress",
+      "washington"
+    ]
+  },
+  "capitol-dusk": {
+    "file": "capitol-dusk.jpg",
+    "title": "The Capitol at dusk",
+    "alt": "The U.S. Capitol lit up at dusk, seen from a distance across Capitol Hill.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://commons.wikimedia.org/wiki/File:Dusk_at_us_capitol_12505a.tif",
+    "tags": [
+      "congress",
+      "washington"
+    ]
+  },
+  "cattle-ranch": {
+    "file": "cattle-ranch.jpg",
+    "title": "Cattle ranch",
+    "alt": "A herd of longhorn cattle walking across a green pasture on a Texas ranch.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2014632302/",
+    "tags": [
+      "Agriculture and Food",
+      "Animals"
+    ]
+  },
+  "coal-plant-wyoming": {
+    "file": "coal-plant-wyoming.jpg",
+    "title": "Coal power plant",
+    "alt": "A coal-fired power plant with tall smokestacks on the plains outside Glenrock, Wyoming.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2015634117/",
+    "tags": [
+      "Energy",
+      "Environmental Protection"
+    ]
+  },
+  "crop-rows": {
+    "file": "crop-rows.jpg",
+    "title": "Crop rows",
+    "alt": "Long rows of crops in a farm field in San Luis Obispo County, California, with hills beyond.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2013631700/",
+    "tags": [
+      "Agriculture and Food"
+    ]
+  },
+  "grand-canyon": {
+    "file": "grand-canyon.jpg",
+    "title": "Grand Canyon",
+    "alt": "The layered cliffs of the Grand Canyon seen from the South Rim in Arizona.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011634581/",
+    "tags": [
+      "Public Lands and Natural Resources",
+      "parks",
+      "Environmental Protection"
+    ]
+  },
+  "house-corridor": {
+    "file": "house-corridor.jpg",
+    "title": "House Chamber corridor",
+    "alt": "An ornate corridor outside the House Chamber in the U.S. Capitol, lined with portraits and benches.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011630762/",
+    "tags": [
+      "congress",
+      "house"
+    ]
+  },
+  "interstate-pittsburgh": {
+    "file": "interstate-pittsburgh.jpg",
+    "title": "Interstate through woods",
+    "alt": "Aerial view of an interstate highway curving through wooded hills near Pittsburgh, Pennsylvania.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://commons.wikimedia.org/wiki/File:Aerial_view_of_U.S._Interstate_Highway_279,_heading_northwest_out_of_Pittsburgh,_Pennsylvania_(highsm.58523).png",
+    "tags": [
+      "Transportation and Public Works",
+      "infrastructure"
+    ]
+  },
+  "interstate-utah": {
+    "file": "interstate-utah.jpg",
+    "title": "Desert interstate",
+    "alt": "An empty interstate highway running straight through the Utah desert toward a mesa.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011633517/",
+    "tags": [
+      "Transportation and Public Works",
+      "Public Lands and Natural Resources"
+    ]
+  },
+  "library-of-congress": {
+    "file": "library-of-congress.jpg",
+    "title": "Library of Congress",
+    "alt": "The west front of the Library of Congress's Thomas Jefferson Building, with its grand staircase.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2007684221/",
+    "tags": [
+      "Education",
+      "Arts, Culture, Religion",
+      "washington"
+    ]
+  },
+  "lincoln-memorial-dusk": {
+    "file": "lincoln-memorial-dusk.jpg",
+    "title": "Lincoln Memorial at dusk",
+    "alt": "The Lincoln Memorial lit from within at dusk, under a deep blue sky.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011630586/",
+    "tags": [
+      "washington",
+      "history",
+      "Civil Rights and Liberties, Minority Issues"
+    ]
+  },
+  "national-archives": {
+    "file": "national-archives.jpg",
+    "title": "National Archives",
+    "alt": "The National Archives Building on Pennsylvania Avenue in Washington, D.C.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011633826/",
+    "tags": [
+      "Government Operations and Politics",
+      "history",
+      "washington"
+    ]
+  },
+  "nuclear-plant": {
+    "file": "nuclear-plant.jpg",
+    "title": "Nuclear power plant",
+    "alt": "The two cooling towers of a nuclear power plant releasing steam, reflected in a lake.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011631213/",
+    "tags": [
+      "Energy",
+      "nuclear",
+      "Environmental Protection"
+    ]
+  },
+  "pennies": {
+    "file": "pennies.jpg",
+    "title": "Pile of pennies",
+    "alt": "A close-up of a pile of copper pennies.",
+    "credit": null,
+    "source": "https://commons.wikimedia.org/wiki/File:Pile_of_Pennies_1_(25589910930).jpg",
+    "tags": [
+      "money",
+      "Finance and Financial Sector",
+      "Economics and Public Finance"
+    ]
+  },
+  "penny-2025": {
+    "file": "penny-2025.jpg",
+    "title": "2025 penny",
+    "alt": "A shiny 2025 Lincoln penny on a white background.",
+    "credit": "U.S. Mint",
+    "source": "https://commons.wikimedia.org/wiki/File:2025_Lincoln_cent_obverse,_uncirculated,_Philadelphia_mint.jpg",
+    "tags": [
+      "money",
+      "Finance and Financial Sector"
+    ]
+  },
+  "pentagon": {
+    "file": "pentagon.jpg",
+    "title": "The Pentagon",
+    "alt": "Aerial view of the Pentagon in Arlington, Virginia, with the Potomac River beyond.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632609/",
+    "tags": [
+      "Armed Forces and National Security",
+      "defense"
+    ]
+  },
+  "schoolhouse": {
+    "file": "schoolhouse.jpg",
+    "title": "One-room schoolhouse",
+    "alt": "A red one-room schoolhouse with a bell tower among tall pines in California.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2013634002/",
+    "tags": [
+      "Education"
+    ]
+  },
+  "stock-exchange-floor": {
+    "file": "stock-exchange-floor.jpg",
+    "title": "Stock exchange floor",
+    "alt": "Traders on the floor of the New York Stock Exchange, under banks of screens.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632435/",
+    "tags": [
+      "Finance and Financial Sector",
+      "Commerce",
+      "Economics and Public Finance"
+    ]
+  },
+  "supreme-court": {
+    "file": "supreme-court.jpg",
+    "title": "Supreme Court Building",
+    "alt": "The front of the U.S. Supreme Court Building, its white marble columns against a deep blue sky.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632073/",
+    "tags": [
+      "courts",
+      "law",
+      "Law",
+      "Civil Rights and Liberties, Minority Issues"
+    ]
+  },
+  "supreme-court-tall": {
+    "file": "supreme-court-tall.jpg",
+    "title": "Supreme Court columns, tall",
+    "alt": "Close view of the Supreme Court Building's columns and the sculpted pediment above them.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632975/",
+    "tags": [
+      "courts",
+      "law",
+      "Law"
+    ]
+  },
+  "treasury": {
+    "file": "treasury.jpg",
+    "title": "Treasury Building",
+    "alt": "The U.S. Treasury Building in Washington, D.C., with a statue in front of its columns.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011635063/",
+    "tags": [
+      "Economics and Public Finance",
+      "Taxation",
+      "Finance and Financial Sector",
+      "washington"
+    ]
+  },
+  "walter-reed": {
+    "file": "walter-reed.jpg",
+    "title": "Walter Reed Army Hospital",
+    "alt": "The main building of the former Walter Reed Army Hospital in Washington, D.C., behind a fountain.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632014/",
+    "tags": [
+      "Health",
+      "veterans",
+      "Armed Forces and National Security"
+    ]
+  },
+  "washington-monument-blossoms": {
+    "file": "washington-monument-blossoms.jpg",
+    "title": "Washington Monument in spring",
+    "alt": "The Washington Monument rising above pink cherry blossoms.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011630568/",
+    "tags": [
+      "washington",
+      "history"
+    ]
+  },
+  "white-house-dusk": {
+    "file": "white-house-dusk.jpg",
+    "title": "White House at dusk",
+    "alt": "The north side of the White House lit at dusk, behind a fence and bare winter trees.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2011632156/",
+    "tags": [
+      "president",
+      "executive",
+      "washington"
+    ]
+  },
+  "wind-farm-missouri": {
+    "file": "wind-farm-missouri.jpg",
+    "title": "Wind turbines over farmland",
+    "alt": "Wind turbines standing over green crop rows on a farm in rural Missouri.",
+    "credit": "Carol M. Highsmith, Library of Congress",
+    "source": "https://www.loc.gov/item/2010630507/",
+    "tags": [
+      "Energy",
+      "Agriculture and Food",
+      "Environmental Protection"
+    ]
+  }
+}

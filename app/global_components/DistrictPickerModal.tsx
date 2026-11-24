@@ -27,6 +27,8 @@ import CongressionalDistrictMap, {
   type FocusDistrict,
   type PinLocation,
 } from "./CongressionalDistrictMap";
+import FitText from "./FitText";
+import { roleOptionsFromText } from "../utils/officialTitle";
 
 export type PickerRep = {
   bioguideId: string;
@@ -361,13 +363,15 @@ export default function DistrictPickerModal({
                       >
                         {selectedRep.name}
                       </Text>
-                      <Text
-                        style={{ fontSize: 13, color: "#7B7C81", marginTop: 2 }}
-                        numberOfLines={1}
-                      >
-                        {PARTY_ABBR[selectedRep.party] ?? selectedRep.party} ·{" "}
-                        {selectedRep.role}
-                      </Text>
+                      <View style={{ flexDirection: "row", marginTop: 2 }}>
+                        <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                          {PARTY_ABBR[selectedRep.party] ?? selectedRep.party} ·{" "}
+                        </Text>
+                        <FitText
+                          style={{ fontSize: 13, color: "#7B7C81" }}
+                          options={roleOptionsFromText(selectedRep.role ?? "")}
+                        />
+                      </View>
                     </View>
                   </View>
                   <Pressable

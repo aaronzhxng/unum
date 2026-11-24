@@ -15,14 +15,16 @@ export async function getStaticPaths() {
 
 const { issue } = Astro.props;
 const { Content } = await render(issue);
-const { week, date, headline, description, stats, sections, signoff } = issue.data;
+const { week, date, headline, description, cover, stats, sections, signoff } = issue.data;
 const year = date.getUTCFullYear();
 const webUrl = `${ORIGIN}/newsletter/${issue.id}`;
+const count = (n: number | { house: number; senate: number }) =>
+  typeof n === "number" ? [n, null] : [n.house + n.senate, n];
 const numbers = [
-  [stats.signed, "signed into law"],
-  [stats.passedBoth, "passed both chambers"],
-  [stats.outOfCommittee, "out of committee"],
-  [stats.introduced, "introduced"],
+  [...count(stats.signed), "signed into law"],
+  [...count(stats.passedBoth), "passed both chambers"],
+  [...count(stats.outOfCommittee), "out of committee"],
+  [...count(stats.introduced), "introduced"],
 ];
 ---
 
@@ -37,13 +39,28 @@ const numbers = [
 >
                 <p style={`margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${C.blue}`}>{week}, {year}</p>
                 <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.01em">{headline}</h1>
+                {cover && (
+                  /* Many email apps hold images until asked, so the alt text
+                     stands in, and nothing below depends on the photo */
+                  <a target="_blank" rel="noopener" href={webUrl} style="text-decoration:none">
+                    <img src={`${ORIGIN}${cover.src}`} width="582" alt={cover.alt} style={`display:block;width:100%;max-width:582px;height:auto;border-radius:12px;background:${C.border};color:${C.muted};font-size:13px`} />
+                  </a>
+                )}
+                {cover?.credit && (
+                  <p style={`margin:6px 0 18px;font-size:12px;color:${C.muted}`}>Photo: {cover.credit}</p>
+                )}
+                {cover && !cover.credit && <div style="height:18px"></div>}
                 <div style={`font-size:16px;line-height:1.6;color:${C.muted}`}><Content /></div>
 
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`margin:24px 0 8px;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border}`}>
                   <tr>
-                    {numbers.map(([n, label]) => (
+                    {numbers.map(([n, split, label]) => (
                       <td width="25%" style="padding:16px 4px;vertical-align:top">
-                        <div style="font-size:26px;font-weight:600;line-height:1.1">{n}</div>
+                        {/* House and Senate counts beside the total, together as tall as it */}
+                        <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                          <td style="font-size:26px;font-weight:600;line-height:28px;vertical-align:middle">{n}</td>
+                          {split && <td style="padding-left:7px;font-size:11px;line-height:14px;color:#9a9a9a;white-space:nowrap;vertical-align:middle">H: {split.house}<br />S: {split.senate}</td>}
+                        </tr></table>
                         <div style={`font-size:12px;color:${C.muted};margin-top:4px`}>{label}</div>
                       </td>
                     ))}

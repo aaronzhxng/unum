@@ -59,6 +59,7 @@ import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
+import InfoButton from "../global_components/InfoButton";
 import VotingCard, {
   FollowedOfficial,
   VoteData,
@@ -66,7 +67,8 @@ import VotingCard, {
 } from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
-import { houseTitle } from "../utils/officialTitle";
+import FitText from "../global_components/FitText";
+import { houseTitle, roleOptions } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
 import { trySwipeBack } from "../utils/swipeBackGuard";
 
@@ -1501,6 +1503,11 @@ export default function BillDetail() {
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
                 >
                   <Text style={componentStyles.detailTitle}>Status: </Text>
+                  <InfoButton
+                    slug="bill-status"
+                    label="How does a bill become law?"
+                    style={{ marginLeft: 0 }}
+                  />
                   <Text style={componentStyles.status}>
                     {bill.latestAction?.text || "Introduced"}
                   </Text>
@@ -1543,6 +1550,11 @@ export default function BillDetail() {
 
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Type: </Text>
+              <InfoButton
+                slug="bill-types"
+                label="What do the types of bills mean?"
+                style={{ marginLeft: 0 }}
+              />
               <Text style={componentStyles.detailInfo}>
                 {getBillTypeName(bill.type, bill.originChamber)}
               </Text>
@@ -1704,13 +1716,11 @@ export default function BillDetail() {
                 }}
               >
                 <View style={{ flex: 1 }}>
-                  <View style={{ alignSelf: "flex-start", height: 20 }}>
+                  {/* A minimum, so large system text isn't cut off */}
+                  <View style={{ alignSelf: "flex-start", minHeight: 20 }}>
                     {!showAmendments ? (
                       <Text
-                        style={[
-                          componentStyles.detailTitle,
-                          { lineHeight: 20 },
-                        ]}
+                        style={componentStyles.detailTitle}
                       >
                         Amendments ({bill.amendments?.length || 0})
                       </Text>
@@ -1721,7 +1731,6 @@ export default function BillDetail() {
                             flexDirection: "row",
                             alignItems: "center",
                             gap: 4,
-                            flex: 1,
                             transform: [{ scale: pressed ? 0.96 : 1 }],
                           },
                         ]}
@@ -1731,10 +1740,7 @@ export default function BillDetail() {
                         }}
                       >
                         <Text
-                          style={[
-                            componentStyles.detailTitle,
-                            { lineHeight: 16 },
-                          ]}
+                          style={componentStyles.detailTitle}
                         >
                           Amendments ({displayedAmendments.length})
                         </Text>
@@ -1914,6 +1920,29 @@ export default function BillDetail() {
             contentContainerStyle={{ paddingTop: 1 }}
           >
             <View style={{ marginBottom: 96 }}>
+              {votingVisited && !votesLoading && (
+                // What yea, nay and roll call mean, and why some votes need
+                // two-thirds
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    paddingHorizontal: 16,
+                    // The same space above, from the tabs, as below, to the
+                    // first vote's card, which has no margin of its own
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                    How votes work
+                  </Text>
+                  <InfoButton
+                    slug="roll-call-vote"
+                    label="How do votes in Congress work?"
+                  />
+                </View>
+              )}
               {votingVisited && (
                 <VotingCard
                   votes={votesData?.votes ?? []}
@@ -2230,23 +2259,12 @@ export default function BillDetail() {
       ? `https://bioguide.congress.gov/bioguide/photo/${sponsor.bioguideId[0]}/${sponsor.bioguideId}.jpg`
       : null;
 
-    const { width: screenWidth } = useWindowDimensions();
-    const stateName = STATE_NAMES[sponsor.state] ?? sponsor.state;
-    const role = (() => {
-      if (sponsor.district != null || TERRITORY_STATES.has(sponsor.state)) {
-        if (sponsor.district > 0) {
-          const full = `Representative, ${stateName}, District ${sponsor.district}`;
-          const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
-          return screenWidth < 390 ? abbr : full;
-        }
-        const full = `${houseTitle(sponsor.state).full}, ${stateName}`;
-        const abbr = `${houseTitle(sponsor.state).abbr}, ${stateName}`;
-        return screenWidth < 390 ? abbr : full;
-      }
-      const full = `Senator, ${stateName}`;
-      const abbr = `Sen, ${stateName}`;
-      return screenWidth < 390 ? abbr : full;
-    })();
+    const role = roleOptions({
+      house: sponsor.district != null || TERRITORY_STATES.has(sponsor.state),
+      state: sponsor.state,
+      place: STATE_NAMES[sponsor.state] ?? sponsor.state,
+      district: sponsor.district,
+    });
 
     return (
       <Pressable
@@ -2289,14 +2307,14 @@ export default function BillDetail() {
             <Text style={componentStyles.name} numberOfLines={1}>
               {sponsor.firstName} {sponsor.lastName}
             </Text>
-            <View style={componentStyles.metaRow}>
+            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
               {sponsor.party ? (
                 <>
                   <Text style={componentStyles.subtitle}>{sponsor.party}</Text>
                   <Text style={componentStyles.separator}>·</Text>
                 </>
               ) : null}
-              <Text style={componentStyles.subtitle}>{role}</Text>
+              <FitText style={componentStyles.subtitle} options={role} />
             </View>
           </View>
         </View>

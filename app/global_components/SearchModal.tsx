@@ -1,5 +1,11 @@
 import { ChevronLeft, Plus } from "lucide-react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Dimensions,
   FlatList,
@@ -10,17 +16,27 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useWindowDimensions,
 } from "react-native";
 
 const SHORT_SCREEN = Dimensions.get("window").height < 750;
 import Modal from "react-native-modal";
 import officialNicknames from "../data/nicknames.json";
 import { styles as componentStyles } from "../global_styles/styles";
-import { abbrevBillType, BILL_TYPE_SEARCH_ALIASES } from "../utils/billTypeAbbr";
+import {
+  abbrevBillType,
+  BILL_TYPE_SEARCH_ALIASES,
+} from "../utils/billTypeAbbr";
 import { getBillIcon } from "../utils/billIcons";
-import { houseTitle } from "../utils/officialTitle";
+import {
+  houseTitle,
+  roleOptions,
+  roleOptionsFromText,
+} from "../utils/officialTitle";
+import FitText from "./FitText";
 import AddModal from "./AddModal";
+import RecentSearches from "./RecentSearches";
+import { useSearchHistory } from "../utils/searchHistory";
+import { billTitleLines } from "../utils/billTitleLines";
 
 const POLICY_AREA_COLORS: Record<string, string> = {
   "Agriculture and Food": "#7CB342",
@@ -70,7 +86,137 @@ interface SearchModalProps {
   // be restored when the user presses back from the detail screen.
   onNavigatingAway?: () => void;
   skipEntryAnimation?: boolean;
+  // Everything else that could match, like every state's officials while one
+  // state is showing. Matches from it are listed under otherLabel.
+  otherItems?: any[];
+  otherLabel?: string;
+  // Keeps recent searches under this name and shows them before typing
+  historyKey?: string;
 }
+
+// Every item matching the query, best matches first
+function searchItems(items: any[], searchQuery: string): any[] {
+  if (!searchQuery.trim()) return [];
+  const lowercaseQuery = searchQuery.toLowerCase().trim();
+  const queryWords = lowercaseQuery.split(/\s+/);
+  const normalizedQuery = lowercaseQuery.replace(/[\s.,\-]+/g, "");
+  const nicknameMap = officialNicknames as Record<string, string[]>;
+
+  const matchesAll = (text: string) => {
+    const lower = text.toLowerCase();
+    return queryWords.every((word) => lower.includes(word));
+  };
+
+  const matchesNickname = (item: any): boolean => {
+    const id = item.bioguideId ?? item.id;
+    if (!id) return false;
+    const nicknames = nicknameMap[id];
+    if (!nicknames) return false;
+    return nicknames.some(
+      (nick) =>
+        nick.toLowerCase().includes(lowercaseQuery) ||
+        lowercaseQuery.includes(nick.toLowerCase()),
+    );
+  };
+
+  // Returns true if the query refers to this item's bill type via an
+  // abbreviated or natural-language alias (e.g. "hcr" → HCONRES,
+  // "senate joint resolution" → SJRES).
+  const matchesBillTypeAlias = (item: any): boolean => {
+    const itemType = (item.billType ?? item.type ?? "").toUpperCase();
+    const aliases = BILL_TYPE_SEARCH_ALIASES[itemType];
+    if (!aliases) return false;
+    const num = String(item.number ?? "");
+    return aliases.some((alias) => {
+      // Alias itself prefix-matches the query, or query equals alias
+      if (alias.startsWith(lowercaseQuery) || lowercaseQuery === alias)
+        return true;
+      // Multi-word query like "senate joint resolution" — all words in alias
+      if (matchesAll(alias)) return true;
+      // "hcr 123" / "hcr.123"
+      if (`${alias} ${num}`.startsWith(lowercaseQuery)) return true;
+      // "hcr123" flat
+      if (`${alias.replace(/\s+/g, "")}${num}`.startsWith(normalizedQuery))
+        return true;
+      return false;
+    });
+  };
+
+  const scoreItem = (item: any): number => {
+    const name = (item.name ?? item.title ?? "").toLowerCase();
+    const title = (item.title ?? "").toLowerCase();
+
+    if (name === lowercaseQuery || title === lowercaseQuery) return 100;
+    if (name.startsWith(lowercaseQuery) || title.startsWith(lowercaseQuery))
+      return 90;
+    if (name.includes(lowercaseQuery) || title.includes(lowercaseQuery))
+      return 80;
+
+    const billId =
+      `${item.billType ?? item.type ?? ""} ${item.number ?? ""}`.toLowerCase();
+    const billIdDot =
+      `${item.billType ?? item.type ?? ""}.${item.number ?? ""}`.toLowerCase();
+    if (billId === lowercaseQuery || billIdDot === lowercaseQuery) return 95;
+    if (
+      billId.startsWith(lowercaseQuery) ||
+      billIdDot.startsWith(lowercaseQuery)
+    )
+      return 85;
+    const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
+    if (billIdFlat === normalizedQuery) return 95;
+    if (billIdFlat.startsWith(normalizedQuery)) return 85;
+    if (matchesBillTypeAlias(item)) return 85;
+    if (matchesNickname(item)) return 75;
+
+    const wordPositions = queryWords.map((w) => name.indexOf(w));
+    const allFound = wordPositions.every((p) => p !== -1);
+    const inOrder =
+      allFound &&
+      wordPositions.every((p, i) => i === 0 || p > wordPositions[i - 1]);
+    if (inOrder) return 70;
+    if (allFound) return 50;
+
+    return 0;
+  };
+
+  const filtered = items
+    .filter((item) => {
+      if (item.name && matchesAll(item.name)) return true;
+      if (item.title && matchesAll(item.title)) return true;
+      if (item.role && matchesAll(item.role)) return true;
+      if (item.party && matchesAll(item.party)) return true;
+      const latestActionText =
+        typeof item.latestAction === "string"
+          ? item.latestAction
+          : item.latestAction?.text;
+      if (latestActionText && matchesAll(latestActionText)) return true;
+      if (matchesAll(`${item.billType ?? item.type} ${item.number}`))
+        return true;
+      if (matchesAll(`${item.billType ?? item.type}.${item.number}`))
+        return true;
+      const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
+      if (billIdFlat.startsWith(normalizedQuery)) return true;
+      if (matchesBillTypeAlias(item)) return true;
+      if (matchesNickname(item)) return true;
+      return false;
+    })
+    .map((item) => ({ item, score: scoreItem(item) }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const dateA = a.item.latestAction?.actionDate ?? a.item.date ?? "";
+      const dateB = b.item.latestAction?.actionDate ?? b.item.date ?? "";
+      return dateB.localeCompare(dateA);
+    })
+    .map(({ item }) => item);
+
+  return filtered;
+}
+
+// How an official or bill is told apart from the rest
+const itemKey = (item: any): string =>
+  item.bioguideId ??
+  item.id ??
+  `${item.billType ?? item.type ?? ""}${item.number ?? ""}`;
 
 export default function SearchModal({
   isVisible,
@@ -83,21 +229,21 @@ export default function SearchModal({
   onNewListPress,
   onNavigatingAway,
   skipEntryAnimation = false,
+  otherItems,
+  otherLabel = "Elsewhere",
+  historyKey,
 }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState(query || "");
-  const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAddItem, setSelectedAddItem] = useState<any>(null);
   const [selectedLists, setSelectedLists] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const { width: screenWidth } = useWindowDimensions();
 
   // Define handleClose first so useEffect can reference it
   const handleClose = useCallback(() => {
     Keyboard.dismiss();
     setSearchQuery("");
-    setFilteredItems([]);
     onClose();
   }, [onClose]);
 
@@ -118,134 +264,44 @@ export default function SearchModal({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Filter items based on search query
+  // Filters a moment after typing stops, so a long list (thousands of bills)
+  // isn't searched again on every keystroke
+  const [filterQuery, setFilterQuery] = useState(query || "");
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredItems([]);
-      return;
-    }
-
-    const lowercaseQuery = searchQuery.toLowerCase().trim();
-    const queryWords = lowercaseQuery.split(/\s+/);
-    const normalizedQuery = lowercaseQuery.replace(/[\s.,\-]+/g, "");
-    const nicknameMap = officialNicknames as Record<string, string[]>;
-
-    const matchesAll = (text: string) => {
-      const lower = text.toLowerCase();
-      return queryWords.every((word) => lower.includes(word));
-    };
-
-    const matchesNickname = (item: any): boolean => {
-      const id = item.bioguideId ?? item.id;
-      if (!id) return false;
-      const nicknames = nicknameMap[id];
-      if (!nicknames) return false;
-      return nicknames.some(
-        (nick) =>
-          nick.toLowerCase().includes(lowercaseQuery) ||
-          lowercaseQuery.includes(nick.toLowerCase()),
-      );
-    };
-
-    // Returns true if the query refers to this item's bill type via an
-    // abbreviated or natural-language alias (e.g. "hcr" → HCONRES,
-    // "senate joint resolution" → SJRES).
-    const matchesBillTypeAlias = (item: any): boolean => {
-      const itemType = (item.billType ?? item.type ?? "").toUpperCase();
-      const aliases = BILL_TYPE_SEARCH_ALIASES[itemType];
-      if (!aliases) return false;
-      const num = String(item.number ?? "");
-      return aliases.some((alias) => {
-        // Alias itself prefix-matches the query, or query equals alias
-        if (alias.startsWith(lowercaseQuery) || lowercaseQuery === alias)
-          return true;
-        // Multi-word query like "senate joint resolution" — all words in alias
-        if (matchesAll(alias)) return true;
-        // "hcr 123" / "hcr.123"
-        if (`${alias} ${num}`.startsWith(lowercaseQuery)) return true;
-        // "hcr123" flat
-        if (`${alias.replace(/\s+/g, "")}${num}`.startsWith(normalizedQuery))
-          return true;
-        return false;
-      });
-    };
-
-    const scoreItem = (item: any): number => {
-      const name = (item.name ?? item.title ?? "").toLowerCase();
-      const title = (item.title ?? "").toLowerCase();
-
-      if (name === lowercaseQuery || title === lowercaseQuery) return 100;
-      if (name.startsWith(lowercaseQuery) || title.startsWith(lowercaseQuery))
-        return 90;
-      if (name.includes(lowercaseQuery) || title.includes(lowercaseQuery))
-        return 80;
-
-      const billId =
-        `${item.billType ?? item.type ?? ""} ${item.number ?? ""}`.toLowerCase();
-      const billIdDot =
-        `${item.billType ?? item.type ?? ""}.${item.number ?? ""}`.toLowerCase();
-      if (billId === lowercaseQuery || billIdDot === lowercaseQuery) return 95;
-      if (
-        billId.startsWith(lowercaseQuery) ||
-        billIdDot.startsWith(lowercaseQuery)
-      )
-        return 85;
-      const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
-      if (billIdFlat === normalizedQuery) return 95;
-      if (billIdFlat.startsWith(normalizedQuery)) return 85;
-      if (matchesBillTypeAlias(item)) return 85;
-      if (matchesNickname(item)) return 75;
-
-      const wordPositions = queryWords.map((w) => name.indexOf(w));
-      const allFound = wordPositions.every((p) => p !== -1);
-      const inOrder =
-        allFound &&
-        wordPositions.every((p, i) => i === 0 || p > wordPositions[i - 1]);
-      if (inOrder) return 70;
-      if (allFound) return 50;
-
-      return 0;
-    };
-
-    const filtered = items
-      .filter((item) => {
-        if (item.name && matchesAll(item.name)) return true;
-        if (item.title && matchesAll(item.title)) return true;
-        if (item.role && matchesAll(item.role)) return true;
-        if (item.party && matchesAll(item.party)) return true;
-        const latestActionText =
-          typeof item.latestAction === "string"
-            ? item.latestAction
-            : item.latestAction?.text;
-        if (latestActionText && matchesAll(latestActionText)) return true;
-        if (matchesAll(`${item.billType ?? item.type} ${item.number}`))
-          return true;
-        if (matchesAll(`${item.billType ?? item.type}.${item.number}`))
-          return true;
-        const billIdFlat = `${(item.billType ?? item.type ?? "").toLowerCase()}${item.number ?? ""}`;
-        if (billIdFlat.startsWith(normalizedQuery)) return true;
-        if (matchesBillTypeAlias(item)) return true;
-        if (matchesNickname(item)) return true;
-        return false;
-      })
-      .map((item) => ({ item, score: scoreItem(item) }))
-      .sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        const dateA = a.item.latestAction?.actionDate ?? a.item.date ?? "";
-        const dateB = b.item.latestAction?.actionDate ?? b.item.date ?? "";
-        return dateB.localeCompare(dateA);
-      })
-      .map(({ item }) => item);
-
-    setFilteredItems(filtered);
+    const timer = setTimeout(() => setFilterQuery(searchQuery), 150);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+  useEffect(() => {
     onSearch(searchQuery);
-  }, [searchQuery, items, onSearch]);
+  }, [searchQuery]);
+  const filteredItems = useMemo(
+    () => searchItems(items, filterQuery),
+    [items, filterQuery],
+  );
+  // Matches outside the list being searched, like other states' officials,
+  // shown below the list's own
+  const otherResults = useMemo(() => {
+    if (!otherItems || !filterQuery.trim()) return [];
+    const inList = new Set(items.map(itemKey));
+    return searchItems(
+      otherItems.filter((item) => !inList.has(itemKey(item))),
+      filterQuery,
+    );
+  }, [otherItems, items, filterQuery]);
+  const {
+    history,
+    add: addToHistory,
+    remove: removeFromHistory,
+    clear: clearHistory,
+  } = useSearchHistory(historyKey);
 
   const handleSubmit = () => {
     Keyboard.dismiss();
+    addToHistory(searchQuery);
   };
 
   const handleItemPress = (item: any) => {
+    addToHistory(searchQuery);
     if (onItemPress) {
       if (onNavigatingAway) {
         // Keep query/results intact so they're visible immediately on return.
@@ -305,7 +361,12 @@ export default function SearchModal({
       useNativeDriver
       coverScreen={true}
     >
-      <View style={[componentStyles.container, { paddingBottom: SHORT_SCREEN ? 48 : 96 }]}>
+      <View
+        style={[
+          componentStyles.container,
+          { paddingBottom: SHORT_SCREEN ? 48 : 96 },
+        ]}
+      >
         {/* Search Header */}
         <View style={componentStyles.headerBar}>
           <TouchableOpacity
@@ -350,15 +411,26 @@ export default function SearchModal({
         {/* Search Results Area */}
         <View style={{ flex: 1 }}>
           {!searchQuery ? (
-            <Text
-              style={[
-                componentStyles.subtitle,
-                { alignSelf: "center", marginTop: 16 },
-              ]}
-            >
-              Start typing to search
-            </Text>
-          ) : filteredItems.length === 0 && debouncedQuery === searchQuery ? (
+            history.length ? (
+              <RecentSearches
+                history={history}
+                onPick={setSearchQuery}
+                onRemove={removeFromHistory}
+                onClear={clearHistory}
+              />
+            ) : (
+              <Text
+                style={[
+                  componentStyles.subtitle,
+                  { alignSelf: "center", marginTop: 16 },
+                ]}
+              >
+                Start typing to search
+              </Text>
+            )
+          ) : filteredItems.length === 0 &&
+            otherResults.length === 0 &&
+            debouncedQuery === searchQuery ? (
             <Text
               style={[
                 componentStyles.subtitle,
@@ -375,13 +447,23 @@ export default function SearchModal({
                   { marginLeft: 16, marginTop: 16, marginBottom: 8 },
                 ]}
               >
-                {filteredItems.length} result
-                {filteredItems.length !== 1 ? "s" : ""} for "{searchQuery}" in{" "}
-                {searchContext}
+                {filteredItems.length
+                  ? `${filteredItems.length} result${filteredItems.length !== 1 ? "s" : ""}`
+                  : "No results"}{" "}
+                for "{searchQuery}" in {searchContext}
               </Text>
               <FlatList
-                data={filteredItems}
+                data={
+                  otherResults.length
+                    ? [
+                        ...filteredItems,
+                        { __divider: true, count: otherResults.length },
+                        ...otherResults,
+                      ]
+                    : filteredItems
+                }
                 keyExtractor={(item, index) =>
+                  (item.__divider && "other-results") ||
                   item.id ||
                   item.bioguideId ||
                   (item.billType && item.number
@@ -394,206 +476,262 @@ export default function SearchModal({
                 }
                 contentContainerStyle={componentStyles.listContent}
                 keyboardShouldPersistTaps="handled"
-                renderItem={({ item }) => (
-                  <Pressable
-                    onPress={() => handleItemPress(item)}
-                    style={({ pressed }) => ({
-                      transform: [{ scale: pressed ? 0.96 : 1 }],
-                    })}
-                  >
-                    <View style={componentStyles.officialCard}>
-                      {/* Avatar */}
-                      {item.type === "bill" ? null : (
-                        <View
-                          style={{
-                            width: 64,
-                            marginRight: 12,
-                            flexShrink: 0,
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <OfficialAvatar item={item} style={{ marginRight: 0 }} />
-                        </View>
-                      )}
+                renderItem={({ item }) =>
+                  item.__divider ? (
+                    // Where the list's own matches end and the rest begin
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                        marginHorizontal: 16,
+                        // More room under "No results for …" when the list
+                        // itself had none
+                        marginTop: 12,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: "700",
+                          letterSpacing: 0.8,
+                          color: "#7B7C81",
+                        }}
+                      >
+                        {otherLabel.toUpperCase()} · {item.count}
+                      </Text>
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 1,
+                          backgroundColor: "#e0e0e0",
+                        }}
+                      />
+                    </View>
+                  ) : (
+                    <Pressable
+                      onPress={() => handleItemPress(item)}
+                      style={({ pressed }) => ({
+                        transform: [{ scale: pressed ? 0.96 : 1 }],
+                      })}
+                    >
+                      <View style={componentStyles.officialCard}>
+                        {/* Avatar */}
+                        {item.type === "bill" ? null : (
+                          <View
+                            style={{
+                              width: 64,
+                              marginRight: 12,
+                              flexShrink: 0,
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <OfficialAvatar
+                              item={item}
+                              style={{ marginRight: 0 }}
+                            />
+                          </View>
+                        )}
 
-                      {/* Content */}
-                      {item.type === "bill" ? (
-                        (() => {
-                          const policyArea =
-                            item.policyArea?.name ?? item.policyArea ?? null;
-                          const dotColor =
-                            POLICY_AREA_COLORS[policyArea] ?? "#008CFF";
-                          const dateStr = safeFormatDate(
-                            item.latestAction?.actionDate ?? item.date,
-                          );
+                        {/* Content */}
+                        {item.type === "bill" ? (
+                          (() => {
+                            const policyArea =
+                              item.policyArea?.name ?? item.policyArea ?? null;
+                            const dotColor =
+                              POLICY_AREA_COLORS[policyArea] ?? "#008CFF";
+                            const dateStr = safeFormatDate(
+                              item.latestAction?.actionDate ?? item.date,
+                            );
 
-                          return (
-                            <>
-                              {/* Left column: badge + icon */}
-                              <View
-                                style={{
-                                  alignItems: "center",
-                                  marginRight: 12,
-                                  flexShrink: 0,
-                                  width: 64,
-                                }}
-                              >
+                            return (
+                              <>
+                                {/* Left column: badge + icon */}
                                 <View
                                   style={{
-                                    backgroundColor: dotColor,
-                                    borderRadius: 6,
-                                    paddingHorizontal: 4,
-                                    paddingVertical: 4,
-                                    marginBottom: 6,
                                     alignItems: "center",
-                                    width: "100%",
+                                    marginRight: 12,
+                                    flexShrink: 0,
+                                    width: 64,
                                   }}
                                 >
-                                  <Text
-                                    style={{
-                                      color: "#fff",
-                                      fontSize: 12,
-                                      fontWeight: "700",
-                                    }}
-                                    numberOfLines={1}
-                                    // Long numbers like HR.10035 shrink slightly instead of cutting off
-                                    adjustsFontSizeToFit
-                                    minimumFontScale={0.8}
-                                  >
-                                    {abbrevBillType(item.billType || item.type)}.{item.number}
-                                  </Text>
-                                </View>
-                                <Image
-                                  source={getBillIcon(policyArea)}
-                                  style={{
-                                    width: 50,
-                                    height: 50,
-                                    borderRadius: 6,
-                                  }}
-                                  resizeMode="contain"
-                                />
-                              </View>
-
-                              {/* Info */}
-                              <View
-                                style={{
-                                  flex: 1,
-                                  alignSelf: "stretch",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <View>
                                   <View
                                     style={{
-                                      flexDirection: "row",
+                                      backgroundColor: dotColor,
+                                      borderRadius: 6,
+                                      paddingHorizontal: 4,
+                                      paddingVertical: 4,
+                                      marginBottom: 6,
                                       alignItems: "center",
-                                      flexWrap: "nowrap",
-                                      marginBottom: 4,
+                                      width: "100%",
                                     }}
                                   >
-                                    {dateStr && (
-                                      <Text
-                                        style={[
-                                          componentStyles.subtitle,
-                                          { flexShrink: 0 },
-                                        ]}
-                                      >
-                                        {dateStr}
-                                      </Text>
-                                    )}
-                                    {policyArea && (
-                                      <>
-                                        <Text style={componentStyles.separator}>
-                                          ·
-                                        </Text>
+                                    <Text
+                                      style={{
+                                        color: "#fff",
+                                        fontSize: 12,
+                                        fontWeight: "700",
+                                      }}
+                                      numberOfLines={1}
+                                      // Long numbers like HR.10035 shrink slightly instead of cutting off
+                                      adjustsFontSizeToFit
+                                      minimumFontScale={0.8}
+                                    >
+                                      {abbrevBillType(
+                                        item.billType || item.type,
+                                      )}
+                                      .{item.number}
+                                    </Text>
+                                  </View>
+                                  <Image
+                                    source={getBillIcon(policyArea)}
+                                    style={{
+                                      width: 50,
+                                      height: 50,
+                                      borderRadius: 6,
+                                    }}
+                                    resizeMode="contain"
+                                  />
+                                </View>
+
+                                {/* Info */}
+                                <View
+                                  style={{
+                                    flex: 1,
+                                    alignSelf: "stretch",
+                                    justifyContent: "space-between",
+                                  }}
+                                >
+                                  <View>
+                                    <View
+                                      style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        flexWrap: "nowrap",
+                                        marginBottom: 4,
+                                      }}
+                                    >
+                                      {dateStr && (
                                         <Text
-                                          style={{
-                                            fontSize: 12,
-                                            color: dotColor,
-                                            fontWeight: "600",
-                                            flexShrink: 1,
-                                          }}
-                                          numberOfLines={1}
+                                          style={[
+                                            componentStyles.subtitle,
+                                            { flexShrink: 0 },
+                                          ]}
                                         >
-                                          {policyArea}
+                                          {dateStr}
                                         </Text>
-                                      </>
-                                    )}
+                                      )}
+                                      {policyArea && (
+                                        <>
+                                          <Text
+                                            style={componentStyles.separator}
+                                          >
+                                            ·
+                                          </Text>
+                                          <Text
+                                            style={{
+                                              fontSize: 12,
+                                              color: dotColor,
+                                              fontWeight: "600",
+                                              flexShrink: 1,
+                                            }}
+                                            numberOfLines={1}
+                                          >
+                                            {policyArea}
+                                          </Text>
+                                        </>
+                                      )}
+                                    </View>
+                                    <Text
+                                      style={componentStyles.name}
+                                      numberOfLines={billTitleLines()}
+                                    >
+                                      {item.title ??
+                                        (item.name?.includes(" - ")
+                                          ? item.name
+                                              .split(" - ")
+                                              .slice(1)
+                                              .join(" - ")
+                                          : item.name)}
+                                    </Text>
                                   </View>
                                   <Text
-                                    style={componentStyles.name}
-                                    numberOfLines={2}
+                                    style={componentStyles.subtitle}
+                                    numberOfLines={1}
                                   >
-                                    {item.title ??
-                                      (item.name?.includes(" - ")
-                                        ? item.name
-                                            .split(" - ")
-                                            .slice(1)
-                                            .join(" - ")
-                                        : item.name)}
+                                    {typeof item.latestAction === "string"
+                                      ? item.latestAction
+                                      : (item.latestAction?.text ?? "")}
                                   </Text>
                                 </View>
-                                <Text
-                                  style={componentStyles.subtitle}
-                                  numberOfLines={1}
-                                >
-                                  {typeof item.latestAction === "string"
-                                    ? item.latestAction
-                                    : (item.latestAction?.text ?? "")}
-                                </Text>
-                              </View>
-                            </>
-                          );
-                        })()
-                      ) : (
-                        // Official info
-                        <View style={{ flex: 1 }}>
-                          <Text style={componentStyles.name} numberOfLines={1}>
-                            {item.name?.includes(",")
-                              ? item.name
-                                  .split(",")
-                                  .reverse()
-                                  .map((s: string) => s.trim())
-                                  .join(" ")
-                              : item.name}
-                          </Text>
-                          <View style={componentStyles.metaRow}>
-                            <Text style={componentStyles.subtitle}>
-                              {item.partyName?.charAt(0) || item.party || ""}
-                              {(item.partyName || item.party) && " · "}
-                              {item.chamber
-                                ? formatRole(
-                                    item.chamber,
-                                    item.state,
-                                    item.district,
-                                    screenWidth,
-                                  )
-                                : screenWidth < 400
-                                  ? (item.role ?? "")
-                                      .replace(/^Representative/, "Rep")
-                                      .replace(/^Resident Commissioner/, "Res. Comm.")
-                                      .replace(/^Delegate/, "Del")
-                                      .replace(/^Senator/, "Sen")
-                                  : (item.role ?? "")}
+                              </>
+                            );
+                          })()
+                        ) : (
+                          // Official info
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={componentStyles.name}
+                              numberOfLines={1}
+                            >
+                              {item.name?.includes(",")
+                                ? item.name
+                                    .split(",")
+                                    .reverse()
+                                    .map((s: string) => s.trim())
+                                    .join(" ")
+                                : item.name}
                             </Text>
+                            <View
+                              style={[
+                                componentStyles.metaRow,
+                                { flexWrap: "nowrap" },
+                              ]}
+                            >
+                              {(item.partyName || item.party) && (
+                                <>
+                                  <Text style={componentStyles.subtitle}>
+                                    {item.partyName?.charAt(0) || item.party}
+                                  </Text>
+                                  <Text style={componentStyles.separator}>
+                                    ·
+                                  </Text>
+                                </>
+                              )}
+                              <FitText
+                                style={componentStyles.subtitle}
+                                options={
+                                  item.chamber
+                                    ? roleOptions({
+                                        house:
+                                          item.chamber ===
+                                          "House of Representatives",
+                                        state: item.state,
+                                        district: item.district,
+                                      })
+                                    : roleOptionsFromText(item.role ?? "")
+                                }
+                              />
+                            </View>
                           </View>
-                        </View>
-                      )}
+                        )}
 
-                      {/* Add Button */}
-                      <Pressable
-                        onPress={(e) => handleAddPress(item, e)}
-                        style={({ pressed }) => ({
-                          padding: 8,
-                          transform: [{ scale: pressed ? 0.75 : 1 }],
-                        })}
-                      >
-                        <Plus size={24} color="#008CFF" />
-                      </Pressable>
-                    </View>
-                  </Pressable>
-                )}
+                        {/* Add Button */}
+                        <Pressable
+                          onPress={(e) => handleAddPress(item, e)}
+                          style={({ pressed }) => ({
+                            padding: 8,
+                            transform: [{ scale: pressed ? 0.75 : 1 }],
+                          })}
+                        >
+                          <Plus size={24} color="#008CFF" />
+                        </Pressable>
+                      </View>
+                    </Pressable>
+                  )
+                }
               />
             </>
           )}
@@ -649,23 +787,6 @@ export default function SearchModal({
       />
     </Modal>
   );
-}
-
-function formatRole(
-  chamber: string,
-  state: string,
-  district?: number | null,
-  screenWidth?: number,
-): string {
-  const small = !!(screenWidth && screenWidth < 400);
-  if (chamber === "House of Representatives") {
-    const full = `${houseTitle(state).full}, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `${houseTitle(state).abbr}, ${state}${district ? `, District ${district}` : ""}`;
-    return small ? abbr : full;
-  }
-  const full = `Senator, ${state}`;
-  const abbr = `Sen, ${state}`;
-  return small ? abbr : full;
 }
 
 function OfficialAvatar({ item, style }: { item: any; style?: any }) {

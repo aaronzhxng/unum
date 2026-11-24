@@ -10,6 +10,13 @@ export interface GlossaryEntry {
   slug: string;
   /** Lowercase strings (besides term itself) that also resolve to this entry */
   aliases?: string[];
+  /**
+   * False for terms too common to link everywhere, like "Senate". They link
+   * only where an article marks them, as [[Senate]].
+   */
+  autoLink?: boolean;
+  /** An education article that explains the term in full, linked from the popup */
+  article?: { topicId: string; subtopicId: string; title: string };
   definition: GlossarySegment[];
 }
 
@@ -55,11 +62,43 @@ export const glossaryEntries: GlossaryEntry[] = [
     ],
   },
   {
+    term: "Bill status",
+    slug: "bill-status",
+    autoLink: false,
+    article: { topicId: "congress-legislation", subtopicId: "what-happens-after-committee", title: "What happens after a committee approves a bill?" },
+    definition: [
+      p(
+        "where a bill is on its way to becoming law. A bill is introduced and sent to a committee, approved by the committee, passed by both the House and the Senate in the same form, and then signed by the President. Most bills never make it out of committee.",
+      ),
+    ],
+  },
+  {
+    term: "Bill types",
+    slug: "bill-types",
+    autoLink: false,
+    article: { topicId: "congress-legislation", subtopicId: "what-about-other-resolutions", title: "What about other resolutions?" },
+    definition: [
+      p(
+        "H.R. (a House bill) and S. (a Senate bill) become law if both chambers pass them and the President signs. H.J.Res. and S.J.Res. (joint resolutions) work the same way, and are also how Congress proposes amendments to the Constitution. H.Con.Res. and S.Con.Res. (concurrent resolutions) are passed by both chambers, and H.Res. and S.Res. (simple resolutions) by one chamber alone. They set rules or share opinions, and never go to the President or become law.",
+      ),
+    ],
+  },
+  {
     term: "Bureaucracy",
     slug: "bureaucracy",
     definition: [
       p(
         "the part of the government that manages day-to-day activities. Bureaucrats, also called civil servants, are non-political and unelected, getting the job through application and possibly examination.",
+      ),
+    ],
+  },
+  {
+    term: "Caucus",
+    slug: "congressional-caucus",
+    autoLink: false,
+    definition: [
+      p(
+        "a group of members of Congress who meet to work toward shared goals or interests, like the Congressional Black Caucus or the Problem Solvers Caucus. Caucuses don't write laws themselves, but their members often vote together and push for bills. This is different from the caucuses some states hold to choose a party's candidates for an election.",
       ),
     ],
   },
@@ -74,6 +113,39 @@ export const glossaryEntries: GlossaryEntry[] = [
       p(" and wants both "),
       t("political parties", "political-parties-ideology"),
       p(" to compromise more."),
+    ],
+  },
+  {
+    term: "Committee",
+    slug: "committee",
+    autoLink: false,
+    article: { topicId: "congress-legislation", subtopicId: "what-are-committees", title: "What are committees?" },
+    definition: [
+      p(
+        "a smaller group of members of the House or Senate that studies bills on one subject, like agriculture or the military, before the whole chamber votes on them. Committees also hold hearings and oversee parts of the government. The majority party holds most of the seats on each committee, and its chair.",
+      ),
+    ],
+  },
+  {
+    term: "Congress",
+    slug: "congress",
+    // Links only where an article marks it, like [[Congress]]
+    autoLink: false,
+    definition: [
+      p(
+        "the legislative branch of the federal government, made up of the House of Representatives and the Senate. Congress writes laws, decides how the government raises and spends money, and checks the work of the President.",
+      ),
+    ],
+  },
+  {
+    term: "Congressional district",
+    slug: "congressional-district",
+    autoLink: false,
+    article: { topicId: "house-of-representatives", subtopicId: "how-are-districts-redrawn", title: "How are districts redrawn?" },
+    definition: [
+      p(
+        "the area a member of the House represents. Each state is divided into districts with about the same number of people, redrawn after every census, which happens every ten years. States with only one representative, and the territories, have a single district covering the whole state or territory, called an at-large district.",
+      ),
     ],
   },
   {
@@ -93,6 +165,29 @@ export const glossaryEntries: GlossaryEntry[] = [
       p(". The opposite, broadly speaking, is "),
       g("liberalism", "liberalism"),
       p("."),
+    ],
+  },
+  {
+    term: "Constitution",
+    slug: "constitution",
+    aliases: ["U.S. Constitution"],
+    // Links only where an article marks it, like [[Constitution]]
+    autoLink: false,
+    definition: [
+      p(
+        "the founding document of the United States. It sets out how the federal government works, what each branch can do, and the rights of the people. It has been changed 27 times by amendments.",
+      ),
+    ],
+  },
+  {
+    term: "Cosponsor",
+    slug: "cosponsor",
+    autoLink: false,
+    article: { topicId: "congress-legislation", subtopicId: "who-introduces-a-law", title: "Who introduces a law?" },
+    definition: [
+      p(
+        "a member of Congress who signs on to support a bill. The sponsor is the member who introduced it. A bill with many cosponsors, especially from both parties, often has broad support, but that doesn't guarantee it will get a vote.",
+      ),
     ],
   },
   {
@@ -181,6 +276,17 @@ export const glossaryEntries: GlossaryEntry[] = [
     ],
   },
   {
+    term: "Filibuster",
+    slug: "filibuster",
+    // Links only where an article marks it, like [[Filibuster]]
+    autoLink: false,
+    definition: [
+      p(
+        "a way for senators to delay or block a vote on a bill by refusing to end debate. Under Senate rules, it takes 60 of the 100 senators to end a filibuster and move to a vote.",
+      ),
+    ],
+  },
+  {
     term: "Government",
     slug: "government",
     definition: [
@@ -198,6 +304,30 @@ export const glossaryEntries: GlossaryEntry[] = [
       ),
       g("Democratic Party", "democratic-party"),
       p("."),
+    ],
+  },
+  {
+    term: "House of Representatives",
+    slug: "house-of-representatives",
+    aliases: ["the House"],
+    // Links only where an article marks it, like [[House of Representatives]]
+    autoLink: false,
+    definition: [
+      p(
+        "the larger of the two chambers of Congress. Its 435 voting members each represent one congressional district, and all of them are elected every two years.",
+      ),
+    ],
+  },
+  {
+    term: "Impeachment",
+    slug: "impeachment",
+    aliases: ["impeached", "impeach"],
+    // Links only where an article marks it, like [[Impeachment]]
+    autoLink: false,
+    definition: [
+      p(
+        "the process for removing a federal official, like the President or a judge, from office. The House votes on whether to impeach (formally accuse) the official. The Senate then holds a trial, and two-thirds of senators must vote to convict before the official is removed.",
+      ),
     ],
   },
   {
@@ -316,6 +446,41 @@ export const glossaryEntries: GlossaryEntry[] = [
     ],
   },
   {
+    term: "Oversight powers",
+    slug: "oversight-powers",
+    aliases: ["oversight"],
+    // Links only where an article marks it, like [[Oversight powers]]
+    autoLink: false,
+    definition: [
+      p(
+        "the ways Congress checks the work of the Executive Branch, such as investigations, public hearings, requests for reports, and decisions about funding.",
+      ),
+    ],
+  },
+  {
+    term: "Party discipline",
+    slug: "party-discipline",
+    // Links only where an article marks it, like [[Party discipline]]
+    autoLink: false,
+    definition: [
+      p(
+        "how closely members of a political party vote together and follow their leaders. When party discipline is weak, a party can lose votes on its own bills even when it holds a majority.",
+      ),
+    ],
+  },
+  {
+    term: "Party leaders",
+    slug: "party-leaders",
+    aliases: ["leaders", "leader", "party leader"],
+    // Links only where an article marks it, like [[Party leaders]]
+    autoLink: false,
+    definition: [
+      p(
+        "the members each party chooses to lead it in the House and Senate, like the Speaker of the House, the Senate Majority Leader, and the minority leader in each chamber. They have a large say in which bills get a vote, and when.",
+      ),
+    ],
+  },
+  {
     term: "Platform",
     slug: "platform",
     definition: [
@@ -323,6 +488,16 @@ export const glossaryEntries: GlossaryEntry[] = [
       g("political party", "political-party"),
       p(
         " publishes before each major election publicly declaring what its candidates believe and would like to do if they were elected to power.",
+      ),
+    ],
+  },
+  {
+    term: "Policy area",
+    slug: "policy-area",
+    autoLink: false,
+    definition: [
+      p(
+        "the main subject of a bill, like Health or Taxation. The Library of Congress gives each bill one policy area. An official's top policy areas are the five that come up most among the bills they've sponsored and cosponsored in the current Congress.",
       ),
     ],
   },
@@ -385,11 +560,32 @@ export const glossaryEntries: GlossaryEntry[] = [
     ],
   },
   {
+    term: "Roll call vote",
+    slug: "roll-call-vote",
+    autoLink: false,
+    definition: [
+      p(
+        "a vote where each member's choice is recorded by name: yea (yes), nay (no), present, or not voting. Most votes need a simple majority of those voting, but some need more. Passing a bill in the House “under suspension of the rules,” a faster process for less disputed bills, takes two-thirds, and ending a filibuster in the Senate takes 60 votes. Some votes are taken by voice instead, with no record of how each member voted.",
+      ),
+    ],
+  },
+  {
     term: "Salary",
     slug: "salary",
     definition: [
       p(
         "the compensation received by members of government, including non-voting delegates from the U.S. territories and Washington D.C., and the resident commissioner from Puerto Rico.\n\nFor members of Congress, this amount has been steady since 2009 at $174,000 per year. The salary is higher for the President pro tempore of the Senate, and the Majority and Minority Leaders in the House of Representatives and the Senate ($193,400). It is highest for the Speaker of the House ($223,500).\n\nAs of 2026, the salary for Associate Justices of the Supreme Court is $306,600 per year. It is $320,700 per year for the Chief Justice.\n\nAs of 2026, the President’s salary is $400,000 per year. The Vice President’s effective salary is $235,1500 per year.",
+      ),
+    ],
+  },
+  {
+    term: "Senate",
+    slug: "senate",
+    // Links only where an article marks it, like [[Senate]]
+    autoLink: false,
+    definition: [
+      p(
+        "the smaller of the two chambers of Congress, with 100 members: two from each state. Senators serve six-year terms, and about one-third of them are elected every two years.",
       ),
     ],
   },
@@ -428,6 +624,28 @@ export const glossaryEntries: GlossaryEntry[] = [
     ],
   },
   {
+    term: "Subcommittee",
+    slug: "subcommittee",
+    autoLink: false,
+    article: { topicId: "congress-legislation", subtopicId: "what-are-committees", title: "What are committees?" },
+    definition: [
+      p(
+        "a smaller group within a committee that focuses on one part of the committee's subject. Subcommittees often hold the first hearings on a bill and can suggest changes before the full committee votes on it.",
+      ),
+    ],
+  },
+  {
+    term: "Supreme Court",
+    slug: "supreme-court",
+    // Links only where an article marks it, like [[Supreme Court]]
+    autoLink: false,
+    definition: [
+      p(
+        "the highest court in the United States. Its nine justices decide what laws and the Constitution mean, and every other court has to follow their rulings.",
+      ),
+    ],
+  },
+  {
     term: "Trifecta",
     slug: "trifecta",
     definition: [
@@ -438,6 +656,17 @@ export const glossaryEntries: GlossaryEntry[] = [
       p(" in both houses of "),
       t("Congress", "congress-legislation"),
       p(". This usually makes passing laws faster and compromise less likely."),
+    ],
+  },
+  {
+    term: "Vice President",
+    slug: "vice-president",
+    // Links only where an article marks it, like [[Vice President]]
+    autoLink: false,
+    definition: [
+      p(
+        "the second-highest official in the Executive Branch. The Vice President takes over if the President dies, resigns, or is removed, and also serves as President of the Senate, where they can cast a vote to break a tie.",
+      ),
     ],
   },
 ];
@@ -498,6 +727,7 @@ function buildTermData() {
   };
 
   for (const entry of glossaryEntries) {
+    if (entry.autoLink === false) continue;
     addGlossary(entry.term, entry.slug);
     for (const alias of entry.aliases ?? []) {
       addGlossary(alias, entry.slug);
@@ -526,9 +756,60 @@ function buildTermData() {
  * @param skipSlug  If set, skip glossary links whose slug equals this value
  *                  (used to avoid a term linking to its own definition page).
  */
+// [[Senate]] or [[the upper house|senate]]: a word an article marks to link
+// to a glossary entry, by its term or alias, or by the slug after the bar
+const MARKED = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+
+// Every term and alias, including entries that never link on their own
+let _allTerms: Map<string, string> | null = null;
+const slugForMarked = (text: string): string | undefined => {
+  if (!_allTerms) {
+    _allTerms = new Map();
+    for (const entry of glossaryEntries) {
+      for (const t of [entry.term, ...(entry.aliases ?? [])]) {
+        _allTerms.set(t.toLowerCase(), entry.slug);
+      }
+    }
+  }
+  return _allTerms.get(text.toLowerCase());
+};
+
+/** Article text without its [[ ]] marks, as a reader sees it */
+export const stripMarks = (text: string): string =>
+  text.replace(MARKED, "$1");
+
 export function parseRichText(
   text: string,
   skipSlug?: string | string[],
+): GlossarySegment[] {
+  // Each term links once per block, whether marked or found
+  const seen = new Set<string>();
+  const segments: GlossarySegment[] = [];
+  let last = 0;
+  for (const m of text.matchAll(MARKED)) {
+    if (m.index! > last) {
+      segments.push(...parseAuto(text.slice(last, m.index), skipSlug, seen));
+    }
+    const slug = m[2] ?? slugForMarked(m[1]);
+    if (slug && glossaryBySlug[slug] && !seen.has(`g:${slug}`)) {
+      segments.push({ type: "glossary", text: m[1], slug });
+      seen.add(`g:${slug}`);
+    } else {
+      segments.push({ type: "plain", text: m[1] });
+    }
+    last = m.index! + m[0].length;
+  }
+  if (last < text.length) {
+    segments.push(...parseAuto(text.slice(last), skipSlug, seen));
+  }
+  return segments;
+}
+
+// Finds the terms that link wherever they appear
+function parseAuto(
+  text: string,
+  skipSlug: string | string[] | undefined,
+  seen: Set<string>,
 ): GlossarySegment[] {
   if (!_termMap || !_termPatternSource) buildTermData();
   const termMap = _termMap!;
@@ -537,9 +818,6 @@ export function parseRichText(
 
   const segments: GlossarySegment[] = [];
   let lastIndex = 0;
-  // Track which terms have already been highlighted in this text block.
-  // Subsequent occurrences of the same term render as plain text.
-  const seen = new Set<string>();
   let match: RegExpExecArray | null;
 
   while ((match = pattern.exec(text)) !== null) {

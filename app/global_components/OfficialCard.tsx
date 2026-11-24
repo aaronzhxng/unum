@@ -1,16 +1,10 @@
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import React, { useState } from "react";
-import {
-  Image,
-  Platform,
-  Pressable,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
-import { houseTitle } from "../utils/officialTitle";
+import { roleOptions } from "../utils/officialTitle";
+import FitText from "./FitText";
 
 const STATE_ABBR: Record<string, string> = {
   Alabama: "AL",
@@ -74,40 +68,18 @@ const STATE_ABBR: Record<string, string> = {
 // US territories have delegates/resident commissioners (House members), never senators
 export const TERRITORY_STATES = new Set(["GU", "VI", "AS", "MP", "PR", "DC"]);
 
-function formatRole(
+// House members include the territories' delegates, who never have senators
+function isHouseMember(
   chamber: string,
   state: string,
   district?: number | null,
-  screenWidth?: number,
-): string {
-  const baseThreshold = Platform.OS === "ios" ? 32 : 39;
-  const threshold =
-    screenWidth && screenWidth < 390 ? baseThreshold - 6 : baseThreshold;
-
-  const stateAbbr = STATE_ABBR[state] ?? state;
-
-  const isHouse =
+) {
+  return (
     chamber === "House of Representatives" ||
     chamber === "House" ||
     TERRITORY_STATES.has(state) ||
-    (!chamber?.toLowerCase().includes("senate") && district != null);
-
-  if (isHouse) {
-    const title = houseTitle(state);
-    const full = `${title.full}, ${state}${district ? `, District ${district}` : ""}`;
-    const abbr = `${title.abbr}, ${state}${district ? `, District ${district}` : ""}`;
-    const short = `${title.abbr}, ${stateAbbr}${district ? `, District ${district}` : ""}`;
-    if (full.length <= threshold) return full;
-    if (abbr.length <= threshold) return abbr;
-    return short;
-  }
-
-  const full = `Senator, ${state}`;
-  const abbr = `Sen, ${state}`;
-  const short = `Sen, ${stateAbbr}`;
-  if (full.length <= threshold + 1) return full;
-  if (abbr.length <= threshold + 1) return abbr;
-  return short;
+    (!chamber?.toLowerCase().includes("senate") && district != null)
+  );
 }
 
 // Official row used on the Officials tab and the congressional map. Omit
@@ -122,8 +94,8 @@ const OfficialCard = React.memo(function OfficialCard({
   plusRef?: React.RefObject<any>;
 }) {
   const router = useRouter();
+  const house = isHouseMember(item.chamber, item.state, item.district);
   const [imageError, setImageError] = useState(false);
-  const { width: screenWidth } = useWindowDimensions();
 
   return (
     <Pressable
@@ -223,12 +195,17 @@ const OfficialCard = React.memo(function OfficialCard({
             <Text style={[componentStyles.separator, { flexShrink: 0 }]}>
               ·
             </Text>
-            <Text
-              style={[componentStyles.subtitle, { flexShrink: 1 }]}
-              numberOfLines={1}
-            >
-              {formatRole(item.chamber, item.state, item.district, screenWidth)}
-            </Text>
+            {/* A state's reps share one form, and its senators another, on
+                any list, so a long state elsewhere never shortens them */}
+            <FitText
+              style={componentStyles.subtitle}
+              group={`${house ? "house" : "senate"}-${item.state}`}
+              options={roleOptions({
+                house,
+                state: item.state,
+                district: item.district,
+              })}
+            />
           </View>
         </View>
         {/* Plus Button */}

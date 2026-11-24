@@ -1,17 +1,13 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { useOnboarding } from "../context/OnboardingContext";
 import { officialsService } from "../services/officials";
+import FitText from "../global_components/FitText";
 import { getBillIcon } from "../utils/billIcons";
+import { roleOptions } from "../utils/officialTitle";
+import { billTitleLines } from "../utils/billTitleLines";
 
 const STATE_ABBR: Record<string, string> = {
   AL: "Alabama",
@@ -227,22 +223,13 @@ const formatName = (name: string): string => {
   return `${first} ${last}`;
 };
 
-function formatRole(
-  official: (typeof SUGGESTED_OFFICIALS)[0],
-  screenWidth: number,
-) {
-  const fullState = STATE_ABBR[official.state] ?? official.state;
-  const district = official.district ? `, District ${official.district}` : "";
-  if (official.role === "Senator") {
-    const full = `Senator, ${fullState}`;
-    const abbr = `Sen, ${fullState}`;
-    if (screenWidth < 390) return abbr;
-    return full.length > 40 ? abbr : full;
-  }
-  const full = `Representative, ${fullState}${district}`;
-  const abbr = `Rep, ${fullState}${district}`;
-  if (screenWidth < 390) return abbr;
-  return full.length > 39 ? abbr : full;
+function officialRole(official: (typeof SUGGESTED_OFFICIALS)[0]) {
+  return roleOptions({
+    house: official.role !== "Senator",
+    state: official.state,
+    place: STATE_ABBR[official.state] ?? official.state,
+    district: official.district,
+  });
 }
 
 type Tab = "officials" | "bills";
@@ -269,7 +256,6 @@ export default function PickItemsScreen() {
     typeof SUGGESTED_OFFICIALS
   >([]);
   const [loadingPersonal, setLoadingPersonal] = useState(true);
-  const { width: screenWidth } = useWindowDimensions();
   const totalSelected = selectedOfficials.length + selectedBills.length;
 
   useEffect(() => {
@@ -635,12 +621,10 @@ export default function PickItemsScreen() {
                         >
                           ·
                         </Text>
-                        <Text
+                        <FitText
                           style={{ fontSize: 13, color: "#7B7C81" }}
-                          numberOfLines={1}
-                        >
-                          {formatRole(official, screenWidth)}{" "}
-                        </Text>
+                          options={officialRole(official)}
+                        />
                       </View>
                     </View>
                     <View
@@ -813,12 +797,10 @@ export default function PickItemsScreen() {
                     >
                       ·
                     </Text>
-                    <Text
+                    <FitText
                       style={{ fontSize: 13, color: "#7B7C81" }}
-                      numberOfLines={1}
-                    >
-                      {formatRole(official, screenWidth)}{" "}
-                    </Text>
+                      options={officialRole(official)}
+                    />
                   </View>
                 </View>
 
@@ -943,7 +925,7 @@ export default function PickItemsScreen() {
                           fontWeight: "600",
                           color: "#535353",
                         }}
-                        numberOfLines={2}
+                        numberOfLines={billTitleLines()}
                       >
                         {bill.title}
                       </Text>

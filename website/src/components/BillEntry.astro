@@ -27,7 +27,10 @@ interface Props {
     policyArea?: string;
     sponsor: string;
     sponsorId?: string;
+    when?: { label: string; date: Date };
     summary: string;
+    context?: string;
+    committees?: { name: string; status: string; date: Date }[];
     stages: Stage[];
     votes?: Vote[];
   };
@@ -46,6 +49,9 @@ const FIT = { charWidth: 8.2, chrome: 92 };
 const area = bill.policyArea ? fitLabel(bill.policyArea, FIT) : null;
 const sponsorName = fitLabel(bill.sponsor, FIT);
 
+// Discharged means the chamber took the bill up without a committee vote
+const COMMITTEE_STATUS: Record<string, string> = { referred: "Referred", "marked up": "Marked up", reported: "Reported", discharged: "Bypassed" };
+
 const formatDate = (date: Date) =>
   date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 ---
@@ -53,6 +59,7 @@ const formatDate = (date: Date) =>
 <article class="bill" style={`--policy: ${policy.color}`}>
   <div class="bill-body">
     <h3>{bill.title}</h3>
+    {bill.when && <p class="when">{bill.when.label} · {formatDate(bill.when.date)}</p>}
     {/* What the bill is about and who sponsored it. Where it stands is in the
         stage track and the section heading. */}
     <div class="tags">
@@ -78,6 +85,21 @@ const formatDate = (date: Date) =>
       </span>
     </div>
     <p class="summary">{bill.summary}</p>
+    {bill.context && <p class="context"><b>Background:</b> {bill.context}</p>}
+    {
+      bill.committees && (
+        <div class="committees">
+          <p class="committees-label">Committees</p>
+          <ul role="list">
+            {bill.committees.map((c) => (
+              <li>
+                {c.name} · {COMMITTEE_STATUS[c.status]} {formatDate(c.date)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
 
     <ol class="stages" aria-label="Progress">
       {
@@ -191,6 +213,42 @@ const formatDate = (date: Date) =>
 
   .summary {
     color: var(--text-muted);
+  }
+
+  .when {
+    margin-top: -6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-faint);
+  }
+
+  .context {
+    padding-left: 12px;
+    border-left: 2px solid var(--border);
+    font-size: 15px;
+    color: var(--text-muted);
+  }
+
+  .committees {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  .committees-label {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .committees ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .context b {
+    font-weight: 600;
+    color: var(--text);
   }
 
   /* The app's stage track: one bar per stage, labels above */
