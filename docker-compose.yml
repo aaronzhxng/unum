@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"  # Expo dev server
+      - "8082:8082"  # Expo web port
+      - "19000:19000"  # Expo socket server
+      - "19001:19001"  # Expo debugger
+    volumes:
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./constants:/app/constants
+      - ./scripts:/app/scripts
+      - ./assets:/app/assets
+      - node_modules:/app/node_modules  # Prevent node_modules from being overwritten
+    environment:
+      - NODE_ENV=development
+      - EXPO_DEBUG=true
+    stdin_open: true
+    tty: true
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /app/app
+        - action: sync
+          path: ./components
+          target: /app/components
+        - action: sync
+          path: ./constants
+          target: /app/constants
+        - action: sync
+          path: ./scripts
+          target: /app/scripts
+        - action: rebuild
+          path: package.json
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/src:/app/src
+      - backend_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/src
+          target: /app/src
+        - action: rebuild
+          path: ./backend/package.json
+
+volumes:
+  node_modules:
+  backend_node_modules:

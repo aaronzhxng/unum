@@ -1,4 +1,4 @@
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {

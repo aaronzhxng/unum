@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+    ActivityIndicator,
+    Text,
+    View,
+    useWindowDimensions,
+} from "react-native";
+import { WebView, type WebViewMessageEvent } from "react-native-webview";
+=======
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,6 +21,7 @@ import {
   type WebViewMessageEvent,
   type WebViewNavigation,
 } from "react-native-webview";
+>>>>>>> origin/master
 
 type DistrictFeature = {
   type: "Feature";
@@ -31,18 +42,32 @@ type DistrictCollection = {
   features: DistrictFeature[];
 };
 
+<<<<<<< HEAD
+type DistrictSelection = {
+=======
 export type DistrictSelection = {
+>>>>>>> origin/master
   geoid: string;
   stateAbbr: string;
   district: number;
   label: string;
 };
 
+<<<<<<< HEAD
+type FocusDistrict = {
+=======
 export type FocusDistrict = {
+>>>>>>> origin/master
   stateAbbr: string;
   district: number;
 };
 
+<<<<<<< HEAD
+type Props = {
+  stateAbbr?: string | null;
+  onSelectDistrict: (district: DistrictSelection) => void;
+  focusDistricts?: FocusDistrict[] | null;
+=======
 export type PinLocation = {
   latitude: number;
   longitude: number;
@@ -74,6 +99,7 @@ type Props = {
   // Android can drop parts of a web view's drawing while it's offscreen, so
   // the map repaints itself each time it comes back into view.
   visible?: boolean;
+>>>>>>> origin/master
 };
 
 const STATE_ABBR_TO_FIPS: Record<string, string> = {
@@ -139,6 +165,10 @@ const FIPS_TO_ABBR: Record<string, string> = Object.fromEntries(
   Object.entries(STATE_ABBR_TO_FIPS).map(([abbr, fips]) => [fips, abbr]),
 );
 
+<<<<<<< HEAD
+const BASE_URL =
+  "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/54/query";
+=======
 // Layer 54 of the ACS2025 service is the 119th Congress districts, which
 // current members represent. tigerWMS_Current already serves the 120th
 // Congress districts (seated January 2027) — switch to it when the 120th
@@ -149,11 +179,27 @@ const DISTRICT_LAYER_URL =
 // Map tile requests carry this as their Referer, which the OpenStreetMap
 // tile usage policy requires.
 const WEBVIEW_BASE_URL = "https://www.unuminitiative.com/";
+>>>>>>> origin/master
 
 const CONTIGUOUS_STATE_EXCLUSIONS =
   "STATE NOT IN ('02','15','60','66','69','72','78')";
 
 function buildQueryUrl(stateAbbr?: string | null): string {
+<<<<<<< HEAD
+  const params = new URLSearchParams();
+  const stateFips = stateAbbr ? STATE_ABBR_TO_FIPS[stateAbbr] : null;
+  params.set(
+    "where",
+    stateFips ? `STATE='${stateFips}'` : CONTIGUOUS_STATE_EXCLUSIONS,
+  );
+  params.set("outFields", "GEOID,STATE,BASENAME,NAME");
+  params.set("returnGeometry", "true");
+  params.set("f", "geojson");
+  params.set("outSR", "4326");
+  params.set("geometryPrecision", "3");
+  params.set("maxAllowableOffset", stateFips ? "0.005" : "0.02");
+  return `${BASE_URL}?${params.toString()}`;
+=======
   const stateFips = stateAbbr ? STATE_ABBR_TO_FIPS[stateAbbr] : null;
   const params: Record<string, string> = {
     where: stateFips ? `STATE='${stateFips}'` : CONTIGUOUS_STATE_EXCLUSIONS,
@@ -237,6 +283,7 @@ function loadAllDistricts(): Promise<DistrictFeature[]> {
       });
   }
   return allDistrictsRequest;
+>>>>>>> origin/master
 }
 
 function escapeJsonForHtml(value: unknown): string {
@@ -245,10 +292,18 @@ function escapeJsonForHtml(value: unknown): string {
 
 function buildOpenStreetMapHtml(params: {
   features: DistrictFeature[];
+<<<<<<< HEAD
+  alaskaFeatures: DistrictFeature[];
+  hawaiiFeatures: DistrictFeature[];
+  highlightGeoids: string[];
+  initialSelectedGEOID: string | null;
+  initialMapRegion: "us" | "ak" | "hi";
+=======
   highlightGeoids: string[];
   initialSelectedGEOID: string | null;
   pinLocation: PinLocation | null;
   interactive: boolean;
+>>>>>>> origin/master
 }): string {
   const payload = escapeJsonForHtml(params);
 
@@ -286,6 +341,22 @@ function buildOpenStreetMapHtml(params: {
         background: #f7f4ef;
       }
 
+<<<<<<< HEAD
+      .leaflet-control-zoom {
+        border: none;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+        overflow: hidden;
+      }
+
+      .leaflet-control-zoom a {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-bottom: 1px solid #edf1f5;
+      }
+
+      .leaflet-control-zoom a:hover {
+        background: #f4f9ff;
+=======
       .leaflet-control-attribution {
         font-size: 11px;
         background: rgba(255, 255, 255, 0.9) !important;
@@ -295,6 +366,7 @@ function buildOpenStreetMapHtml(params: {
 
       .leaflet-control-attribution a {
         color: #005ea8;
+>>>>>>> origin/master
       }
 
       .map-toolbar {
@@ -324,21 +396,101 @@ function buildOpenStreetMapHtml(params: {
       .map-button:active {
         transform: scale(0.97);
       }
+<<<<<<< HEAD
+
+      .attribution-note {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        z-index: 1000;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #4e5560;
+        font-size: 11px;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+        pointer-events: none;
+      }
+
+      .map-state-switch {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .state-button {
+        min-width: 90px;
+        border: none;
+        border-radius: 999px;
+        padding: 7px 12px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #1a1a1a;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        text-align: left;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+      }
+
+      .state-button.active {
+        background: #008cff;
+        color: #ffffff;
+      }
+=======
+>>>>>>> origin/master
     </style>
   </head>
   <body>
     <div id="map"></div>
+<<<<<<< HEAD
+    <div class="map-state-switch">
+      <button id="state-us" class="state-button" type="button">Lower 48</button>
+      <button id="state-ak" class="state-button" type="button">Alaska</button>
+      <button id="state-hi" class="state-button" type="button">Hawaii</button>
+    </div>
+=======
+>>>>>>> origin/master
     <div class="map-toolbar">
       <button id="zoom-in" class="map-button" type="button">+</button>
       <button id="zoom-out" class="map-button" type="button">−</button>
       <button id="reset-view" class="map-button" type="button">↺</button>
     </div>
+<<<<<<< HEAD
+    <div class="attribution-note">Map tiles © OpenStreetMap contributors</div>
+=======
+>>>>>>> origin/master
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
       (function () {
         const payload = ${payload};
         const features = Array.isArray(payload.features) ? payload.features : [];
+<<<<<<< HEAD
+        const alaskaFeatures = Array.isArray(payload.alaskaFeatures) ? payload.alaskaFeatures : [];
+        const hawaiiFeatures = Array.isArray(payload.hawaiiFeatures) ? payload.hawaiiFeatures : [];
+        const highlightGeoids = new Set(
+          Array.isArray(payload.highlightGeoids) ? payload.highlightGeoids : [],
+        );
+        const initialSelectedGEOID = payload.initialSelectedGEOID || null;
+        const initialMapRegion = payload.initialMapRegion || "us";
+
+        const map = L.map("map", {
+          zoomControl: false,
+          attributionControl: true,
+          preferCanvas: true,
+        });
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+
+        let selectedGEOID = initialSelectedGEOID;
+=======
         const highlightGeoids = new Set(
           Array.isArray(payload.highlightGeoids) ? payload.highlightGeoids : [],
         );
@@ -376,12 +528,20 @@ function buildOpenStreetMapHtml(params: {
           attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Districts: <a href="https://www.census.gov/geographies/mapping-files.html">U.S. Census Bureau</a>',
         }).addTo(map);
+>>>>>>> origin/master
 
         function styleForFeature(feature) {
           const properties = feature && feature.properties ? feature.properties : {};
           const geoid = properties.GEOID || null;
+<<<<<<< HEAD
+          const isSelected = selectedGEOID && selectedGEOID === geoid;
+          const isHighlighted = highlightGeoids.has(geoid);
+
+          if (isSelected) {
+=======
 
           if (selectedGEOID && selectedGEOID === geoid) {
+>>>>>>> origin/master
             return {
               color: "#003d6b",
               weight: 2.2,
@@ -391,7 +551,11 @@ function buildOpenStreetMapHtml(params: {
             };
           }
 
+<<<<<<< HEAD
+          if (isHighlighted) {
+=======
           if (highlightGeoids.has(geoid)) {
+>>>>>>> origin/master
             return {
               color: "#005ea8",
               weight: 1.6,
@@ -432,6 +596,59 @@ function buildOpenStreetMapHtml(params: {
           );
         }
 
+<<<<<<< HEAD
+        function createDistrictLayer(layerFeatures) {
+          return L.geoJSON(layerFeatures, {
+            style: styleForFeature,
+            onEachFeature: function (feature, layer) {
+              layer.on("click", function () {
+                const properties = feature && feature.properties ? feature.properties : {};
+                if (!properties.GEOID) return;
+
+                selectedGEOID = properties.GEOID;
+                refreshAllStyles();
+                emitSelection(feature);
+              });
+            },
+          });
+        }
+
+        const layerMap = {
+          us: createDistrictLayer(features),
+          ak: createDistrictLayer(alaskaFeatures),
+          hi: createDistrictLayer(hawaiiFeatures),
+        };
+
+        let activeRegion = "us";
+        let activeLayer = null;
+
+        function refreshAllStyles() {
+          Object.values(layerMap).forEach(function (layer) {
+            if (layer && typeof layer.setStyle === "function") {
+              layer.setStyle(styleForFeature);
+            }
+          });
+        }
+
+        function setActiveButton(region) {
+          ["us", "ak", "hi"].forEach(function (key) {
+            const button = document.getElementById("state-" + key);
+            if (!button) return;
+            button.classList.toggle("active", key === region);
+          });
+        }
+
+        function getLayerBounds(layer) {
+          if (!layer || typeof layer.getBounds !== "function") return null;
+          const bounds = layer.getBounds();
+          return bounds && bounds.isValid() ? bounds : null;
+        }
+
+        function getHighlightBoundsForLayer(layer) {
+          const focusLayers = [];
+
+          layer.eachLayer(function (childLayer) {
+=======
         // Districts outside the selected state, added once they finish
         // loading in the background
         let otherStatesLayer = null;
@@ -481,6 +698,7 @@ function buildOpenStreetMapHtml(params: {
         function getHighlightBounds() {
           const focusLayers = [];
           districtLayer.eachLayer(function (childLayer) {
+>>>>>>> origin/master
             const feature = childLayer && childLayer.feature ? childLayer.feature : null;
             const properties = feature && feature.properties ? feature.properties : {};
             if (properties.GEOID && highlightGeoids.has(properties.GEOID)) {
@@ -493,6 +711,67 @@ function buildOpenStreetMapHtml(params: {
           return bounds && bounds.isValid() ? bounds : null;
         }
 
+<<<<<<< HEAD
+        function resolveRegion(region) {
+          const targetLayer = layerMap[region];
+          const targetBounds = getLayerBounds(targetLayer);
+          if (targetLayer && targetBounds) return region;
+          return "us";
+        }
+
+        function activateRegion(region, options) {
+          const nextRegion = resolveRegion(region);
+          const opts = options || {};
+
+          if (activeLayer && map.hasLayer(activeLayer)) {
+            map.removeLayer(activeLayer);
+          }
+
+          activeLayer = layerMap[nextRegion];
+          activeRegion = nextRegion;
+
+          if (activeLayer) {
+            activeLayer.addTo(map);
+          }
+
+          refreshAllStyles();
+          setActiveButton(nextRegion);
+
+          if (opts.skipFit) return;
+
+          const highlightBounds = activeLayer
+            ? getHighlightBoundsForLayer(activeLayer)
+            : null;
+          const targetBounds = highlightBounds || getLayerBounds(activeLayer);
+          if (targetBounds) {
+            map.fitBounds(targetBounds.pad(highlightBounds ? 0.16 : 0.1));
+          } else {
+            map.setView([39.5, -98.35], 4);
+          }
+        }
+
+        function detectRegionFromGeoid(geoid) {
+          if (!geoid || geoid.length < 2) return null;
+          const stateFips = geoid.slice(0, 2);
+          if (stateFips === "02") return "ak";
+          if (stateFips === "15") return "hi";
+          return "us";
+        }
+
+        function getFocusBounds() {
+          if (activeLayer) {
+            const highlightBounds = getHighlightBoundsForLayer(activeLayer);
+            if (highlightBounds) return highlightBounds;
+            return getLayerBounds(activeLayer);
+          }
+          return null;
+        }
+
+        function fitInitialView() {
+          const bounds = getFocusBounds();
+          if (bounds && bounds.isValid()) {
+            map.fitBounds(bounds.pad(highlightGeoids.size ? 0.14 : 0.08));
+=======
         function fitInitialView() {
           const highlightBounds = getHighlightBounds();
           const layerBounds = districtLayer.getBounds();
@@ -500,11 +779,27 @@ function buildOpenStreetMapHtml(params: {
             map.fitBounds(highlightBounds.pad(0.16));
           } else if (layerBounds && layerBounds.isValid()) {
             map.fitBounds(layerBounds.pad(0.08));
+>>>>>>> origin/master
           } else {
             map.setView([39.5, -98.35], 4);
           }
         }
 
+<<<<<<< HEAD
+        document.getElementById("state-us").addEventListener("click", function () {
+          activateRegion("us");
+        });
+
+        document.getElementById("state-ak").addEventListener("click", function () {
+          activateRegion("ak");
+        });
+
+        document.getElementById("state-hi").addEventListener("click", function () {
+          activateRegion("hi");
+        });
+
+=======
+>>>>>>> origin/master
         document.getElementById("zoom-in").addEventListener("click", function () {
           map.zoomIn();
         });
@@ -517,6 +812,19 @@ function buildOpenStreetMapHtml(params: {
           fitInitialView();
         });
 
+<<<<<<< HEAD
+        const highlightRegion = (() => {
+          const firstHighlighted = Array.from(highlightGeoids)[0] || null;
+          return detectRegionFromGeoid(firstHighlighted);
+        })();
+
+        const selectedRegion = detectRegionFromGeoid(initialSelectedGEOID);
+        const startRegion = highlightRegion || selectedRegion || initialMapRegion || "us";
+        activateRegion(startRegion);
+
+        if (selectedGEOID) {
+          refreshAllStyles();
+=======
         fitInitialView();
 
         if (pinLocation) {
@@ -528,6 +836,7 @@ function buildOpenStreetMapHtml(params: {
             fillOpacity: 1,
             interactive: false,
           }).addTo(map);
+>>>>>>> origin/master
         }
       })();
     </script>
@@ -547,6 +856,12 @@ function matchesFocusDistrict(
 
   return focusDistricts.some(
     (district) =>
+<<<<<<< HEAD
+      district.stateAbbr === abbr && district.district === districtNumber,
+  );
+}
+
+=======
       district.stateAbbr === abbr &&
       district.district ===
         (Number.isFinite(districtNumber) ? districtNumber : 0),
@@ -555,10 +870,22 @@ function matchesFocusDistrict(
 
 // Full-width, edge-to-edge district map. Place it outside any horizontal
 // padding so it spans the screen.
+>>>>>>> origin/master
 export default function CongressionalDistrictMap({
   stateAbbr,
   onSelectDistrict,
   focusDistricts,
+<<<<<<< HEAD
+}: Props) {
+  const { width: screenWidth } = useWindowDimensions();
+  const mapWidth = Math.max(240, screenWidth - 64);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [features, setFeatures] = useState<DistrictFeature[]>([]);
+  const [alaskaFeatures, setAlaskaFeatures] = useState<DistrictFeature[]>([]);
+  const [hawaiiFeatures, setHawaiiFeatures] = useState<DistrictFeature[]>([]);
+  const autoSelectRef = useRef<string | null>(null);
+=======
   autoSelectFocus = true,
   selectedGeoid,
   pinLocation,
@@ -625,6 +952,7 @@ export default function CongressionalDistrictMap({
       "window.redrawMap && window.redrawMap(); true;",
     );
   }, [visible]);
+>>>>>>> origin/master
 
   useEffect(() => {
     let active = true;
@@ -635,6 +963,36 @@ export default function CongressionalDistrictMap({
       setError(null);
 
       try {
+<<<<<<< HEAD
+        const [contiguousResponse, alaskaResponse, hawaiiResponse] =
+          await Promise.all([
+            fetch(buildQueryUrl(stateAbbr), { signal: controller.signal }),
+            fetch(buildQueryUrl("AK"), { signal: controller.signal }),
+            fetch(buildQueryUrl("HI"), { signal: controller.signal }),
+          ]);
+
+        if (
+          !contiguousResponse.ok ||
+          !alaskaResponse.ok ||
+          !hawaiiResponse.ok
+        ) {
+          throw new Error("Failed to load map data");
+        }
+
+        const [data, alaskaData, hawaiiData] = (await Promise.all([
+          contiguousResponse.json(),
+          alaskaResponse.json(),
+          hawaiiResponse.json(),
+        ])) as [DistrictCollection, DistrictCollection, DistrictCollection];
+        if (!active) return;
+        setFeatures(Array.isArray(data.features) ? data.features : []);
+        setAlaskaFeatures(
+          Array.isArray(alaskaData.features) ? alaskaData.features : [],
+        );
+        setHawaiiFeatures(
+          Array.isArray(hawaiiData.features) ? hawaiiData.features : [],
+        );
+=======
         const response = await fetch(buildQueryUrl(stateAbbr), {
           signal: controller.signal,
         });
@@ -645,11 +1003,17 @@ export default function CongressionalDistrictMap({
         const data = (await response.json()) as DistrictCollection;
         if (!active) return;
         setFeatures(definedDistricts(data));
+>>>>>>> origin/master
       } catch (fetchError) {
         if (!active || controller.signal.aborted) return;
         console.error("District map load failed:", fetchError);
         setError("Couldn't load the district map right now.");
         setFeatures([]);
+<<<<<<< HEAD
+        setAlaskaFeatures([]);
+        setHawaiiFeatures([]);
+=======
+>>>>>>> origin/master
       } finally {
         if (active) setLoading(false);
       }
@@ -664,6 +1028,23 @@ export default function CongressionalDistrictMap({
   }, [stateAbbr]);
 
   const mapHeight = useMemo(() => {
+<<<<<<< HEAD
+    if (stateAbbr) return Math.min(360, Math.max(260, screenWidth * 0.68));
+    return Math.min(440, Math.max(300, screenWidth * 0.78));
+  }, [screenWidth, stateAbbr]);
+
+  const allFeatures = useMemo(
+    () => [...features, ...alaskaFeatures, ...hawaiiFeatures],
+    [features, alaskaFeatures, hawaiiFeatures],
+  );
+
+  const matchedFocusDistricts = useMemo(() => {
+    if (!focusDistricts?.length || !allFeatures.length) return [];
+    return allFeatures.filter((feature) =>
+      matchesFocusDistrict(feature, focusDistricts),
+    );
+  }, [allFeatures, focusDistricts]);
+=======
     if (height) return height;
     const sized = stateAbbr
       ? Math.min(720, Math.max(520, screenWidth * 1.36))
@@ -679,6 +1060,7 @@ export default function CongressionalDistrictMap({
       matchesFocusDistrict(feature, focusDistricts),
     );
   }, [features, focusDistricts]);
+>>>>>>> origin/master
 
   const highlightGeoids = useMemo(
     () => matchedFocusDistricts.map((feature) => feature.properties.GEOID),
@@ -686,6 +1068,12 @@ export default function CongressionalDistrictMap({
   );
 
   const initialSelectedGEOID =
+<<<<<<< HEAD
+    matchedFocusDistricts[0]?.properties.GEOID ?? null;
+
+  useEffect(() => {
+    if (!matchedFocusDistricts.length) {
+=======
     selectedGeoid ??
     (autoSelectFocus
       ? (matchedFocusDistricts[0]?.properties.GEOID ?? null)
@@ -693,6 +1081,7 @@ export default function CongressionalDistrictMap({
 
   useEffect(() => {
     if (!autoSelectFocus || selectedGeoid || !matchedFocusDistricts.length) {
+>>>>>>> origin/master
       autoSelectRef.current = null;
       return;
     }
@@ -707,12 +1096,39 @@ export default function CongressionalDistrictMap({
     const firstAbbr = FIPS_TO_ABBR[first.properties.STATE];
     const firstDistrict = Number.parseInt(first.properties.BASENAME, 10);
 
+<<<<<<< HEAD
+    onSelectDistrict({
+=======
     onSelectDistrict?.({
+>>>>>>> origin/master
       geoid: first.properties.GEOID,
       stateAbbr: firstAbbr,
       district: Number.isFinite(firstDistrict) ? firstDistrict : 0,
       label: first.properties.NAME,
     });
+<<<<<<< HEAD
+  }, [matchedFocusDistricts, onSelectDistrict]);
+
+  const webViewSource = useMemo(
+    () =>
+      buildOpenStreetMapHtml({
+        features,
+        alaskaFeatures,
+        hawaiiFeatures,
+        highlightGeoids,
+        initialSelectedGEOID,
+        initialMapRegion:
+          stateAbbr === "AK" ? "ak" : stateAbbr === "HI" ? "hi" : "us",
+      }),
+    [
+      features,
+      alaskaFeatures,
+      hawaiiFeatures,
+      highlightGeoids,
+      initialSelectedGEOID,
+      stateAbbr,
+    ],
+=======
   }, [matchedFocusDistricts, onSelectDistrict, autoSelectFocus, selectedGeoid]);
 
   const webViewSource = useMemo(
@@ -727,10 +1143,21 @@ export default function CongressionalDistrictMap({
       baseUrl: WEBVIEW_BASE_URL,
     }),
     [features, highlightGeoids, initialSelectedGEOID, pinLocation, interactive],
+>>>>>>> origin/master
   );
 
   const webViewKey = useMemo(
     () =>
+<<<<<<< HEAD
+      `${stateAbbr ?? "all"}-${features.length}-${alaskaFeatures.length}-${hawaiiFeatures.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}`,
+    [
+      stateAbbr,
+      features.length,
+      alaskaFeatures.length,
+      hawaiiFeatures.length,
+      highlightGeoids,
+      initialSelectedGEOID,
+=======
       `${stateAbbr ?? "all"}-${features.length}-${highlightGeoids.join(",")}-${initialSelectedGEOID ?? "none"}-${pinLocation ? `${pinLocation.latitude},${pinLocation.longitude}` : "nopin"}`,
     [
       stateAbbr,
@@ -738,6 +1165,7 @@ export default function CongressionalDistrictMap({
       highlightGeoids,
       initialSelectedGEOID,
       pinLocation,
+>>>>>>> origin/master
     ],
   );
 
@@ -749,12 +1177,109 @@ export default function CongressionalDistrictMap({
       };
 
       if (message.type !== "select" || !message.district) return;
+<<<<<<< HEAD
+      onSelectDistrict(message.district);
+=======
       onSelectDistrict?.(message.district);
+>>>>>>> origin/master
     } catch (error) {
       console.warn("Ignored district map message:", error);
     }
   };
 
+<<<<<<< HEAD
+  return (
+    <View
+      style={{
+        backgroundColor: "#fff",
+        borderRadius: 28,
+        padding: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        elevation: 4,
+      }}
+    >
+      <View style={{ marginBottom: 12 }}>
+        <Text style={{ fontSize: 16, fontWeight: "700", color: "#1a1a1a" }}>
+          Tap a congressional district
+        </Text>
+        <Text
+          style={{
+            fontSize: 13,
+            color: "#7B7C81",
+            lineHeight: 18,
+            marginTop: 4,
+          }}
+        >
+          {stateAbbr
+            ? "This view is focused on your selected state so the districts are easier to hit."
+            : "Zoomed out to the continental U.S. map. Use the state filter to make districts easier to tap."}
+        </Text>
+      </View>
+
+      <View
+        style={{
+          borderRadius: 24,
+          overflow: "hidden",
+          backgroundColor: "#F7F4EF",
+          minHeight: mapHeight,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {loading ? (
+          <View style={{ alignItems: "center", gap: 12, paddingVertical: 40 }}>
+            <ActivityIndicator color="#008CFF" />
+            <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+              Loading district boundaries...
+            </Text>
+          </View>
+        ) : error ? (
+          <View style={{ alignItems: "center", padding: 24 }}>
+            <Text
+              style={{ fontSize: 14, color: "#D45252", textAlign: "center" }}
+            >
+              {error}
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                color: "#7B7C81",
+                textAlign: "center",
+                marginTop: 8,
+              }}
+            >
+              You can still use ZIP lookup below.
+            </Text>
+          </View>
+        ) : !features.length ? (
+          <View style={{ alignItems: "center", padding: 24 }}>
+            <Text
+              style={{ fontSize: 14, color: "#7B7C81", textAlign: "center" }}
+            >
+              No district geometry was returned.
+            </Text>
+          </View>
+        ) : (
+          <WebView
+            key={webViewKey}
+            source={{ html: webViewSource }}
+            originWhitelist={["*"]}
+            javaScriptEnabled
+            domStorageEnabled
+            scrollEnabled={false}
+            onMessage={handleWebViewMessage}
+            style={{
+              width: mapWidth,
+              height: mapHeight,
+              backgroundColor: "#F7F4EF",
+            }}
+          />
+        )}
+      </View>
+=======
   // Attribution links open in the system browser instead of inside the map
   const handleShouldStartLoad = (request: WebViewNavigation) => {
     const { url } = request;
@@ -831,6 +1356,7 @@ export default function CongressionalDistrictMap({
           }}
         />
       )}
+>>>>>>> origin/master
     </View>
   );
 }

@@ -31,18 +31,27 @@ export default function RootLayout() {
   const isExpoGo = Constants.appOwnership === "expo";
 
   useEffect(() => {
+    let active = true;
     const init = async () => {
-      await initializeDatabase();
-      storage.initializeDefaultList();
-      syncListItemsFromBills(); // fire and forget — non-blocking
-      setIsReady(true);
+      try {
+        await initializeDatabase();
+        storage.initializeDefaultList();
+        syncListItemsFromBills(); // fire and forget — non-blocking
+      } catch (err) {
+        console.error("Startup init failed:", err);
+      } finally {
+        if (active) setIsReady(true);
+      }
     };
     init();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("#fafafa");
-    NavigationBar.setButtonStyleAsync("dark");
+    if (Platform.OS !== "android") return;
+    NavigationBar.setButtonStyleAsync?.("dark")?.catch?.(() => {});
   }, []);
 
   useEffect(() => {
@@ -146,7 +155,9 @@ export default function RootLayout() {
                 name="education_tab/[topic]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: false, // screen has its own edge-swipe strip
+                  title: "",
+                  headerTitle: "",
+                  gestureEnabled: false,
                   animation: "slide_from_right",
                 }}
               />
@@ -154,7 +165,9 @@ export default function RootLayout() {
                 name="education_tab/[topic]/[subtopic]"
                 options={{
                   headerShown: false,
-                  gestureEnabled: false, // screen has its own edge-swipe strip
+                  title: "",
+                  headerTitle: "",
+                  gestureEnabled: false,
                   animation: "slide_from_right",
                 }}
               />
