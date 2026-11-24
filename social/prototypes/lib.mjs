@@ -135,6 +135,20 @@ export const longDate = (iso) => {
 // Page shell
 // ---------------------------------------------------------------------------
 
+// The "unum" wordmark, set like the website's header: lowercase Inter 600,
+// its letters 78% of the icon's height and centered on it. One size number,
+// the icon's height in pixels, scales the rest. The monospace font is kept
+// for small labels and descriptions, never the name.
+export const WORDMARK_CSS = `
+.wordmark { display: flex; align-items: center; gap: calc(var(--logo) * 0.227); }
+.wordmark img { width: var(--logo); height: var(--logo); border-radius: calc(var(--logo) * 0.25); }
+.wordmark span { font-family: Inter, -apple-system, "Segoe UI", sans-serif; font-size: calc(var(--logo) * 0.78 / 0.546);
+  font-weight: 600; letter-spacing: -0.035em; line-height: 1; transform: translateY(-0.091em);
+  margin-block: calc((var(--logo) - 1em) / 2); white-space: nowrap; }
+`;
+export const wordmark = (size) =>
+  `<div class="wordmark" style="--logo:${size}px"><img src="${LOGO}"><span>unum</span></div>`;
+
 export const FONTS =
   "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=block";
 
@@ -177,9 +191,7 @@ body { background: var(--paper); }
 .body { font: 500 calc(24px * var(--fit, 1))/1.32 "DM Mono", monospace; color: var(--gray); text-wrap: pretty; }
 .footer { display: flex; align-items: center; gap: 24px; padding-bottom: 12px; }
 .footer .rule { flex: 1; height: 1px; background: var(--ink); }
-.footer .mark { display: flex; align-items: center; gap: 12px; }
-.footer img { width: 36px; height: 36px; border-radius: 4px; }
-.footer span { font: 500 32px "DM Mono", monospace; letter-spacing: 3.2px; }
+${WORDMARK_CSS}
 
 /* App-style card with the blue header bar */
 .card { background: var(--card); border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;
@@ -328,7 +340,7 @@ export const hl = (...parts) =>
 export const kicker = (label, id) => `<div class="kicker">${esc(label)}${id ? ` : <b>${esc(id)}</b>` : ""}</div>`;
 export const body = (text) => `<div class="body">${esc(text)}</div>`;
 export const footer = () =>
-  `<div class="footer"><div class="rule"></div><div class="mark"><img src="${LOGO}"><span>UNUM</span></div><div class="rule"></div></div>`;
+  `<div class="footer"><div class="rule"></div>${wordmark(36)}<div class="rule"></div></div>`;
 
 export const bottom = ({ kicker: k, headline, text }) =>
   `<div class="bottom">${k}${headline}${text ? body(text) : ""}${footer()}</div>`;

@@ -19,7 +19,16 @@
 //   elevenlabs  ElevenLabs text to speech. Needs ELEVENLABS_API_KEY and
 //               ELEVENLABS_VOICE_ID; gives exact word timings.
 //
-// MUSIC=path/to/track.mp3 adds a quiet music bed under the voice.
+// Music: the standard track (unum-social-output/music/standard.mp3, now
+// "Flash News") plays under every video, from its start, easing to half
+// volume for the end card and fading out. MUSIC=path/to/track.mp3 uses
+// another, MUSIC=none leaves it out. It's set to a fixed loudness (-24 LUFS,
+// 10 below the voice); MUSIC_LEVEL=-20 makes it louder, -28 quieter.
+// music-previews.mjs plays tracks under the voice to choose one.
+//
+// FIT=30 speeds the voice up, without changing its pitch, so the video ends
+// within 30 seconds; it never speeds up by more than 1.25 times, and leaves
+// a voice alone that already fits. SPEED=1.1 sets the speed directly.
 //
 // Output goes to unum-social-output/video/<script>/: the .mp4, cover.jpg (the
 // first frame) and caption.txt (the post text with photo credits).
@@ -33,10 +42,15 @@ import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import puppeteer from "puppeteer";
-import { esc, OUTPUT_ROOT, CHROME, LOGO } from "../prototypes/lib.mjs";
+import { esc, OUTPUT_ROOT, CHROME, LOGO, WORDMARK_CSS, wordmark } from "../prototypes/lib.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+// Photos come from the shared library (media/photos, listed in photos.json),
+// named by their library ID like "capitol-dusk". Member portraits and the
+// photos older scripts used stay in social/video/photos.
+const LIBRARY = path.join(HERE, "..", "..", "media", "photos");
 const PHOTOS = path.join(HERE, "photos");
+const library = JSON.parse(fs.readFileSync(path.join(LIBRARY, "photos.json"), "utf8"));
 
 const name = (process.argv[2] || "").replace(/\.mjs$/, "");
 const scriptFile = path.join(HERE, "scripts", `${name}.mjs`);
@@ -59,6 +73,17 @@ const W = 1080, H = 1920;
 // Pauses around the voice, in seconds
 const LEAD = 0.25, GAP = 0.3, TAIL = 1.0;
 const VOICE = process.env.VOICE || "say";
+// The standard track, unum-social-output/music/standard.mp3, plays under
+// every video unless MUSIC names another track or is "none". Its credit for
+// the caption, if any, is in standard.txt (or MUSIC_CREDIT).
+const STANDARD = path.join(OUTPUT_ROOT, "music", "standard.mp3");
+const MUSIC =
+  process.env.MUSIC === "none" ? null : process.env.MUSIC || (fs.existsSync(STANDARD) ? STANDARD : null);
+const MUSIC_CREDIT =
+  process.env.MUSIC_CREDIT ??
+  (MUSIC === STANDARD && fs.existsSync(STANDARD.replace(/\.mp3$/, ".txt"))
+    ? fs.readFileSync(STANDARD.replace(/\.mp3$/, ".txt"), "utf8").trim()
+    : "");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -91,11 +116,17 @@ const toWav = (input, output, trim = true) =>
   run(FFMPEG, ["-y", "-hide_banner", "-loglevel", "error", "-i", input, ...(trim ? ["-af", TRIM] : []), "-ar", "48000", "-ac", "1", output]);
 
 const rich = (s) => esc(s).replace(/\*(.+?)\*/g, "<mark>$1</mark>");
-const photoUrl = (file) => {
-  const p = path.isAbsolute(file) ? file : path.join(PHOTOS, file);
-  if (!fs.existsSync(p)) throw new Error(`Missing photo ${p}`);
-  return pathToFileURL(p).href;
+const photoFile = (name) => {
+  if (path.isAbsolute(name)) return name;
+  const found = [
+    library[name] && path.join(LIBRARY, library[name].file),
+    path.join(LIBRARY, name),
+    path.join(PHOTOS, name),
+  ].find((p) => p && fs.existsSync(p));
+  if (!found) throw new Error(`No photo "${name}" in media/photos or social/video/photos`);
+  return found;
 };
+const photoUrl = (name) => pathToFileURL(photoFile(name)).href;
 
 // ---------------------------------------------------------------------------
 // Voice and word timings
@@ -119,6 +150,74 @@ function estimate(words, dur) {
     at += pause(w);
     return { w, start, end };
   });
+}
+
+// Where the speech is in a recording: when it starts and ends, and the pauses
+// inside it. Loudness is averaged over 50 ms windows, so the odd crackle in
+// room noise doesn't count as speech, and quiet is measured against the
+// recording's own loudest moment. Pauses shorter than a breath between words
+// don't count.
+async function speechMap(file, dur) {
+  const STEP = 0.05;
+  const { err } = await run(FFMPEG, [
+    "-hide_banner", "-i", file, "-af",
+    `asetnsamples=${Math.round(48000 * STEP)},astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level`,
+    "-f", "null", "-",
+  ]);
+  const rms = [...err.matchAll(/RMS_level=(-?[\d.]+|-inf)/g)].map((m) => (m[1] === "-inf" ? -120 : Number(m[1])));
+  if (!rms.length) return { start: 0, end: dur, pauses: [] };
+  const quietBelow = Math.max(...rms) - 17;
+  const loud = rms.map((r) => r >= quietBelow);
+  const firstLoud = loud.indexOf(true), lastLoud = loud.lastIndexOf(true);
+  if (firstLoud < 0) return { start: 0, end: dur, pauses: [] };
+  const start = firstLoud * STEP, end = Math.min(dur, (lastLoud + 1) * STEP);
+  const pauses = [];
+  for (let k = firstLoud; k <= lastLoud; ) {
+    if (loud[k]) { k++; continue; }
+    let e = k;
+    while (e <= lastLoud && !loud[e]) e++;
+    if ((e - k) * STEP >= 0.15) pauses.push({ from: k * STEP, to: e * STEP });
+    k = e;
+  }
+  return { start, end, pauses };
+}
+
+// Word timings for a line, pinned to its real pauses: each pause in the
+// recording is matched, in order, to the comma or period it most likely
+// falls at, and only the words between pauses are spread by length. So the
+// captions catch up at every pause instead of drifting.
+function alignToPauses(words, t0, t1, pauses) {
+  const breakAfter = (w) => /[.,!?:;—–]["”’)]*$/.test(w);
+  const guess = estimate(words, t1 - t0).map((w) => ({ ...w, start: w.start + t0, end: w.end + t0 }));
+  // Each break between phrases, with when it would fall by length alone
+  const breaks = [];
+  words.forEach((w, i) => {
+    if (i < words.length - 1 && breakAfter(w)) breaks.push({ after: i, at: (guess[i].end + guess[i + 1].start) / 2 });
+  });
+  const anchors = [];
+  let next = 0;
+  for (const b of breaks) {
+    let best = -1;
+    for (let k = next; k < pauses.length; k++) {
+      const mid = (pauses[k].from + pauses[k].to) / 2;
+      if (Math.abs(mid - b.at) > 1.2) continue;
+      if (best < 0 || Math.abs(mid - b.at) < Math.abs((pauses[best].from + pauses[best].to) / 2 - b.at)) best = k;
+    }
+    if (best >= 0) {
+      anchors.push({ after: b.after, from: pauses[best].from, to: pauses[best].to });
+      next = best + 1;
+    }
+  }
+  // Spread each run of words between anchors over its stretch of speech
+  const out = [];
+  let i = 0, t = t0;
+  for (const a of [...anchors, { after: words.length - 1, from: t1, to: t1 }]) {
+    const run = words.slice(i, a.after + 1);
+    out.push(...estimate(run, Math.max(0.05, a.from - t)).map((w) => ({ ...w, start: w.start + t, end: w.end + t })));
+    i = a.after + 1;
+    t = a.to;
+  }
+  return out;
 }
 
 // Word timings from ElevenLabs' character alignment
@@ -159,10 +258,18 @@ async function voiceFor(beat, i, beats) {
     const base = path.join(HERE, "recordings", name, String(i + 1));
     const src = [".m4a", ".mp3", ".wav", ".aiff"].map((e) => base + e).find((f) => fs.existsSync(f));
     if (!src) throw new Error(`No recording for beat ${i + 1}: expected ${base}.m4a (or .mp3, .wav)\n  "${beat.say}"`);
+    // Cut to the speech, with a moment either side, then time the words
+    const raw = path.join(dir, `${i + 1}-recorded-raw.wav`);
+    await toWav(src, raw, false);
+    const rawDur = await duration(raw);
+    const map = await speechMap(raw, rawDur);
+    const from = Math.max(0, map.start - 0.06), to = Math.min(rawDur, map.end + 0.18);
     const file = path.join(dir, `${i + 1}-recorded.wav`);
-    await toWav(src, file);
-    const dur = await duration(file);
-    return { file, dur, words: estimate(words, dur) };
+    await run(FFMPEG, ["-y", "-hide_banner", "-loglevel", "error", "-i", raw, "-af", `atrim=${from.toFixed(3)}:${to.toFixed(3)},asetpts=PTS-STARTPTS`, file]);
+    fs.rmSync(raw);
+    const dur = to - from;
+    const pauses = map.pauses.map((p) => ({ from: p.from - from, to: p.to - from }));
+    return { file, dur, words: alignToPauses(words, map.start - from, map.end - from, pauses) };
   }
 
   const key = crypto.createHash("sha1").update(JSON.stringify([VOICE, process.env.SAY_VOICE, process.env.SAY_RATE, process.env.ELEVENLABS_VOICE_ID, speak])).digest("hex").slice(0, 10);
@@ -203,6 +310,29 @@ const beats = script.beats;
 console.log(`${name}: voice (${VOICE})`);
 const voices = [];
 for (let i = 0; i < beats.length; i++) voices.push(await voiceFor(beats[i], i, beats));
+
+// Speeding up: SPEED sets it, FIT works it out from the time everything
+// but the voice takes (pauses, lead-in and the end)
+{
+  const fixed = LEAD + TAIL + beats.slice(0, -1).reduce((n, b) => n + (b.pause ?? GAP), 0);
+  const spoken = voices.reduce((n, v) => n + v.dur, 0);
+  const speed = process.env.SPEED
+    ? Number(process.env.SPEED)
+    : process.env.FIT
+      ? Math.min(1.25, Math.max(1, spoken / (Number(process.env.FIT) - fixed)))
+      : 1;
+  if (!(speed >= 0.5 && speed <= 2)) throw new Error("SPEED is a number from 0.5 to 2");
+  if (speed !== 1) {
+    console.log(`  voice at ${speed.toFixed(2)}x`);
+    for (const v of voices) {
+      const fast = v.file.replace(/\.wav$/, `-x${speed.toFixed(3)}.wav`);
+      await run(FFMPEG, ["-y", "-hide_banner", "-loglevel", "error", "-i", v.file, "-af", `atempo=${speed}`, fast]);
+      v.file = fast;
+      v.dur /= speed;
+      v.words = v.words.map((w) => ({ ...w, start: w.start / speed, end: w.end / speed }));
+    }
+  }
+}
 
 let clock = LEAD;
 const timeline = beats.map((b, i) => {
@@ -254,12 +384,15 @@ const mix = path.join(OUT, "audio", "mix.wav");
   const inputs = voices.flatMap((v) => ["-i", v.file]);
   const delays = timeline.map((t, i) => `[${i}]adelay=${Math.round(t.start * 1000)}:all=1[a${i}]`).join(";");
   let graph = `${delays};${timeline.map((_, i) => `[a${i}]`).join("")}amix=inputs=${n}:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11,apad,atrim=0:${secs}[voice]`;
-  const music = process.env.MUSIC;
-  if (music) {
-    inputs.push("-stream_loop", "-1", "-i", music);
-    graph += `;[${n}]volume=0.12,atrim=0:${secs},afade=t=in:d=0.5,afade=t=out:st=${(END - 1.5).toFixed(2)}:d=1.5[bed];[voice][bed]amix=inputs=2:normalize=0[out]`;
+  if (MUSIC) {
+    // From the track's start; it eases to half volume as the end card comes
+    // in, so the sign-off has room, then fades out over the last moments
+    const outroAt = timeline[beats.findIndex((b) => b.outro)]?.vstart ?? END - 4;
+    const ease = `volume='if(lt(t,${outroAt.toFixed(2)}),1,max(0.5,1-0.5*(t-${outroAt.toFixed(2)})/1.5))':eval=frame`;
+    inputs.push("-stream_loop", "-1", "-i", MUSIC);
+    graph += `;[${n}]loudnorm=I=${process.env.MUSIC_LEVEL || -24}:TP=-3,atrim=0:${secs},asetpts=PTS-STARTPTS,${ease},afade=t=in:d=0.3,afade=t=out:st=${(END - 1.5).toFixed(2)}:d=1.5[bed];[voice][bed]amix=inputs=2:normalize=0[out]`;
   }
-  await run(FFMPEG, ["-y", "-hide_banner", "-loglevel", "error", ...inputs, "-filter_complex", graph, "-map", music ? "[out]" : "[voice]", "-ar", "48000", mix]);
+  await run(FFMPEG, ["-y", "-hide_banner", "-loglevel", "error", ...inputs, "-filter_complex", graph, "-map", MUSIC ? "[out]" : "[voice]", "-ar", "48000", mix]);
 }
 
 // ---------------------------------------------------------------------------
@@ -280,8 +413,7 @@ body { width: ${W}px; height: ${H}px; overflow: hidden; background: #000; color:
 .shade { position: absolute; inset: 0; background: linear-gradient(180deg,
   rgba(0,0,0,.78) 0%, rgba(0,0,0,.45) 28%, rgba(0,0,0,.30) 48%, rgba(0,0,0,.55) 64%, rgba(0,0,0,.88) 100%); }
 .top { position: absolute; left: 70px; right: 70px; top: 196px; display: flex; align-items: center; gap: 18px; }
-.mark { display: flex; align-items: center; gap: 14px; font: 500 36px "DM Mono", monospace; letter-spacing: 4px; }
-.mark img { width: 54px; height: 54px; border-radius: 12px; }
+${WORDMARK_CSS}
 .series { margin-left: 8px; padding-left: 22px; border-left: 2px solid rgba(255,255,255,.4);
   font: 500 28px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .04em; color: rgba(255,255,255,.85); }
 .beat { position: absolute; left: 70px; right: 120px; top: 330px; display: flex; flex-direction: column; align-items: flex-start; }
@@ -375,7 +507,7 @@ const outro = beats.find((b) => b.outro);
 const html = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${FONTS}"><style>${CSS}</style></head><body>
 ${beats.map((b) => (b.outro ? "<div class=\"bg\"></div>" : `<div class="bg"><img src="${photoUrl(b.photo)}" style="object-position:${b.focus || "50% 50%"}"></div>`)).join("\n")}
 <div class="shade"></div>
-<div class="top"><div class="mark"><img src="${LOGO}"><span>UNUM</span></div>${script.series ? `<div class="series">${esc(script.series)}</div>` : ""}</div>
+<div class="top">${wordmark(46)}${script.series ? `<div class="series">${esc(script.series)}</div>` : ""}</div>
 ${beats.map((b) => (b.outro ? `<div class="beat"></div>` : `<div class="beat"><div class="head">${rich(b.head)}</div>${b.sub ? `<div class="sub">${esc(b.sub)}</div>` : ""}${cardHtml(b.card)}</div>`)).join("\n")}
 <div id="cap"></div>
 ${outro ? `<div id="outro"><img src="${LOGO}"><div class="t">${rich(outro.head || "Congress Weekly")}</div><div class="s">${esc(outro.sub || "")}</div><div class="u">${esc(outro.url || "unuminitiative.com/newsletter")}</div></div>` : ""}
@@ -491,7 +623,9 @@ try {
 }
 
 // The post text, with credits for the photos used
-const credits = JSON.parse(fs.readFileSync(path.join(PHOTOS, "credits.json"), "utf8"));
-const used = new Set(beats.flatMap((b) => [b.photo, b.card?.photo]).filter(Boolean).map((f) => credits[f]).filter(Boolean));
-fs.writeFileSync(path.join(OUT, "caption.txt"), [script.caption, used.size ? `Photos: ${[...used].join("; ")}.` : ""].filter(Boolean).join("\n\n") + "\n");
+const oldCredits = JSON.parse(fs.readFileSync(path.join(PHOTOS, "credits.json"), "utf8"));
+const creditFor = (name) => (library[name] ? library[name].credit : oldCredits[name]);
+const used = new Set(beats.flatMap((b) => [b.photo, b.card?.photo]).filter(Boolean).map(creditFor).filter(Boolean));
+const credits = [used.size ? `Photos: ${[...used].join("; ")}.` : "", MUSIC ? MUSIC_CREDIT : ""].filter(Boolean).join("\n");
+fs.writeFileSync(path.join(OUT, "caption.txt"), [script.caption, credits].filter(Boolean).join("\n\n") + "\n");
 console.log(`  ${path.relative(process.cwd(), outFile)}`);

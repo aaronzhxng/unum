@@ -23,7 +23,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import puppeteer from "puppeteer";
-import { esc, OUTPUT_ROOT, CHROME, FONTS, LOGO } from "./lib.mjs";
+import { esc, OUTPUT_ROOT, CHROME, FONTS, LOGO, WORDMARK_CSS, wordmark } from "./lib.mjs";
 
 const OUT = path.join(OUTPUT_ROOT, process.env.OUT || "out");
 const manifestFile = path.join(OUT, "manifest.json");
@@ -49,8 +49,7 @@ body { width: ${W}px; height: ${H}px; overflow: hidden; background: var(--paper)
 .shot img { width: 100%; height: 100%; display: block; }
 .shot iframe { width: 1000px; height: 1250px; border: 0; transform: scale(${SLOT.w / 1000}); transform-origin: 0 0; }
 .kicker { font: 500 34px "DM Mono", monospace; color: var(--blue); text-transform: uppercase; letter-spacing: .02em; }
-.mark { display: flex; align-items: center; gap: 16px; font: 500 40px "DM Mono", monospace; letter-spacing: 4px; }
-.mark img { width: 52px; height: 52px; border-radius: 8px; }
+${WORDMARK_CSS}
 .say { font-family: Fraunces, serif; font-weight: 900; letter-spacing: -0.02em; line-height: 1.04; }
 .bars { position: absolute; left: ${SLOT.x}px; top: 236px; width: ${SLOT.w}px; display: flex; gap: 10px; }
 .bars div { flex: 1; height: 8px; border-radius: 4px; background: rgba(0,0,0,.12); overflow: hidden; }
@@ -76,7 +75,7 @@ const shell = (bodyHtml, script) => `<!doctype html><html><head><meta charset="u
 <link rel="stylesheet" href="${FONTS}"><style>${CSS}</style></head><body>${bodyHtml}
 <script>${RUNTIME}</script><script>window.setup = async () => { ${script} };</script></body></html>`;
 
-const mark = `<div class="mark"><img src="${LOGO}"><span>UNUM</span></div>`;
+const mark = wordmark(52);
 
 // ---------------------------------------------------------------------------
 // The day's recap
