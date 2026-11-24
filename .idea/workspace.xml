@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a7b23463-1550-4223-a5be-6e4fdfdfae5b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/bill/bill_components/ActionHistory 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/bill/bill_components/Cosponsors 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/bill/bill_components/FilterDropdown 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/bill/bill_components/OptionsModal 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/bill/bill_components/SortDropdown 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/bill/bill_components/VotingCard 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/education_tab/[topic]/[subtopic] 3.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/education_tab/[topic]/[subtopic] 4.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/official/official_components/BillCard 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/official/official_components/FilterDropdown 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/official/official_components/OptionsModal 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/official/official_components/SearchModal 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/official/official_components/SortDropdown 2.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/01-what-does-congress-do 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/02-who-introduces-a-law 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/03-what-are-committees 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/04-what-happens-after-committee 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/05-example-bills-becoming-law 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/06-using-unum-to-track-a-bill 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/07-what-about-other-resolutions 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/08-making-money 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/09-spending-money 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/10-how-budget-is-made 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/11-what-if-theres-a-problem 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/12-checking-work-of-executive 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/13-what-is-impeachment 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/congress-legislation/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/elections-voting/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/01-what-is-the-executive-branch 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/02-who-can-become-president 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/03-how-is-president-elected 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/04-how-are-electors-chosen 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/05-what-can-the-president-do 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/06-how-does-president-influence-lawmaking 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/07-what-is-the-bureaucracy 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/08-how-does-president-lead-bureaucracy 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/09-what-is-presidents-cabinet 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/10-how-does-president-represent-country 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/11-what-does-vice-president-do 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/executive-branch/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/house-of-representatives/01-how-does-the-house-look 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/house-of-representatives/02-how-are-districts-redrawn 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/house-of-representatives/03-who-can-become-a-representative 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/house-of-representatives/04-how-are-districts-numbered 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/house-of-representatives/05-house-leadership 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/house-of-representatives/06-what-can-the-house-do 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/house-of-representatives/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/how-government-works/01-what-is-us-government 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/how-government-works/02-what-does-executive-do 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/how-government-works/03-what-is-basis-for-american-law 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/how-government-works/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/01-how-can-i-learn-more-about-politics 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/02-why-do-politicians-join-parties 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/03-what-are-americas-big-two 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/04-what-are-the-other-parties 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/05-primaries-and-caucuses 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/06-majority-governments 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/07-why-do-we-care-about-majorities 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/political-parties-ideology/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/rights-civic-participation/01-voter-registration 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/rights-civic-participation/02-what-are-my-rights 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/rights-civic-participation/03-why-should-i-care 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/rights-civic-participation/04-why-care-about-political-parties 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/rights-civic-participation/05-how-to-contact-your-representative 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/rights-civic-participation/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/test/01-test 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/test/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/the-constitution/01-what-is-the-constitution 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/the-constitution/02-how-constitution-changed 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/the-constitution/03-how-to-read-constitution 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/the-constitution/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-history-foundations/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-judicial-system/01-basic-principles-of-us-law 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-judicial-system/02-what-do-courts-look-like 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-judicial-system/03-who-are-judges 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-judicial-system/04-what-is-the-supreme-court 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-judicial-system/05-who-are-the-justices 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-judicial-system/metadata 2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-senate/01-how-does-the-senate-look 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-senate/02-who-can-become-a-senator 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-senate/03-how-are-senators-classified 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-senate/04-senate-leadership 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-senate/05-what-can-the-senate-do 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-senate/06-the-filibuster 2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/topics/us-senate/metadata 2.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/legislation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/legislation.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/officials.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/officials.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/official/[id].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/official/[id].tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/how-familiar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/how-familiar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/name-list.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/name-list.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/pick-bills.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/pick-bills.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/pick-items.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/pick-items.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/pick-officials.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/pick-officials.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/pick-policy-areas.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/pick-policy-areas.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/pick-rep.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/pick-rep.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/pick-state.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/pick-state.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/tour.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/tour.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/onboarding/welcome.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/onboarding/welcome.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5,
+  "fromUser": false
+}]]></component>
+  <component name="ProjectId" id="3MXCo5XlKBTT2CWjGWYPhFcvlvI" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "CidrDebugProfileConversion": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "debarshi",
+    "kotlin-language-version-configured": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a7b23463-1550-4223-a5be-6e4fdfdfae5b" name="Changes" comment="" />
+      <created>1795487697140</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1795487697140</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
