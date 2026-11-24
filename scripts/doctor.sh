@@ -21,3 +21,11 @@ fi
 
 echo "Checking for stray ' 2.' files in node_modules..."
 find node_modules -name "* 2.*" 2>/dev/null || true
+
+echo "Checking Android Google Services config..."
+if grep -q '"googleServicesFile"' app.json 2>/dev/null && [ ! -f "google-services.json" ]; then
+  echo "WARN: app.json references ./google-services.json, but it is not present in the repo root."
+  echo "      npx expo run:android will fail during prebuild unless google-services.json is placed here."
+else
+  echo "OK: google-services.json check passed"
+fi
