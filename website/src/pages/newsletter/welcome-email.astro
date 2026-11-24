@@ -1,0 +1,36 @@
+---
+// The email new subscribers get right after signing up, at
+// /newsletter/welcome-email.html. /api/subscribe fills in the {{...}}
+// placeholders. The bill shows what an issue looks like, votes included.
+import { getCollection } from "astro:content";
+import EmailShell from "../../components/EmailShell.astro";
+import EmailBill from "../../components/EmailBill.astro";
+import { C, ORIGIN } from "../../emailTheme.mjs";
+import { CONTACT_EMAIL, SOCIAL_LINKS } from "../../site.mjs";
+
+const issues = await getCollection("newsletter");
+const example = issues
+  .flatMap((issue) => issue.data.sections.flatMap((section) => section.bills))
+  .find((bill) => bill.id === "hr7008");
+if (!example) throw new Error("The welcome email's example bill, hr7008, is in no issue");
+
+const social = (label: string) => SOCIAL_LINKS.find((link) => link.label === label)!.href;
+const text = `margin:0 0 16px;font-size:16px;line-height:1.6;color:${C.muted}`;
+const link = `color:${C.blue};text-decoration:none`;
+---
+
+<EmailShell
+  title="Welcome to Congress Weekly"
+  preheader="What to expect every Monday, and a bit about us."
+  links={[{ label: "Past issues", href: `${ORIGIN}/newsletter#all-issues` }]}
+>
+  <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.01em">Welcome to Congress Weekly, a newsletter by Unum.</h1>
+  <p style={text}>Congress can be hard to follow, but what it does matters. We want to make it easier to understand.</p>
+  <p style={text}>Every Monday morning, Justin and I recap the last week in Congress: bills signed, votes cast, and bills moving through committee.</p>
+  <p style={text}>This newsletter is for political beginners and longtime junkies alike. We write in plain English and explain unfamiliar terms. We also use graphics, like this one for a bill and its votes:</p>
+  <div style={`border-top:1px solid ${C.border}`}><EmailBill bill={example} /></div>
+  <p style={`${text};margin-top:24px`}><b style={`color:${C.text}`}>Got feedback?</b> Please send it! Tell us how we are doing and how we can improve at <a target="_blank" rel="noopener" href={`mailto:${CONTACT_EMAIL}`} style={link}>{CONTACT_EMAIL}</a>. We are a small team, and we want to hear from you.</p>
+  <p style={text}><b style={`color:${C.text}`}>A bit about us:</b> Unum Initiative is a <span style="white-space:nowrap">501(c)(3)</span> nonprofit registered in New York. Since March 2026, we have been working on ways to understand and follow what the government does. If you like our vision, you will love our posts on <a target="_blank" rel="noopener" href={social("Instagram")} style={link}>Instagram</a> and <a target="_blank" rel="noopener" href={social("X")} style={link}>X</a>, and our <a target="_blank" rel="noopener" href={`${ORIGIN}/app`} style={link}>iPhone and Android apps</a>.</p>
+  <p style={text}>See you on Monday for your first issue.</p>
+  <p style={`margin:0;font-size:16px;line-height:1.6;color:${C.muted}`}>Until then,<br /><b style={`color:${C.text}`}>Aaron Zhang</b><br />President, Unum Initiative</p>
+</EmailShell>

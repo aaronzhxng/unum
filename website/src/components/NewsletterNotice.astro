@@ -1,0 +1,19 @@
+---
+// A short page in the newsletter signup flow (subscribed, unsubscribed), kept out of search results
+import Layout from "../layouts/Layout.astro";
+
+interface Props {
+  title: string;
+  heading: string;
+}
+const { title, heading } = Astro.props;
+---
+
+<Layout title={title} brandStack={{ lines: ["congress", "weekly"] }} newsletterNav noIndex>
+  <section class="container section page-intro">
+    <p class="eyebrow">Congress Weekly</p>
+    <h1>{heading}</h1>
+    <div class="lede stack"><slot /></div>
+    <slot name="actions" />
+  </section>
+</Layout>

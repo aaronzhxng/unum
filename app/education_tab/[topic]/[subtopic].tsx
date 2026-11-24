@@ -7,6 +7,7 @@ import {
   Image,
   Linking,
   PanResponder,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -22,6 +23,17 @@ import {
   getEducationTopic,
 } from "../content";
 import { parseRichText } from "../glossary";
+
+// Glossary terms not to link on a page, where the word means something else
+// there or the page already covers it
+const LEADERSHIP_SKIP = ["vice-president", "majority-party", "trifecta", "president"];
+const SKIP_GLOSSARY: Record<string, string[]> = {
+  "senate-leadership": LEADERSHIP_SKIP,
+  "house-leadership": LEADERSHIP_SKIP,
+  // "Majority" on these pages is not a majority in Congress
+  "who-are-the-justices-on-the-supreme-court": ["majority-party"],
+  "what-are-basic-principles-of-us-law": ["majority-party"],
+};
 import { trySwipeBack } from "../../utils/swipeBackGuard";
 
 const CONTENT_PADDING = 20;
@@ -39,6 +51,14 @@ export default function EducationSubtopicScreen() {
   );
 
   const [showOptions, setShowOptions] = useState(false);
+  // "Paragraph copied", after a long press copies one on iPhone
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showCopied = () => {
+    setCopied(true);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 1500);
+  };
   const [activePopupSlug, setActivePopupSlug] = useState<string | null>(null);
 
   const handleTopicPress = (topicId: string) => {
@@ -176,6 +196,7 @@ export default function EducationSubtopicScreen() {
               {topicData.title.toUpperCase()}
             </Text>
             <Text
+              selectable={Platform.OS !== "ios"}
               style={{
                 fontSize: 22,
                 fontWeight: "800",
@@ -231,7 +252,11 @@ export default function EducationSubtopicScreen() {
                   />
                 </View>
                 {section.caption ? (
-                  <Text
+                  <RichText
+                    segments={parseRichText(
+                      section.caption,
+                      SKIP_GLOSSARY[subtopic as string],
+                    )}
                     style={{
                       fontSize: 12,
                       color: "#8a8a8a",
@@ -239,9 +264,10 @@ export default function EducationSubtopicScreen() {
                       marginTop: 8,
                       paddingHorizontal: 2,
                     }}
-                  >
-                    {section.caption}
-                  </Text>
+                    onGlossaryPress={setActivePopupSlug}
+                    onTopicPress={handleTopicPress}
+                    onCopied={showCopied}
+                  />
                 ) : null}
               </View>
             );
@@ -256,12 +282,9 @@ export default function EducationSubtopicScreen() {
                   marginHorizontal: CONTENT_PADDING,
                   marginBottom: 28,
                   backgroundColor: "#EFF7FF",
-                  borderLeftWidth: 3,
-                  borderLeftColor: "#008CFF",
                   borderRadius: 10,
                   paddingVertical: 14,
-                  paddingRight: 16,
-                  paddingLeft: 14,
+                  paddingHorizontal: 16,
                 }}
               >
                 {section.heading ? (
@@ -278,18 +301,7 @@ export default function EducationSubtopicScreen() {
                   </Text>
                 ) : null}
                 <RichText
-                  segments={parseRichText(
-                    section.content,
-                    subtopic === "senate-leadership" ||
-                      subtopic === "house-leadership"
-                      ? [
-                          "vice-president",
-                          "majority-party",
-                          "trifecta",
-                          "president",
-                        ]
-                      : undefined,
-                  )}
+                  segments={parseRichText(section.content, SKIP_GLOSSARY[subtopic as string])}
                   style={{
                     fontSize: 15,
                     color: "#1a3a5c",
@@ -298,6 +310,7 @@ export default function EducationSubtopicScreen() {
                   }}
                   onGlossaryPress={setActivePopupSlug}
                   onTopicPress={handleTopicPress}
+                  onCopied={showCopied}
                 />
               </View>
             );
@@ -393,6 +406,7 @@ export default function EducationSubtopicScreen() {
                       }}
                     />
                     <Text
+                      selectable={Platform.OS !== "ios"}
                       style={{
                         fontSize: 15,
                         fontWeight: "700",
@@ -438,6 +452,7 @@ export default function EducationSubtopicScreen() {
                     }}
                   />
                   <Text
+                    selectable={Platform.OS !== "ios"}
                     style={{
                       fontSize: 17,
                       fontWeight: "700",
@@ -452,18 +467,7 @@ export default function EducationSubtopicScreen() {
               ) : null}
 
               <RichText
-                segments={parseRichText(
-                  section.content,
-                  subtopic === "senate-leadership" ||
-                    subtopic === "house-leadership"
-                    ? [
-                        "vice-president",
-                        "majority-party",
-                        "trifecta",
-                        "president",
-                      ]
-                    : undefined,
-                )}
+                segments={parseRichText(section.content, SKIP_GLOSSARY[subtopic as string])}
                 style={{
                   fontSize: isLead ? 16 : 15,
                   color: "#444",
@@ -471,6 +475,7 @@ export default function EducationSubtopicScreen() {
                 }}
                 onGlossaryPress={setActivePopupSlug}
                 onTopicPress={handleTopicPress}
+                onCopied={showCopied}
               />
             </View>
           );
@@ -547,6 +552,25 @@ export default function EducationSubtopicScreen() {
         onClose={() => setShowOptions(false)}
         screen={`education-subtopic/${topic}/${subtopic}`}
       />
+
+      {copied && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            bottom: 48,
+            alignSelf: "center",
+            backgroundColor: "rgba(26,26,26,0.9)",
+            paddingVertical: 10,
+            paddingHorizontal: 18,
+            borderRadius: 999,
+          }}
+        >
+          <Text style={{ color: "#fff", fontSize: 14, fontWeight: "600" }}>
+            Paragraph copied
+          </Text>
+        </View>
+      )}
 
       <GlossaryPopup
         slug={activePopupSlug}

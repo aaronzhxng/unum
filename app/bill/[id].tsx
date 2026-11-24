@@ -59,6 +59,7 @@ import Cosponsors from "./bill_components/Cosponsors";
 import FilterDropdown from "./bill_components/FilterDropdown";
 import OptionsModal from "./bill_components/OptionsModal";
 import SortDropdown from "./bill_components/SortDropdown";
+import InfoButton from "../global_components/InfoButton";
 import VotingCard, {
   FollowedOfficial,
   VoteData,
@@ -66,6 +67,8 @@ import VotingCard, {
 } from "./bill_components/VotingCard";
 import { styles as componentStyles } from "./styles";
 
+import FitText from "../global_components/FitText";
+import { houseTitle, roleOptions } from "../utils/officialTitle";
 import { storage } from "../utils/storage";
 import { trySwipeBack } from "../utils/swipeBackGuard";
 
@@ -316,12 +319,44 @@ export default function BillDetail() {
     | "full"
     | "vetoed"
     | "pocket_vetoed"
-    | "veto_sustained";
+    | "veto_sustained"
+    | "failed";
 
+  // "failed" (a chamber voted and rejected a resolution) renders the same as
+  // a veto — a full red bar showing the stage was reached and rejected there,
+  // as opposed to "empty"/"half" which mean no vote has happened yet.
   const isVetoStatus = (s: StageStatus) =>
-    s === "vetoed" || s === "pocket_vetoed" || s === "veto_sustained";
+    s === "vetoed" || s === "pocket_vetoed" || s === "veto_sustained" || s === "failed";
 
-  const getBillStages = (bill: any): StageStatus[] => {
+  // Text like "Rule H. Res. 1175 failed passage of House" (a *procedural
+  // rule* vote failing, unrelated to the bill's own passage) or "Motion to
+  // discharge ... rejected" proves free-text "failed"/"rejected" keyword
+  // matching alone is unsafe for regular bills — it can't tell a rejected
+  // recommit/discharge/cloture/rule motion from the bill itself failing.
+  // So real pass/fail determination for HR/S/HJRES/SJRES (and, once loaded,
+  // for resolutions too) comes from the structured roll-call vote data
+  // instead: pick each chamber's latest non-procedural vote and read its
+  // result directly, the same approach used for the Voting tab's data.
+  const PROCEDURAL_VOTE_PATTERN =
+    /cloture|motion to (proceed|commit|recommit|discharge|table)|quorum/i;
+
+  const latestChamberVote = (votes: any[] | undefined, chamber: string) => {
+    if (!votes || votes.length === 0) return null;
+    const substantive = votes.filter(
+      (v) =>
+        v.chamber === chamber &&
+        !PROCEDURAL_VOTE_PATTERN.test(v.result || "") &&
+        !PROCEDURAL_VOTE_PATTERN.test(v.question || ""),
+    );
+    if (substantive.length === 0) return null;
+    return substantive.reduce((latest, v) =>
+      new Date(v.date) > new Date(latest.date) ? v : latest,
+    );
+  };
+
+  const voteFailed = (result: string) => /fail|rejected|not agreed to/i.test(result || "");
+
+  const getBillStages = (bill: any, votes?: any[]): StageStatus[] => {
     const type = bill.type?.toUpperCase();
 
     // Build a list of all action texts to check
@@ -335,23 +370,55 @@ export default function BillDetail() {
     }
     const any = (keyword: string) => allTexts.some((a) => a.includes(keyword));
 
-    // Simple resolutions — single chamber
+    const houseVote = latestChamberVote(votes, "House");
+    const senateVote = latestChamberVote(votes, "Senate");
+
+    // Simple resolutions — single chamber. Prefer the real vote result once
+    // it's loaded; the free-text guess below only covers the gap before the
+    // Voting tab has been visited.
     if (type === "HRES" || type === "SRES") {
+      const vote = type === "HRES" ? houseVote : senateVote;
+      if (vote) return ["full", voteFailed(vote.result) ? "failed" : "full"];
+      if (any("failed of passage") || any("not agreed to")) return ["full", "failed"];
       if (any("passed") || any("agreed to")) return ["full", "full"];
       return ["full", "half"];
     }
 
-    // Concurrent resolutions
+    // Concurrent resolutions — same vote-first, per chamber.
     if (type === "HCONRES") {
+      if (senateVote) {
+        if (voteFailed(senateVote.result)) return ["full", "full", "failed"];
+        return ["full", "full", "full"];
+      }
+      if (any("failed of passage in senate") || any("not agreed to in senate"))
+        return ["full", "full", "failed"];
       if (any("passed senate") || any("agreed to in senate"))
         return ["full", "full", "full"];
+      if (houseVote) {
+        if (voteFailed(houseVote.result)) return ["full", "failed", "empty"];
+        return ["full", "full", "half"];
+      }
+      if (any("failed of passage in house") || any("not agreed to in house"))
+        return ["full", "failed", "empty"];
       if (any("passed house") || any("agreed to in house"))
         return ["full", "full", "half"];
       return ["full", "half", "empty"];
     }
     if (type === "SCONRES") {
+      if (houseVote) {
+        if (voteFailed(houseVote.result)) return ["full", "full", "failed"];
+        return ["full", "full", "full"];
+      }
+      if (any("failed of passage in house") || any("not agreed to in house"))
+        return ["full", "full", "failed"];
       if (any("passed house") || any("agreed to in house"))
         return ["full", "full", "full"];
+      if (senateVote) {
+        if (voteFailed(senateVote.result)) return ["full", "failed", "empty"];
+        return ["full", "full", "half"];
+      }
+      if (any("failed of passage in senate") || any("not agreed to in senate"))
+        return ["full", "failed", "empty"];
       if (any("passed senate") || any("agreed to in senate"))
         return ["full", "full", "half"];
       return ["full", "half", "empty"];
@@ -391,9 +458,18 @@ export default function BillDetail() {
     if (any("presented to president") || any("to president"))
       return ["full", "full", "full", "half"];
 
+    // Real vote data (once loaded) takes priority over free-text guessing —
+    // free text alone can't distinguish the bill's own passage vote failing
+    // from an unrelated rule/recommit/discharge/cloture vote failing.
     if (type?.startsWith("H")) {
+      if (senateVote) {
+        if (voteFailed(senateVote.result)) return ["full", "full", "failed", "empty"];
+        return ["full", "full", "full", "half"];
+      }
       if (any("passed senate") || any("senate passed"))
         return ["full", "full", "full", "half"];
+      if (houseVote && voteFailed(houseVote.result))
+        return ["full", "failed", "empty", "empty"];
       if (
         any("passed house") ||
         any("passed/agreed to in house") ||
@@ -405,8 +481,14 @@ export default function BillDetail() {
     }
 
     if (type?.startsWith("S")) {
+      if (houseVote) {
+        if (voteFailed(houseVote.result)) return ["full", "full", "failed", "empty"];
+        return ["full", "full", "full", "half"];
+      }
       if (any("passed house") || any("house passed"))
         return ["full", "full", "full", "half"];
+      if (senateVote && voteFailed(senateVote.result))
+        return ["full", "failed", "empty", "empty"];
       if (
         any("passed senate") ||
         any("passed/agreed to in senate") ||
@@ -424,26 +506,29 @@ export default function BillDetail() {
     const type = bill.type?.toUpperCase();
 
     if (type === "HRES")
-      return ["Introduced", stages[1] === "full" ? "Passed House" : "In House"];
+      return [
+        "Introduced",
+        stages[1] === "full" ? "Passed House" : stages[1] === "failed" ? "Failed in House" : "In House",
+      ];
 
     if (type === "SRES")
       return [
         "Introduced",
-        stages[1] === "full" ? "Passed Senate" : "In Senate",
+        stages[1] === "full" ? "Passed Senate" : stages[1] === "failed" ? "Failed in Senate" : "In Senate",
       ];
 
     if (type === "HCONRES")
       return [
         "Introduced",
-        stages[1] === "full" ? "Passed House" : "In House",
-        stages[2] === "full" ? "Passed Senate" : "In Senate",
+        stages[1] === "full" ? "Passed House" : stages[1] === "failed" ? "Failed in House" : "In House",
+        stages[2] === "full" ? "Passed Senate" : stages[2] === "failed" ? "Failed in Senate" : "In Senate",
       ];
 
     if (type === "SCONRES")
       return [
         "Introduced",
-        stages[1] === "full" ? "Passed Senate" : "In Senate",
-        stages[2] === "full" ? "Passed House" : "In House",
+        stages[1] === "full" ? "Passed Senate" : stages[1] === "failed" ? "Failed in Senate" : "In Senate",
+        stages[2] === "full" ? "Passed House" : stages[2] === "failed" ? "Failed in House" : "In House",
       ];
 
     if (type === "PN")
@@ -929,7 +1014,7 @@ export default function BillDetail() {
           c.district != null || TERRITORY_STATES.has(c.state)
             ? c.district > 0
               ? `Rep, ${STATE_NAMES[c.state] || c.state}, ${c.district}`
-              : `Rep, ${STATE_NAMES[c.state] || c.state}`
+              : `${houseTitle(c.state).abbr}, ${STATE_NAMES[c.state] || c.state}`
             : `Sen, ${STATE_NAMES[c.state] || c.state}`,
         photoUrl: c.photoUrl,
         update: c.isOriginalCosponsor
@@ -1334,7 +1419,7 @@ export default function BillDetail() {
           <ScrollView keyboardShouldPersistTaps="handled">
             {/* Bill Progress - Option B */}
             {(() => {
-              const stages = getBillStages(bill);
+              const stages = getBillStages(bill, votesData?.votes);
               const labels = getStageLabels(bill, stages);
               return (
                 <View
@@ -1357,7 +1442,7 @@ export default function BillDetail() {
                             flex: 1,
                             fontSize: screenWidth < 390 ? 8 : 10,
                             color: isVeto
-                              ? "#FF3B30"
+                              ? "#dc2626"
                               : status === "empty"
                                 ? "#7B7C81"
                                 : "#1a1a1a",
@@ -1396,7 +1481,7 @@ export default function BillDetail() {
                                   : status === "half"
                                     ? "50%"
                                     : "0%",
-                              backgroundColor: isVeto ? "#FF3B30" : "#008CFF",
+                              backgroundColor: isVeto ? "#dc2626" : "#008CFF",
                               borderRadius: 3,
                             }}
                           />
@@ -1418,6 +1503,11 @@ export default function BillDetail() {
                   style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
                 >
                   <Text style={componentStyles.detailTitle}>Status: </Text>
+                  <InfoButton
+                    slug="bill-status"
+                    label="How does a bill become law?"
+                    style={{ marginLeft: 0 }}
+                  />
                   <Text style={componentStyles.status}>
                     {bill.latestAction?.text || "Introduced"}
                   </Text>
@@ -1460,6 +1550,11 @@ export default function BillDetail() {
 
             <View style={componentStyles.details}>
               <Text style={componentStyles.detailTitle}>Type: </Text>
+              <InfoButton
+                slug="bill-types"
+                label="What do the types of bills mean?"
+                style={{ marginLeft: 0 }}
+              />
               <Text style={componentStyles.detailInfo}>
                 {getBillTypeName(bill.type, bill.originChamber)}
               </Text>
@@ -1621,13 +1716,11 @@ export default function BillDetail() {
                 }}
               >
                 <View style={{ flex: 1 }}>
-                  <View style={{ alignSelf: "flex-start", height: 20 }}>
+                  {/* A minimum, so large system text isn't cut off */}
+                  <View style={{ alignSelf: "flex-start", minHeight: 20 }}>
                     {!showAmendments ? (
                       <Text
-                        style={[
-                          componentStyles.detailTitle,
-                          { lineHeight: 20 },
-                        ]}
+                        style={componentStyles.detailTitle}
                       >
                         Amendments ({bill.amendments?.length || 0})
                       </Text>
@@ -1638,7 +1731,6 @@ export default function BillDetail() {
                             flexDirection: "row",
                             alignItems: "center",
                             gap: 4,
-                            flex: 1,
                             transform: [{ scale: pressed ? 0.96 : 1 }],
                           },
                         ]}
@@ -1648,10 +1740,7 @@ export default function BillDetail() {
                         }}
                       >
                         <Text
-                          style={[
-                            componentStyles.detailTitle,
-                            { lineHeight: 16 },
-                          ]}
+                          style={componentStyles.detailTitle}
                         >
                           Amendments ({displayedAmendments.length})
                         </Text>
@@ -1831,6 +1920,29 @@ export default function BillDetail() {
             contentContainerStyle={{ paddingTop: 1 }}
           >
             <View style={{ marginBottom: 96 }}>
+              {votingVisited && !votesLoading && (
+                // What yea, nay and roll call mean, and why some votes need
+                // two-thirds
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    paddingHorizontal: 16,
+                    // The same space above, from the tabs, as below, to the
+                    // first vote's card, which has no margin of its own
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Text style={{ fontSize: 13, color: "#7B7C81" }}>
+                    How votes work
+                  </Text>
+                  <InfoButton
+                    slug="roll-call-vote"
+                    label="How do votes in Congress work?"
+                  />
+                </View>
+              )}
               {votingVisited && (
                 <VotingCard
                   votes={votesData?.votes ?? []}
@@ -2147,23 +2259,12 @@ export default function BillDetail() {
       ? `https://bioguide.congress.gov/bioguide/photo/${sponsor.bioguideId[0]}/${sponsor.bioguideId}.jpg`
       : null;
 
-    const { width: screenWidth } = useWindowDimensions();
-    const stateName = STATE_NAMES[sponsor.state] ?? sponsor.state;
-    const role = (() => {
-      if (sponsor.district != null || TERRITORY_STATES.has(sponsor.state)) {
-        if (sponsor.district > 0) {
-          const full = `Representative, ${stateName}, District ${sponsor.district}`;
-          const abbr = `Rep, ${stateName}, District ${sponsor.district}`;
-          return screenWidth < 390 ? abbr : full;
-        }
-        const full = `Representative, ${stateName}`;
-        const abbr = `Rep, ${stateName}`;
-        return screenWidth < 390 ? abbr : full;
-      }
-      const full = `Senator, ${stateName}`;
-      const abbr = `Sen, ${stateName}`;
-      return screenWidth < 390 ? abbr : full;
-    })();
+    const role = roleOptions({
+      house: sponsor.district != null || TERRITORY_STATES.has(sponsor.state),
+      state: sponsor.state,
+      place: STATE_NAMES[sponsor.state] ?? sponsor.state,
+      district: sponsor.district,
+    });
 
     return (
       <Pressable
@@ -2206,14 +2307,14 @@ export default function BillDetail() {
             <Text style={componentStyles.name} numberOfLines={1}>
               {sponsor.firstName} {sponsor.lastName}
             </Text>
-            <View style={componentStyles.metaRow}>
+            <View style={[componentStyles.metaRow, { flexWrap: "nowrap" }]}>
               {sponsor.party ? (
                 <>
                   <Text style={componentStyles.subtitle}>{sponsor.party}</Text>
                   <Text style={componentStyles.separator}>·</Text>
                 </>
               ) : null}
-              <Text style={componentStyles.subtitle}>{role}</Text>
+              <FitText style={componentStyles.subtitle} options={role} />
             </View>
           </View>
         </View>

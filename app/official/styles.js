@@ -124,7 +124,8 @@ export const styles = StyleSheet.create({
   },
   tabsNegative: {
     marginHorizontal: 0,
-    marginBottom: 24,
+    // 16 for the Bills tab's toggle row; the other tabs add 8 to their tops
+    marginBottom: 16,
   },
   tabs: {
     flexDirection: "row",
@@ -138,7 +139,9 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#555",
     marginBottom: -2,
-    height: 42,
+    // A minimum, so large system text grows the tab instead of being cut
+    // off by the line under it
+    minHeight: 42,
   },
   tabActive: {
     color: "#000",

@@ -1,0 +1,46 @@
+---
+// Served by Cloudflare Pages, with a 404 status, for any address that
+// doesn't exist. Without it, Pages falls back to the homepage.
+import Layout from "../layouts/Layout.astro";
+import { CONTACT_EMAIL } from "../site.mjs";
+---
+
+<Layout
+  title="Page not found"
+  description="The page you're looking for doesn't exist or has moved."
+  brandStack={{ lines: ["page not", "found"] }}
+  noIndex
+>
+  <section class="container section page-intro">
+    <h1>We couldn't find that page</h1>
+    <p class="lede">
+      The page you're looking for doesn't exist or has moved. Try the
+      homepage, or email us at
+      <a class="text-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+      if you think something's broken.
+    </p>
+    <a class="home-link" href="/">Go to the homepage</a>
+  </section>
+</Layout>
+
+<style>
+  .home-link {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+
+  .home-link:hover {
+    transform: translateY(-1px);
+  }
+
+  .home-link:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+  }
+</style>

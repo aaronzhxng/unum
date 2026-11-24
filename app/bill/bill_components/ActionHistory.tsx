@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react-native";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { useWrapped } from "../../utils/useWrapped";
 import { styles as componentStyles } from "../styles"; // Adjust path
 
 interface Action {
@@ -32,6 +33,7 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
   setShowChamberModal,
   setShowPartyModal,
 }) => {
+  const { wrapped: sortWrapped, onFirstLayout, onSecondLayout } = useWrapped();
   return (
     <View
       style={{
@@ -47,58 +49,55 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
+            // The sort drops below the title when they don't fit side by side
+            flexWrap: "wrap",
+            columnGap: 12,
           },
         ]}
       >
         {/* Left: Title with count + filter button */}
-        <View style={{ flex: 1 }}>
-          <View
-            style={{
-              alignSelf: "flex-start",
-              height: 20,
-            }}
+        <Pressable
+          onLayout={onFirstLayout}
+          style={({ pressed }) => ({
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+            flexShrink: 1,
+            transform: [{ scale: pressed ? 0.96 : 1 }],
+          })}
+          onPress={() => {
+            setShowChamberModal(true);
+            setShowPartyModal(false);
+          }}
+        >
+          <Text
+            style={[
+              componentStyles.detailTitle,
+              { fontSize: 16, fontWeight: 600, flexShrink: 1 },
+            ]}
           >
-            <Pressable
-              style={({ pressed }) => [
-                {
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
-                  flex: 1,
-                  transform: [{ scale: pressed ? 0.96 : 1 }],
-                },
-              ]}
-              onPress={() => {
-                setShowChamberModal(true);
-                setShowPartyModal(false);
-              }}
-            >
-              <Text
-                style={[
-                  componentStyles.detailTitle,
-                  { fontSize: 16, fontWeight: 600, lineHeight: 16 },
-                ]}
-              >
-                Total actions ({actions.length})
-              </Text>
-              {showChamberModal || showPartyModal ? (
-                <ChevronUp size={16} color="#7B7C81" />
-              ) : (
-                <ChevronDown size={16} color="#7B7C81" />
-              )}
-            </Pressable>
-          </View>
-        </View>
+            Total actions ({actions.length})
+          </Text>
+          {showChamberModal || showPartyModal ? (
+            <ChevronUp size={16} color="#7B7C81" />
+          ) : (
+            <ChevronDown size={16} color="#7B7C81" />
+          )}
+        </Pressable>
 
         {/* Center: Sort button */}
         <Pressable
           style={({ pressed }) => [
             componentStyles.button,
-            { marginRight: -12 },
+            // Its padding lines its text up with the edge it sits against
+            sortWrapped
+              ? { marginLeft: -12, marginTop: 4 }
+              : { marginRight: -12 },
             {
               transform: [{ scale: pressed ? 0.96 : 1 }],
             },
           ]}
+          onLayout={onSecondLayout}
           onPress={(e) => {
             e.stopPropagation();
             setShowSort(!showSort);

@@ -8,6 +8,7 @@ import { getDb } from "../utils/database";
 import { notificationPreferences } from "../utils/notificationPreferences";
 import { pushToken } from "../utils/pushToken";
 import { storage } from "../utils/storage";
+import { houseTitle } from "../utils/officialTitle";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 
 const PARTY_ABBR: Record<string, string> = {
@@ -285,7 +286,7 @@ export default function FinishScreen() {
             const roleLabel =
               suggested.role === "Senator"
                 ? `Senator, ${fullState}`
-                : `Representative, ${fullState}${suggested.district ? `, District ${suggested.district}` : ""}`;
+                : `${houseTitle(fullState).full}, ${fullState}${suggested.district ? `, District ${suggested.district}` : ""}`;
             items.push({
               id: suggested.bioguideId,
               type: "official",
@@ -307,7 +308,7 @@ export default function FinishScreen() {
                   "Senate";
               const roleLabel = isSenator
                 ? `Senator, ${cached.state}`
-                : `Representative, ${cached.state}${cached.district ? `, District ${cached.district}` : ""}`;
+                : `${houseTitle(cached.state).full}, ${cached.state}${cached.district ? `, District ${cached.district}` : ""}`;
               items.push({
                 id: cached.bioguideId,
                 type: "official",

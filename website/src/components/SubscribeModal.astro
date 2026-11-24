@@ -1,0 +1,93 @@
+---
+// The subscribe card as a popup, opened by any element with
+// data-subscribe-open (the header's Subscribe button, the newsletter page's
+// hero button), or by a link ending in #subscribe (the email's Subscribe link).
+// Escape, the close button, or a click outside closes it.
+import SubscribeCard from "./SubscribeCard.astro";
+---
+
+<dialog class="subscribe-modal" aria-labelledby="subscribe-title-modal" data-subscribe-modal>
+  <SubscribeCard id="modal">
+    <button class="close" type="button" aria-label="Close" data-subscribe-close>
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+  </SubscribeCard>
+</dialog>
+
+<style>
+  .subscribe-modal {
+    width: min(640px, calc(100% - 2 * var(--gutter)));
+    max-width: none;
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .subscribe-modal::backdrop {
+    background: rgba(20, 20, 20, 0.35);
+    backdrop-filter: blur(2px);
+  }
+
+  .subscribe-modal[open] {
+    animation: pop-in 0.18s ease-out;
+  }
+
+  .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .close:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  .close:focus-visible {
+    outline: 2px solid var(--blue);
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .subscribe-modal[open] {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const modal = document.querySelector<HTMLDialogElement>("[data-subscribe-modal]");
+  if (modal) {
+    for (const opener of document.querySelectorAll("[data-subscribe-open]")) {
+      opener.addEventListener("click", (event) => {
+        event.preventDefault();
+        modal.showModal();
+        modal.querySelector<HTMLInputElement>("input[type=email]")?.focus();
+      });
+    }
+    if (location.hash === "#subscribe") modal.showModal();
+    modal.querySelector("[data-subscribe-close]")?.addEventListener("click", () => modal.close());
+    // A click on the backdrop lands on the dialog itself, outside the card
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) modal.close();
+    });
+  }
+</script>

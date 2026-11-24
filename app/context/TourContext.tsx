@@ -38,9 +38,9 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     tab: 1,
-    title: "Browse by State",
+    title: "Browse by State, Territory, or Committee",
     description:
-      "Tap here to filter officials by state. Set a priority state to see it first every time.",
+      "Tap here to filter officials by state or territory, or by committee. Set a priority state or territory to see it first every time.",
   },
   {
     tab: 1,

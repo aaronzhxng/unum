@@ -1,0 +1,75 @@
+---
+// The frame of every email: the logo and links on top, a white card for the
+// content, and the unsubscribe footer.
+import { C, FONT, ORIGIN, phoneRules } from "../emailTheme.mjs";
+
+interface Link {
+  label: string;
+  href: string;
+}
+interface Props {
+  title: string;
+  // The preview line inbox apps show after the subject
+  preheader: string;
+  // Top right, or on their own line under the logo on phones
+  links: Link[];
+  // Before Unsubscribe in the footer
+  footerLinks?: Link[];
+}
+const { title, preheader, links, footerLinks = [] } = Astro.props;
+const homeUrl = `${ORIGIN}/`;
+// Plain strings, since Astro moves anything in a fragment out of a table.
+// Non-breaking spaces, so a link never splits across lines.
+const headerLinks = links
+  .map((item) => `<a class="header-link" target="_blank" rel="noopener" href="${item.href}" style="color:${C.blue};text-decoration:none;white-space:nowrap">${item.label.replaceAll(" ", "&nbsp;")}</a>`)
+  .join('<span style="padding:0 7px">|</span>');
+const footerStart = footerLinks
+  .map((item) => `<a target="_blank" rel="noopener" href="${item.href}" style="color:${C.faint}">${item.label}</a> · `)
+  .join("");
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{title}</title>
+    {/* The policy area and sponsor bubbles go on two lines on phones. Apps that ignore this wrap them only when they run out of room. */}
+    <style is:inline set:html={phoneRules} />
+  </head>
+  <body style={`margin:0;padding:0;background:${C.paper};font-family:${FONT};color:${C.text}`}>
+    <div style="display:none;max-height:0;overflow:hidden">{preheader}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style={`background:${C.paper}`}>
+      <tr>
+        <td align="center" style="padding:24px 12px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px">
+            <tr>
+              <td style="padding:8px 8px 20px">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td class="header-cell" style="vertical-align:middle">
+                    {/* Real text, so mail apps recolor the words in dark mode, which they cannot do to an image. Everything shares one line so it all hangs off the text baseline, which lands somewhere different in each app's font. "unum" has no tall letters, so its height is its x-height: about 78% of the icon, as in the website logo. The icon drops 3px below the baseline to center those letters on it, and the small words end on the same baseline and rise to the same height. */}
+                    <a class="logo" target="_blank" rel="noopener" href={homeUrl} style={`display:block;font-size:51px;line-height:38px;font-weight:600;letter-spacing:-1.8px;color:${C.text};text-decoration:none;white-space:nowrap`}><img class="logo-icon" src={`${ORIGIN}/newsletter/email/logo-icon.png`} width="34" height="34" alt="" style="vertical-align:-3px;border:0;border-radius:8px;margin-right:8px" />unum<span class="logo-name" style="display:inline-block;margin-left:9px;font-size:14px;line-height:16px;font-weight:500;letter-spacing:0">last week<br />in congress</span></a>
+                  </td>
+                  <td class="header-cell header-links" align="right" style={`vertical-align:middle;padding-left:24px;font-size:13px;color:${C.faint};white-space:nowrap`} set:html={headerLinks}></td>
+                </tr></table>
+              </td>
+            </tr>
+            <tr>
+              <td style={`background:${C.card};border:1px solid ${C.border};border-radius:20px;padding:32px 28px`}>
+                <slot />
+              </td>
+            </tr>
+            <tr>
+              <td style={`padding:24px 8px;font-size:12px;line-height:1.6;color:${C.faint};text-align:center`}>
+                <Fragment set:html={footerStart} />
+                <a target="_blank" rel="noopener" href="{{unsubscribe_url}}" style={`color:${C.faint}`}>Unsubscribe</a><br />
+                You are getting this because you subscribed to Congress Weekly at unuminitiative.com.<br />
+                Unum Initiative Inc. · {"{{mailing_address}}"}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,10 +1,14 @@
 {
-  "weekOf": "2026-07-13",
-  "weekEnd": "2026-07-19",
+  "weekOf": "2026-11-23",
+  "weekEnd": "2026-11-29",
   "bills": [
     {
-      "billId": "hjres1",
-      "note": "This Consitutional Amendment would require that the Supreme Court be composed of nine judges, making future changes to this number more difficult."
+      "billId": "hr2347",
+      "note": "This bill speeds up federal environmental reviews and limits lawsuits against approved projects, and eases approval of power lines, geothermal, hydropower, and offshore energy projects."
+    },
+    {
+      "billId": "hconres93",
+      "note": "This concurrent resolution directs the President to remove U.S. Armed Forces from hostilities against Iran."
     }
   ]
 }

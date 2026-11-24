@@ -1,0 +1,324 @@
+---
+// One issue of Congress Weekly, built from its file in
+// src/content/newsletter.
+import { render } from "astro:content";
+import { getIssues } from "../../newsletter.mjs";
+import Layout from "../../layouts/Layout.astro";
+import BillEntry from "../../components/BillEntry.astro";
+import SubscribeCard from "../../components/SubscribeCard.astro";
+
+export async function getStaticPaths() {
+  // Newest first, so each issue knows its neighbors
+  const issues = await getIssues();
+  return issues.map((issue, i) => ({
+    params: { slug: issue.id },
+    props: { issue, newer: issues[i - 1], older: issues[i + 1] },
+  }));
+}
+
+const { issue, newer, older } = Astro.props;
+const { Content } = await render(issue);
+// The signoff is only for the emailed version
+const { week, date, headline, description, cover, stats, sections } = issue.data;
+const year = date.getUTCFullYear();
+const sent = date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+// Counts split by chamber show their total, with the split underneath
+const count = (n: number | { house: number; senate: number }) =>
+  typeof n === "number" ? { value: n } : { value: n.house + n.senate, split: n };
+const numbers = [
+  { ...count(stats.signed), label: "signed into law" },
+  { ...count(stats.passedBoth), label: "passed both chambers" },
+  { ...count(stats.outOfCommittee), label: "out of committee" },
+  { ...count(stats.introduced), label: "introduced" },
+];
+---
+
+<Layout
+  brandStack={{ lines: ["congress", "weekly"] }}
+  newsletterNav
+  navSubscribe
+  title={`Congress Weekly: ${week}, ${year}`}
+  description={description}
+  previewImage={cover}
+>
+  <article>
+    <header class="container section page-intro">
+      <div class="eyebrow-row">
+        <p class="eyebrow">Last Week in Congress · {week}, {year}</p>
+        <nav class="issue-nav" aria-label="Other issues">
+          {older && <a href={`/newsletter/${older.id}`} rel="prev">← {older.data.week}</a>}
+          {newer && <a href={`/newsletter/${newer.id}`} rel="next">{newer.data.week} →</a>}
+        </nav>
+      </div>
+      {/* With a cover, it sits in the left column, as tall as the headline,
+          opening and details line beside it in the right column, like the
+          site's other two-column sections. Its credit joins the sent date in
+          the details line; stacked on phones, it sits under the photo. */}
+      <div class:list={["intro-body", { "has-cover": cover }]}>
+        {
+          cover && (
+            <div class="cover">
+              <img src={cover.src} alt={cover.alt} width="1600" height="840" style={cover.position && `object-position:${cover.position}`} />
+            </div>
+          )
+        }
+        <div class="intro-text">
+          <h1>{headline}</h1>
+          <div class="opening lede stack">
+            <Content />
+          </div>
+          <p class="sent">
+            Sent {sent}
+            {cover?.credit && <span class="credit-inline"> · Cover photo: {cover.credit}</span>}
+          </p>
+        </div>
+        {cover?.credit && <p class="credit-under">Photo: {cover.credit}</p>}
+      </div>
+    </header>
+
+    <section class="container" aria-label="The week in numbers">
+      <ul class="numbers" role="list">
+        {
+          numbers.map((n) => (
+            <li>
+              <span class="figure">
+                <span class="number">{n.value}</span>
+                {n.split && (
+                  <span class="chambers">
+                    <span>H: {n.split.house}</span>
+                    <span>S: {n.split.senate}</span>
+                  </span>
+                )}
+              </span>
+              <span class="muted">{n.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      sections.map((section, i) => (
+        <>
+          {/* A full-width line between sections */}
+          {i > 0 && (
+            <div class="container" aria-hidden="true">
+              <hr class="section-rule" />
+            </div>
+          )}
+          <section class="container section split issue-section">
+            <h2>{section.heading}</h2>
+            <div class="bills">
+              {section.bills.map((bill) => (
+                <BillEntry bill={bill} />
+              ))}
+            </div>
+          </section>
+        </>
+      ))
+    }
+
+  </article>
+
+  <section class="container section">
+    <SubscribeCard />
+  </section>
+</Layout>
+
+<style>
+
+  .intro-body {
+    justify-self: stretch;
+    display: grid;
+    gap: var(--intro-gap);
+  }
+
+  .intro-text {
+    display: grid;
+    gap: var(--intro-gap);
+  }
+
+  /* Stacked, the cover is a band as wide as the text below it */
+  .cover {
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .cover img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1600 / 840;
+    object-fit: cover;
+    border-radius: 20px;
+  }
+
+  /* The sent date, with the cover's credit beside it on wide screens */
+  .sent,
+  .credit-under {
+    font-size: 14px;
+    color: var(--text-faint);
+  }
+
+  .sent {
+    margin-top: calc(16px - var(--intro-gap));
+  }
+
+  /* Stacked, the credit sits right under the photo instead */
+  .credit-under {
+    margin-top: calc(8px - var(--intro-gap));
+  }
+
+  .credit-inline {
+    display: none;
+  }
+
+  /* Stacked, the headline still comes first, then the photo and its
+     credit, then the opening */
+  @media (max-width: 899px) {
+    .intro-text {
+      display: contents;
+    }
+
+    .intro-body h1 {
+      order: -2;
+    }
+
+    .cover,
+    .credit-under {
+      order: -1;
+    }
+  }
+
+  /* Side by side: the same columns as the site's split sections. The photo
+     is laid over its cell rather than sizing it, so the headline, opening
+     and details line beside it set the height, and the photo fills it. */
+  @media (min-width: 900px) {
+    .intro-body.has-cover {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
+      column-gap: 64px;
+    }
+
+    .has-cover .cover {
+      position: relative;
+      min-height: 220px;
+    }
+
+    .has-cover .cover img {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+
+    .credit-inline {
+      display: inline;
+    }
+
+    .credit-under {
+      display: none;
+    }
+  }
+
+  .opening :global(p) {
+    color: var(--text-muted);
+  }
+
+  .numbers {
+    --number-size: 40px;
+    list-style: none;
+    margin: 0;
+    padding: 28px 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .numbers li {
+    display: grid;
+    gap: 2px;
+    line-height: 1.4;
+  }
+
+  /* House and Senate counts beside the total, together as tall as it */
+  .figure {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chambers {
+    display: grid;
+    font-size: 13px;
+    line-height: calc(var(--number-size) * 1.1 / 2);
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .number {
+    font-size: var(--number-size);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .issue-section {
+    padding-bottom: 0;
+  }
+
+  .section-rule {
+    margin: 40px 0 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* The first bill's divider would double up with the heading's top line */
+  .bills > :global(:first-child) {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  /* The eyebrow, with links to the neighboring issues on the same line */
+  .eyebrow-row {
+    justify-self: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    /* The full gap to the photo and headline below, a little more room than
+       a label usually gets above its heading */
+  }
+
+  .eyebrow-row .eyebrow {
+    margin-bottom: 0;
+  }
+
+  .issue-nav {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+  }
+
+  .issue-nav a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .issue-nav a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 760px) {
+    .numbers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .numbers {
+      --number-size: 32px;
+    }
+  }
+</style>

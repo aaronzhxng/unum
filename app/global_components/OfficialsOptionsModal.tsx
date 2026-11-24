@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import { styles as componentStyles } from "../global_styles/styles";
 import { notificationPreferences } from "../utils/notificationPreferences";
+import { placeKind } from "../utils/officialTitle";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
 
 interface Props {
@@ -99,7 +100,7 @@ export default function OfficialsOptionsModal({
               }}
             >
               <Text style={componentStyles.dropdownItemText}>
-                Set as Priority State
+                Set as Priority {placeKind(selectedState)}
               </Text>
             </Pressable>
           </View>

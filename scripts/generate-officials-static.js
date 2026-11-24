@@ -1,7 +1,11 @@
 require("dotenv").config({ path: "../backend/.env" });
 const fs = require("fs");
 const axios = require("axios");
+const yaml = require("js-yaml");
 
+// The main branch, because the project's github.io JSON copies can lag by weeks
+const LEGISLATORS =
+  "https://raw.githubusercontent.com/unitedstates/congress-legislators/main";
 const API_KEY = process.env.CONGRESS_API_KEY;
 const OUTPUT_PATH = "../app/data/officials-static.json";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -11,15 +15,15 @@ async function main() {
 
   // Fetch committee membership (bioguideId -> committee IDs)
   const membershipRes = await axios.get(
-    "https://unitedstates.github.io/congress-legislators/committee-membership-current.json",
+    `${LEGISLATORS}/committee-membership-current.yaml`,
   );
-  const membership = membershipRes.data;
+  const membership = yaml.load(membershipRes.data);
 
   // Fetch committee names (committee ID -> name)
   const committeesRes = await axios.get(
-    "https://unitedstates.github.io/congress-legislators/committees-current.json",
+    `${LEGISLATORS}/committees-current.yaml`,
   );
-  const committees = committeesRes.data;
+  const committees = yaml.load(committeesRes.data);
 
   // Build committee ID -> name map
   const committeeNameMap = {};
@@ -116,6 +120,12 @@ async function main() {
       fs.writeFileSync(OUTPUT_PATH, JSON.stringify(result, null, 2));
       console.log(`  Saved progress (${count} done)`);
     }
+  }
+
+  // Former members keep their entries, since their profiles are still reachable
+  // from older bills, but they no longer sit on any committee
+  for (const id of Object.keys(result)) {
+    result[id].committees = bioguideToCommittees[id] ?? [];
   }
 
   fs.mkdirSync("../app/data", { recursive: true });

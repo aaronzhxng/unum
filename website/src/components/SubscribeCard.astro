@@ -1,0 +1,35 @@
+---
+// The newsletter signup as a centered card, shared by the newsletter page
+// and the end of every issue, and shown in the subscribe popup.
+import SubscribeForm from "./SubscribeForm.astro";
+
+interface Props {
+  // Unique per page, for the form's input and the popup's label
+  id?: string;
+}
+const { id = "card" } = Astro.props;
+---
+
+<div class="card subscribe-card">
+  <h2 id={`subscribe-title-${id}`}>Get it every Monday</h2>
+  <p class="muted">What Congress did last week, in plain language. Free and nonpartisan.</p>
+  <SubscribeForm align="center" id={id} />
+  <slot />
+</div>
+
+<style>
+  .subscribe-card {
+    position: relative;
+    padding: 56px 24px;
+    display: grid;
+    /* Keeps the column, and the form in it, within narrow screens */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--card-heading-gap);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .subscribe-card .muted {
+    margin-bottom: 8px;
+  }
+</style>

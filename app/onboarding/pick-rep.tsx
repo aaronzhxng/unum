@@ -1,5 +1,6 @@
 import { useFocusEffect } from "expo-router";
 import { useRouter } from "expo-router";
+<<<<<<< HEAD
 import { Search, X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,6 +19,27 @@ import { useOnboarding } from "../context/OnboardingContext";
 import CongressionalDistrictMap from "../global_components/CongressionalDistrictMap";
 import { officialsService } from "../services/officials";
 import { geocodeAddress } from "../services/osmGeocoding";
+=======
+import { Map as MapIcon } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { useOnboarding } from "../context/OnboardingContext";
+import type { FocusDistrict } from "../global_components/CongressionalDistrictMap";
+import DistrictPickerModal from "../global_components/DistrictPickerModal";
+import { officialsService } from "../services/officials";
+import { houseTitle, roleOptionsFromText } from "../utils/officialTitle";
+import FitText from "../global_components/FitText";
+>>>>>>> origin/master
 
 // State name → abbreviation lookup
 const STATE_TO_ABBR: Record<string, string> = {
@@ -114,8 +136,16 @@ const PARTY_ABBR: Record<string, string> = {
   Democrat: "D",
 };
 
+// Two-letter code for a state or territory name
+const toAbbr = (name: string): string | undefined =>
+  STATE_TO_ABBR[name] ?? TERRITORY_TO_ABBR[name];
+
+// "Virgin Islands" is only an alias the officials data uses; display the
+// name the state picker shows
 const ABBR_TO_STATE: Record<string, string> = Object.fromEntries(
-  Object.entries(STATE_TO_ABBR).map(([state, abbr]) => [abbr, state]),
+  Object.entries({ ...STATE_TO_ABBR, ...TERRITORY_TO_ABBR })
+    .filter(([state]) => state !== "Virgin Islands")
+    .map(([state, abbr]) => [abbr, state]),
 );
 
 interface RepResult {
@@ -126,12 +156,29 @@ interface RepResult {
   photoUrl: string;
 }
 
+<<<<<<< HEAD
 interface DistrictSelection {
   geoid: string;
   stateAbbr: string;
   district: number;
   label: string;
 }
+=======
+const isHouseMemberFor = (o: any, state: string, district: number) => {
+  const termInfo = o.terms?.item?.[o.terms.item.length - 1];
+  const isHouse =
+    termInfo?.chamber === "House of Representatives" ||
+    o.chamber === "House of Representatives";
+  const officialStateAbbr = o.state ? toAbbr(o.state) : null;
+  const officialDistrict = parseInt(
+    termInfo?.district ?? o.district ?? "0",
+    10,
+  );
+  return (
+    isHouse && officialStateAbbr === state && officialDistrict === district
+  );
+};
+>>>>>>> origin/master
 
 export default function PickRepScreen() {
   const router = useRouter();
@@ -150,19 +197,25 @@ export default function PickRepScreen() {
   const [loading, setLoading] = useState(false);
   const [addressSearching, setAddressSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Notice for a seat that was found but nobody holds right now
+  const [vacancy, setVacancy] = useState<string | null>(null);
   const [rep, setRep] = useState<RepResult | null>(null);
   const [repSelected, setRepSelected] = useState(false);
   const [stateMismatch, setStateMismatch] = useState(false);
   const [multipleReps, setMultipleReps] = useState<RepResult[]>([]);
   const [selectedRepId, setSelectedRepId] = useState<string | null>(null);
   const [showAllReps, setShowAllReps] = useState(false);
+<<<<<<< HEAD
   const [districtSelection, setDistrictSelection] =
     useState<DistrictSelection | null>(null);
   const { width: screenWidth } = useWindowDimensions();
+=======
+  const [zipDistricts, setZipDistricts] = useState<FocusDistrict[]>([]);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const officialsRef = useRef<any[]>([]);
+>>>>>>> origin/master
 
-  const stateAbbrForLookup = priorityState
-    ? STATE_TO_ABBR[priorityState]
-    : null;
+  const stateAbbrForLookup = priorityState ? toAbbr(priorityState) : null;
 
   const formatName = (name: string): string => {
     if (!name.includes(",")) return name;
@@ -170,6 +223,7 @@ export default function PickRepScreen() {
     return `${first} ${last}`;
   };
 
+<<<<<<< HEAD
   const matchDistrictToRep = async ({
     geoid,
     stateAbbr,
@@ -254,6 +308,32 @@ export default function PickRepScreen() {
     } finally {
       setLoading(false);
     }
+=======
+  const buildRepResult = (o: any, resolvedAbbr: string): RepResult => ({
+    bioguideId: o.bioguideId,
+    name: formatName(o.name),
+    party:
+      o.partyName ??
+      o.terms?.item?.[o.terms.item.length - 1]?.partyName ??
+      "Unknown",
+    role: (() => {
+      const state = ABBR_TO_STATE[resolvedAbbr] ?? resolvedAbbr;
+      const district = o.district ? `, District ${o.district}` : "";
+      const title = houseTitle(state);
+      // Written out in full; the card shortens it when it doesn't fit
+      return `${title.full}, ${state}${district}`;
+    })(),
+    photoUrl: `https://bioguide.congress.gov/bioguide/photo/${o.bioguideId[0]}/${o.bioguideId}.jpg`,
+  });
+
+  // Rep for a district tapped on the map picker, from the officials list
+  // loaded by the zip lookup
+  const resolveMapRep = (state: string, district: number): RepResult | null => {
+    const match = officialsRef.current.find((o) =>
+      isHouseMemberFor(o, state, district),
+    );
+    return match ? buildRepResult(match, state) : null;
+>>>>>>> origin/master
   };
 
   const [resolvedState, setResolvedState] = useState<string | null>(null);
@@ -307,6 +387,7 @@ export default function PickRepScreen() {
     }
     setLoading(true);
     setError(null);
+    setVacancy(null);
     setRep(null);
     setDistrictSelection(null);
     setMultipleReps([]);
@@ -337,6 +418,9 @@ export default function PickRepScreen() {
       // Warn if zip's state differs from selected priority state
       const resolvedStateAbbr = districts[0].state;
       setResolvedState(resolvedStateAbbr);
+      setZipDistricts(
+        districts.map((d) => ({ stateAbbr: d.state, district: d.district })),
+      );
       if (stateAbbrForLookup && resolvedStateAbbr !== stateAbbrForLookup) {
         setStateMismatch(true);
       } else {
@@ -346,46 +430,16 @@ export default function PickRepScreen() {
       // Load officials and match ALL returned districts
       const officialsData = await officialsService.getAll();
       const officials = officialsData.officials as any[];
-
-      const buildRepResult = (o: any, resolvedAbbr: string): RepResult => ({
-        bioguideId: o.bioguideId,
-        name: formatName(o.name),
-        party:
-          o.partyName ??
-          o.terms?.item?.[o.terms.item.length - 1]?.partyName ??
-          "Unknown",
-        role: (() => {
-          const state = ABBR_TO_STATE[resolvedAbbr] ?? resolvedAbbr;
-          const district = o.district ? `, District ${o.district}` : "";
-          const full = `Representative, ${state}${district}`;
-          const abbr = `Rep, ${state}${district}`;
-          if (screenWidth < 390) return abbr;
-          return full.length > 39 ? abbr : full;
-        })(),
-        photoUrl: `https://bioguide.congress.gov/bioguide/photo/${o.bioguideId[0]}/${o.bioguideId}.jpg`,
-      });
+      officialsRef.current = officials;
 
       // Find a rep for each district returned, deduplicate by bioguideId
       const seen = new Set<string>();
       const matched: RepResult[] = [];
 
       for (const { state, district } of districts) {
-        const match = officials.find((o) => {
-          const termInfo = o.terms?.item?.[o.terms.item.length - 1];
-          const isHouse =
-            termInfo?.chamber === "House of Representatives" ||
-            o.chamber === "House of Representatives";
-          const officialStateAbbr = o.state ? STATE_TO_ABBR[o.state] : null;
-          const officialDistrict = parseInt(
-            termInfo?.district ?? o.district ?? "0",
-            10,
-          );
-          return (
-            isHouse &&
-            officialStateAbbr === state &&
-            officialDistrict === district
-          );
-        });
+        const match = officials.find((o) =>
+          isHouseMemberFor(o, state, district),
+        );
 
         if (match && !seen.has(match.bioguideId)) {
           seen.add(match.bioguideId);
@@ -394,8 +448,9 @@ export default function PickRepScreen() {
       }
 
       if (matched.length === 0) {
-        setError(
-          "Found your district but couldn't match to our database. You can skip this step.",
+        // Same wording as the congressional map's notice for an empty seat
+        setVacancy(
+          "This district doesn't currently have a representative. The seat may be vacant until a special election fills it, or the district may have recently been redrawn.",
         );
         setLoading(false);
         return;
@@ -491,12 +546,12 @@ export default function PickRepScreen() {
     if (!priorityState) return;
     setLoading(true);
     setError(null);
+    setVacancy(null);
     setRep(null);
     setDistrictSelection(null);
 
     try {
-      const stateAbbr =
-        STATE_TO_ABBR[priorityState] ?? TERRITORY_TO_ABBR[priorityState];
+      const stateAbbr = toAbbr(priorityState);
 
       const officialsData = await officialsService.getAll();
       const officials = officialsData.officials as any[];
@@ -506,15 +561,15 @@ export default function PickRepScreen() {
         const isHouse =
           termInfo?.chamber === "House of Representatives" ||
           o.chamber === "House of Representatives";
-        const officialStateAbbr = o.state
-          ? (STATE_TO_ABBR[o.state] ?? TERRITORY_TO_ABBR[o.state])
-          : null;
+        const officialStateAbbr = o.state ? toAbbr(o.state) : null;
         return isHouse && officialStateAbbr === stateAbbr;
       });
 
       if (!match) {
-        setError(
-          "Couldn't find a delegate for this state in our database. You can skip this step.",
+        const place =
+          priorityState === "District of Columbia" ? "DC" : priorityState;
+        setVacancy(
+          `${place} doesn't currently have a ${houseTitle(priorityState).full.toLowerCase()} in the House. The seat may be vacant until a special election fills it.`,
         );
         return;
       }
@@ -530,10 +585,9 @@ export default function PickRepScreen() {
           "Unknown",
         role: (() => {
           const district = match.district ? `, District ${match.district}` : "";
-          const full = `Representative, ${priorityState}${district}`;
-          const abbr = `Rep, ${priorityState}${district}`;
-          if (screenWidth < 390) return abbr;
-          return full.length > 39 ? abbr : full;
+          const title = houseTitle(priorityState);
+          // Written out in full; the card shortens it when it doesn't fit
+          return `${title.full}, ${priorityState}${district}`;
         })(),
         photoUrl: `https://bioguide.congress.gov/bioguide/photo/${match.bioguideId[0]}/${match.bioguideId}.jpg`,
       });
@@ -569,7 +623,7 @@ export default function PickRepScreen() {
         </Text>
         <Text style={{ fontSize: 15, color: "#535353", lineHeight: 22 }}>
           {TERRITORIES.has(priorityState ?? "")
-            ? `${priorityState} has a non-voting delegate to the House of Representatives instead of a senator or voting rep.`
+            ? `${priorityState} has a non-voting ${houseTitle(priorityState).full.toLowerCase()} in the House of Representatives instead of senators or a voting representative.`
             : SINGLE_REP_STATES.has(priorityState ?? "")
               ? `${priorityState} has only one House representative for the whole state, so no zip code is needed.`
               : familiarityLevel === "low"
@@ -708,6 +762,7 @@ export default function PickRepScreen() {
                 onChangeText={(t) => {
                   setZip(t.replace(/[^0-9]/g, "").slice(0, 5));
                   setError(null);
+                  setVacancy(null);
                   setRep(null);
                   setDistrictSelection(null);
                   setRepSelected(false);
@@ -793,6 +848,7 @@ export default function PickRepScreen() {
             </Text>
           </View>
         )}
+<<<<<<< HEAD
         {districtSelection && !error && (
           <View
             style={{
@@ -806,6 +862,20 @@ export default function PickRepScreen() {
             <Text style={{ fontSize: 13, color: "#005EA8", lineHeight: 18 }}>
               Selected {districtSelection.label}. The matching representative is
               shown below.
+=======
+        {vacancy && !error && (
+          <View
+            style={{
+              backgroundColor: "#FFF8E7",
+              borderRadius: 12,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: "#F5A623",
+            }}
+          >
+            <Text style={{ fontSize: 13, color: "#8B6914", lineHeight: 18 }}>
+              {vacancy}
+>>>>>>> origin/master
             </Text>
           </View>
         )}
@@ -859,8 +929,8 @@ export default function PickRepScreen() {
                   style={{ fontSize: 11, color: "#008CFF", fontWeight: "600" }}
                 >
                   {TERRITORIES.has(priorityState ?? "")
-                    ? "Your Delegate"
-                    : multipleReps.length > 1
+                    ? `Your ${houseTitle(priorityState).full}`
+                    : multipleReps.length > 1 && !repSelected
                       ? "Best Match"
                       : "Your Representative"}
                 </Text>
@@ -890,12 +960,10 @@ export default function PickRepScreen() {
                 >
                   ·
                 </Text>
-                <Text
+                <FitText
                   style={{ fontSize: 13, color: "#7B7C81" }}
-                  numberOfLines={1}
-                >
-                  {rep.role}
-                </Text>
+                  options={roleOptionsFromText(rep.role ?? "")}
+                />
               </View>
             </View>
             <View
@@ -933,11 +1001,31 @@ export default function PickRepScreen() {
               }}
             >
               <Text style={{ fontSize: 13, color: "#7A5C00", lineHeight: 18 }}>
-                Zip codes sometimes cross district lines due to gerrymandering.
-                If the match above doesn't look right, select your actual
-                representative below.
+                Your zip code crosses more than one district. If the match above
+                doesn't look right, select your actual representative below.
               </Text>
             </View>
+            <Pressable
+              onPress={() => setShowMapPicker(true)}
+              style={({ pressed }) => ({
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                backgroundColor: "#E8F4FF",
+                borderRadius: 16,
+                paddingVertical: 12,
+                marginTop: 10,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
+            >
+              <MapIcon size={18} color="#008CFF" />
+              <Text
+                style={{ fontSize: 14, color: "#008CFF", fontWeight: "600" }}
+              >
+                Not sure? Find your district on the map
+              </Text>
+            </Pressable>
             <Pressable
               onPress={() => setShowAllReps(!showAllReps)}
               style={{ paddingVertical: 12, alignItems: "center" }}
@@ -1024,12 +1112,10 @@ export default function PickRepScreen() {
                         >
                           ·
                         </Text>
-                        <Text
+                        <FitText
                           style={{ fontSize: 13, color: "#7B7C81" }}
-                          numberOfLines={1}
-                        >
-                          {r.role}
-                        </Text>
+                          options={roleOptionsFromText(r.role ?? "")}
+                        />
                       </View>
                     </View>
                     <View
@@ -1078,6 +1164,18 @@ export default function PickRepScreen() {
           </Text>
         )}
       </ScrollView>
+
+      <DistrictPickerModal
+        visible={showMapPicker}
+        onClose={() => setShowMapPicker(false)}
+        focusDistricts={zipDistricts}
+        stateAbbr={resolvedState}
+        resolveRep={resolveMapRep}
+        onConfirm={(chosen) => {
+          selectSpecificRep(chosen);
+          setShowMapPicker(false);
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }

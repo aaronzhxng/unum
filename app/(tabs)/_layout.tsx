@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { syncPreferencesToBackend } from "../utils/syncPreferences";
+import { pushToken } from "../utils/pushToken";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -288,7 +289,9 @@ function TabsLayoutInner() {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   const pagerRef = useRef<PagerView>(null);
-  const { tabBarHidden } = useTabBar();
+  const { tabBarHidden, setActiveTab, tabRequest, clearTabRequest } =
+    useTabBar();
+  useEffect(() => setActiveTab(activeIndex), [activeIndex, setActiveTab]);
   const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
   // Guard against stale onPageSelected events that fire during the
   // focus-recovery snap. Without this, a late drift event can override
@@ -306,9 +309,10 @@ function TabsLayoutInner() {
   useEffect(() => {
     const SYNC_KEY = "push_token_last_synced";
     const ONE_DAY = 24 * 60 * 60 * 1000;
-    AsyncStorage.getItem(SYNC_KEY).then((raw) => {
+    AsyncStorage.getItem(SYNC_KEY).then(async (raw) => {
       const last = raw ? parseInt(raw, 10) : 0;
       if (Date.now() - last > ONE_DAY) {
+        await pushToken.register();
         syncPreferencesToBackend().catch(() => {});
         AsyncStorage.setItem(SYNC_KEY, String(Date.now()));
       }
@@ -321,6 +325,15 @@ function TabsLayoutInner() {
     activeIndexRef.current = index;
     setVisitedTabs((prev) => new Set([...prev, index]));
   };
+
+  // Another screen asked for a tab, like a committee on an official's
+  // profile opening the Officials tab. It usually asks just before closing
+  // itself, and the focus snap below then keeps this page.
+  useEffect(() => {
+    if (!tabRequest) return;
+    navigateToTab(tabRequest.index);
+    clearTabRequest();
+  }, [tabRequest]);
 
   // When returning to (tabs) via swipe-back, the PagerView can drift to
   // page 0. Two-layer defence:

@@ -85,8 +85,12 @@ const sendNotifications = async (
   }
 };
 
-const getAllRegistrations = () => {
-  return db.prepare("SELECT * FROM push_registrations").all() as {
+const getAllRegistrations = (filterToken?: string) => {
+  const sql = filterToken
+    ? "SELECT * FROM push_registrations WHERE token = ?"
+    : "SELECT * FROM push_registrations";
+  const args = filterToken ? [filterToken] : [];
+  return db.prepare(sql).all(...args) as {
     token: string;
     policy_areas: string;
     followed_states: string;
@@ -105,19 +109,59 @@ const getLastChecked = (): string => {
 //   return "2026-04-14";
 // };
 
+const officialBillTitle = (officialName: string, actionText: string | null): string => {
+  const a = (actionText ?? "").toLowerCase();
+  if (a.includes("became public law") || a.includes("signed by president"))
+    return `${officialName}: Bill signed into law`;
+  if (a.includes("passed") || a.includes("agreed to") || a.includes("adopted"))
+    return `${officialName}: Bill passed`;
+  if (a.includes("failed") || a.includes("rejected") || a.includes("not agreed to"))
+    return `${officialName}: Bill failed`;
+  if (a.includes("introduced") || a.includes("referred to"))
+    return `${officialName} introduced a bill`;
+  return `${officialName}: Bill update`;
+};
+
+const truncateBillName = (name: string, maxLength = 50): string => {
+  if (name.length <= maxLength) return name;
+  const cut = name.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > 20 ? lastSpace : maxLength)}…`;
+};
+
+const getBillDisplayName = (billId: string): string => {
+  const row = db
+    .prepare(`SELECT title FROM bills WHERE bill_id = ?`)
+    .get(billId) as { title: string | null } | undefined;
+  return truncateBillName(row?.title || billId.toUpperCase());
+};
+
+const billActionTitle = (policyArea: string, actionText: string | null): string => {
+  const a = (actionText ?? "").toLowerCase();
+  if (a.includes("became public law") || a.includes("signed by president"))
+    return `Signed into law: ${policyArea}`;
+  if (a.includes("passed") || a.includes("agreed to") || a.includes("adopted"))
+    return `Vote passed: ${policyArea}`;
+  if (a.includes("failed") || a.includes("rejected") || a.includes("not agreed to"))
+    return `Vote failed: ${policyArea}`;
+  if (a.includes("introduced") || a.includes("referred to"))
+    return `New bill: ${policyArea}`;
+  return `${policyArea}: Recent update`;
+};
+
 // ── Check 1: New bills in followed policy areas / states ──────────────────────
 // Uses Railway SQLite bills table — no Congress.gov API needed
 
-const checkNewBills = async () => {
+const checkNewBills = async (filterToken?: string) => {
   console.log("Checking for new bills...");
-  const registrations = getAllRegistrations();
+  const registrations = getAllRegistrations(filterToken);
   const messages: { to: string; title: string; body: string; data?: any }[] =
     [];
   const since = getLastChecked();
 
   const recentBills = db
     .prepare(
-      `SELECT bill_id, type, number, title, policy_area, sponsor_state
+      `SELECT bill_id, type, number, title, policy_area, sponsor_state, latest_action_text
      FROM bills
      WHERE latest_action_date >= ?
        AND type IN ('HR', 'S')
@@ -130,13 +174,10 @@ const checkNewBills = async () => {
     title: string;
     policy_area: string;
     sponsor_state: string | null;
+    latest_action_text: string | null;
   }[];
 
   console.log(`Found ${recentBills.length} recent bills since ${since}`);
-  console.log(
-    `Sample update_dates:`,
-    (recentBills as any[]).slice(0, 3).map((b) => b.update_date),
-  );
 
   for (const reg of registrations) {
     const followedPolicyAreas: string[] = JSON.parse(reg.policy_areas || "[]");
@@ -159,8 +200,8 @@ const checkNewBills = async () => {
       ) {
         messages.push({
           to: reg.token,
-          title: `${bill.policy_area}: Recent update`,
-          body: `${bill.type}.${bill.number} — ${bill.title}`,
+          title: billActionTitle(bill.policy_area, bill.latest_action_text),
+          body: bill.title,
           data: { billId },
         });
         policyAreaCounts[bill.policy_area] =
@@ -176,8 +217,8 @@ const checkNewBills = async () => {
         if (matchedState && (stateCounts[matchedState] ?? 0) < 4) {
           messages.push({
             to: reg.token,
-            title: `New bill from ${matchedState}`,
-            body: `${bill.type}.${bill.number} — ${bill.title}`,
+            title: billActionTitle(matchedState, bill.latest_action_text),
+            body: bill.title,
             data: { billId },
           });
           stateCounts[matchedState] = (stateCounts[matchedState] ?? 0) + 1;
@@ -216,9 +257,9 @@ const checkNewBills = async () => {
 
 // ── Check 2: Status changes on followed bills ─────────────────────────────────
 
-const checkFollowedBills = async () => {
+const checkFollowedBills = async (filterToken?: string) => {
   console.log("Checking followed bills for updates...");
-  const registrations = getAllRegistrations();
+  const registrations = getAllRegistrations(filterToken);
   const messages: { to: string; title: string; body: string; data?: any }[] =
     [];
 
@@ -230,6 +271,7 @@ const checkFollowedBills = async () => {
 
     for (const { billId: rawBillId, subTypes } of followedBills) {
       const billId = rawBillId.replace(/^bill_/, "");
+      const billDisplayName = getBillDisplayName(billId);
       const wantsActions =
         subTypes.includes("all-notications") || subTypes.includes("actions");
       const wantsVoting =
@@ -266,7 +308,7 @@ const checkFollowedBills = async () => {
           for (const action of recentActions) {
             messages.push({
               to: reg.token,
-              title: `${billId.toUpperCase()} had a new action`,
+              title: `${billDisplayName} had a new action`,
               body: action.text,
               data: { billId, notifType: "actions" },
             });
@@ -291,7 +333,7 @@ const checkFollowedBills = async () => {
           for (const action of recentVotes) {
             messages.push({
               to: reg.token,
-              title: `Vote recorded on ${billId.toUpperCase()}`,
+              title: `Vote recorded on ${billDisplayName}`,
               body: action.text,
               data: { billId, notifType: "voting" },
             });
@@ -312,7 +354,7 @@ const checkFollowedBills = async () => {
           if (recentCosponsors.length > 0) {
             messages.push({
               to: reg.token,
-              title: `${billId.toUpperCase()} received a new cosponsor`,
+              title: `${billDisplayName} received a new cosponsor`,
               body: recentCosponsors
                 .map(
                   (c: any) =>
@@ -337,7 +379,7 @@ const checkFollowedBills = async () => {
           if (recentAmendments.length > 0) {
             messages.push({
               to: reg.token,
-              title: `${billId.toUpperCase()} has a new amendment`,
+              title: `${billDisplayName} has a new amendment`,
               body:
                 recentAmendments.length === 1
                   ? `1 new amendment submitted`
@@ -409,9 +451,9 @@ const resolveOfficialName = (bioguideId: string, storedName: string): string => 
 
 // ── Check 3: Activity from followed officials ─────────────────────────────────
 
-const checkFollowedOfficials = async () => {
+const checkFollowedOfficials = async (filterToken?: string) => {
   console.log("Checking followed officials for updates...");
-  const registrations = getAllRegistrations();
+  const registrations = getAllRegistrations(filterToken);
   const messages: { to: string; title: string; body: string; data?: any }[] =
     [];
   const since = getLastChecked();
@@ -441,25 +483,46 @@ const checkFollowedOfficials = async () => {
       if (!wantsSponsored && !wantsCosponsored) continue;
 
       try {
+        // Check any recent action on the official's sponsored bills via prewarm cache + bills table.
+        // This covers introductions, votes, passage, signing — any legislative action since yesterday.
         if (wantsSponsored) {
-          const res = await axios.get(
-            `https://api.congress.gov/v3/member/${bioguideId}/sponsored-legislation`,
-            {
-              headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-              params: { limit: 10 },
-            },
-          );
-          const recent = (res.data.sponsoredLegislation || []).filter(
-            (b: any) => b.introducedDate >= since && b.type && b.number,
-          );
-          for (const bill of recent) {
-            const billId = `${bill.type.toLowerCase()}${bill.number}`;
-            messages.push({
-              to: reg.token,
-              title: `${officialName} introduced a new bill`,
-              body: `${bill.type}.${bill.number} — ${bill.title ?? "No title"}`,
-              data: { billId, officialId: bioguideId, notifType: "introduced" },
-            });
+          const cacheRow = db
+            .prepare(`SELECT data FROM congress_cache WHERE cache_key = ?`)
+            .get(`sponsored-${bioguideId}`) as { data: string } | undefined;
+
+          if (cacheRow) {
+            const billIds: string[] = (
+              (JSON.parse(cacheRow.data).legislation ?? []) as any[]
+            )
+              .filter((b) => b.type && b.number)
+              .map((b) => `${b.type.toLowerCase()}${b.number}`);
+
+            if (billIds.length > 0) {
+              const placeholders = billIds.map(() => "?").join(",");
+              const recentBills = db
+                .prepare(
+                  `SELECT bill_id, title, latest_action_text FROM bills
+                   WHERE bill_id IN (${placeholders}) AND latest_action_date >= ?`,
+                )
+                .all(...billIds, since) as {
+                bill_id: string;
+                title: string;
+                latest_action_text: string | null;
+              }[];
+
+              for (const bill of recentBills) {
+                messages.push({
+                  to: reg.token,
+                  title: officialBillTitle(officialName, bill.latest_action_text),
+                  body: bill.title,
+                  data: {
+                    billId: bill.bill_id,
+                    officialId: bioguideId,
+                    notifType: "bill-action",
+                  },
+                });
+              }
+            }
           }
         }
 
@@ -479,7 +542,7 @@ const checkFollowedOfficials = async () => {
             messages.push({
               to: reg.token,
               title: `${officialName} cosponsored a bill`,
-              body: `${bill.type}.${bill.number} — ${bill.title ?? "No title"}`,
+              body: bill.title ?? "No title",
               data: { billId, officialId: bioguideId, notifType: "cosponsored" },
             });
           }
@@ -523,112 +586,6 @@ const checkFollowedOfficials = async () => {
 
 // ── Pre-warm member legislation cache ─────────────────────────────────────────
 
-const PREWARM_FRESHNESS_MS = 22 * 60 * 60 * 1000; // refresh if > 22h old (matches 24h backend TTL)
-const PREWARM_BATCH_LIMIT = 20; // max officials to refresh per cron run
-
-const fetchMemberLegislationFull = async (
-  bioguideId: string,
-  endpoint: "sponsored-legislation" | "cosponsored-legislation",
-  dataKey: "sponsoredLegislation" | "cosponsoredLegislation",
-): Promise<{ legislation: any[]; count: number }> => {
-  let allLegislation: any[] = [];
-  let offset = 0;
-  const limit = 250;
-  let allTimeCount = 0;
-
-  const firstPage = await axios.get(
-    `https://api.congress.gov/v3/member/${bioguideId}/${endpoint}`,
-    {
-      headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-      params: { limit, offset, format: "json" },
-      timeout: 15000,
-    },
-  );
-  allTimeCount = firstPage.data.pagination?.count ?? 0;
-  const firstItems: any[] = firstPage.data[dataKey] || [];
-  allLegislation = allLegislation.concat(
-    firstItems.filter((b: any) => b.congress === 119),
-  );
-
-  const hasOlderFirst = firstItems.some(
-    (b: any) => b.congress !== undefined && b.congress < 119,
-  );
-  let hasMore = !!firstPage.data.pagination?.next && !hasOlderFirst;
-  offset += limit;
-
-  while (hasMore) {
-    const response = await axios.get(
-      `https://api.congress.gov/v3/member/${bioguideId}/${endpoint}`,
-      {
-        headers: { "X-Api-Key": process.env.CONGRESS_API_KEY },
-        params: { limit, offset, format: "json" },
-        timeout: 15000,
-      },
-    );
-    const page: any[] = response.data[dataKey] || [];
-    allLegislation = allLegislation.concat(
-      page.filter((b: any) => b.congress === 119),
-    );
-    const hasOlder = page.some(
-      (b: any) => b.congress !== undefined && b.congress < 119,
-    );
-    hasMore = !!response.data.pagination?.next && page.length === limit && !hasOlder;
-    offset += limit;
-  }
-
-  return { legislation: allLegislation, count: allTimeCount };
-};
-
-const writeLegislationCache = (key: string, data: any): void => {
-  db.prepare(
-    `INSERT INTO congress_cache (cache_key, data, cached_at) VALUES (?, ?, ?)
-     ON CONFLICT(cache_key) DO UPDATE SET data = excluded.data, cached_at = excluded.cached_at`,
-  ).run(key, JSON.stringify(data), Date.now());
-};
-
-const prewarmFollowedOfficials = async (): Promise<void> => {
-  const registrations = getAllRegistrations();
-  const officialIds = new Set<string>();
-  for (const reg of registrations) {
-    const followed: { bioguideId: string }[] = JSON.parse(
-      reg.followed_officials || "[]",
-    );
-    for (const o of followed) {
-      const id = o.bioguideId.replace(/^official_/, "");
-      if (/^[A-Z][0-9A-Z]{6}$/.test(id)) officialIds.add(id);
-    }
-  }
-
-  const stale = [...officialIds]
-    .filter((id) => {
-      const row = db
-        .prepare(`SELECT cached_at FROM congress_cache WHERE cache_key = ?`)
-        .get(`sponsored-${id}`) as { cached_at: number } | undefined;
-      return !row || Date.now() - row.cached_at > PREWARM_FRESHNESS_MS;
-    })
-    .slice(0, PREWARM_BATCH_LIMIT);
-
-  if (stale.length === 0) {
-    console.log("Member legislation cache: all followed officials are fresh.");
-    return;
-  }
-  console.log(`Pre-warming legislation cache for ${stale.length} officials...`);
-
-  for (const bioguideId of stale) {
-    try {
-      const [sponsored, cosponsored] = await Promise.all([
-        fetchMemberLegislationFull(bioguideId, "sponsored-legislation", "sponsoredLegislation"),
-        fetchMemberLegislationFull(bioguideId, "cosponsored-legislation", "cosponsoredLegislation"),
-      ]);
-      writeLegislationCache(`sponsored-${bioguideId}`, sponsored);
-      writeLegislationCache(`cosponsored-${bioguideId}`, cosponsored);
-      console.log(`  Cached ${bioguideId}: ${sponsored.legislation.length} sponsored, ${cosponsored.legislation.length} cosponsored`);
-    } catch (err) {
-      console.warn(`  Pre-warm failed for ${bioguideId}:`, err);
-    }
-  }
-  console.log("Pre-warming complete.");
-};
 
 // ── Main runner ───────────────────────────────────────────────────────────────
 
@@ -742,11 +699,20 @@ export const runCronJob = async () => {
   );
   await syncRecentBills();
   await enrichMissingPolicyAreas();
-  await prewarmFollowedOfficials();
   await checkNewBills();
   await checkFollowedBills();
   await checkFollowedOfficials();
   console.log("Cron job complete.");
+};
+
+export const runCronJobForToken = async (token: string) => {
+  console.log(`Running single-token cron test for ${token}`, new Date().toISOString());
+  await syncRecentBills();
+  await enrichMissingPolicyAreas();
+  await checkNewBills(token);
+  await checkFollowedBills(token);
+  await checkFollowedOfficials(token);
+  console.log("Single-token cron test complete.");
 };
 
 // ── Scheduler — runs every day at 8am and 4pm EST ─────────────────────────────────
