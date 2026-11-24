@@ -45,7 +45,7 @@ export const pushToken = {
 
       return token;
     } catch (error) {
-      console.error("Error registering for push notifications:", error);
+      if (__DEV__) console.warn("Error registering for push notifications:", error);
       return null;
     }
   },
