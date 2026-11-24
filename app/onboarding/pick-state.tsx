@@ -1,4 +1,4 @@
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 import { useRouter } from "expo-router";
 import { Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import React, { useState } from "react";

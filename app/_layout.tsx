@@ -31,18 +31,27 @@ export default function RootLayout() {
   const isExpoGo = Constants.appOwnership === "expo";
 
   useEffect(() => {
+    let active = true;
     const init = async () => {
-      await initializeDatabase();
-      storage.initializeDefaultList();
-      syncListItemsFromBills(); // fire and forget — non-blocking
-      setIsReady(true);
+      try {
+        await initializeDatabase();
+        storage.initializeDefaultList();
+        syncListItemsFromBills(); // fire and forget — non-blocking
+      } catch (err) {
+        console.error("Startup init failed:", err);
+      } finally {
+        if (active) setIsReady(true);
+      }
     };
     init();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("#fafafa");
-    NavigationBar.setButtonStyleAsync("dark");
+    if (Platform.OS !== "android") return;
+    NavigationBar.setButtonStyleAsync?.("dark")?.catch?.(() => {});
   }, []);
 
   useEffect(() => {
